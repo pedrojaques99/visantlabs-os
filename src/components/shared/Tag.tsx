@@ -1,9 +1,9 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { X, Shuffle } from '@/lib/ui/icons';
-import { useTheme } from '@/hooks/useTheme';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export interface TagProps extends React.PropsWithChildren {
   label?: string;
@@ -33,48 +33,48 @@ export const Tag: React.FC<TagProps> = ({
   size = 'md',
   loading = false,
 }) => {
-  const { theme } = useTheme();
-
+  const { t } = useTranslation();
   const sizeStyles = size === 'sm' ? 'h-6 px-2 py-1 text-2xs' : 'h-7 px-3 py-1.5 text-xs';
   const baseStyles = cn(
-    'font-medium rounded-full transition-all duration-200 border inline-flex items-center gap-1.5 select-none box-border whitespace-nowrap',
+    'font-medium rounded-full transition-colors duration-200 border inline-flex items-center gap-1.5 select-none box-border whitespace-nowrap',
     sizeStyles,
     !disabled && (onToggle || removable) ? 'cursor-pointer' : 'cursor-default'
   );
 
-  // Pool: subtle dashed. Selected: strong. inPool+selected: "active in pool" (solid, stronger)
-  const poolStyles =
-    theme === 'dark'
-      ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/60 border-dashed shadow-sm shadow-brand-cyan/5'
-      : 'bg-brand-cyan/10 text-neutral-800 border-brand-cyan/60 border-dashed shadow-sm shadow-brand-cyan/5';
-  const poolActiveStyles =
-    theme === 'dark'
-      ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan shadow-sm shadow-brand-cyan/10'
-      : 'bg-brand-cyan/20 text-neutral-800 border-border shadow-sm shadow-brand-cyan/10';
-
-  const themeStyles =
-    inPool && selected
-      ? poolActiveStyles
-      : inPool
-        ? poolStyles
-        : theme === 'dark'
-          ? selected
-            ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40 shadow-sm shadow-brand-cyan/10'
-            : suggested
-              ? 'bg-neutral-800/80 text-neutral-300 border-ring hover:border-neutral-700 hover:text-white'
-              : 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-          : selected
-            ? 'bg-brand-cyan/20 text-neutral-800 border-brand-cyan/40 shadow-sm shadow-brand-cyan/10'
-            : suggested
-              ? 'bg-white text-neutral-800 border-ring shadow-sm'
-              : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900';
+  // Pool: neutro tracejado. Selecionado: cyan (estado selecionado é o único uso de cyan aqui).
+  const themeStyles = selected
+    ? cn('bg-brand-cyan/20 text-foreground', inPool ? 'border-brand-cyan' : 'border-brand-cyan/40')
+    : inPool
+      ? 'bg-muted/40 text-muted-foreground border-border border-dashed'
+      : suggested
+        ? 'bg-muted text-foreground border-ring hover:border-border-hover'
+        : 'bg-muted/50 text-muted-foreground border-border hover:border-border-hover hover:text-foreground';
 
   const disabledStyles = disabled ? 'opacity-100 cursor-not-allowed' : '';
 
   return (
     <div
       onClick={!disabled ? onToggle : undefined}
-      className={cn(baseStyles, themeStyles, disabledStyles, className)}
+      role={onToggle ? 'button' : undefined}
+      tabIndex={onToggle && !disabled ? 0 : undefined}
+      aria-pressed={onToggle ? selected : undefined}
+      onKeyDown={
+        onToggle && !disabled
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onToggle(e as unknown as React.MouseEvent<HTMLDivElement>);
+              }
+            }
+          : undefined
+      }
+      className={cn(
+        baseStyles,
+        themeStyles,
+        disabledStyles,
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        className
+      )}
     >
       {inPool && <Shuffle size={10} className="mr-0.5 opacity-70" />}
       {children}
@@ -90,12 +90,8 @@ export const Tag: React.FC<TagProps> = ({
             e.stopPropagation();
             onRemove();
           }}
-          className={cn(
-            'rounded-full p-0.5 hover:bg-neutral-950/10 transition-colors',
-            theme === 'dark'
-              ? 'text-neutral-500 hover:text-white'
-              : 'text-neutral-600 hover:text-neutral-900'
-          )}
+          className="rounded-full p-0.5 hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+          aria-label={t('common.remove')}
         >
           <X size={12} />
         </Button>

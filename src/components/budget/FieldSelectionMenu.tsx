@@ -94,7 +94,7 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
       aria-label="Menu de seleção de campos"
     >
       <div className="flex items-center justify-between px-3 py-2 border-b border-neutral-800">
-        <span className="text-xs font-mono text-neutral-400">Adicionar campo</span>
+        <span className="text-xs text-neutral-400">Adicionar campo</span>
         <Button
           variant="ghost"
           onClick={onClose}
@@ -115,7 +115,7 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar campo..."
-            className="w-full pl-8 pr-3 py-1.5 bg-neutral-950/70 border border-neutral-800 rounded text-sm font-mono text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-600/50"
+            className="w-full pl-8 pr-3 py-1.5 bg-neutral-950/70 border border-neutral-800 rounded text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-600/50"
             aria-label="Buscar campo"
           />
         </div>
@@ -123,7 +123,7 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
 
       <div className="max-h-[300px] overflow-y-auto">
         {filteredFields.length === 0 ? (
-          <div className="px-3 py-4 text-center text-xs text-neutral-500 font-mono">
+          <div className="px-3 py-4 text-center text-xs text-neutral-500">
             Nenhum campo encontrado
           </div>
         ) : (
@@ -136,10 +136,10 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
                 onClose();
               }}
               onMouseEnter={() => setSelectedIndex(index)}
-              className={`w-full px-3 py-2.5 text-left text-sm font-mono transition-colors border-b border-neutral-800/50 last:border-b-0 ${
+              className={`w-full px-3 py-2.5 text-left text-sm transition-colors border-b border-neutral-800/50 last:border-b-0 ${
                 index === selectedIndex
                   ? 'bg-brand-cyan/20 text-brand-cyan'
-                  : 'text-neutral-300 hover:bg-brand-cyan/10 hover:text-brand-cyan'
+                  : 'text-neutral-300 hover:bg-neutral-800 hover:text-foreground'
               }`}
               role="menuitem"
               aria-label={`Adicionar campo ${field.label}`}

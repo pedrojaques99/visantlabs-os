@@ -3,6 +3,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Card, CardContent } from '@/components/ui/card';
 import { getArchetypeImage } from '@/constants/archetypeImages';
+import { Thumb } from '@/components/ui/Thumb';
 import type {
   CentralMessage,
   BrandPillar,
@@ -18,9 +19,7 @@ import type {
 } from '@/types/branding';
 
 const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return (
-    <span className="text-2xs uppercase tracking-wider text-muted-foreground">{children}</span>
-  );
+  return <span className="text-xs text-muted-foreground">{children}</span>;
 };
 
 const SectionCard: React.FC<{ children: React.ReactNode; className?: string }> = ({
@@ -96,7 +95,7 @@ export const CentralMessageSection: React.FC<{ data: CentralMessage; pillars: Br
         {pillars.map((pillar, i) => (
           <SectionCard key={i}>
             <div
-              className={`text-xs font-mono uppercase mb-1 ${
+              className={`text-xs mb-1 ${
                 theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
               }`}
             >
@@ -149,8 +148,8 @@ export const MarketResearchV2Section: React.FC<{ data: MarketResearchV2 }> = ({ 
       light: 'border-warning/40 bg-warning/50',
     },
     cyan: {
-      dark: 'border-brand-cyan/40 bg-brand-cyan/20',
-      light: 'border-brand-cyan/40 bg-brand-cyan/50',
+      dark: 'border-neutral-500 bg-neutral-800/60',
+      light: 'border-neutral-400 bg-neutral-100',
     },
   };
 
@@ -272,7 +271,7 @@ export const PersonaV2Section: React.FC<{ data: PersonaV2 }> = ({ data }) => {
           {data.painPoints.map((pain, i) => (
             <SectionCard key={i} className="!p-3">
               <div
-                className={`text-2xs font-mono uppercase ${
+                className={`text-xs ${
                   theme === 'dark' ? 'text-destructive/70' : 'text-destructive'
                 }`}
               >
@@ -299,11 +298,7 @@ export const PersonaV2Section: React.FC<{ data: PersonaV2 }> = ({ data }) => {
           <Label>{t('branding.visant.desires')}</Label>
           {data.desires.map((desire, i) => (
             <SectionCard key={i} className="!p-3">
-              <div
-                className={`text-2xs font-mono uppercase ${
-                  theme === 'dark' ? 'text-success/70' : 'text-success'
-                }`}
-              >
+              <div className={`text-xs ${theme === 'dark' ? 'text-success/70' : 'text-success'}`}>
                 {desire.id}
               </div>
               <h5
@@ -349,7 +344,7 @@ export const ArchetypesV2Section: React.FC<{
             <SectionCard key={i}>
               <div className="flex gap-4">
                 {imagePath && (
-                  <img
+                  <Thumb
                     src={imagePath}
                     alt={item.arch.title}
                     className="w-20 h-28 object-contain rounded-md"
@@ -461,7 +456,7 @@ export const ManifestoSection: React.FC<{ data: Manifesto }> = ({ data }) => {
         <SectionCard key={i}>
           <div className="flex items-start gap-3">
             <span
-              className={`text-2xl font-mono font-bold ${
+              className={`text-2xl font-bold ${
                 theme === 'dark' ? 'text-neutral-700' : 'text-neutral-300'
               }`}
             >
@@ -677,7 +672,7 @@ export const LogoConceptSection: React.FC<{ data: LogoConcept }> = ({ data }) =>
             {idea.meanings.map((meaning, j) => (
               <div key={j} className="flex items-start gap-2">
                 <span
-                  className={`text-xs font-mono ${
+                  className={`text-xs ${
                     theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
                   }`}
                 >

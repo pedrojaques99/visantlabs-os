@@ -189,7 +189,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               onClick={onSend}
               disabled={disabled || (!value.trim() && !isIngesting) || isLoading || isIngesting}
               className={cn(
-                'h-8 w-8 rounded-lg shadow-xl transition-all duration-300',
+                'h-8 w-8 rounded-lg shadow-xl transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-300',
                 'bg-white/10 hover:bg-white text-white hover:text-black',
                 !value.trim() &&
                   !isIngesting &&
@@ -202,13 +202,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Disclaimer sutil */}
-      {!compact && (
-        <div className="px-4 text-xs text-white/20 text-center">
-          Visant Labs OS · Assistente de marca
-        </div>
-      )}
     </div>
   );
 };

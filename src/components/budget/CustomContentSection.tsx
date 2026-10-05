@@ -85,23 +85,21 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
       {/* Project Detail Sections */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-neutral-200 font-mono">
-            {t('budget.projectDetailSections') || 'Seções de Descrição do Projeto'}
+          <h3 className="text-lg font-semibold text-neutral-200">
+            {t('budget.projectDetailSections')}
           </h3>
           <Button
             variant="brand"
             onClick={addProjectDetailSection}
-            className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-foreground font-mono text-sm transition-colors duration-300 flex items-center gap-2"
+            className="px-4 py-2 bg-neutral-800/60 hover:bg-neutral-800 border border-neutral-700 rounded-xl text-foreground text-sm transition-colors duration-300 flex items-center gap-2"
           >
             <Plus size={16} />
-            {t('budget.addSection') || 'Adicionar Seção'}
+            {t('budget.addSection')}
           </Button>
         </div>
 
         {(customContent.projectDetailSections || []).length === 0 ? (
-          <div className="text-center py-4 text-neutral-500 font-mono text-sm">
-            {t('budget.noSections') || 'Nenhuma seção adicionada ainda'}
-          </div>
+          <div className="text-center py-4 text-neutral-500 text-sm">{t('budget.noSections')}</div>
         ) : (
           <div className="space-y-4">
             {(customContent.projectDetailSections || []).map((section, sectionIndex) => (
@@ -112,29 +110,29 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-3">
                     <div>
-                      <label className="block text-xs text-neutral-400 mb-1 font-mono">
-                        {t('budget.sectionTitle') || 'Título da Seção'}
+                      <label className="block text-xs text-neutral-400 mb-1">
+                        {t('budget.sectionTitle')}
                       </label>
                       <FormInput
                         value={section.title}
                         onChange={(e) =>
                           updateProjectDetailSection(sectionIndex, 'title', e.target.value)
                         }
-                        placeholder={t('budget.placeholders.sectionTitle') || 'Título'}
+                        placeholder={t('budget.placeholders.sectionTitle')}
                       />
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <label className="block text-xs text-neutral-400 font-mono">
-                          {t('budget.paragraphs') || 'Parágrafos'}
+                        <label className="block text-xs text-neutral-400">
+                          {t('budget.paragraphs')}
                         </label>
                         <Button
                           variant="ghost"
                           onClick={() => addParagraph(sectionIndex)}
-                          className="px-2 py-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded text-foreground font-mono text-xs transition-colors duration-300 flex items-center gap-1"
+                          className="px-2 py-1 bg-neutral-800/60 hover:bg-neutral-800 border border-neutral-700 rounded text-foreground text-xs transition-colors duration-300 flex items-center gap-1"
                         >
                           <Plus size={12} />
-                          {t('budget.addParagraph') || 'Parágrafo'}
+                          {t('budget.addParagraph')}
                         </Button>
                       </div>
                       {section.paragraphs.map((paragraph, paragraphIndex) => (
@@ -144,7 +142,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                             onChange={(e) =>
                               updateParagraph(sectionIndex, paragraphIndex, e.target.value)
                             }
-                            placeholder={t('budget.placeholders.paragraph') || 'Parágrafo...'}
+                            placeholder={t('budget.placeholders.paragraph')}
                             rows={3}
                             className="flex-1"
                           />
@@ -165,7 +163,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                     variant="ghost"
                     onClick={() => removeProjectDetailSection(sectionIndex)}
                     className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-                    title={t('budget.removeSection') || 'Remover seção'}
+                    title={t('budget.removeSection')}
                   >
                     <Trash2 size={18} />
                   </Button>
@@ -179,23 +177,19 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
       {/* Info Boxes */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-neutral-200 font-mono">
-            {t('budget.infoBoxes') || 'Caixas de Informação'}
-          </h3>
+          <h3 className="text-lg font-semibold text-neutral-200">{t('budget.infoBoxes')}</h3>
           <Button
             variant="brand"
             onClick={addInfoBox}
-            className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-foreground font-mono text-sm transition-colors duration-300 flex items-center gap-2"
+            className="px-4 py-2 bg-neutral-800/60 hover:bg-neutral-800 border border-neutral-700 rounded-xl text-foreground text-sm transition-colors duration-300 flex items-center gap-2"
           >
             <Plus size={16} />
-            {t('budget.addInfoBox') || 'Adicionar Caixa'}
+            {t('budget.addInfoBox')}
           </Button>
         </div>
 
         {(customContent.infoBoxes || []).length === 0 ? (
-          <div className="text-center py-4 text-neutral-500 font-mono text-sm">
-            {t('budget.noInfoBoxes') || 'Nenhuma caixa de informação adicionada ainda'}
-          </div>
+          <div className="text-center py-4 text-neutral-500 text-sm">{t('budget.noInfoBoxes')}</div>
         ) : (
           <div className="space-y-4">
             {(customContent.infoBoxes || []).map((box, index) => (
@@ -206,25 +200,23 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-3">
                     <div>
-                      <label className="block text-xs text-neutral-400 mb-1 font-mono">
-                        {t('budget.infoBoxTitle') || 'Título'}
+                      <label className="block text-xs text-neutral-400 mb-1">
+                        {t('budget.infoBoxTitle')}
                       </label>
                       <FormInput
                         value={box.title}
                         onChange={(e) => updateInfoBox(index, 'title', e.target.value)}
-                        placeholder={t('budget.placeholders.infoBoxTitle') || 'Título da caixa'}
+                        placeholder={t('budget.placeholders.infoBoxTitle')}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-neutral-400 mb-1 font-mono">
-                        {t('budget.infoBoxContent') || 'Conteúdo'}
+                      <label className="block text-xs text-neutral-400 mb-1">
+                        {t('budget.infoBoxContent')}
                       </label>
                       <FormTextarea
                         value={box.content}
                         onChange={(e) => updateInfoBox(index, 'content', e.target.value)}
-                        placeholder={
-                          t('budget.placeholders.infoBoxContent') || 'Conteúdo da caixa...'
-                        }
+                        placeholder={t('budget.placeholders.infoBoxContent')}
                         rows={4}
                       />
                     </div>
@@ -233,7 +225,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                     variant="ghost"
                     onClick={() => removeInfoBox(index)}
                     className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-                    title={t('budget.removeInfoBox') || 'Remover caixa'}
+                    title={t('budget.removeInfoBox')}
                   >
                     <Trash2 size={18} />
                   </Button>

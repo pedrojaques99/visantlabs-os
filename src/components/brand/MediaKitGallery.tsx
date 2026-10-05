@@ -13,6 +13,7 @@ import {
   Check,
   MousePointerClick,
   ChevronDown,
+  Pencil,
 } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -86,7 +87,7 @@ const FormatBadge: React.FC<{ url: string; className?: string }> = ({ url, class
   return (
     <span
       className={cn(
-        'absolute text-2xs font-mono font-bold uppercase tracking-wider px-1 py-px rounded z-10',
+        'absolute text-2xs font-mono px-1 py-px rounded z-10',
         isSvg
           ? 'bg-white/15 text-neutral-200 border border-white/20'
           : 'bg-white/10 text-neutral-400 border border-white/10',
@@ -171,9 +172,9 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
       onLogosChange(logos.filter((l) => !selectedIds.has(l.id)));
       onMediaChange(media.filter((m) => !selectedIds.has(m.id)));
       setSelectedIds(new Set());
-      toast.success(t('mockup.mediaKit.bulkDeleteSuccess') || 'Assets deleted');
+      toast.success(t('mockup.mediaKit.bulkDeleteSuccess'));
     } catch {
-      toast.error(t('mockup.mediaKit.bulkDeleteError') || 'Failed to delete some assets');
+      toast.error(t('mockup.mediaKit.bulkDeleteError'));
     } finally {
       setIsBulkDeleting(false);
     }
@@ -359,9 +360,9 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
     >
       {/* Bulk Actions Bar */}
       {selectedIds.size > 0 && !readOnly && (
-        <div className="sticky top-0 z-20 flex items-center justify-between p-2 mb-2 bg-muted/40 border border-ring rounded-lg backdrop-blur-md animate-in fade-in slide-in-from-top-2">
-          <span className="text-2xs text-foreground font-bold px-2 uppercase tabular-nums">
-            {selectedIds.size} SELECTED
+        <div className="sticky top-0 z-20 flex items-center justify-between p-2 mb-2 bg-background/90 border border-border rounded-lg backdrop-blur-md animate-in fade-in">
+          <span className="text-xs text-foreground font-medium px-2 tabular-nums">
+            {t('mockup.mediaKit.selectedCount', { count: selectedIds.size })}
           </span>
           <div className="flex gap-2">
             {selectedIds.size === 1 && (
@@ -369,42 +370,29 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={handleRenamePrompt}
-                className="text-2xs font-mono h-7 bg-black/40 border-brand-cyan/30 text-white hover:bg-brand-cyan/20"
+                className="text-xs h-7 gap-1.5"
               >
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="mr-1.5"
-                >
-                  <path d="M12 20h9"></path>
-                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                </svg>
-                RENAME
+                <Pencil size={12} />
+                {t('mockup.mediaKit.rename')}
               </Button>
             )}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setSelectedIds(new Set())}
-              className="text-2xs font-mono hover:bg-white/5 h-7"
+              className="text-xs h-7"
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               variant="destructive"
               size="sm"
               onClick={handleBulkDelete}
               disabled={isBulkDeleting}
-              className="text-2xs h-7 bg-destructive hover:bg-destructive font-mono"
+              className="text-xs h-7 gap-1.5"
             >
-              {isBulkDeleting ? <GlitchLoader size={10} /> : <Trash2 size={10} />}
-              <span className="ml-2 uppercase">Delete</span>
+              {isBulkDeleting ? <GlitchLoader size={10} /> : <Trash2 size={12} />}
+              {t('common.delete')}
             </Button>
           </div>
         </div>
@@ -421,7 +409,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                 type="button"
                 onClick={() => logoInputRef.current?.click()}
                 disabled={isUploading}
-                className="text-2xs font-mono text-neutral-600 hover:text-brand-cyan transition-colors flex items-center gap-1 disabled:opacity-50"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 disabled:opacity-50"
               >
                 <Plus size={10} />
                 {t('mockup.mediaKit.addLogo')}
@@ -468,7 +456,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
           onDragLeave={handleDragLeave}
           className={cn(
             'rounded-md border border-dashed transition-colors min-h-[80px]',
-            isDragging ? 'border-brand-cyan/50 bg-brand-cyan/5' : 'border-white/10 bg-transparent',
+            isDragging ? 'border-ring bg-muted/60' : 'border-border bg-transparent',
             readOnly && 'border-transparent'
           )}
         >
@@ -486,10 +474,8 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                     key={item.id}
                     onClick={(e) => handleItemClick(item.id, item.url, 'image', e)}
                     className={cn(
-                      'group/media relative aspect-[4/3] rounded-md border transition-all cursor-pointer overflow-hidden',
-                      isSelected
-                        ? 'border-brand-cyan bg-brand-cyan/5 scale-[0.98]'
-                        : 'border-neutral-800 bg-neutral-900/40'
+                      'group/media relative aspect-[4/3] rounded-md border transition-colors cursor-pointer overflow-hidden',
+                      isSelected ? 'border-brand-cyan bg-brand-cyan/5' : 'border-border bg-muted/40'
                     )}
                   >
                     {item.type === 'image' ? (
@@ -506,12 +492,12 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                         {(item.label || item.category) && (
                           <span
                             className={cn(
-                              'absolute bottom-0 left-0 right-0 text-2xs font-mono text-neutral-500 text-center py-0.5 bg-black/60 truncate px-1 flex items-center justify-center gap-1',
-                              isSelected && 'bg-brand-cyan text-black font-bold'
+                              'absolute bottom-0 left-0 right-0 text-2xs text-muted-foreground text-center py-0.5 bg-background/80 truncate px-1 flex items-center justify-center gap-1',
+                              isSelected && 'bg-brand-cyan text-black font-medium'
                             )}
                           >
                             {item.category && !isSelected && (
-                              <span className="text-2xs uppercase tracking-wider text-neutral-600 bg-white/5 px-1 rounded">
+                              <span className="text-2xs text-muted-foreground bg-muted px-1 rounded">
                                 {item.category}
                               </span>
                             )}
@@ -522,8 +508,8 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center p-2 bg-black/20">
                         <FileText size={20} className="text-neutral-500 mb-1" />
-                        <span className="text-2xs font-mono text-neutral-400 text-center px-2 truncate w-full">
-                          {item.label || 'PDF Document'}
+                        <span className="text-2xs text-muted-foreground text-center px-2 truncate w-full">
+                          {item.label || 'PDF'}
                         </span>
                       </div>
                     )}
@@ -539,8 +525,8 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                           }}
                           onClick={(e) => e.stopPropagation()}
                           className={cn(
-                            'h-5 pl-1 pr-4 rounded text-2xs uppercase tracking-wider appearance-none cursor-pointer',
-                            'bg-black/70 backdrop-blur-sm border border-white/10 text-neutral-300',
+                            'h-5 pl-1 pr-4 rounded text-2xs appearance-none cursor-pointer',
+                            'bg-background/90 border border-border text-foreground',
                             'hover:border-white/20 focus:border-neutral-600 focus:outline-none transition-colors',
                             !item.category && 'text-neutral-600'
                           )}
@@ -581,7 +567,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
               })}
             </div>
           ) : (
-            <p className="text-2xs font-mono text-neutral-700 p-3 text-center">
+            <p className="text-xs text-muted-foreground p-3 text-center">
               {t('mockup.mediaKit.noMedia')}
             </p>
           )}
@@ -617,9 +603,9 @@ const LogoTile: React.FC<LogoTileProps> = ({
     <div
       onClick={onClick}
       className={cn(
-        'group/logo relative aspect-square rounded-md border transition-all cursor-pointer overflow-hidden',
+        'group/logo relative aspect-square rounded-md border transition-colors cursor-pointer overflow-hidden',
         isSelected
-          ? 'border-brand-cyan bg-brand-cyan/5 scale-[0.98]'
+          ? 'border-brand-cyan bg-brand-cyan/5'
           : needsLightBg
             ? 'border-neutral-800 bg-white'
             : 'border-neutral-800 bg-neutral-900/40'
@@ -637,8 +623,8 @@ const LogoTile: React.FC<LogoTileProps> = ({
 
       <span
         className={cn(
-          'absolute bottom-0 left-0 right-0 text-2xs text-neutral-300 text-center py-0.5 bg-black/60 uppercase',
-          isSelected && 'bg-brand-cyan text-black font-bold'
+          'absolute bottom-0 left-0 right-0 text-2xs text-muted-foreground text-center py-0.5 bg-background/80',
+          isSelected && 'bg-brand-cyan text-black font-medium'
         )}
       >
         {logo.variant}

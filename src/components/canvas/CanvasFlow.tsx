@@ -8,6 +8,7 @@ import { fileToBase64 } from '@/utils/fileUtils';
 import { toast } from 'sonner';
 import type { UploadedImage } from '@/types/types';
 import { useTranslation } from '@/hooks/useTranslation';
+import { DropOverlay } from '@/components/ui/DropOverlay';
 import {
   isValidDroppableNodeType,
   MAX_IMAGE_FILE_SIZE,
@@ -410,7 +411,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
 
       if (assetUrl && onDropImage) {
         onDropImage({ url: assetUrl, mimeType: 'image/png' }, position);
-        toast.success(t('canvas.assetAdded') || 'Asset added to board');
+        toast.success(t('canvas.assetAdded'));
         return;
       }
 
@@ -820,6 +821,8 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     }
   }, [isDrawingMode, isDrawing, onDrawingEnd]);
 
+  // EXCEÇÃO ao ruido-scan/icone-desenhado-a-mao: cursor CSS precisa ser data-URI
+  // (url(...) em `cursor`), não dá pra usar componente de ícone aqui.
   // Memoized custom cursor SVG - only recalculate when cursorColor changes
   // Hotspot at tip of arrow: approximately (5.5, 3.2) based on SVG path starting point
   const customCursorSvg = useMemo(() => {
@@ -827,6 +830,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     return `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${encodedColor}" stroke="%23000" stroke-width="1.5" d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87a.5.5 0 0 0 .35-.85L6.35 2.85a.5.5 0 0 0-.85.35Z"></path></svg>') 5.5 3.2, auto`;
   }, [cursorColor]);
 
+  // EXCEÇÃO ao ruido-scan/icone-desenhado-a-mao: mesmo motivo (cursor CSS).
   // Memoized pencil cursor SVG for drawing/shapes
   const pencilCursorSvg = useMemo(() => {
     const encodedColor = encodeURIComponent(cursorColor);
@@ -895,32 +899,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
       onTouchMove={handleDrawingTouchMove}
       onTouchEnd={handleDrawingTouchEnd}
     >
-      {/* Drag-over overlay with clear visual feedback */}
-      {isDraggingOver && (
-        <div className="absolute inset-0 z-[9999] pointer-events-none flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm">
-          <div className="text-center">
-            <div className="w-32 h-32 mx-auto mb-6 rounded-full flex items-center justify-center bg-gradient-to-br from-neutral-600 to-neutral-700 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-              <svg
-                className="w-16 h-16 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                />
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold mb-2 text-neutral-200">{t('canvas.dropHere')}</h3>
-            <p className="text-white/80">{t('canvas.dropHint')}</p>
-          </div>
-          {/* Animated border */}
-          <div className="absolute inset-4 rounded-md pointer-events-none border-[3px] border-dashed border-neutral-600 animate-[dash_20s_linear_infinite]" />
-        </div>
-      )}
+      <DropOverlay visible={isDraggingOver} message={t('canvas.dropHint')} className="z-[9999]" />
 
       {/* File processing overlay */}
       {isProcessingFiles && (

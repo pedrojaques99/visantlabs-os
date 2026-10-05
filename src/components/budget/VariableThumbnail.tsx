@@ -43,7 +43,7 @@ export const VariableThumbnail: React.FC<VariableThumbnailProps> = ({
       case 'available':
         return 'border-neutral-700 bg-neutral-950/20 hover:bg-neutral-950/70 text-neutral-400';
       case 'added':
-        return 'border-neutral-600/50 bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground';
+        return 'border-neutral-500 bg-neutral-800/60 hover:bg-neutral-800 text-foreground';
       case 'positioned':
         return 'border-success/50 bg-success/10 hover:bg-success/20 text-success';
       default:
@@ -77,14 +77,14 @@ export const VariableThumbnail: React.FC<VariableThumbnailProps> = ({
       role="button"
     >
       {icon && <div className="text-2xl">{icon}</div>}
-      <span className="text-xs font-mono text-center font-medium">{label}</span>
+      <span className="text-xs text-center font-medium">{label}</span>
       {instanceCount > 0 && (
-        <span className="text-2xs font-mono px-2 py-0.5 rounded-md bg-brand-cyan/20 text-foreground border border-neutral-600/30">
+        <span className="text-2xs px-2 py-0.5 rounded-md bg-neutral-800 text-foreground border border-neutral-700">
           {instanceCount} {instanceCount === 1 ? 'instância' : 'instâncias'}
         </span>
       )}
       {mapping && !instanceCount && (
-        <span className="text-2xs font-mono opacity-60">
+        <span className="text-2xs opacity-60">
           {mapping.page ? `Página ${mapping.page}` : 'Clique para adicionar'}
         </span>
       )}

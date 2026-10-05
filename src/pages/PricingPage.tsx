@@ -135,7 +135,7 @@ export const PricingPage: React.FC = () => {
           </div>
 
           {error && (
-            <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive font-mono mb-8 text-center">
+            <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive mb-8 text-center">
               {error}
             </div>
           )}
@@ -223,19 +223,22 @@ export const PricingPage: React.FC = () => {
                   key={tier.id}
                   className={cn(
                     'relative flex flex-col rounded-2xl border bg-card p-6',
-                    tier.recommended ? 'border-brand-cyan/40 bg-brand-cyan/[0.03]' : 'border-border'
+                    tier.recommended ? 'border-ring' : 'border-border'
                   )}
                   data-vsn-region={`tier-${tier.id}`}
                 >
-                  {/* Selo topo — recomendado (brand-cyan) ou early access (neutro) */}
+                  {/* Selo topo: recomendado ou early access */}
                   {(tier.recommended || tier.earlyAccess) && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                       {tier.recommended ? (
-                        <Badge className="bg-brand-cyan text-black font-bold text-2xs uppercase tracking-widest px-3 py-0.5 rounded-full">
+                        <Badge variant="neutral" className="text-2xs px-3 py-0.5 rounded-full">
                           {copy.recommended}
                         </Badge>
                       ) : (
-                        <Badge className="bg-muted text-muted-foreground border-none text-2xs uppercase tracking-widest px-3 py-0.5 rounded-full inline-flex items-center gap-1">
+                        <Badge
+                          variant="neutral"
+                          className="text-2xs px-3 py-0.5 rounded-full gap-1"
+                        >
                           <Zap size={10} />
                           {copy.earlyAccess}
                         </Badge>
@@ -253,44 +256,36 @@ export const PricingPage: React.FC = () => {
 
                   {/* Preço grande */}
                   <div className="flex items-baseline gap-1.5 mb-1">
-                    <span className="text-4xl font-bold font-mono tracking-tight text-foreground">
+                    <span className="text-4xl font-bold tabular-nums text-foreground">
                       {priceStr}
                     </span>
                     {cycleSuffix && (
-                      <span className="text-sm text-muted-foreground font-mono">{cycleSuffix}</span>
+                      <span className="text-sm text-muted-foreground">{cycleSuffix}</span>
                     )}
                   </div>
 
                   {/* Preço "normal" riscado — só quando o ativo é promo de lançamento (Vision) */}
                   {regular != null && (
-                    <p className="mt-2 mb-1 text-xs font-mono text-muted-foreground">
+                    <p className="mt-2 mb-1 flex flex-wrap gap-x-2 text-xs text-muted-foreground">
                       <span className="line-through">
                         {formatTierPrice(regular, currency)}
                         {cycleSuffix}
                       </span>
-                      {' · '}
                       <span className="text-foreground">{copy.launchLabel}</span>
-                      <span className="text-muted-foreground"> · {copy.launchNote}</span>
+                      <span>{copy.launchNote}</span>
                     </p>
                   )}
 
-                  {/* Créditos — uma linha fair-use + tradução em resultado legível */}
-                  <p className="mt-4 text-xs text-muted-foreground font-mono">{tc.credits}</p>
+                  {/* Créditos: uma linha fair-use + tradução em resultado legível */}
+                  <p className="mt-4 text-xs text-muted-foreground">{tc.credits}</p>
                   <p
                     className={cn(
-                      'mt-1 text-xs font-mono',
+                      'mt-1 text-xs',
                       tier.recommended ? 'text-foreground' : 'text-muted-foreground'
                     )}
                   >
                     {tc.creditsOutcome}
                   </p>
-
-                  {/* BYOK — badge discreto */}
-                  <div className="mt-2">
-                    <Badge className="bg-muted text-muted-foreground border border-border text-2xs font-mono px-2 py-0.5 rounded-md">
-                      {copy.byokBadge}
-                    </Badge>
-                  </div>
 
                   {/* Features */}
                   <ul className="mt-5 space-y-2.5 flex-1">
@@ -327,7 +322,10 @@ export const PricingPage: React.FC = () => {
             })}
           </div>
 
-          {/* Rodapé — pacote avulso de créditos, discreto */}
+          {/* BYOK vale pros três planos: uma linha só, abaixo do grid */}
+          <p className="mt-6 text-center text-xs text-muted-foreground">{copy.byokBadge}</p>
+
+          {/* Rodapé: pacote avulso de créditos, discreto */}
           {creditPackages.length > 0 && (
             <div className="mt-14 text-center flex items-center justify-center gap-2 flex-wrap">
               <MicroTitle as="span" className="text-muted-foreground">

@@ -2,11 +2,12 @@ import React, { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, Eye, EyeOff, Download, Clipboard, Copy, Pipette } from '@/lib/ui/icons';
+import { ChevronDown, Eye, EyeOff, Download, Copy, Pipette, RotateCcw } from '@/lib/ui/icons';
 import { HexColorPicker } from 'react-colorful';
 import { BrandSwatchRow } from './BrandSwatchRow';
 import { hexToRgb, rgbToHex, parseHex } from '@/utils/colorUtils';
 import { useTranslation } from '@/hooks/useTranslation';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 
 // Minimal typing for the native EyeDropper API (Chromium). Feature-detected at runtime.
 type EyeDropperResult = { sRGBHex: string };
@@ -60,7 +61,7 @@ export const ToolPanel: React.FC<{ children: React.ReactNode; className?: string
   children,
   className,
 }) => (
-  <GlassPanel className={cn('h-full overflow-hidden flex flex-col', className)}>
+  <GlassPanel intensity="default" className={cn('h-full overflow-hidden flex flex-col', className)}>
     {children}
   </GlassPanel>
 );
@@ -79,9 +80,7 @@ export const SectionLabel: React.FC<{ children: React.ReactNode; className?: str
   children,
   className,
 }) => (
-  <span className={cn('text-2xs uppercase tracking-widest text-muted-foreground', className)}>
-    {children}
-  </span>
+  <span className={cn('text-xs font-medium text-muted-foreground', className)}>{children}</span>
 );
 
 export const SegmentedControl: React.FC<{
@@ -106,8 +105,8 @@ export const SegmentedControl: React.FC<{
         key={opt.value}
         onClick={() => onChange(opt.value)}
         className={cn(
-          'font-medium rounded-md transition-all flex-1 text-center',
-          size === 'sm' ? 'px-2 py-1 text-2xs tracking-wider' : 'px-3 py-1 text-2xs',
+          'font-medium rounded-md transition-colors flex-1 text-center',
+          size === 'sm' ? 'px-2 py-1 text-2xs' : 'px-3 py-1 text-2xs',
           value === opt.value
             ? variant === 'brand'
               ? 'bg-brand-cyan text-black font-bold'
@@ -127,22 +126,29 @@ export const ToolPanelSection: React.FC<{
   className?: string;
   id?: string;
   onReset?: () => void;
-}> = ({ title, children, className, id, onReset }) => (
-  <div id={id} className={cn('space-y-3 scroll-mt-2', className)}>
-    <div className="group -mx-4 px-4 py-1.5 flex items-center justify-between">
-      <span className="text-2xs uppercase tracking-widest text-muted-foreground">{title}</span>
-      {onReset && (
-        <button
-          onClick={onReset}
-          className="text-2xs text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wider opacity-0 group-hover:opacity-100"
-        >
-          Reset
-        </button>
-      )}
+}> = ({ title, children, className, id, onReset }) => {
+  const { t } = useTranslation();
+  return (
+    <div id={id} className={cn('space-y-3 scroll-mt-2', className)}>
+      <div className="group -mx-4 px-4 py-1.5 flex items-center justify-between">
+        <span className="text-xs font-medium text-muted-foreground">{title}</span>
+        {onReset && (
+          <button
+            type="button"
+            onClick={onReset}
+            className={cn(
+              hoverReveal,
+              'text-2xs text-muted-foreground hover:text-foreground transition-colors'
+            )}
+          >
+            {t('common.reset')}
+          </button>
+        )}
+      </div>
+      {children}
     </div>
-    {children}
-  </div>
-);
+  );
+};
 
 export const ToolPanelDisclosure: React.FC<{
   label: string;
@@ -168,7 +174,7 @@ export const ToolPanelDisclosure: React.FC<{
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {icon && <span className="text-neutral-500">{icon}</span>}
-          <span className="text-2xs uppercase tracking-widest text-muted-foreground">{label}</span>
+          <span className="text-xs font-medium text-muted-foreground">{label}</span>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {badge}
@@ -217,7 +223,7 @@ export const ToolPanelChip: React.FC<{
   <button
     onClick={onClick}
     className={cn(
-      'px-2.5 py-2 rounded-md text-2xs font-mono uppercase tracking-wider transition-colors duration-200 text-left border',
+      'px-2.5 py-2 rounded-md text-xs transition-colors duration-200 text-left border',
       active
         ? 'bg-white/10 text-white border-white/20'
         : 'bg-neutral-900/50 text-neutral-400 border-neutral-800/50 hover:bg-neutral-800/30 hover:text-neutral-200 hover:border-neutral-700/50',
@@ -315,9 +321,7 @@ export const ChannelRow: React.FC<{
         <HexTextInput value={color} onChange={onColorChange} ariaLabel={`${label} hex`} />
       </span>
       {!label.startsWith('#') && (
-        <span className="text-2xs text-muted-foreground uppercase tracking-wider truncate">
-          {label}
-        </span>
+        <span className="text-2xs text-muted-foreground truncate">{label}</span>
       )}
       <div className="flex items-center gap-1 ml-auto shrink-0">
         {actions}
@@ -465,7 +469,7 @@ export const ExpandableColorPicker: React.FC<{
           <button
             type="button"
             onClick={pickWithEyedropper}
-            className="text-neutral-500 hover:text-brand-cyan transition-colors p-1 shrink-0"
+            className="text-neutral-500 hover:text-foreground transition-colors p-1 shrink-0"
             aria-label="Pick color from screen"
             title="Eyedropper"
           >
@@ -474,23 +478,12 @@ export const ExpandableColorPicker: React.FC<{
         )}
         {onReset && (
           <button
+            type="button"
             onClick={onReset}
             className="text-neutral-600 hover:text-neutral-400 transition-colors p-1 shrink-0"
-            aria-label="Reset color"
+            aria-label={t('common.reset')}
           >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-              <path d="M3 3v5h5" />
-            </svg>
+            <RotateCcw size={12} />
           </button>
         )}
         <ChevronDown
@@ -508,7 +501,7 @@ export const ExpandableColorPicker: React.FC<{
                   key={p}
                   onClick={() => onChange(p)}
                   className={cn(
-                    'w-5 h-5 rounded-full border transition-all hover:scale-110',
+                    'w-5 h-5 rounded-full border transition-colors',
                     color.toLowerCase() === p.toLowerCase()
                       ? 'border-white/40 ring-1 ring-white/20 ring-offset-1 ring-offset-neutral-950'
                       : 'border-white/10 hover:border-white/20'
@@ -549,16 +542,14 @@ export const ExpandableColorPicker: React.FC<{
           )}
           {recentColors && recentColors.length > 0 && (
             <div className="space-y-1">
-              <span className="text-3xs uppercase tracking-widest text-muted-foreground">
-                {t('common.recent')}
-              </span>
+              <span className="text-2xs text-muted-foreground">{t('common.recent')}</span>
               <div className="flex gap-1.5 flex-wrap">
                 {recentColors.slice(0, 12).map((c, i) => (
                   <button
                     key={`${c}-${i}`}
                     onClick={() => onChange(c)}
                     className={cn(
-                      'w-5 h-5 rounded-full border transition-all hover:scale-110',
+                      'w-5 h-5 rounded-full border transition-colors',
                       color.toLowerCase() === c.toLowerCase()
                         ? 'border-white/40 ring-1 ring-white/20'
                         : 'border-white/10 hover:border-white/20'
@@ -584,6 +575,7 @@ export const ToolPanelExportActions: React.FC<{
   onCopyAsPng?: () => void;
   children?: React.ReactNode;
 }> = ({ onExport, isExporting, disabled, sendTo, onCopyAsPng, children }) => {
+  const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -593,14 +585,13 @@ export const ToolPanelExportActions: React.FC<{
           <Button
             onClick={onExport}
             disabled={isExporting || disabled}
-            aria-label="Export"
             className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2"
           >
             <Download size={14} />
-            {isExporting ? 'Exporting...' : 'Export'}
+            {isExporting ? t('common.exporting') : t('common.export')}
           </Button>
           <Button
-            aria-label="More options"
+            aria-label={t('common.moreOptions')}
             onClick={() => setMenuOpen(!menuOpen)}
             disabled={disabled}
             variant="outline"
@@ -616,8 +607,8 @@ export const ToolPanelExportActions: React.FC<{
               onClick={onCopyAsPng}
               disabled={disabled}
               variant="outline"
-              aria-label="Copy as PNG"
-              title="Copy as PNG"
+              aria-label={t('common.copyAsPng')}
+              title={t('common.copyAsPng')}
               className="h-9 w-9 p-0 border-neutral-700 text-neutral-400 hover:text-white"
             >
               <Copy size={14} />

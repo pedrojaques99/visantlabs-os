@@ -12,6 +12,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { NodeButton } from './shared/node-button';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 
+import { Thumb } from '@/components/ui/Thumb';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const DirectorNode = memo(
   ({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -104,7 +106,7 @@ export const DirectorNode = memo(
       >
         {selected && !dragging && (
           <NodeResizer
-            color="brand-cyan"
+            color="var(--brand-cyan)"
             isVisible={selected}
             minWidth={280}
             minHeight={200}
@@ -118,14 +120,14 @@ export const DirectorNode = memo(
           type="target"
           position={Position.Left}
           id="image-input"
-          label={t('canvasNodes.directorNode.imageInput') || 'Image'}
+          label={t('canvasNodes.directorNode.imageInput')}
           handleType="image"
           style={{ top: '50%' }}
         />
 
         <NodeHeader
           icon={Compass}
-          title={t('canvasNodes.directorNode.title') || 'Director'}
+          title={t('canvasNodes.directorNode.title')}
           selected={selected}
         />
 
@@ -134,7 +136,7 @@ export const DirectorNode = memo(
           <div className="">
             {connectedImage ? (
               <div className="relative rounded-md overflow-hidden border-node border-neutral-700/50 bg-neutral-900/50 shadow-sm">
-                <img
+                <Thumb
                   src={
                     connectedImage.startsWith('data:')
                       ? connectedImage
@@ -143,7 +145,7 @@ export const DirectorNode = memo(
                         ? connectedImage
                         : `data:image/png;base64,${connectedImage}`
                   }
-                  alt="Connected"
+                  alt=""
                   className="w-full h-32 object-cover"
                 />
                 <div className="absolute top-2 right-2 bg-neutral-950/60 rounded-full p-1 border-node border-neutral-700/30 shadow-md">
@@ -154,7 +156,7 @@ export const DirectorNode = memo(
               <div className="w-full h-24 rounded-md border-node border-dashed border-neutral-700/50 bg-neutral-900/30 flex flex-col items-center justify-center gap-2 opacity-70">
                 <ImageIcon size={16} className="text-neutral-600" />
                 <span className="text-2xs font-medium text-neutral-500">
-                  {t('canvasNodes.directorNode.noImage') || 'No image'}
+                  {t('canvasNodes.directorNode.noImage')}
                 </span>
               </div>
             )}
@@ -162,13 +164,13 @@ export const DirectorNode = memo(
 
           {/* Active generations indicator */}
           {activeGenerations > 0 && (
-            <div className="p-2.5 rounded-md border-node border-neutral-800 bg-brand-cyan/5">
+            <div className="p-2.5 rounded-md border-node border-neutral-800 bg-neutral-900/50">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-2xs font-bold uppercase tracking-widest text-foreground">
+                <span className="text-2xs font-bold text-foreground">
                   {activeGenerations} {activeGenerations === 1 ? 'mockup' : 'mockups'}
                 </span>
                 <span className="text-2xs font-mono text-neutral-500">
-                  {t('canvasNodes.directorNode.generating') || 'generating'}
+                  {t('canvasNodes.directorNode.generating')}
                 </span>
               </div>
               <PremiumGlitchLoader color="var(--brand-cyan)" />
@@ -183,11 +185,11 @@ export const DirectorNode = memo(
               size="full"
               onClick={handleGenerateMockup}
               disabled={!connectedImage || isGeneratingPrompt}
-              className="shadow-sm backdrop-blur-sm nodrag"
+              className="shadow-sm nodrag"
               onMouseDown={(e) => e.stopPropagation()}
             >
               <Zap size={14} className="mr-2" />
-              <span>{t('canvasNodes.directorNode.generateMockup') || 'Generate Mockup'}</span>
+              <span>{t('canvasNodes.directorNode.generateMockup')}</span>
               {activeGenerations > 0 && (
                 <span className="ml-2 px-1.5 py-0.5 rounded-full bg-black/30 text-2xs tabular-nums">
                   +{activeGenerations}
@@ -201,11 +203,11 @@ export const DirectorNode = memo(
               size="full"
               onClick={handleOpenSidePanel}
               disabled={!connectedImage}
-              className="shadow-sm backdrop-blur-sm nodrag"
+              className="shadow-sm nodrag"
               onMouseDown={(e) => e.stopPropagation()}
             >
               <PanelRight size={14} className="mr-2" />
-              <span>{t('canvasNodes.directorNode.openDirector') || 'Open Director'}</span>
+              <span>{t('canvasNodes.directorNode.openDirector')}</span>
             </NodeButton>
 
             {/* Generate Prompt Button (only shown when analyzed and has selections) */}
@@ -215,18 +217,18 @@ export const DirectorNode = memo(
                 size="full"
                 onClick={handleGeneratePrompt}
                 disabled={!hasSelections || isGeneratingPrompt}
-                className="shadow-sm backdrop-blur-sm nodrag"
+                className="shadow-sm nodrag"
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 {isGeneratingPrompt ? (
                   <>
                     <GlitchLoader size={14} className="mr-2" color="currentColor" />
-                    <span>{t('canvasNodes.directorNode.generating') || 'Generating...'}</span>
+                    <span>{t('canvasNodes.directorNode.generating')}</span>
                   </>
                 ) : (
                   <>
                     <Dices size={14} className="mr-2" />
-                    <span>{t('canvasNodes.directorNode.generatePrompt') || 'Generate Prompt'}</span>
+                    <span>{t('canvasNodes.directorNode.generatePrompt')}</span>
                   </>
                 )}
               </NodeButton>

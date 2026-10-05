@@ -206,32 +206,32 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
     {
       id: 'hand' as CanvasTool,
       icon: Hand,
-      label: t('canvasBottomToolbar.hand') || 'Hand',
-      tooltip: t('canvasBottomToolbar.handTooltip') || 'Pan tool (S)',
+      label: t('canvasBottomToolbar.hand'),
+      tooltip: t('canvasBottomToolbar.handTooltip'),
     },
     {
       id: 'select' as CanvasTool,
       icon: MousePointer2,
-      label: t('canvasBottomToolbar.select') || 'Select',
-      tooltip: t('canvasBottomToolbar.selectTooltip') || 'Selection tool (V)',
+      label: t('canvasBottomToolbar.select'),
+      tooltip: t('canvasBottomToolbar.selectTooltip'),
     },
     {
       id: 'draw' as CanvasTool,
       icon: Pencil,
-      label: t('canvasBottomToolbar.draw') || 'Draw',
-      tooltip: t('canvasBottomToolbar.drawTooltip') || 'Drawing tool (D)',
+      label: t('canvasBottomToolbar.draw'),
+      tooltip: t('canvasBottomToolbar.drawTooltip'),
     },
     {
       id: 'color' as CanvasTool,
       icon: Palette,
-      label: t('canvasBottomToolbar.color') || 'Color',
-      tooltip: t('canvasBottomToolbar.colorTooltip') || 'Color picker',
+      label: t('canvasBottomToolbar.color'),
+      tooltip: t('canvasBottomToolbar.colorTooltip'),
     },
     {
       id: 'type' as CanvasTool,
       icon: Type,
-      label: t('canvasBottomToolbar.type') || 'Type',
-      tooltip: t('canvasBottomToolbar.typeTooltip') || 'Text tool (T)',
+      label: t('canvasBottomToolbar.type'),
+      tooltip: t('canvasBottomToolbar.typeTooltip'),
     },
   ];
 
@@ -548,8 +548,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
             active={!isToolbarCollapsed}
             tooltip={
               isToolbarCollapsed
-                ? t('canvasToolbar.expandToolbar') || 'Expand Toolbar'
-                : t('canvasToolbar.collapseToolbar') || 'Collapse Toolbar'
+                ? t('canvasToolbar.expandToolbar')
+                : t('canvasToolbar.collapseToolbar')
             }
             ariaLabel={isToolbarCollapsed ? 'Expand Toolbar' : 'Collapse Toolbar'}
             onClick={onToggleToolbar}

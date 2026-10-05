@@ -104,48 +104,36 @@ export const mockupApi = {
     return Array.isArray(data) ? data : [];
   },
 
+  // Sem try/catch de propósito: erro HTTP (com `.status`) e falha de rede
+  // (TypeError) sobem pro caller. Devolver [] aqui virava "nenhum mockup ainda"
+  // pra quem tem acervo (silent-empty) e o `isError` do React Query nunca ligava.
   async getAll(brandId?: string): Promise<Mockup[]> {
-    try {
-      const query = brandId ? `?brandId=${encodeURIComponent(brandId)}` : '';
-      const response = await fetch(`${API_BASE_URL}/mockups${query}`, {
-        headers: getAuthHeaders(),
-      });
+    const query = brandId ? `?brandId=${encodeURIComponent(brandId)}` : '';
+    const response = await fetch(`${API_BASE_URL}/mockups${query}`, {
+      headers: getAuthHeaders(),
+    });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = `Failed to fetch mockups: ${response.status} ${response.statusText}`;
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `Failed to fetch mockups: ${response.status} ${response.statusText}`;
 
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.error || errorData.message || errorMessage;
-        } catch {
-          // If response is not JSON, use the text or default message
-          if (errorText) {
-            errorMessage = errorText;
-          }
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.error || errorData.message || errorMessage;
+      } catch {
+        // If response is not JSON, use the text or default message
+        if (errorText) {
+          errorMessage = errorText;
         }
-
-        const error = new Error(errorMessage);
-        (error as any).status = response.status;
-        throw error;
       }
 
-      const data = await response.json();
-      return Array.isArray(data) ? data : [];
-    } catch (error: any) {
-      // ATENÇÃO: o teste NÃO pode ser por substring da mensagem. A mensagem
-      // padrão do ramo !response.ok começa com "Failed to fetch mockups:", então
-      // o antigo `includes('Failed to fetch')` engolia um 401/500 de corpo vazio
-      // e devolvia [] — a UI mostrava "nenhum mockup" numa falha real de servidor
-      // (silent-empty), e `isError` do React Query nunca ficava true.
-      // Erro HTTP tem `.status`; falha de rede do fetch, não.
-      if (error?.status === undefined && error?.name === 'TypeError') {
-        console.error('Network error fetching mockups:', error);
-        // Offline / DNS / conexão recusada → degrada em lista vazia.
-        return [];
-      }
+      const error = new Error(errorMessage);
+      (error as any).status = response.status;
       throw error;
     }
+
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
   },
 
   async getUploadUrl(

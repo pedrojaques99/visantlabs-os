@@ -2,6 +2,7 @@ import React from 'react';
 import { useImageEditorStore } from '@/stores/imageEditorStore';
 import { useExpandDrag } from '@/hooks/image-editor/useExpandDrag';
 import { IMAGE_EDITOR } from '@/constants/imageEditorTokens';
+import { ArrowRight } from '@/lib/ui/icons';
 
 interface Props {
   imageWidth: number;
@@ -97,7 +98,7 @@ export const ExpandHandles: React.FC<Props> = ({ imageWidth, imageHeight, zoom, 
       {/* Drag handles */}
       {/* Top */}
       <div
-        className="absolute z-20 opacity-60 hover:opacity-100 hover:scale-y-150 active:opacity-100 transition-all duration-150"
+        className="absolute z-20 opacity-60 hover:opacity-100 active:opacity-100 transition-[color,background-color,border-color,opacity] duration-150"
         style={{
           left: imgLeft + imgW * 0.25,
           top: imgTop - t - thickness / 2,
@@ -111,7 +112,7 @@ export const ExpandHandles: React.FC<Props> = ({ imageWidth, imageHeight, zoom, 
       />
       {/* Bottom */}
       <div
-        className="absolute z-20 opacity-60 hover:opacity-100 hover:scale-y-150 active:opacity-100 transition-all duration-150"
+        className="absolute z-20 opacity-60 hover:opacity-100 active:opacity-100 transition-[color,background-color,border-color,opacity] duration-150"
         style={{
           left: imgLeft + imgW * 0.25,
           top: imgTop + imgH + b - thickness / 2,
@@ -125,7 +126,7 @@ export const ExpandHandles: React.FC<Props> = ({ imageWidth, imageHeight, zoom, 
       />
       {/* Left */}
       <div
-        className="absolute z-20 opacity-60 hover:opacity-100 hover:scale-x-150 active:opacity-100 transition-all duration-150"
+        className="absolute z-20 opacity-60 hover:opacity-100 active:opacity-100 transition-[color,background-color,border-color,opacity] duration-150"
         style={{
           left: imgLeft - l - thickness / 2,
           top: imgTop + imgH * 0.25,
@@ -139,7 +140,7 @@ export const ExpandHandles: React.FC<Props> = ({ imageWidth, imageHeight, zoom, 
       />
       {/* Right */}
       <div
-        className="absolute z-20 opacity-60 hover:opacity-100 hover:scale-x-150 active:opacity-100 transition-all duration-150"
+        className="absolute z-20 opacity-60 hover:opacity-100 active:opacity-100 transition-[color,background-color,border-color,opacity] duration-150"
         style={{
           left: imgLeft + imgW + r - thickness / 2,
           top: imgTop + imgH * 0.25,
@@ -162,7 +163,7 @@ export const ExpandHandles: React.FC<Props> = ({ imageWidth, imageHeight, zoom, 
           }}
         >
           {imageWidth}×{imageHeight}
-          <span className="text-foreground">→</span>
+          <ArrowRight size={10} className="text-foreground" />
           {imageWidth + expandEdges.left + expandEdges.right}×
           {imageHeight + expandEdges.top + expandEdges.bottom}
         </div>

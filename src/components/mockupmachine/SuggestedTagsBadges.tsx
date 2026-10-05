@@ -1,5 +1,5 @@
 import React from 'react';
-import { Diamond } from '@/lib/ui/icons';
+import { Plus } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
 import { translateTag } from '@/utils/localeUtils';
@@ -36,14 +36,12 @@ export const SuggestedTagsBadges: React.FC<SuggestedTagsBadgesProps> = ({
           type="button"
           onClick={() => onSelect(tag)}
           className={cn(
-            'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-mono uppercase tracking-wide transition-[color,background-color,border-color,opacity] duration-200',
-            'border border-dashed cursor-pointer group',
-            theme === 'dark'
-              ? 'bg-brand-cyan/5 border-brand-cyan/30 text-brand-cyan/80 hover:bg-brand-cyan/15 hover:border-neutral-700'
-              : 'bg-brand-cyan/10 border-brand-cyan/40 text-foreground hover:bg-brand-cyan/20 hover:border-neutral-700'
+            'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs transition-colors duration-200',
+            'border border-dashed text-neutral-400 hover:text-foreground hover:bg-muted',
+            theme === 'dark' ? 'border-neutral-700' : 'border-neutral-300'
           )}
         >
-          <Diamond size={8} className="opacity-60 group-hover:opacity-100 transition-opacity" />
+          <Plus size={8} />
           <span>{translateTag(tag)}</span>
         </button>
       ))}

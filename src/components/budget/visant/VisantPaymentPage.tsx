@@ -1,8 +1,9 @@
 import React from 'react';
 import type { BudgetData, PaymentMethod } from '@/types/types';
 import { InlineEditor } from '../InlineEditor';
-import { CreditCard } from '@/lib/ui/icons';
+import { Coins, CreditCard } from '@/lib/ui/icons';
 
+import { DEFAULT_DOCUMENT_ACCENT } from './documentColors';
 interface VisantPaymentPageProps {
   data: BudgetData;
   editable?: boolean;
@@ -14,7 +15,7 @@ export const VisantPaymentPage: React.FC<VisantPaymentPageProps> = ({
   editable = false,
   onDataChange,
 }) => {
-  const accentColor = data.brandAccentColor || data.brandColors[0] || 'brand-cyan';
+  const accentColor = data.brandAccentColor || data.brandColors[0] || DEFAULT_DOCUMENT_ACCENT;
   const bgColor = '#fdfdfd';
   const textColor = '#000000';
   const secondaryTextColor = '#0d0d0d';
@@ -115,19 +116,7 @@ export const VisantPaymentPage: React.FC<VisantPaymentPageProps> = ({
             justifyContent: 'center',
           }}
         >
-          <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
-            <rect
-              x="2"
-              y="5"
-              width="20"
-              height="14"
-              rx="2"
-              stroke="currentColor"
-              strokeWidth="2"
-              fill="none"
-            />
-            <line x1="2" y1="10" x2="22" y2="10" stroke="currentColor" strokeWidth="2" />
-          </svg>
+          <CreditCard size={34} />
         </div>
       );
     }
@@ -144,12 +133,7 @@ export const VisantPaymentPage: React.FC<VisantPaymentPageProps> = ({
             justifyContent: 'center',
           }}
         >
-          <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="12" cy="12" r="10" />
-            <text x="12" y="16" textAnchor="middle" fontSize="12" fill="white" fontWeight="bold">
-              ₿
-            </text>
-          </svg>
+          <Coins size={34} />
         </div>
       );
     }

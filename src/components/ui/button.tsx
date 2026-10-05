@@ -30,7 +30,7 @@ const buttonVariants = cva(
         // ── Surface actions ──────────────────────────────────────────────────
         // Bordered muted button — toolbars, page headers, inline forms
         // Usage: px-4 py-2, border, muted text, subtle bg hover
-        surface: `${glassSurface.control} text-neutral-300 font-mono rounded-md`,
+        surface: `${glassSurface.control} text-foreground rounded-md`,
         // Toolbar compact — uppercase tracking, neutral accent on hover
         // Usage: canvas headers, guideline export bars
         toolbar:
@@ -43,10 +43,10 @@ const buttonVariants = cva(
         // Usage: trash icons, remove buttons
         danger: 'p-1.5 rounded-md text-neutral-500 hover:bg-destructive/10 hover:text-destructive',
         // ── Menu / dropdown ──────────────────────────────────────────────────
-        // Full-width monospace dropdown item
+        // Full-width dropdown item
         // Usage: auth dropdowns, footer policy links, language selector
         menuItem:
-          'w-full justify-start px-3 py-2 rounded-md text-2xs font-mono text-neutral-400 hover:text-white hover:bg-neutral-900/50',
+          'w-full justify-start px-3 py-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-accent',
         // ── Subtle surface ─────────────────────────────────────────────────
         // Low-contrast action — header bars, inline triggers, non-primary CTAs
         subtle: 'bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200',

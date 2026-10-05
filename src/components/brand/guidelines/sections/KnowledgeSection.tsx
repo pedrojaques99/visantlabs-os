@@ -229,14 +229,10 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
               <Upload size={18} className="text-neutral-500" />
             </div>
             <div className="text-center">
-              <p className="text-xs text-neutral-300 font-medium">
-                Arraste arquivos ou clique para enviar
-              </p>
-              <p className="text-2xs text-neutral-500 font-mono mt-1">PDF, PNG, JPG, WEBP</p>
+              <p className="text-xs text-foreground font-medium">PDF, PNG, JPG, WEBP</p>
             </div>
-            <p className="text-2xs text-neutral-600 max-w-[220px] text-center leading-relaxed">
-              Arquivos alimentam o motor de geração IA da marca — quanto mais contexto, melhor o
-              output.
+            <p className="text-2xs text-muted-foreground max-w-[220px] text-center leading-relaxed">
+              Arquivos alimentam a geração com IA da marca. Mais contexto, output mais no ponto.
             </p>
           </button>
         ) : (
@@ -262,6 +258,7 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
                       >
                         {sourceIcon(file.source, 13)}
                       </div>
+                      {/* EXCEÇÃO ao ruido-scan/mono-uppercase: tipo de arquivo (PDF/IMAGE) é valor técnico. */}
                       <span
                         className={`text-2xs font-mono uppercase px-1.5 py-0.5 rounded ${colors.bg} ${colors.text} ${colors.border} border`}
                       >

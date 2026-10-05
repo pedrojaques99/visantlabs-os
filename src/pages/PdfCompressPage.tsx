@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { FileDown, Upload, X } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -16,29 +16,20 @@ import { formatBytes } from '@/utils/formatUtils';
 import { pdfApi, type CompressPreset } from '@/services/pdfApi';
 import JSZip from 'jszip';
 import { useTranslation } from '@/hooks/useTranslation';
+import { glassSurface } from '@/lib/ui/glass';
+import { fade, transitions } from '@/lib/ui/motion';
 
-const ease = [0.4, 0, 0.2, 1] as const;
-const fadeUp = {
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8 },
-  transition: { duration: 0.35, ease },
-};
 const fadeScale = {
   initial: { opacity: 0, scale: 0.96 },
   animate: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 0.96 },
-  transition: { duration: 0.3, ease },
+  transition: transitions.base,
 };
 
-const PRESET_OPTIONS: { value: CompressPreset; label: string; desc: string }[] = [
-  { value: 'screen', label: 'Web', desc: '72dpi — smallest file' },
-  { value: 'ebook', label: 'Ebook', desc: '150dpi — balanced' },
-  { value: 'printer', label: 'Print', desc: '300dpi — high quality' },
-  { value: 'prepress', label: 'Prepress', desc: '300dpi — color preserving' },
-];
+/** Labelled by `miniTools.pdf.preset.<value>` / `miniTools.pdf.presetDesc.<value>`. */
+const PRESET_OPTIONS: CompressPreset[] = ['screen', 'ebook', 'printer', 'prepress'];
 
-function fileToBase64(file: File): Promise<string> {
+function fileToBase64(file: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -59,9 +50,10 @@ async function processItem(
   try {
     let base64: string;
     if (item.sourceUrl.startsWith('blob:')) {
+      // FileReader, not String.fromCharCode(...bytes): spreading a multi-MB
+      // array as arguments overflows the call stack.
       const resp = await fetch(item.sourceUrl);
-      const buf = await resp.arrayBuffer();
-      base64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+      base64 = await fileToBase64(await resp.blob());
     } else {
       base64 = item.sourceUrl.replace(/^data:application\/pdf;base64,/, '');
     }
@@ -81,7 +73,6 @@ async function processItem(
 
 export const PdfCompressPage: React.FC = () => {
   const { t } = useTranslation();
-  const inputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [convertProgress, setConvertProgress] = useState(0);
 
@@ -119,18 +110,18 @@ export const PdfCompressPage: React.FC = () => {
       const valid: { url: string; name: string; size: number }[] = [];
       Array.from(fileList).forEach((file) => {
         if (file.type !== 'application/pdf') {
-          toast.error(`${file.name}: Only PDF files accepted`);
+          toast.error(t('miniTools.pdf.onlyPdf', { name: file.name }));
           return;
         }
         if (file.size > 50 * 1024 * 1024) {
-          toast.error(`${file.name}: Max 50MB`);
+          toast.error(t('miniTools.pdf.tooLarge', { name: file.name }));
           return;
         }
         valid.push({ url: URL.createObjectURL(file), name: file.name, size: file.size });
       });
       if (valid.length) addFiles(valid);
     },
-    [addFiles]
+    [addFiles, t]
   );
 
   const handleInputChange = useCallback(
@@ -160,7 +151,7 @@ export const PdfCompressPage: React.FC = () => {
     if (isProcessing) return;
     const toProcess = items.filter((i) => i.status === 'queued' || i.status === 'error');
     if (!toProcess.length) {
-      toast.info('Nothing to process');
+      toast.info(t('miniTools.nothingToProcess'));
       return;
     }
 
@@ -173,8 +164,8 @@ export const PdfCompressPage: React.FC = () => {
       setConvertProgress(Math.round((done / toProcess.length) * 100));
     }
     setIsProcessing(false);
-    toast.success(`${done} PDF${done > 1 ? 's' : ''} compressed`);
-  }, [items, preset, isProcessing, updateItem, setIsProcessing]);
+    toast.success(t('miniTools.pdf.done', { count: done }));
+  }, [items, preset, isProcessing, updateItem, setIsProcessing, t]);
 
   const handleDownloadAll = useCallback(async () => {
     const doneItems = items.filter((i) => i.status === 'done' && i.resultBase64);
@@ -196,8 +187,8 @@ export const PdfCompressPage: React.FC = () => {
     }
     const blob = await zip.generateAsync({ type: 'blob' });
     downloadBlob(blob, `pdf-compress-batch-${Date.now()}.zip`);
-    toast.success('ZIP downloaded');
-  }, [items]);
+    toast.success(t('miniTools.zipDownloaded'));
+  }, [items, t]);
 
   const hasItems = items.length > 0;
   const queuedOrErrorCount = items.filter(
@@ -209,34 +200,37 @@ export const PdfCompressPage: React.FC = () => {
     <div className="space-y-5">
       {/* Preset selector */}
       <div className="space-y-1.5">
-        <span className="text-xs font-medium text-neutral-500">Preset</span>
+        <span className="text-xs font-medium text-muted-foreground">
+          {t('miniTools.pdf.presetLabel')}
+        </span>
         <div className="flex gap-1 flex-wrap">
-          {PRESET_OPTIONS.map((opt) => (
+          {PRESET_OPTIONS.map((value) => (
             <button
-              key={opt.value}
-              onClick={() => setPreset(opt.value)}
+              key={value}
+              type="button"
+              onClick={() => setPreset(value)}
               className={cn(
-                'px-3 py-1.5 rounded text-xs font-medium transition-colors',
-                preset === opt.value
-                  ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30'
-                  : 'text-neutral-500 hover:text-neutral-300 border border-transparent'
+                'px-3 py-1.5 rounded border text-xs font-medium transition-colors',
+                preset === value
+                  ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
+                  : 'text-muted-foreground hover:text-foreground border-transparent'
               )}
-              title={opt.desc}
+              title={t(`miniTools.pdf.presetDesc.${value}`)}
             >
-              {opt.label}
+              {t(`miniTools.pdf.preset.${value}`)}
             </button>
           ))}
         </div>
+        <p className="text-xs text-muted-foreground">{t(`miniTools.pdf.presetDesc.${preset}`)}</p>
       </div>
 
-      <div className="h-px bg-neutral-800" />
+      <div className="h-px bg-border" />
 
       {/* Add more */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-xs font-medium cursor-pointer transition-colors duration-200">
+      <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
         <Upload size={12} />
-        Add more PDFs
+        {t('miniTools.pdf.addPdfs')}
         <input
-          ref={inputRef}
           type="file"
           accept="application/pdf"
           multiple
@@ -245,7 +239,7 @@ export const PdfCompressPage: React.FC = () => {
         />
       </label>
 
-      <div className="h-px bg-neutral-800" />
+      <div className="h-px bg-border" />
 
       {/* Actions */}
       <div className="space-y-2">
@@ -266,7 +260,9 @@ export const PdfCompressPage: React.FC = () => {
                   <>
                     <FileDown size={14} />
                     <span className="ml-2">
-                      Compress{queuedOrErrorCount > 1 ? ` (${queuedOrErrorCount})` : ' All'}
+                      {queuedOrErrorCount > 1
+                        ? t('miniTools.pdf.runCount', { count: queuedOrErrorCount })
+                        : t('miniTools.compress.run')}
                     </span>
                   </>
                 )}
@@ -280,11 +276,11 @@ export const PdfCompressPage: React.FC = () => {
               <QuickActions
                 toolId="pdf-compress"
                 outputMime="application/pdf"
-                summary={`${doneCount} PDF${
-                  doneCount > 1 ? 's' : ''
-                } compressed — saved ${formatBytes(
-                  totalOriginal - totalCompressed
-                )} (${totalSavings}%)`}
+                summary={t('miniTools.pdf.summary', {
+                  count: doneCount,
+                  saved: formatBytes(totalOriginal - totalCompressed),
+                  percent: totalSavings,
+                })}
                 onDownloadAll={handleDownloadAll}
               />
             </motion.div>
@@ -296,14 +292,14 @@ export const PdfCompressPage: React.FC = () => {
 
   /* ── Status bar ─────────────────────────────────────────── */
   const statusBarContent = hasItems ? (
-    <div className="flex items-center gap-3 text-2xs font-mono uppercase tracking-widest tabular-nums">
-      <span className="text-neutral-400">
+    <div className="flex items-center gap-3 text-2xs tabular-nums text-muted-foreground">
+      <span>
         {doneCount}/{items.length}
       </span>
       {doneCount > 0 && totalSavings > 0 && (
         <>
-          <span className="text-neutral-700">·</span>
-          <span className="text-success">-{totalSavings}% saved</span>
+          <span>·</span>
+          <span className="text-success">{t('miniTools.smaller', { percent: totalSavings })}</span>
         </>
       )}
     </div>
@@ -317,7 +313,7 @@ export const PdfCompressPage: React.FC = () => {
       documentTitle={t('apps.pdfCompress.name')}
       onReset={hasItems ? reset : undefined}
       panel={panelContent}
-      panelLabel="Settings & actions"
+      panelLabel={t('miniTools.settings')}
       statusBar={statusBarContent}
       centerContent={!hasItems}
       dragDrop={{
@@ -330,63 +326,52 @@ export const PdfCompressPage: React.FC = () => {
       <AnimatePresence mode="wait">
         {!hasItems ? (
           /* ── Empty state (centered drop zone) ─────────── */
-          <motion.div key="empty" {...fadeUp} className="flex flex-col items-center gap-6 py-16">
-            <motion.div
-              className={cn(
-                'w-full max-w-md border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors',
-                isDragOver
-                  ? 'border-brand-cyan bg-brand-cyan/5'
-                  : 'border-neutral-800 hover:border-neutral-600'
-              )}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-              onClick={() => inputRef.current?.click()}
-            >
-              <Upload className="mx-auto mb-4 text-neutral-500" size={32} />
-              <p className="text-sm text-neutral-400">
-                Drop PDFs here or <span className="text-neutral-300">browse</span>
-              </p>
-              <p className="text-2xs text-neutral-600 mt-2 font-mono tracking-wider">
-                PDF · Max 50MB per file
-              </p>
-            </motion.div>
-            <input
-              ref={inputRef}
-              type="file"
-              accept="application/pdf"
-              multiple
-              onChange={handleInputChange}
-              className="hidden"
-            />
+          <motion.div key="empty" {...fade} className="flex w-full justify-center py-8">
+            <label className="flex h-48 w-full max-w-md cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border px-4 text-center text-sm text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
+              <Upload size={20} />
+              {t('miniTools.pdf.drop')}
+              <span className="text-xs">{t('miniTools.pdf.limit')}</span>
+              <input
+                type="file"
+                accept="application/pdf"
+                multiple
+                onChange={handleInputChange}
+                className="hidden"
+              />
+            </label>
           </motion.div>
         ) : (
           /* ── Working state (file list, left-aligned) ───── */
           <div className="max-w-2xl mx-auto w-full py-8 px-4">
-            <motion.div key="workspace" {...fadeUp} className="space-y-2">
+            <motion.div key="workspace" {...fade} className="space-y-2">
               {items.map((item) => (
                 <motion.div
                   key={item.id}
                   layout
-                  {...fadeScale}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg bg-neutral-900/60 border border-white/10"
+                  {...fade}
+                  className={cn(
+                    'flex items-center gap-3 px-3 py-2 rounded-lg',
+                    glassSurface.surface
+                  )}
                 >
-                  <FileDown size={14} className="text-destructive shrink-0" />
-                  <span className="text-xs text-neutral-300 truncate flex-1 font-mono">
+                  <FileDown size={14} className="text-muted-foreground shrink-0" />
+                  <span className="text-xs text-foreground truncate flex-1 font-mono">
                     {item.fileName}
                   </span>
                   {item.originalSize > 0 && (
-                    <span className="text-2xs text-neutral-600 font-mono">
+                    <span className="text-2xs text-muted-foreground font-mono tabular-nums">
                       {formatBytes(item.originalSize)}
                     </span>
                   )}
                   <StatusBadge status={item.status} />
-                  {item.status === 'done' && item.compressedSize > 0 && (
-                    <span className="text-2xs font-mono text-success">
+                  {item.status === 'done' && item.compressedSize > 0 && item.originalSize > 0 && (
+                    <span className="text-2xs font-mono tabular-nums text-success">
                       -{Math.round((1 - item.compressedSize / item.originalSize) * 100)}%
                     </span>
                   )}
                   {item.status === 'done' && item.resultBase64 && (
                     <button
+                      type="button"
                       onClick={() => {
                         const buf = Uint8Array.from(atob(item.resultBase64), (c) =>
                           c.charCodeAt(0)
@@ -395,15 +380,18 @@ export const PdfCompressPage: React.FC = () => {
                         const ext = item.fileName.replace(/\.pdf$/i, '');
                         downloadBlob(blob, `${ext}-compressed.pdf`);
                       }}
-                      className="text-neutral-600 hover:text-brand-cyan transition-colors"
-                      title="Download"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      title={t('common.download')}
+                      aria-label={t('common.download')}
                     >
                       <FileDown size={12} />
                     </button>
                   )}
                   <button
+                    type="button"
                     onClick={() => removeItem(item.id)}
-                    className="text-neutral-600 hover:text-neutral-300 transition-colors"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={t('miniTools.remove')}
                   >
                     <X size={12} />
                   </button>
@@ -414,16 +402,14 @@ export const PdfCompressPage: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Processing overlay — keeps full-screen as before */}
+      {/* Processing overlay — blocks the page while the server compresses */}
       <AnimatePresence>
         {isProcessing && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            {...fade}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-background/80"
           >
-            <FlyingPaperLoader />
+            <FlyingPaperLoader progress={convertProgress} />
           </motion.div>
         )}
       </AnimatePresence>

@@ -57,7 +57,7 @@ export const PbrMapUpload: React.FC<{
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <span className="text-3xs text-neutral-500 uppercase tracking-widest">{label}</span>
+        <span className="text-3xs text-neutral-500">{label}</span>
         {value && (
           <button
             onClick={() => onChange('')}
@@ -69,7 +69,7 @@ export const PbrMapUpload: React.FC<{
       </div>
       <button
         onClick={() => inputRef.current?.click()}
-        className="w-full px-2 py-1.5 rounded text-2xs uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
+        className="w-full px-2 py-1.5 rounded text-2xs bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
       >
         {value ? 'Map loaded' : `Upload ${label}`}
       </button>
@@ -96,7 +96,7 @@ export const LightPositionSliders: React.FC<{
   onChange: (p: [number, number, number]) => void;
 }> = ({ label, position, onChange }) => (
   <div className="space-y-1 pl-2 border-l border-white/5">
-    <span className="text-3xs text-neutral-500 uppercase tracking-widest">{label}</span>
+    <span className="text-3xs text-neutral-500">{label}</span>
     <div className="grid grid-cols-3 gap-1">
       {(['X', 'Y', 'Z'] as const).map((axis, i) => (
         <div key={axis} className="flex flex-col items-center gap-0.5">
@@ -158,7 +158,7 @@ export const MaterialCategoryTabs: React.FC<{
                   )}
                   style={{ backgroundColor: m.color || '#666' }}
                 />
-                <span className="text-3xs uppercase tracking-wider leading-tight text-center truncate w-full">
+                <span className="text-3xs leading-tight text-center truncate w-full">
                   {m.label}
                 </span>
               </span>
@@ -339,7 +339,7 @@ export const TextureControls: React.FC<{
         </ToolPanelGrid>
         <button
           onClick={() => textureInputRef.current?.click()}
-          className="w-full px-2 py-1.5 rounded text-2xs uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
+          className="w-full px-2 py-1.5 rounded text-2xs bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
         >
           {t('studio3d.texture.upload')}
         </button>
@@ -361,7 +361,7 @@ export const TextureControls: React.FC<{
                 max={1}
                 step={0.01}
                 onChange={setTextureOpacity}
-                hint="Texture opacity — double-click to type a value"
+                hint="Texture opacity"
               />
               <ScrubInput
                 label={t('studio3d.texture.repeat')}
@@ -370,7 +370,7 @@ export const TextureControls: React.FC<{
                 max={10}
                 step={0.5}
                 onChange={store.setTextureRepeat}
-                hint="Texture tiling repeat — double-click to type a value"
+                hint="Tiling repeat"
               />
               <ScrubInput
                 label="Rotation"
@@ -379,7 +379,7 @@ export const TextureControls: React.FC<{
                 max={6.28}
                 step={0.1}
                 onChange={setTextureRotation}
-                hint="Texture rotation (radians) — double-click to type a value"
+                hint="Rotation in radians"
               />
             </div>
             {activeProc && (
@@ -387,7 +387,7 @@ export const TextureControls: React.FC<{
                 onClick={() =>
                   applyProcedural(PROCEDURAL_TEXTURES.find((p) => p.id === activeProc)!)
                 }
-                className="w-full py-1 rounded text-2xs uppercase tracking-wider text-neutral-500 hover:text-neutral-300 transition-colors"
+                className="w-full py-1 rounded text-2xs text-neutral-500 hover:text-neutral-300 transition-colors"
               >
                 {t('studio3d.texture.regenerate')}
               </button>
@@ -397,7 +397,7 @@ export const TextureControls: React.FC<{
                 store.setTexture('');
                 setActiveProc(null);
               }}
-              className="w-full py-1 rounded text-2xs uppercase tracking-wider text-neutral-600 hover:text-destructive transition-colors"
+              className="w-full py-1 rounded text-2xs text-neutral-600 hover:text-destructive transition-colors"
             >
               {t('studio3d.texture.remove')}
             </button>

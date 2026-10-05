@@ -4,6 +4,7 @@ import { X, ChevronDown, ChevronUp, Users, LucideIcon } from '@/lib/ui/icons';
 import { getCommunityPresetsByType } from '@/services/communityPresetsService';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface PresetItem {
   id: string;
@@ -40,6 +41,7 @@ export function GenericPresetModal<T extends string>({
   communityPresetType,
   fallbackIcon: FallbackIcon,
 }: GenericPresetModalProps<T>) {
+  const { t } = useTranslation();
   const [communityPresets, setCommunityPresets] = React.useState<any[]>([]);
   const [isLoadingCommunityPresets, setIsLoadingCommunityPresets] = React.useState(false);
   const [expandedPrompts, setExpandedPrompts] = React.useState<Set<string>>(new Set());
@@ -146,8 +148,8 @@ export function GenericPresetModal<T extends string>({
           )}
           {/* Community Badge */}
           {isCommunity && (
-            <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-neutral-800/70 border border-neutral-700/50 rounded text-2xs font-mono text-neutral-300">
-              Community
+            <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-neutral-800/70 border border-neutral-700/50 rounded text-2xs text-neutral-300">
+              {t('common.community')}
             </div>
           )}
         </Button>
@@ -157,7 +159,7 @@ export function GenericPresetModal<T extends string>({
           {/* Name */}
           <div
             className={cn(
-              'text-sm font-mono font-semibold mb-2 line-clamp-2 leading-tight',
+              'text-sm font-semibold mb-2 line-clamp-2 leading-tight',
               isSelected ? 'text-brand-cyan' : 'text-neutral-200'
             )}
           >
@@ -166,9 +168,7 @@ export function GenericPresetModal<T extends string>({
 
           {/* Description */}
           {preset.description && (
-            <div className="text-2xs text-neutral-500 font-mono mb-2 line-clamp-2">
-              {preset.description}
-            </div>
+            <div className="text-2xs text-neutral-500 mb-2 line-clamp-2">{preset.description}</div>
           )}
 
           {/* Collapsible Prompt */}
@@ -180,7 +180,7 @@ export function GenericPresetModal<T extends string>({
                 className="flex items-center gap-1 text-xs text-neutral-400 hover:text-neutral-300 transition-colors mb-1"
                 aria-expanded={isPromptExpanded}
               >
-                <span className="text-2xs uppercase tracking-wider">Prompt</span>
+                <span className="text-2xs">{t('common.prompt')}</span>
                 {isPromptExpanded ? (
                   <ChevronUp size={12} className="flex-shrink-0" />
                 ) : (
@@ -229,7 +229,7 @@ export function GenericPresetModal<T extends string>({
             variant="ghost"
             onClick={onClose}
             className="p-2 text-neutral-500 hover:text-white transition-colors"
-            title="Close (Esc)"
+            title={t('common.closeEsc')}
           >
             <X size={20} />
           </Button>
@@ -247,7 +247,7 @@ export function GenericPresetModal<T extends string>({
                 : 'text-neutral-400 border-transparent hover:text-neutral-300 hover:border-neutral-600/50'
             )}
           >
-            Official ({officialPresets.length})
+            {t('common.official')} ({officialPresets.length})
           </Button>
           <Button
             variant="ghost"
@@ -260,7 +260,7 @@ export function GenericPresetModal<T extends string>({
             )}
           >
             <Users size={12} />
-            Community ({communityPresets.length})
+            {t('common.community')} ({communityPresets.length})
           </Button>
         </div>
 
@@ -269,14 +269,13 @@ export function GenericPresetModal<T extends string>({
           {/* Official Presets Tab */}
           <div
             className={cn(
-              'transition-all duration-300 ease-in-out',
+              'transition-[opacity,transform] duration-300 ease-in-out',
               activeTab === 'official'
                 ? 'opacity-100 translate-y-0'
                 : 'opacity-0 translate-y-2 absolute inset-0 pointer-events-none'
             )}
           >
             <div>
-              <h3 className="text-xs font-mono text-neutral-400 uppercase mb-4">{title}s</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {officialPresets.map((preset) => renderPresetCard(preset, false))}
               </div>
@@ -286,26 +285,20 @@ export function GenericPresetModal<T extends string>({
           {/* Community Presets Tab */}
           <div
             className={cn(
-              'transition-all duration-300 ease-in-out',
+              'transition-[opacity,transform] duration-300 ease-in-out',
               activeTab === 'community'
                 ? 'opacity-100 translate-y-0'
                 : 'opacity-0 translate-y-2 absolute inset-0 pointer-events-none'
             )}
           >
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Users size={14} className="text-neutral-400" />
-                <h3 className="text-xs font-semibold text-neutral-300 tracking-tight">
-                  Community Presets
-                </h3>
-              </div>
               {isLoadingCommunityPresets ? (
                 <div className="flex items-center justify-center py-12">
-                  <p className="text-sm font-mono text-neutral-400">Loading community presets...</p>
+                  <p className="text-sm text-neutral-400">{t('common.loading')}</p>
                 </div>
               ) : communityPresets.length === 0 ? (
                 <div className="flex items-center justify-center py-12">
-                  <p className="text-sm font-mono text-neutral-400">Nenhum preset encontrado</p>
+                  <p className="text-sm text-neutral-400">{t('communityPresets.noPresets')}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">

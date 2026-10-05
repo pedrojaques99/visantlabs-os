@@ -24,6 +24,7 @@ import { useIsMobile } from '@/hooks/use-media-query';
 import { useInAppShell } from '@/components/shell/InAppShellContext';
 import { BrandFunnelBanner } from '@/components/funnel/BrandFunnelBanner';
 import { glassSurface } from '@/lib/ui/glass';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export interface MiniAppShellDragDrop {
   onDrop: (e: React.DragEvent) => void;
@@ -95,6 +96,7 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
   children,
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
   // Dentro do app shell o header (AppSpine, com brand-select) já existe no topo —
   // o header próprio do mini-app empilharia dois. Só mostramos back+título quando
@@ -129,31 +131,31 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
         left={
           inShell ? null : (
             <>
-              <Tooltip content="Back to apps">
+              <Tooltip content={t('common.backToApps')}>
                 <Button
                   variant="ghost"
                   size="icon"
-                  aria-label="Back to apps"
-                  className="h-7 w-7 text-neutral-500"
+                  aria-label={t('common.backToApps')}
+                  className="h-7 w-7 text-muted-foreground"
                   onClick={() => navigate(backTo)}
                 >
                   <ChevronLeft size={16} />
                 </Button>
               </Tooltip>
               {Icon && <Icon size={14} className="text-muted-foreground ml-0.5" />}
-              <MicroTitle className="text-2xs text-neutral-500 ml-1.5">{title}</MicroTitle>
+              <MicroTitle className="text-xs text-muted-foreground ml-1.5">{title}</MicroTitle>
             </>
           )
         }
         right={
           <>
             {onReset && (
-              <Tooltip content="Reset (R)">
+              <Tooltip content={t('common.resetShortcut')}>
                 <Button
                   variant="ghost"
                   size="icon"
-                  aria-label="Reset"
-                  className="h-7 w-7 text-neutral-500"
+                  aria-label={t('common.reset')}
+                  className="h-7 w-7 text-muted-foreground"
                   onClick={onReset}
                 >
                   <RotateCcw size={14} />
@@ -161,12 +163,16 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
               </Tooltip>
             )}
             {hasPanel && !isMobile && (
-              <Tooltip content={panelVisible ? 'Hide panel (Tab)' : 'Show panel (Tab)'}>
+              <Tooltip
+                content={
+                  panelVisible ? t('common.hidePanelShortcut') : t('common.showPanelShortcut')
+                }
+              >
                 <Button
                   variant="ghost"
                   size="icon"
-                  aria-label={panelVisible ? 'Hide panel' : 'Show panel'}
-                  className="h-7 w-7 text-neutral-500"
+                  aria-label={panelVisible ? t('common.hidePanel') : t('common.showPanel')}
+                  className="h-7 w-7 text-muted-foreground"
                   onClick={() => setPanelVisible((v) => !v)}
                 >
                   {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}

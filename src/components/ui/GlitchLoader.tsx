@@ -13,7 +13,7 @@ interface GlitchLoaderProps {
 export function GlitchLoader({
   size = 10,
   className = '',
-  color = '#7E7E7EFF',
+  color = 'currentColor',
 }: GlitchLoaderProps) {
   const [glitchText, setGlitchText] = useState('');
 
@@ -33,7 +33,7 @@ export function GlitchLoader({
   const sizeStyle = typeof size === 'number' ? { fontSize: `${size}px` } : { fontSize: size };
 
   return (
-    <span className={`inline-block font-mono ${className}`} style={{ ...sizeStyle, color }}>
+    <span className={`inline-block ${className}`} style={{ ...sizeStyle, color }}>
       {glitchText}
     </span>
   );

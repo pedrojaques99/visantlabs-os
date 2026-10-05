@@ -19,7 +19,7 @@ export const GlobalCommandPalette: React.FC = () => {
   const fallback = FEATURE_COPILOT
     ? (query: string) => ({
         id: 'copilot-fallback',
-        label: t('command.askCopilot', { query }) || `Perguntar ao Copilot: "${query}"`,
+        label: t('command.askCopilot', { query }),
         category: '',
         icon: <Zap className="h-4 w-4" />,
         onClick: () => navigate(`/copilot?prompt=${encodeURIComponent(query)}`),
@@ -27,10 +27,6 @@ export const GlobalCommandPalette: React.FC = () => {
     : undefined;
 
   return (
-    <CommandPalette
-      items={items}
-      fallback={fallback}
-      placeholder={t('command.placeholder') || 'Buscar apps, marcas, ações…'}
-    />
+    <CommandPalette items={items} fallback={fallback} placeholder={t('command.placeholder')} />
   );
 };

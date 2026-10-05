@@ -152,7 +152,7 @@ export const GridMachinePage: React.FC = () => {
   return (
     <ToolEditorShell
       title="GRID MACHINE"
-      documentTitle="Grid Machine — Visant"
+      documentTitle="Grid Machine"
       panelVisible={panelVisible && !!svgContent}
       setPanelVisible={setPanelVisible}
       onReset={clear}

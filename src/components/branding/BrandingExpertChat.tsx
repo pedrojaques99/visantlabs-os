@@ -326,7 +326,7 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
             {/* Sidebar */}
             <div
               className={cn(
-                'flex flex-col bg-neutral-950/80 border-r border-white/5 transition-all duration-200 ease-in-out',
+                'flex flex-col bg-neutral-950/80 border-r border-white/5 transition-[width] duration-200 ease-in-out',
                 mode === 'modal' ? 'rounded-l-2xl md:rounded-l-2xl' : 'rounded-none',
                 sidebarOpen ? 'w-48' : 'w-0 overflow-hidden'
               )}
@@ -497,9 +497,11 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
                         <span className="text-xs text-neutral-500">
                           {toolsBeingUsed.length > 0
                             ? toolsBeingUsed.includes('web_search')
-                              ? '🔍 Pesquisando na web...'
-                              : `Usando ferramentas: ${toolsBeingUsed.join(', ')}...`
-                            : 'O Especialista está pensando...'}
+                              ? t('branding.expert.searchingWeb')
+                              : t('branding.expert.usingTools', {
+                                  tools: toolsBeingUsed.join(', '),
+                                })
+                            : t('branding.expert.thinking')}
                         </span>
                       </div>
                     </div>

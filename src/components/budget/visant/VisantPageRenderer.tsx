@@ -3,6 +3,7 @@ import type { BudgetData } from '@/types/types';
 import type { VisantLayout, VisantElement } from '@/types/visant';
 import { InlineEditor } from '../InlineEditor';
 
+import { DEFAULT_DOCUMENT_ACCENT } from './documentColors';
 interface VisantPageRendererProps {
   data: BudgetData;
   layout: VisantLayout;
@@ -22,7 +23,7 @@ const getVariableValue = (data: BudgetData, variable?: string): string => {
     projectName: data.projectName,
     clientName: data.clientName,
     projectDescription: data.projectDescription,
-    accentColor: data.brandAccentColor || data.brandColors[0] || 'brand-cyan',
+    accentColor: data.brandAccentColor || data.brandColors[0] || DEFAULT_DOCUMENT_ACCENT,
     bgColor: data.brandBackgroundColor || '#151515',
     textColor:
       data.brandBackgroundColor !== '#ffffff' &&

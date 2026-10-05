@@ -10,25 +10,21 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { SEO } from '@/components/SEO';
 import { AuthModal } from '@/components/AuthModal';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetTrigger, SheetContent, SheetTitle } from '@/components/ui/sheet';
-import { GuidelinesSidebar } from '@/components/brand/guidelines/GuidelinesSidebar';
 import { PublicBrandGuideline } from '@/pages/PublicBrandGuideline';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip } from '@/components/ui/Tooltip';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { Input } from '@/components/ui/input';
+import { Thumb } from '@/components/ui/Thumb';
 import { getProxiedUrl } from '@/utils/proxyUtils';
-import { computeBrandCompleteness, completenessStatus } from '@/lib/brandCompleteness';
+import { computeBrandCompleteness } from '@/lib/brandCompleteness';
 import {
   Layers,
-  AlignLeft,
   Plus,
   Search,
   Globe,
   Folder,
   ArrowUpDown,
-  FileText,
-  Figma,
   Archive,
   ArchiveRestore,
   MoreVertical,
@@ -37,7 +33,7 @@ import {
   Pencil,
 } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 import type { BrandGuideline } from '@/lib/figma-types';
 import {
   DropdownMenu,
@@ -54,14 +50,8 @@ import { glassSurface } from '@/lib/ui/glass';
 const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
   const { t } = useTranslation();
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="w-full min-h-[70vh] flex flex-col items-center justify-center text-center gap-6 px-6"
-    >
-      <div className="p-4 rounded-2xl bg-muted/40 border border-border">
-        <Layers size={26} strokeWidth={1.2} className="text-muted-foreground" />
-      </div>
+    <div className="w-full min-h-[70vh] flex flex-col items-center justify-center text-center gap-6 px-6">
+      <Layers size={26} strokeWidth={1.2} className="text-muted-foreground" />
       <div className="space-y-2 max-w-sm">
         <h2 className="text-xl font-semibold text-foreground tracking-tight">
           {t('brandGuidelines.emptyState')}
@@ -74,19 +64,7 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
         <Plus size={15} />
         {t('brandGuidelines.createFirst')}
       </Button>
-      {/* Tell first-timers what a guideline can be built from — kills the "now what?" gap. */}
-      <div className="flex items-center gap-4 text-2xs text-muted-foreground">
-        <span className="inline-flex items-center gap-1.5">
-          <FileText size={13} strokeWidth={1.5} /> PDF
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <Globe size={13} strokeWidth={1.5} /> Website
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <Figma size={13} strokeWidth={1.5} /> Figma
-        </span>
-      </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -100,9 +78,8 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
  * capa é o único identificador da marca numa lista de 24, e estava sendo
  * decidida pela ordem de upload.
  *
- * O logo também fica de fora — ele já aparece como o chip logo abaixo.
- * Sem match → CoverFallback pinta as cores da própria marca, que sempre lê
- * como aquela marca.
+ * Sem match, a capa mostra o próprio logo (BrandAvatar) sobre bg-muted: dado
+ * real da marca, em vez de um degradê inventado.
  */
 const COVER_CATEGORIES = ['background', 'graphic', 'texture'] as const;
 
@@ -115,52 +92,9 @@ const getCoverUrl = (g: BrandGuideline): string | null => {
   return null;
 };
 
-// Textura do fallback: grade de pontos, o mesmo vocabulário do
-// GridDotsBackground. Antes era um tabuleiro de xadrez de 40px, que é o
-// símbolo universal de "PNG transparente / imagem quebrada" — marca sem capa
-// ficava visualmente idêntica a marca com asset corrompido, e a tela inteira
-// lia como bug.
-const DOT_TEXTURE =
-  "url(\"data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='%23fff'/%3E%3C/svg%3E\")";
-
-/**
- * Capa sintética pra marca sem imagem de capa.
- *
- * A marca sem cor cadastrada caía em dois cinzas e o card sumia no fundo, o
- * que dava o mesmo resultado do bug que estamos consertando. O hash do nome
- * gera um tom estável (mesma marca, mesma cor em todo reload) só nesse caso.
- */
-const CoverFallback = ({ colors, name }: { colors?: BrandGuideline['colors']; name?: string }) => {
-  const hasBrandColors = !!colors?.[0]?.hex;
-  const hue = [...(name || 'brand')].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 360, 7);
-  const c1 = colors?.[0]?.hex || `hsl(${hue} 32% 26%)`;
-  const c2 = colors?.[1]?.hex || `hsl(${(hue + 40) % 360} 28% 13%)`;
-  const c3 = colors?.[2]?.hex || c1;
-  return (
-    <div
-      className="absolute inset-0"
-      style={{ background: `linear-gradient(135deg, ${c1} 0%, ${c2} 50%, ${c3} 100%)` }}
-    >
-      <div
-        className={
-          hasBrandColors ? 'absolute inset-0 opacity-[0.07]' : 'absolute inset-0 opacity-[0.10]'
-        }
-        style={{ backgroundImage: DOT_TEXTURE }}
-      />
-    </div>
-  );
-};
-
-const SCORE_COLORS = {
-  low: 'bg-destructive',
-  medium: 'bg-warning',
-  high: 'bg-success',
-} as const;
-
 const BrandCard = ({
   guideline,
   onSelect,
-  index,
   archived = false,
   onArchive,
   onUnarchive,
@@ -168,7 +102,6 @@ const BrandCard = ({
 }: {
   guideline: BrandGuideline;
   onSelect: (g: BrandGuideline) => void;
-  index: number;
   archived?: boolean;
   onArchive?: (id: string) => void;
   onUnarchive?: (id: string) => void;
@@ -176,56 +109,21 @@ const BrandCard = ({
 }) => {
   const { t } = useTranslation();
   const [coverLoaded, setCoverLoaded] = useState(false);
-  // Sem `onError` a capa quebrada era um skeleton pulsando pra sempre: o
-  // `onLoad` nunca dispara, a <img> fica em opacity-0 e o CoverFallback nunca
-  // entra (ele só cobria coverUrl == null, não URL inválida).
+  // Capa que falha cai no logo, nunca num tile vazio ou num skeleton eterno.
   const [coverFailed, setCoverFailed] = useState(false);
   const coverUrl = getCoverUrl(guideline);
   const showCover = !!coverUrl && !coverFailed;
-  const report = useMemo(() => computeBrandCompleteness(guideline), [guideline]);
-  const status = completenessStatus(report.score);
-  const brandName = guideline.identity?.name || guideline.name || 'Untitled';
-
-  // A % sozinha não aciona nada — dizer O QUE falta (por peso) transforma o
-  // medidor num próximo passo. Labels vêm da lib por id, traduzidas aqui.
-  const completenessHint = useMemo(() => {
-    if (report.missing.length === 0)
-      return t('brandGuidelines.completenessFull', { score: report.score });
-    const top = [...report.missing].sort((a, b) => b.weight - a.weight);
-    const items = top
-      .slice(0, 3)
-      .map((r) => t(`brandCompleteness.${r.id}`) || r.label)
-      .join(', ');
-    const extra = top.length - 3;
-    return t('brandGuidelines.completenessMissing', {
-      score: report.score,
-      items:
-        extra > 0 ? `${items} ${t('brandGuidelines.completenessMore', { count: extra })}` : items,
-    });
-  }, [report, t]);
-  const primaryFont = guideline.typography?.find(
-    (t) => t.role === 'heading' || t.role === 'headline'
-  )?.family;
-  const bodyFont = guideline.typography?.find(
-    (t) => t.role === 'body' || t.role === 'paragraph'
-  )?.family;
-  const fontHint = [primaryFont, bodyFont].filter(Boolean).join(' / ');
+  const brandName = guideline.identity?.name || guideline.name || t('brandGuidelines.untitled');
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04, duration: 0.25 }}
-      whileHover={{ y: -3 }}
+    <div
       className={cn(
-        'group relative flex flex-col rounded-xl border border-border bg-card hover:border-border-hover hover:shadow-lg hover:shadow-black/20 transition-[color,background-color,border-color,box-shadow,opacity,filter] duration-200 overflow-hidden text-left',
+        'group relative flex flex-col rounded-xl border border-border bg-card hover:border-border-hover transition-[border-color,opacity,filter] duration-200 overflow-hidden text-left',
         archived && 'opacity-60 grayscale-[0.6] hover:opacity-80'
       )}
     >
       {/* Ação principal como "stretched link": cobre o card inteiro SEM aninhar
-          interativos. Antes a raiz era um <button> com o menu ⋮ (role=button)
-          dentro — botão dentro de botão: árvore de acessibilidade inválida e o
-          menu inalcançável por teclado. Agora o menu é irmão, num z acima. */}
+          interativos. O menu ⋮ é irmão, num z acima. */}
       <button
         type="button"
         onClick={() => onSelect(guideline)}
@@ -233,52 +131,51 @@ const BrandCard = ({
         className="absolute inset-0 z-[1] rounded-xl cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
 
-      {/* Cover */}
-      <div className="relative w-full h-32 sm:h-40 shrink-0 overflow-hidden bg-muted">
+      {/* Capa: imagem de marca real, ou o logo centrado sobre bg-muted */}
+      <div className="relative w-full h-32 sm:h-40 shrink-0 overflow-hidden bg-muted border-b border-border">
         {showCover ? (
           <>
             {!coverLoaded && <div className="absolute inset-0 animate-pulse bg-muted" />}
-            <img
+            <Thumb
               src={getProxiedUrl(coverUrl)}
               alt=""
               loading="lazy"
               onLoad={() => setCoverLoaded(true)}
               onError={() => setCoverFailed(true)}
               className={cn(
-                'w-full h-full object-cover group-hover:scale-105 transition-all duration-500',
+                'w-full h-full object-cover transition-opacity duration-300',
                 coverLoaded ? 'opacity-100' : 'opacity-0'
               )}
             />
           </>
         ) : (
-          <CoverFallback colors={guideline.colors} name={brandName} />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <BrandAvatar brand={guideline} size={64} rounded="md" preference="primary" />
+          </div>
         )}
-        {/* Sem véu. O degradê subia até a metade da capa e lavava justo a parte
-            que identifica a marca; era ele que fazia o cinza sujo no meio do card. */}
-        <div className="absolute inset-x-0 bottom-0 h-px bg-border" />
 
-        {/* Badges overlay */}
         <div className="absolute top-2 right-2 z-[2] flex items-center gap-1.5">
-          {archived && (
+          {guideline.isPublic && (
             <Badge
               variant="secondary"
-              className="bg-white/10 backdrop-blur-sm border-white/10 text-white/80 text-2xs px-1.5 py-0 h-5 gap-1"
+              className="bg-background/80 border-border text-muted-foreground text-2xs px-1.5 py-0 h-5 gap-1"
             >
-              <Archive size={9} />
-              {t('brandQuota.archivedBadge')}
+              <Globe size={9} />
+              {t('brandGuidelines.public')}
             </Badge>
           )}
           {(onArchive || onUnarchive || onQuickEdit) && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
+                <Button
+                  variant="outline"
+                  size="icon-sm"
                   aria-label={t('brandQuota.brandActions')}
-                  className="p-1 rounded-md bg-black/40 backdrop-blur-sm border border-white/10 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity hover:bg-black/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className={cn(hoverReveal, 'h-6 w-6 bg-background/80')}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <MoreVertical size={11} className="text-white/90" />
-                </button>
+                  <MoreVertical size={12} />
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[130px]">
                 {!archived && onQuickEdit && (
@@ -321,66 +218,22 @@ const BrandCard = ({
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          {guideline.isPublic && (
-            <Badge
-              variant="secondary"
-              className="bg-white/10 backdrop-blur-sm border-white/10 text-white/80 text-2xs px-1.5 py-0 h-5 gap-1"
-            >
-              <Globe size={9} />
-              Public
-            </Badge>
-          )}
-          {guideline.folder && (
-            <Badge
-              variant="secondary"
-              className="bg-white/10 backdrop-blur-sm border-white/10 text-white/70 text-2xs px-1.5 py-0 h-5 gap-1"
-            >
-              <Folder size={9} />
-              {guideline.folder}
-            </Badge>
-          )}
         </div>
       </div>
 
-      {/* Avatar */}
-      <div className="relative px-3 sm:px-4 -mt-5">
-        <div className="ring-2 ring-card rounded-lg w-fit">
-          <BrandAvatar brand={guideline} size={40} rounded="md" preference="primary" />
-        </div>
-      </div>
-
-      {/* Info */}
-      <div className="flex-1 px-3 sm:px-4 pt-2 pb-3 min-w-0 flex flex-col gap-1.5">
+      {/* Info. Com capa real o logo vem inline; sem capa ele já está na capa. */}
+      <div className="flex-1 px-3 sm:px-4 py-3 min-w-0 flex items-center gap-2.5">
+        {showCover && <BrandAvatar brand={guideline} size={28} rounded="md" preference="primary" />}
         <div className="min-w-0">
-          <p className="text-sm font-medium text-foreground truncate transition-colors">
-            {brandName}
-          </p>
+          <p className="text-sm font-medium text-foreground truncate">{brandName}</p>
           {guideline.identity?.tagline && (
             <p className="text-2xs text-muted-foreground truncate mt-0.5 leading-tight">
               {guideline.identity.tagline}
             </p>
           )}
         </div>
-
-        {/* Footer: completeness + font hint */}
-        <div className="flex items-center justify-between gap-2 mt-auto pt-1 border-t border-border">
-          <Tooltip content={completenessHint} position="bottom">
-            <div className="relative z-[2] flex items-center gap-1.5">
-              <div className="w-16 h-1 rounded-full bg-muted overflow-hidden">
-                <div
-                  className={cn('h-full rounded-full transition-colors', SCORE_COLORS[status])}
-                  style={{ width: `${report.score}%` }}
-                />
-              </div>
-              <span className="text-2xs text-muted-foreground tabular-nums">{report.score}%</span>
-            </div>
-          </Tooltip>
-          {fontHint && (
-            <p className="text-2xs text-muted-foreground truncate max-w-[50%]">{fontHint}</p>
-          )}
-        </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -481,31 +334,19 @@ const BrandGraceBanner = ({
   );
 };
 
-// Sidebar-lista de marcas escondida por ora (single-column + grid preenche a
-// tela; mata a duplicação de lista/busca). O componente `GuidelinesSidebar`
-// segue pronto pra reimportar — basta virar este flag pra true.
-const SHOW_BRAND_SIDEBAR = false;
-
 const BrandGrid = ({
   guidelines,
   onSelect,
   onArchive,
   onUnarchive,
-  search: searchProp,
-  onSearchChange,
 }: {
   guidelines: BrandGuideline[];
   onSelect: (g: BrandGuideline) => void;
   onArchive?: (id: string) => void;
   onUnarchive?: (id: string) => void;
-  /** Busca controlada (SSoT único compartilhado com a sidebar). */
-  search?: string;
-  onSearchChange?: (v: string) => void;
 }) => {
   const { t } = useTranslation();
-  const [internalSearch, setInternalSearch] = useState('');
-  const search = searchProp ?? internalSearch;
-  const setSearch = onSearchChange ?? setInternalSearch;
+  const [search, setSearch] = useState('');
   const [folderFilter, setFolderFilter] = useState<string | null>(null);
   const [sort, setSort] = useState<SortMode>('recent');
   const [showArchived, setShowArchived] = useState(false);
@@ -556,7 +397,7 @@ const BrandGrid = ({
   const archivedList = billingOn ? filtered.filter(isArchived) : [];
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full space-y-4">
+    <div className="w-full space-y-4">
       {/* Toolbar: search + folder pills + sort */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <div className="relative w-full sm:w-56">
@@ -642,22 +483,23 @@ const BrandGrid = ({
         </div>
       </div>
 
-      {/* Count */}
-      <p className="text-2xs text-muted-foreground">
-        {t('brandGuidelines.countBrands', {
-          filtered: filtered.length,
-          total: guidelines.length,
-        })}
-      </p>
+      {/* Contagem só com filtro ativo: sem filtro ela repete o medidor de quota. */}
+      {(folderFilter || search.trim()) && (
+        <p className="text-2xs text-muted-foreground">
+          {t('brandGuidelines.countBrands', {
+            filtered: filtered.length,
+            total: guidelines.length,
+          })}
+        </p>
+      )}
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-        {activeList.map((g, i) => (
+        {activeList.map((g) => (
           <BrandCard
             key={g.id}
             guideline={g}
             onSelect={onSelect}
-            index={i}
             onArchive={billingOn ? onArchive : undefined}
             onQuickEdit={setQuickEdit}
           />
@@ -680,12 +522,11 @@ const BrandGrid = ({
           </button>
           {showArchived && (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-              {archivedList.map((g, i) => (
+              {archivedList.map((g) => (
                 <BrandCard
                   key={g.id}
                   guideline={g}
                   onSelect={onSelect}
-                  index={i}
                   archived
                   onUnarchive={billingOn ? onUnarchive : undefined}
                 />
@@ -711,7 +552,7 @@ const BrandGrid = ({
           onOpenChange={(o) => !o && setQuickEdit(null)}
         />
       )}
-    </motion.div>
+    </div>
   );
 };
 
@@ -723,9 +564,6 @@ export const BrandGuidelinesPage: React.FC = () => {
 
   const urlGuidelineId = searchParams.get('id');
   const [selectedId, setSelectedId] = useState<string | null>(urlGuidelineId);
-  // Busca de marca — SSoT único: a sidebar (lista) e o BrandGrid (cards) filtram
-  // pelo MESMO termo, em vez de dois estados desconexos. Finding #2.
-  const [brandSearch, setBrandSearch] = useState('');
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [editingGuideline, setEditingGuideline] = useState<BrandGuideline | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -771,11 +609,16 @@ export const BrandGuidelinesPage: React.FC = () => {
     [navigate]
   );
 
-  const handleWizardSuccess = useCallback((id: string) => {
-    setIsWizardOpen(false);
-    setEditingGuideline(null);
-    setSelectedId(id);
-  }, []);
+  // Marca recém-criada abre no mesmo destino do card (cockpit), não na view
+  // inline do deep link `?id=`.
+  const handleWizardSuccess = useCallback(
+    (id: string) => {
+      setIsWizardOpen(false);
+      setEditingGuideline(null);
+      navigate(`/cockpit/${id}`);
+    },
+    [navigate]
+  );
 
   const handleOpenWizard = useCallback((guideline?: BrandGuideline | null) => {
     setEditingGuideline(guideline || null);
@@ -815,76 +658,22 @@ export const BrandGuidelinesPage: React.FC = () => {
       />
       <div className="absolute inset-0 z-0 bg-background" />
 
-      {/* Só tem a marca demo → convite persistente pra trazer a real (abre o wizard). */}
-      <DemoBrandBanner onCta={() => handleOpenWizard()} />
-
-      {/* Two-pane contido: lista-de-marcas + conteúdo dentro do AppShell (não
-          mais `fixed` cobrindo o rail). Cada pane rola independente. */}
       <div className="h-full bg-transparent relative z-10 flex overflow-hidden">
-        {/* Desktop Sidebar (escondida por ora — SHOW_BRAND_SIDEBAR) */}
-        {SHOW_BRAND_SIDEBAR && !isLoading && guidelines.length > 0 && (
-          <aside
-            role="navigation"
-            aria-label={t('brand.guidelines.brand_guidelines_selection')}
-            className="hidden lg:flex flex-col w-[260px] xl:w-[280px] shrink-0 border-r border-sidebar-border bg-sidebar overflow-y-auto"
-            data-vsn-region="sidebar"
-          >
-            <GuidelinesSidebar
-              guidelines={guidelines}
-              selectedId={selectedId}
-              onSelect={handleSelect}
-              onCreate={() => handleOpenWizard()}
-              search={brandSearch}
-              onSearchChange={setBrandSearch}
-            />
-          </aside>
-        )}
-
-        {/* Main Content Area */}
         <main
           role="main"
           aria-label={t('brand.guidelines.brand_guideline_content')}
           className="flex-1 w-full min-w-0 overflow-y-auto"
           data-vsn-region="content"
         >
+          {/* Só tem a marca demo: convite persistente pra trazer a real (abre o wizard). */}
+          <DemoBrandBanner onCta={() => handleOpenWizard()} />
+
           <div className="w-full px-4 sm:px-6 lg:px-8 pt-8 pb-16">
             {/* Header */}
             <div className="flex items-center justify-between gap-4 mb-6">
-              <div className="flex items-center gap-3 min-w-0">
-                {/* Mobile sidebar trigger (escondido por ora — SHOW_BRAND_SIDEBAR) */}
-                <div className={SHOW_BRAND_SIDEBAR ? 'lg:hidden' : 'hidden'}>
-                  <Sheet>
-                    <SheetTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon-md"
-                        aria-label={t('brand.guidelines.open_menu')}
-                      >
-                        <AlignLeft className="h-4 w-4" />
-                      </Button>
-                    </SheetTrigger>
-                    <SheetContent
-                      side="left"
-                      className="w-[85vw] max-w-sm p-0 border-r border-border bg-background/95 backdrop-blur-xl"
-                    >
-                      <SheetTitle className="sr-only">{t('brand.guidelines.menu')}</SheetTitle>
-                      <GuidelinesSidebar
-                        guidelines={guidelines}
-                        selectedId={selectedId}
-                        onSelect={handleSelect}
-                        onCreate={() => handleOpenWizard()}
-                        search={brandSearch}
-                        onSearchChange={setBrandSearch}
-                      />
-                    </SheetContent>
-                  </Sheet>
-                </div>
-                <div className="min-w-0">
-                  <h1 className="text-base font-semibold text-foreground truncate">
-                    {t('brandGuidelines.title')}
-                  </h1>
-                </div>
-              </div>
+              <h1 className="min-w-0 text-base font-semibold text-foreground truncate">
+                {t('brandGuidelines.title')}
+              </h1>
               <div className="flex items-center gap-3 shrink-0">
                 {FEATURE_BRAND_BILLING && brandQuota && (
                   <BrandQuotaMeter
@@ -893,13 +682,12 @@ export const BrandGuidelinesPage: React.FC = () => {
                     onUpgrade={handleQuotaUpgrade}
                   />
                 )}
-                {/* Primary action must live ON the surface, not only in the
-                    empty state — once the user has ≥1 brand the create path
-                    would otherwise be unreachable from the list header. */}
+                {/* A ação principal mora NA superfície, não só no empty state:
+                    com 1+ marca, criar outra ficaria inalcançável pelo header. */}
                 {guidelines.length > 0 && (
                   <Button size="sm" onClick={() => handleOpenWizard()} className="gap-1.5">
                     <Plus size={15} />
-                    {t('brandGuidelines.newBrand') || 'New brand'}
+                    {t('brandGuidelines.newBrand')}
                   </Button>
                 )}
               </div>
@@ -913,61 +701,29 @@ export const BrandGuidelinesPage: React.FC = () => {
               />
             )}
 
-            {/* Content — dashboard/list. The per-brand editor lives in the unified
-                view (PublicBrandGuideline), reached via the early return above. */}
-            <AnimatePresence mode="wait">
-              {isLoading ? (
-                <motion.div
-                  key="loader"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex flex-col items-center justify-center py-40 gap-6"
-                >
-                  <GlitchLoader size={40} />
-                  <p className="text-muted-foreground text-xs animate-pulse">
-                    {t('common.loading')}
-                  </p>
-                </motion.div>
-              ) : isError ? (
-                <motion.div
-                  key="error"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex flex-col items-center justify-center py-40 gap-4 text-center"
-                >
-                  <p className="text-sm font-medium text-foreground">
-                    {t('brandGuidelines.loadFailedTitle') || 'Could not load your brands'}
-                  </p>
-                  <p className="text-xs text-muted-foreground max-w-sm">
-                    {t('brandGuidelines.loadFailedBody') ||
-                      'Something went wrong. Your brands are safe — try again.'}
-                  </p>
-                  <Button variant="outline" size="sm" onClick={() => refetch()}>
-                    {t('common.retry') || 'Try again'}
-                  </Button>
-                </motion.div>
-              ) : guidelines.length === 0 ? (
-                <EmptyState key="empty" onCreate={() => handleOpenWizard()} />
-              ) : (
-                <motion.div
-                  key="content"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex flex-col gap-8 md:gap-16 items-start w-full"
-                >
-                  <BrandGrid
-                    guidelines={guidelines}
-                    onSelect={handleSelect}
-                    onArchive={FEATURE_BRAND_BILLING ? archiveActions.requestArchive : undefined}
-                    onUnarchive={FEATURE_BRAND_BILLING ? archiveActions.unarchive : undefined}
-                    search={brandSearch}
-                    onSearchChange={setBrandSearch}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {/* Lista. A view por marca (PublicBrandGuideline) vem pelo early return acima. */}
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-40 gap-6">
+                <GlitchLoader size={40} />
+                <p className="text-muted-foreground text-xs animate-pulse">{t('common.loading')}</p>
+              </div>
+            ) : isError ? (
+              <ErrorState
+                className="py-40"
+                title={t('brandGuidelines.loadFailedTitle')}
+                description={t('brandGuidelines.loadFailedBody')}
+                onRetry={() => refetch()}
+              />
+            ) : guidelines.length === 0 ? (
+              <EmptyState onCreate={() => handleOpenWizard()} />
+            ) : (
+              <BrandGrid
+                guidelines={guidelines}
+                onSelect={handleSelect}
+                onArchive={FEATURE_BRAND_BILLING ? archiveActions.requestArchive : undefined}
+                onUnarchive={FEATURE_BRAND_BILLING ? archiveActions.unarchive : undefined}
+              />
+            )}
           </div>
         </main>
       </div>

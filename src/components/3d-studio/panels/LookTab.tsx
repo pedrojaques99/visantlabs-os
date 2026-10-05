@@ -104,7 +104,7 @@ export const LookTab: React.FC = React.memo(() => {
             max={1}
             step={0.01}
             onChange={setMetalness}
-            hint="Metallic reflectivity — 0 = dielectric, 1 = full metal"
+            hint="Metallic reflectivity: 0 dielectric, 1 full metal"
           />
           <ScrubInput
             label="Rough"
@@ -113,7 +113,7 @@ export const LookTab: React.FC = React.memo(() => {
             max={1}
             step={0.01}
             onChange={setRoughness}
-            hint="Surface roughness — 0 = mirror, 1 = matte"
+            hint="Surface roughness: 0 mirror, 1 matte"
           />
           <ScrubInput
             label="Alpha"
@@ -122,7 +122,7 @@ export const LookTab: React.FC = React.memo(() => {
             max={1}
             step={0.01}
             onChange={setOpacity}
-            hint="Material opacity — 0 = transparent, 1 = solid"
+            hint="Material opacity: 0 transparent, 1 solid"
           />
         </div>
       </ToolPanelDisclosure>
@@ -155,7 +155,7 @@ export const LookTab: React.FC = React.memo(() => {
           max={1}
           step={0.01}
           onChange={setFresnelStrength}
-          hint="Fresnel edge color intensity — 0 = off, 1 = full"
+          hint="Fresnel edge intensity: 0 off, 1 full"
         />
         {fresnelStrength > 0 && (
           <ExpandableColorPicker
@@ -188,7 +188,7 @@ export const LookTab: React.FC = React.memo(() => {
           max={5}
           step={0.1}
           onChange={setEnvMapIntensity}
-          hint="Environment map intensity — higher = more reflective/glossy"
+          hint="Environment map intensity. Higher is glossier"
         />
 
         <span className="text-2xs text-neutral-400">Blend Mode</span>

@@ -28,6 +28,7 @@ import {
 } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Thumb } from '@/components/ui/Thumb';
 import { API_BASE } from '@/config/api';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
 import { HalftoneCanvas, type HalftoneCanvasHandle } from '@/components/halftone/HalftoneCanvas';
@@ -80,12 +81,12 @@ const PRESET_KEYS: Record<ImageLabMode, string[]> = {
 };
 
 const RISO_AI_PROMPT = `CORE DIRECTIVE: RISOGRAPH PRINT RECREATION
-TASK: Analyze the input image and recreate it as an authentic risograph print — a vintage stencil-based duplication technique where each color is printed as a separate ink layer on uncoated paper.
-STEP 1: COLOR ANALYSIS & REDUCTION — Reduce to max 4 ink layers loyal to original palette. White areas become raw paper.
-STEP 2: GRAPHIC SIMPLIFICATION — Bold flat shapes, coarse halftone dots for mid-tones, hard-edged silhouettes with imperfection.
-STEP 3: LAYER SIMULATION & OVERPRINT — Multiply blending where inks overlap. 1-3px misregistration. Slight ink bleed.
-STEP 4: PAPER & INK TEXTURE — Off-white/cream paper with grain. Uneven ink density, speckle, ink dropout.
-STEP 5: FINAL PRINT AESTHETIC — Handmade analog feel. No clean digital look. No shadows, glows, or gradients.
+TASK: Analyze the input image and recreate it as an authentic risograph print: a vintage stencil-based duplication technique where each color is printed as a separate ink layer on uncoated paper.
+STEP 1: COLOR ANALYSIS & REDUCTION. Reduce to max 4 ink layers loyal to original palette. White areas become raw paper.
+STEP 2: GRAPHIC SIMPLIFICATION. Bold flat shapes, coarse halftone dots for mid-tones, hard-edged silhouettes with imperfection.
+STEP 3: LAYER SIMULATION & OVERPRINT. Multiply blending where inks overlap. 1-3px misregistration. Slight ink bleed.
+STEP 4: PAPER & INK TEXTURE. Off-white/cream paper with grain. Uneven ink density, speckle, ink dropout.
+STEP 5: FINAL PRINT AESTHETIC. Handmade analog feel. No clean digital look. No shadows, glows, or gradients.
 NEGATIVE PROMPT: smooth gradients, photorealistic rendering, clean digital illustration, anti-aliased edges, perfect color registration, white background, more than 4-5 ink colors, airbrushed tones, 3D shading, HDR, oversaturated digital colors`;
 
 /* ─── Per-mode state bridge ─── */
@@ -547,7 +548,7 @@ export const ImageLabPage: React.FC = () => {
     const url = asset.imageUrl || asset.imageBase64 || '';
     if (url) {
       broadcastImage(url, asset.label || 'piped-image');
-      toast.success(`Loaded piped image${asset.label ? `: ${asset.label}` : ''}`);
+      toast.success(t('imagelab.loaded', { name: asset.label || t('imagelab.pipedImage') }));
     }
   }, [pendingAsset, acceptAsset, broadcastImage]);
 
@@ -658,7 +659,7 @@ export const ImageLabPage: React.FC = () => {
         const isVideo = file.type.startsWith('video/');
         const url = createTrackedObjectUrl(file);
         broadcastImage(url, file.name || 'pasted', isVideo ? 'video' : 'image');
-        toast.success(`Loaded ${file.name || 'pasted image'}`);
+        toast.success(t('imagelab.loaded', { name: file.name || t('imagelab.pastedImage') }));
       },
       [broadcastImage, createTrackedObjectUrl]
     ),
@@ -806,10 +807,10 @@ export const ImageLabPage: React.FC = () => {
       if (data.imageUrl) {
         await loadImage(data.imageUrl);
         broadcastImage(data.imageUrl, 'ai-enhanced.png');
-        toast.success('AI Riso enhancement applied');
+        toast.success(t('imagelab.aiRisoApplied'));
       }
     } catch (err: any) {
-      toast.error(err?.message || 'AI enhancement unavailable');
+      toast.error(err?.message || t('imagelab.aiUnavailable'));
     } finally {
       setIsAiProcessing(false);
     }
@@ -823,9 +824,9 @@ export const ImageLabPage: React.FC = () => {
         canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Failed'))), 'image/png');
       });
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-      toast.success('Copied as PNG');
+      toast.success(t('imagelab.copiedPng'));
     } catch {
-      toast.error('Failed to copy — try again');
+      toast.error(t('imagelab.copyFailed'));
     }
   }, [canvasRef]);
 
@@ -898,10 +899,11 @@ export const ImageLabPage: React.FC = () => {
           )}
           <button
             onClick={() => setSavePresetOpen((v) => !v)}
-            className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 text-2xs font-mono uppercase tracking-widest text-neutral-500 hover:text-neutral-200 transition-colors"
+            className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-medium text-neutral-500 hover:text-neutral-200 transition-colors"
+            aria-expanded={savePresetOpen}
           >
             <Save size={12} />
-            {savePresetOpen ? 'Hide preset' : 'Save preset'}
+            {t('imagelab.savePreset')}
             <ChevronDown
               size={12}
               className={cn('transition-transform', savePresetOpen && 'rotate-180')}
@@ -924,7 +926,7 @@ export const ImageLabPage: React.FC = () => {
   );
 
   const tbBtn = cn(
-    'flex items-center justify-center rounded-lg transition-all',
+    'flex items-center justify-center rounded-lg transition-colors',
     isMobile ? 'w-11 h-11' : 'w-9 h-9'
   );
   const tbIcon = isMobile ? 18 : 15;
@@ -984,7 +986,7 @@ export const ImageLabPage: React.FC = () => {
             <>
               <button
                 onClick={() => setMagicHandActive(false)}
-                title="Select (V)"
+                title={t('imagelab.selectTool')}
                 className={cn(
                   tbBtn,
                   !magicHandActive
@@ -996,7 +998,7 @@ export const ImageLabPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setMagicHandActive(!magicHandActive)}
-                title="Magic Hand (M)"
+                title={t('imagelab.magicHand')}
                 className={cn(
                   tbBtn,
                   magicHandActive
@@ -1022,7 +1024,7 @@ export const ImageLabPage: React.FC = () => {
                     }
                   }
                 }}
-                title={videoIsPlaying ? 'Pause' : 'Play'}
+                title={videoIsPlaying ? t('imagelab.pause') : t('imagelab.play')}
                 className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}
               >
                 {videoIsPlaying ? <Pause size={tbIcon} /> : <Play size={tbIcon} />}
@@ -1050,7 +1052,7 @@ export const ImageLabPage: React.FC = () => {
                       width: '12px',
                     }}
                   />
-                  <span className="text-2xs font-mono text-neutral-600">
+                  <span className="text-2xs tabular-nums text-neutral-600">
                     {videoCurrentTime.toFixed(1)}s
                   </span>
                 </div>
@@ -1073,7 +1075,8 @@ export const ImageLabPage: React.FC = () => {
                 clearTimeout(fxHideTimer.current);
                 setFxBarVisible(true);
               }}
-              title="Show FX bar"
+              title={t('imagelab.showFxBar')}
+              aria-label={t('imagelab.showFxBar')}
               className={cn(
                 'flex items-center justify-center h-5 px-8 rounded-b-lg transition-[color,background-color,border-color,opacity,filter] duration-300',
                 'bg-neutral-900/60 backdrop-blur-xl border-b border-x border-neutral-800/60',
@@ -1088,7 +1091,7 @@ export const ImageLabPage: React.FC = () => {
           {/* Full bar */}
           <div
             className={cn(
-              'mt-3 transition-all duration-300',
+              'mt-3 transition-[opacity,transform] duration-300',
               fxBarVisible
                 ? 'opacity-100 translate-y-0'
                 : 'opacity-0 -translate-y-2 pointer-events-none'
@@ -1100,7 +1103,8 @@ export const ImageLabPage: React.FC = () => {
                 <button
                   onClick={undo}
                   disabled={historyIndex < 0}
-                  title="Undo (Ctrl+Z)"
+                  title={t('imagelab.undo')}
+                  aria-label={t('imagelab.undo')}
                   className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors disabled:opacity-25 disabled:pointer-events-none"
                 >
                   <Undo2 size={14} />
@@ -1108,7 +1112,8 @@ export const ImageLabPage: React.FC = () => {
                 <button
                   onClick={redo}
                   disabled={historyIndex >= historyLength - 1}
-                  title="Redo (Ctrl+Shift+Z)"
+                  title={t('imagelab.redo')}
+                  aria-label={t('imagelab.redo')}
                   className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors disabled:opacity-25 disabled:pointer-events-none"
                 >
                   <Redo2 size={14} />
@@ -1150,9 +1155,9 @@ export const ImageLabPage: React.FC = () => {
                     {thumb && !isActive && (
                       <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 opacity-0 group-hover/fx:opacity-100 transition-opacity duration-200 z-50">
                         <div className="rounded-lg overflow-hidden border border-neutral-700/60 shadow-xl shadow-black/60 bg-neutral-900">
-                          <img src={thumb} alt={m.label} className="w-28 h-28 object-cover" />
-                          <div className="px-2 py-1 text-2xs font-mono uppercase tracking-wider text-neutral-500 text-center bg-neutral-900/90">
-                            {m.label} preview
+                          <Thumb src={thumb} alt="" className="w-28 h-28 object-cover" />
+                          <div className="px-2 py-1 text-2xs text-neutral-500 text-center bg-neutral-900/90">
+                            {m.label}
                           </div>
                         </div>
                       </div>
@@ -1168,7 +1173,7 @@ export const ImageLabPage: React.FC = () => {
                     source="image-lab"
                     outputMime="image/png"
                     mimeType="image/png"
-                    label={`Image Lab — ${mode}`}
+                    label={`Image Lab: ${mode}`}
                     variant="node"
                     getImageBase64={captureResultPng}
                     className="mr-0.5"
@@ -1176,7 +1181,8 @@ export const ImageLabPage: React.FC = () => {
                 )}
                 <button
                   onClick={() => setShortcutsOpen(true)}
-                  title="Shortcuts (?)"
+                  title={t('imagelab.shortcuts')}
+                  aria-label={t('imagelab.shortcuts')}
                   className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors"
                 >
                   <HelpCircle size={12} />
@@ -1188,7 +1194,9 @@ export const ImageLabPage: React.FC = () => {
                         setFxBarPinned(!fxBarPinned);
                         setFxBarVisible(true);
                       }}
-                      title={fxBarPinned ? 'Unpin toolbar' : 'Pin toolbar'}
+                      title={fxBarPinned ? t('imagelab.unpinBar') : t('imagelab.pinBar')}
+                      aria-label={fxBarPinned ? t('imagelab.unpinBar') : t('imagelab.pinBar')}
+                      aria-pressed={fxBarPinned}
                       className={cn(
                         'flex items-center justify-center w-7 h-7 rounded-full transition-colors',
                         fxBarPinned
@@ -1200,7 +1208,8 @@ export const ImageLabPage: React.FC = () => {
                     </button>
                     <button
                       onClick={() => setPanelVisible(!panelVisible)}
-                      title="Toggle panel (Tab)"
+                      title={t('common.hidePanelShortcut')}
+                      aria-label={t('common.hidePanelShortcut')}
                       className={cn(
                         'flex items-center justify-center w-7 h-7 rounded-full transition-colors',
                         panelVisible
@@ -1217,7 +1226,7 @@ export const ImageLabPage: React.FC = () => {
           </div>
         </div>
 
-        <CanvasErrorBoundary fallbackMessage="Image engine crashed">
+        <CanvasErrorBoundary>
           <div className={mode !== 'halftone' ? 'hidden' : 'contents'}>
             <HalftoneCanvas ref={halftoneRef} onCanvasReady={onHalftoneCanvasReady} />
           </div>
@@ -1271,15 +1280,8 @@ export const ImageLabPage: React.FC = () => {
                   className="text-neutral-600 group-hover:text-neutral-400 transition-colors"
                 />
               </div>
-              <p className="text-2xs uppercase tracking-widest">{t('imagelab.dropPrompt')}</p>
-              <div className="flex flex-col items-center gap-1">
-                <p className="text-2xs tracking-wide opacity-60">
-                  Ctrl+V — paste · Tab — toggle panel · 1/2/3/4 — switch mode
-                </p>
-                <p className="text-2xs tracking-wide opacity-40">
-                  Alt+Z — before/after · Alt+X — split · [ ] — cycle presets
-                </p>
-              </div>
+              <p className="text-sm">{t('imagelab.dropPrompt')}</p>
+              <p className="text-xs opacity-60">{t('imagelab.shortcutsHint')}</p>
             </div>
             <input
               type="file"
@@ -1291,7 +1293,7 @@ export const ImageLabPage: React.FC = () => {
                   const isVideo = file.type.startsWith('video/');
                   const url = createTrackedObjectUrl(file);
                   broadcastImage(url, file.name, isVideo ? 'video' : 'image');
-                  toast.success(`Loaded ${file.name}`);
+                  toast.success(t('imagelab.loaded', { name: file.name }));
                 }
                 e.target.value = '';
               }}
@@ -1309,56 +1311,61 @@ export const ImageLabPage: React.FC = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-semibold text-neutral-200">Keyboard Shortcuts</span>
+                <span className="text-sm font-semibold text-neutral-200">
+                  {t('imagelab.shortcutsTitle')}
+                </span>
                 <button
                   onClick={() => setShortcutsOpen(false)}
+                  aria-label={t('common.closeEsc')}
                   className="text-neutral-600 hover:text-neutral-300 p-1"
                 >
-                  <span className="text-xs">ESC</span>
+                  <kbd className="text-xs font-mono">Esc</kbd>
                 </button>
               </div>
               <div className="space-y-3 text-2xs">
                 {(
                   [
-                    ['Modes', [['1 / 2 / 3 / 4', 'Switch FX mode']]],
+                    ['modes', [['1 / 2 / 3 / 4', 'switchMode']]],
                     [
-                      'Canvas',
+                      'canvas',
                       [
-                        ['Ctrl+V', 'Paste image'],
-                        ['Ctrl+Z', 'Undo'],
-                        ['Ctrl+Shift+Z', 'Redo'],
-                        ['[ / ]', 'Cycle presets'],
-                        ['V', 'Select tool'],
-                        ['M', 'Magic hand tool'],
-                        ['Scroll', 'Zoom'],
+                        ['Ctrl+V', 'paste'],
+                        ['Ctrl+Z', 'undo'],
+                        ['Ctrl+Shift+Z', 'redo'],
+                        ['[ / ]', 'cyclePresets'],
+                        ['V', 'select'],
+                        ['M', 'magicHand'],
+                        ['Scroll', 'zoom'],
                       ],
                     ],
                     [
-                      'Compare',
+                      'compare',
                       [
-                        ['Alt+Z', 'Before / After toggle'],
-                        ['Alt+X', 'Split view'],
-                        ['Esc', 'Exit compare'],
+                        ['Alt+Z', 'beforeAfter'],
+                        ['Alt+X', 'split'],
+                        ['Esc', 'exitCompare'],
                       ],
                     ],
                     [
-                      'Panels',
+                      'panels',
                       [
-                        ['Tab', 'Toggle controls panel'],
-                        ['Shift+E', 'Export'],
-                        ['Shift+P', 'Community presets'],
-                        ['?', 'This help'],
+                        ['Tab', 'togglePanel'],
+                        ['Shift+E', 'export'],
+                        ['Shift+P', 'communityPresets'],
+                        ['?', 'help'],
                       ],
                     ],
                   ] as [string, [string, string][]][]
                 ).map(([section, items]) => (
                   <div key={section}>
-                    <div className="text-2xs font-mono uppercase tracking-widest text-neutral-600 mb-1.5">
-                      {section}
+                    <div className="text-xs font-medium text-neutral-500 mb-1.5">
+                      {t(`imagelab.shortcutSections.${section}`)}
                     </div>
                     {items.map(([key, desc]) => (
                       <div key={key} className="flex items-center justify-between py-0.5">
-                        <span className="text-neutral-400">{desc}</span>
+                        <span className="text-neutral-400">
+                          {t(`imagelab.shortcutItems.${desc}`)}
+                        </span>
                         <kbd className="px-1.5 py-0.5 rounded bg-neutral-800/60 text-neutral-500 font-mono text-2xs">
                           {key}
                         </kbd>
@@ -1498,7 +1505,7 @@ function useStatusItems(mode: ImageLabMode) {
           { label: tBlendMode },
           { label: `${(tOpacity * 100).toFixed(0)}%` },
           { label: tTextureName },
-          ...(tMaskMode ? [{ label: 'mask', color: 'text-purple-400' }] : []),
+          ...(tMaskMode ? [{ label: 'mask', color: 'text-neutral-300' }] : []),
           ...(tShaderEnabled ? [{ label: tShaderType, color: 'text-neutral-400' }] : []),
           ...extras,
         ];
@@ -1561,6 +1568,7 @@ const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> 
   value,
   onChange,
 }) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -1577,9 +1585,10 @@ const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> 
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        title={`Effect Opacity ${Math.round(value * 100)}%`}
+        title={t('imagelab.effectOpacity', { value: Math.round(value * 100) })}
+        aria-label={t('imagelab.effectOpacity', { value: Math.round(value * 100) })}
         className={cn(
-          'flex items-center justify-center w-9 h-9 rounded-lg transition-all',
+          'flex items-center justify-center w-9 h-9 rounded-lg transition-colors',
           open
             ? 'bg-white/10 text-white ring-1 ring-white/30'
             : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
@@ -1589,7 +1598,7 @@ const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> 
       </button>
       {open && (
         <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 z-30 flex items-center gap-2 bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/60 rounded-lg px-3 py-2 shadow-2xl shadow-black/50 animate-fade-in">
-          <span className="text-2xs font-mono text-neutral-600 w-6 text-right shrink-0">
+          <span className="text-2xs tabular-nums text-neutral-600 w-6 text-right shrink-0">
             {Math.round(value * 100)}
           </span>
           <input

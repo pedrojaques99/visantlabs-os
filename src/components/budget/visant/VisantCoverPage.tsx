@@ -2,6 +2,7 @@ import React from 'react';
 import type { BudgetData } from '@/types/types';
 import { InlineEditor } from '../InlineEditor';
 
+import { DEFAULT_DOCUMENT_ACCENT } from './documentColors';
 interface VisantCoverPageProps {
   data: BudgetData;
   editable?: boolean;
@@ -13,7 +14,7 @@ export const VisantCoverPage: React.FC<VisantCoverPageProps> = ({
   editable = false,
   onDataChange,
 }) => {
-  const accentColor = data.brandAccentColor || data.brandColors[0] || 'brand-cyan';
+  const accentColor = data.brandAccentColor || data.brandColors[0] || DEFAULT_DOCUMENT_ACCENT;
   const bgColor = data.coverBackgroundColor || '#151515';
   const textColor = data.coverTextColor || '#f9f9f9';
   const year = data.year || '2025';

@@ -30,6 +30,8 @@ import { extractColors } from '@/utils/colorExtraction';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 
+import { Thumb } from '@/components/ui/Thumb';
+
 // Component for editing a single color row
 const ColorEditRow = ({
   color,
@@ -78,7 +80,7 @@ const ColorEditRow = ({
         value={hexValue}
         onChange={handleHexChange}
         onBlur={handleBlur}
-        className="h-6 text-2xs uppercase flex-1"
+        className="h-6 text-2xs flex-1"
         placeholder="#000000"
       />
       <NodeButton
@@ -415,7 +417,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               size="xs"
               className="h-5 w-5 text-foreground p-0"
               onClick={() => setEditingCategory(null)}
-              title={t('common.done') || 'Done'}
+              title={t('common.done')}
             >
               <Check size={10} />
             </NodeButton>
@@ -425,7 +427,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               size="xs"
               className="h-5 w-5 text-neutral-500 hover:text-neutral-300 p-0"
               onClick={() => setEditingCategory(category)}
-              title={t('common.edit') || 'Edit'}
+              title={t('common.edit')}
             >
               <Edit2 size={10} />
             </NodeButton>
@@ -448,7 +450,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               className="w-full h-6 text-2xs text-neutral-500 hover:text-neutral-300"
               onClick={() => handleColorAdd(category)}
             >
-              <Plus size={10} className="mr-1" /> {t('common.addColor') || 'Add'}
+              <Plus size={10} className="mr-1" /> {t('common.addColor')}
             </NodeButton>
           </div>
         ) : (
@@ -457,7 +459,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               <div
                 key={idx}
                 className="flex items-center gap-1 px-1.5 py-0.5 bg-neutral-950/50 rounded border-node border-neutral-700/30 cursor-pointer hover:border-neutral-500 transition-colors"
-                title={t('canvas.clickToEdit') || 'Click to edit'}
+                title={t('canvas.clickToEdit')}
                 onClick={() => setEditingCategory(category)}
               >
                 <div
@@ -468,7 +470,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               </div>
             ))}
             {colors.length === 0 && (
-              <span className="text-2xs text-neutral-600">{t('common.noResults') || 'None'}</span>
+              <span className="text-2xs text-neutral-600">{t('common.noResults')}</span>
             )}
           </div>
         )}
@@ -489,7 +491,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     >
       {selected && !dragging && (
         <NodeResizer
-          color="brand-cyan"
+          color="var(--brand-cyan)"
           isVisible={selected}
           minWidth={320}
           minHeight={300}
@@ -505,14 +507,14 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         type="target"
         position={Position.Left}
         id="logo-input"
-        label={t('canvasNodes.brandNode.logo') || 'Logo'}
+        label={t('canvasNodes.brandNode.logo')}
         style={{ top: '90px' }}
       />
       <LabeledHandle
         type="target"
         position={Position.Left}
         id="identity-input"
-        label={t('canvasNodes.brandNode.identity') || 'Identity'}
+        label={t('canvasNodes.brandNode.identity')}
         style={{ top: '180px' }}
       />
 
@@ -534,25 +536,19 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       <LabeledHandle
         type="source"
         position={Position.Right}
-        label={t('canvasNodes.brandNode.output') || 'Brand Context'}
+        label={t('canvasNodes.brandNode.output')}
         style={{ top: '270px' }} // Keep label for main context output? Or remove? User said "hide image output handles".
         // The specific image handles are the ones creating clutter.
       />
 
       {/* Header */}
-      <NodeHeader
-        icon={Palette}
-        title={t('canvasNodes.brandNode.title') || 'Brand Guideline'}
-        selected={selected}
-      />
+      <NodeHeader icon={Palette} title={t('canvasNodes.brandNode.title')} selected={selected} />
 
       <div className="flex flex-col gap-[var(--node-gap)]">
         {/* Logo Upload Section */}
         <div className="p-3 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
           <div className="flex items-center justify-between mb-2">
-            <NodeLabel className="text-2xs">
-              {t('canvasNodes.brandNode.logoDna') || 'Logo DNA'}
-            </NodeLabel>
+            <NodeLabel className="text-2xs">{t('canvasNodes.brandNode.logoDna')}</NodeLabel>
             {logoImageUrl && !connectedLogo && (
               <NodeButton
                 variant="ghost"
@@ -568,21 +564,17 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           {logoImageUrl ? (
             <div className="flex items-center gap-3">
               <div className="w-14 h-14 rounded-md overflow-hidden bg-neutral-950/50 border-node border-neutral-700/30 p-1 flex items-center justify-center">
-                <img
+                <Thumb
                   src={logoImageUrl}
-                  alt="Logo"
+                  alt={t('canvasNodes.brandCore.logo')}
                   className="max-w-full max-h-full object-contain"
                 />
               </div>
               <div className="flex-1">
                 <div className="text-2xs text-neutral-400">
-                  {connectedLogo
-                    ? t('common.connected')
-                    : t('common.localSource') || 'Local Source'}
+                  {connectedLogo ? t('common.connected') : t('common.localSource')}
                 </div>
-                <div className="text-2xs text-neutral-500">
-                  {t('common.propertyDetected') || 'Property detected'}
-                </div>
+                <div className="text-2xs text-neutral-500">{t('common.propertyDetected')}</div>
               </div>
             </div>
           ) : (
@@ -605,9 +597,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         {/* Identity Guide Upload Section (PDF or PNG) */}
         <div className="p-3 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
           <div className="flex items-center justify-between mb-2">
-            <NodeLabel className="text-2xs">
-              {t('canvasNodes.brandNode.identity') || 'Brand Guidelines'}
-            </NodeLabel>
+            <NodeLabel className="text-2xs">{t('canvasNodes.brandNode.identity')}</NodeLabel>
             {(identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl) &&
               !connectedIdentity && (
                 <NodeButton
@@ -627,13 +617,9 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 <FileText size={18} className="text-neutral-400" />
               </div>
               <div className="flex-1 overflow-hidden">
-                <div className="text-2xs text-neutral-400">
-                  {t('common.fileFound') || 'File found'}
-                </div>
+                <div className="text-2xs text-neutral-400">{t('common.fileFound')}</div>
                 <div className="text-2xs text-neutral-500">
-                  {connectedIdentity
-                    ? t('common.referenceDocument')
-                    : t('common.localUpload') || 'Local upload'}
+                  {connectedIdentity ? t('common.referenceDocument') : t('common.localUpload')}
                 </div>
               </div>
             </div>
@@ -648,7 +634,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               />
               <NodeButton variant="primary" size="full" onClick={handlePdfUploadClick}>
                 <FileText size={14} className="mr-2" />
-                {t('canvasNodes.brandCore.uploadLogo') || 'Upload Guidelines'}
+                {t('canvasNodes.brandCore.uploadLogo')}
               </NodeButton>
             </>
           )}
@@ -658,13 +644,13 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         <NodeButton onClick={handleAnalyze} disabled={!canAnalyze} variant="primary" size="full">
           {isAnalyzing ? (
             <>
-              <GlitchLoader size={14} className="mr-1" color="brand-cyan" />
-              <span>{t('canvasNodes.directorNode.analyzing') || 'Analyzing...'}</span>
+              <GlitchLoader size={14} className="mr-1" />
+              <span>{t('canvasNodes.directorNode.analyzing')}</span>
             </>
           ) : (
             <>
               <Palette size={14} />
-              <span>{t('canvasNodes.brandNode.analyze') || 'Analyze Brand Engine'}</span>
+              <span>{t('canvasNodes.brandNode.analyze')}</span>
             </>
           )}
         </NodeButton>
@@ -679,7 +665,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               className="flex items-center justify-between"
             >
               <span className="text-2xs font-medium text-neutral-500">
-                {t('canvasNodes.brandNode.extractedIdentity') || 'Extracted Identity'}
+                {t('canvasNodes.brandNode.extractedIdentity')}
               </span>
               {isExpanded ? (
                 <ChevronUp size={14} className="text-neutral-500" />
@@ -694,16 +680,16 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
                   <div className="flex items-center justify-between mb-2">
                     <NodeLabel className="text-2xs">
-                      {t('canvasNodes.brandNode.paletteMatrix') || 'Palette'}
+                      {t('canvasNodes.brandNode.paletteMatrix')}
                     </NodeLabel>
                     <NodeButton
                       variant="ghost"
                       size="xs"
-                      className="h-5 text-2xs px-1.5 text-brand-cyan/70"
+                      className="h-5 text-2xs px-1.5"
                       onClick={manuallyExtractColors}
                       disabled={!logoBase64}
                     >
-                      {t('canvasNodes.brandNode.refineFromLogo') || 'Refine'}
+                      {t('canvasNodes.brandNode.refineFromLogo')}
                     </NodeButton>
                   </div>
 
@@ -718,7 +704,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 {brandIdentity.typography.primary && (
                   <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
                     <NodeLabel className="text-2xs mb-1.5">
-                      {t('canvasNodes.brandNode.typography') || 'Typography'}
+                      {t('canvasNodes.brandNode.typography')}
                     </NodeLabel>
                     <div className="space-y-1">
                       <div className="text-neutral-300 text-2xs">
@@ -737,13 +723,13 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 {(brandIdentity.personality.tone || brandIdentity.personality.feeling) && (
                   <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
                     <NodeLabel className="text-2xs mb-1.5">
-                      {t('canvasNodes.brandNode.persona') || 'Persona'}
+                      {t('canvasNodes.brandNode.persona')}
                     </NodeLabel>
                     <div className="space-y-1.5 text-2xs text-neutral-400">
                       {brandIdentity.personality.tone && (
                         <div>
                           <span className="text-neutral-600 text-2xs font-mono mr-1.5">
-                            {t('canvasNodes.brandNode.tone') || 'Tone:'}
+                            {t('canvasNodes.brandNode.tone')}
                           </span>
                           {brandIdentity.personality.tone}
                         </div>
@@ -751,7 +737,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                       {brandIdentity.personality.feeling && (
                         <div>
                           <span className="text-neutral-600 text-2xs font-mono mr-1.5">
-                            {t('canvasNodes.brandNode.feeling') || 'Feeling:'}
+                            {t('canvasNodes.brandNode.feeling')}
                           </span>
                           {brandIdentity.personality.feeling}
                         </div>
@@ -764,7 +750,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 {brandIdentity.visualElements.length > 0 && (
                   <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
                     <NodeLabel className="text-2xs mb-1.5">
-                      {t('canvasNodes.brandNode.visualLanguage') || 'Visual Elements'}
+                      {t('canvasNodes.brandNode.visualLanguage')}
                     </NodeLabel>
                     <div className="flex flex-wrap gap-1.5">
                       {brandIdentity.visualElements.slice(0, 8).map((element, idx) => (

@@ -189,9 +189,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
         <div className="space-y-2">
           <div className="flex items-center gap-1.5">
             <Link2 size={12} className="text-neutral-500" />
-            <span className="text-2xs font-semibold text-neutral-500 uppercase tracking-[0.12em]">
-              Link público
-            </span>
+            <span className="text-2xs font-semibold text-neutral-500">Link público</span>
           </div>
           {shareUrl ? (
             <div className="flex items-center gap-2 p-1.5 pl-3 bg-neutral-800/60 border border-neutral-700/40 rounded-xl">

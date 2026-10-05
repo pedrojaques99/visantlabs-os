@@ -12,6 +12,7 @@ import type { WorkflowCategory } from '../types/workflow';
 import { WORKFLOW_CATEGORY_CONFIG } from '../types/workflow';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
+import { glassSurface } from '@/lib/ui/glass';
 import { Button } from '@/components/ui/button';
 
 interface WorkflowLibraryModalProps {
@@ -79,7 +80,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
       }
     } catch (error) {
       console.error('Error loading workflows:', error);
-      toast.error(t('workflows.errors.failedToLoad') || 'Failed to load workflows');
+      toast.error(t('workflows.errors.failedToLoad'));
     } finally {
       setIsLoading(false);
     }
@@ -87,9 +88,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
 
   const handleToggleLike = async (workflowId: string) => {
     if (!isAuthenticated) {
-      toast.error(
-        t('workflows.errors.mustBeAuthenticated') || 'You must be logged in to like workflows'
-      );
+      toast.error(t('workflows.errors.mustBeAuthenticated'));
       return;
     }
 
@@ -114,22 +113,16 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
         setCommunityWorkflows(updateWorkflows);
       }
 
-      toast.success(
-        liked
-          ? t('workflows.messages.liked') || 'Workflow liked!'
-          : t('workflows.messages.unliked') || 'Workflow unliked'
-      );
+      toast.success(liked ? t('workflows.messages.liked') : t('workflows.messages.unliked'));
     } catch (error) {
       console.error('Error toggling like:', error);
-      toast.error(t('workflows.errors.failedToToggleLike') || 'Failed to toggle like');
+      toast.error(t('workflows.errors.failedToToggleLike'));
     }
   };
 
   const handleDuplicate = async (workflowId: string) => {
     if (!isAuthenticated) {
-      toast.error(
-        t('workflows.errors.mustBeAuthenticated') || 'You must be logged in to duplicate workflows'
-      );
+      toast.error(t('workflows.errors.mustBeAuthenticated'));
       return;
     }
 
@@ -143,7 +136,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
         });
       }
 
-      toast.success(t('workflows.messages.duplicated') || 'Workflow added to your library!');
+      toast.success(t('workflows.messages.duplicated'));
 
       // Refresh my workflows if on that tab
       if (activeTab === 'my') {
@@ -151,14 +144,14 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
       }
     } catch (error) {
       console.error('Error duplicating workflow:', error);
-      toast.error(t('workflows.errors.failedToDuplicate') || 'Failed to duplicate workflow');
+      toast.error(t('workflows.errors.failedToDuplicate'));
     }
   };
 
   const handleDelete = async (workflowId: string) => {
     try {
       await workflowApi.delete(workflowId);
-      toast.success(t('workflows.messages.deleted') || 'Workflow deleted');
+      toast.success(t('workflows.messages.deleted'));
 
       // Remove from local state
       setMyWorkflows((prev) => prev.filter((w) => w._id !== workflowId));
@@ -170,7 +163,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
       setDeleteConfirmation(null);
     } catch (error) {
       console.error('Error deleting workflow:', error);
-      toast.error(t('workflows.errors.failedToDelete') || 'Failed to delete workflow');
+      toast.error(t('workflows.errors.failedToDelete'));
     }
   };
 
@@ -205,27 +198,24 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
   const modalContent = (
     <>
       <div
-        className="fixed inset-0 bg-neutral-950/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+        className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
         style={{ animation: 'fadeIn 0.2s ease-out' }}
         onClick={onClose}
       >
         <div
-          className="relative max-w-6xl w-full max-h-[90vh] bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl overflow-hidden flex flex-col"
+          className={cn(
+            glassSurface.panelStrong,
+            'relative max-w-6xl w-full max-h-[90vh] rounded-md overflow-hidden flex flex-col'
+          )}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-neutral-800/50 bg-neutral-900/20">
             <div className="flex items-center gap-2">
               <Layout size={20} className="text-neutral-400" />
-              <div>
-                <h2 className="text-sm font-medium text-neutral-200">
-                  {t('workflows.library.title') || 'Workflow Library'}
-                </h2>
-                <p className="text-2xs text-neutral-500 font-mono hidden sm:block">
-                  {t('workflows.library.description') ||
-                    'Browse and load reusable workflow templates'}
-                </p>
-              </div>
+              <h2 className="text-sm font-medium text-neutral-200">
+                {t('workflows.library.title')}
+              </h2>
             </div>
             <Button
               variant="ghost"
@@ -242,14 +232,14 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
               variant="ghost"
               onClick={() => setActiveTab('community')}
               className={cn(
-                'px-4 py-2 text-xs font-mono uppercase transition-colors duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
+                'px-4 py-2 text-xs transition-colors duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
                 activeTab === 'community'
                   ? 'text-brand-cyan border-neutral-600 bg-brand-cyan/5'
                   : 'text-neutral-400 border-transparent hover:text-neutral-300 hover:bg-neutral-800/30'
               )}
             >
               <Globe size={12} />
-              {t('common.community') || 'Community'}
+              {t('common.community')}
             </Button>
 
             {isAuthenticated && (
@@ -257,14 +247,14 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                 variant="ghost"
                 onClick={() => setActiveTab('my')}
                 className={cn(
-                  'px-4 py-2 text-xs font-mono uppercase transition-colors duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
+                  'px-4 py-2 text-xs transition-colors duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
                   activeTab === 'my'
                     ? 'text-brand-cyan border-neutral-600 bg-brand-cyan/5'
                     : 'text-neutral-400 border-transparent hover:text-neutral-300 hover:bg-neutral-800/30'
                 )}
               >
                 <BookMarked size={12} />
-                {t('workflows.library.tabs.my') || 'My Workflows'}
+                {t('workflows.library.tabs.my')}
               </Button>
             )}
           </div>
@@ -276,8 +266,8 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t('workflows.library.search') || 'Search workflows...'}
-                className="pl-9 h-9 bg-neutral-900/50 border-neutral-800/50 focus:border-neutral-600 focus:ring-1 focus:ring-brand-cyan/30 font-mono text-xs w-full"
+                placeholder={t('workflows.library.search')}
+                className="pl-9 h-9 bg-neutral-900/50 border-neutral-800/50 focus:border-neutral-600 focus:ring-1 focus:ring-ring text-xs w-full"
               />
             </div>
 
@@ -288,14 +278,14 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                   variant="ghost"
                   onClick={() => setSelectedCategory('all')}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-2xs font-mono uppercase transition-colors whitespace-nowrap border',
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-colors whitespace-nowrap border',
                     selectedCategory === 'all'
                       ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
                       : 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700'
                   )}
                 >
                   <Layout size={12} />
-                  All
+                  {t('workflows.library.tabs.all')}
                 </Button>
                 {Object.entries(WORKFLOW_CATEGORY_CONFIG).map(([key, config]) => {
                   const Icon = config.icon;
@@ -305,7 +295,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                       key={key}
                       onClick={() => setSelectedCategory(key as WorkflowCategory)}
                       className={cn(
-                        'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-2xs font-mono uppercase transition-colors whitespace-nowrap border',
+                        'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-colors whitespace-nowrap border',
                         selectedCategory === key
                           ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
                           : 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700'
@@ -325,18 +315,17 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
             {isLoading ? (
               <div className="flex flex-col items-center justify-center h-64 gap-2">
                 <div className="w-6 h-6 border-2 border-muted border-t-foreground rounded-full animate-spin"></div>
-                <p className="text-xs font-mono text-neutral-500">Loading workflows...</p>
+                <p className="text-xs text-neutral-500">{t('common.loading')}</p>
               </div>
             ) : displayedWorkflows.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-64 text-neutral-500">
                 <Search className="w-8 h-8 opacity-40 mb-2" />
-                <p className="text-sm font-mono">
+                <p className="text-sm">
                   {searchQuery
-                    ? t('workflows.library.noResults') || 'No workflows found'
+                    ? t('workflows.library.noResults')
                     : activeTab === 'my'
-                      ? t('workflows.library.noWorkflows') || 'No workflows yet'
-                      : t('workflows.library.noCommunityWorkflows') ||
-                        'No community workflows available'}
+                      ? t('workflows.library.noWorkflows')
+                      : t('workflows.library.noCommunityWorkflows')}
                 </p>
               </div>
             ) : (
@@ -373,13 +362,10 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
       {deleteConfirmation && (
         <ConfirmationModal
           isOpen={true}
-          title={t('workflows.deleteConfirmation.title') || 'Delete Workflow'}
-          message={
-            t('workflows.deleteConfirmation.message') ||
-            `Are you sure you want to delete "${deleteConfirmation.workflowName}"? This action cannot be undone.`
-          }
-          confirmText={t('common.delete') || 'Delete'}
-          cancelText={t('common.cancel') || 'Cancel'}
+          title={t('workflows.deleteConfirmation.title')}
+          message={t('workflows.deleteConfirmation.message')}
+          confirmText={t('common.delete')}
+          cancelText={t('common.cancel')}
           onConfirm={() => handleDelete(deleteConfirmation.workflowId)}
           onClose={() => setDeleteConfirmation(null)}
           variant="danger"

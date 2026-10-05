@@ -278,7 +278,7 @@ export const BriefingFlow: React.FC<BriefingFlowProps> = ({ onComplete }) => {
         {step === 'confirm' && (
           <motion.div key="confirm" {...screenAnim} className="space-y-6">
             <div className="space-y-1 text-center">
-              <p className="text-2xs uppercase tracking-widest text-neutral-600">Entendi isso</p>
+              <p className="text-2xs text-neutral-600">Entendi isso</p>
               <h2 className="text-xl font-semibold text-neutral-200">Confere pra mim?</h2>
             </div>
 
@@ -306,7 +306,7 @@ export const BriefingFlow: React.FC<BriefingFlowProps> = ({ onComplete }) => {
                         {current}
                         <Pencil
                           size={11}
-                          className="text-neutral-600 group-hover:text-brand-cyan transition-colors"
+                          className="text-muted-foreground group-hover:text-foreground transition-colors"
                         />
                       </button>
                     )}

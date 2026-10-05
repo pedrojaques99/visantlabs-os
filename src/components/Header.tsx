@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Heart, Sun, Moon, FilePenLine, Plus, Search, Info, Globe } from '@/lib/ui/icons';
+import { UserPlus, Heart, Plus, Info, Globe } from '@/lib/ui/icons';
 import { useLocation } from 'react-router-dom';
 import { AuthButton } from './AuthButton';
 import { AuthModal } from './AuthModal';
 import { ConfirmationModal } from './ConfirmationModal';
 import { Button } from './ui/button';
-import { useTheme } from '@/hooks/useTheme';
 import { useLayout } from '@/hooks/useLayout';
 import { useTranslation } from '@/hooks/useTranslation';
 import { authService } from '../services/authService';
@@ -46,7 +45,6 @@ export const Header: React.FC<HeaderProps> = ({
   getUnsavedOutputsInfo,
   navigateToHome,
 }) => {
-  const { theme, toggleTheme } = useTheme();
   const { t } = useTranslation();
   const location = useLocation();
   const isOnWelcomeScreen = location.pathname === '/' || location.pathname === '/mockupmachine';
@@ -64,7 +62,6 @@ export const Header: React.FC<HeaderProps> = ({
   }
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [savedCount, setSavedCount] = useState<number | null>(null);
-  const [brandingsCount, setBrandingsCount] = useState<number | null>(null);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const [unsavedWarningConfig, setUnsavedWarningConfig] = useState<{
     count: number;
@@ -83,8 +80,9 @@ export const Header: React.FC<HeaderProps> = ({
       try {
         const mockups = await mockupApi.getAll();
         setSavedCount(Array.isArray(mockups) ? mockups.length : 0);
-      } catch (error) {
-        setSavedCount(0);
+      } catch {
+        // Falha de leitura = contagem desconhecida, não "zero salvos".
+        setSavedCount(null);
       }
     };
 
@@ -92,31 +90,6 @@ export const Header: React.FC<HeaderProps> = ({
       loadSavedCount();
       // Refresh count every 30 seconds
       const interval = setInterval(loadSavedCount, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [isAuthenticated]);
-
-  // Load saved brandings count
-  useEffect(() => {
-    const loadBrandingsCount = async () => {
-      if (!isAuthenticated) {
-        setBrandingsCount(null);
-        return;
-      }
-
-      try {
-        const { brandingApi } = await import('../services/brandingApi');
-        const brandings = await brandingApi.getAll();
-        setBrandingsCount(Array.isArray(brandings) ? brandings.length : 0);
-      } catch (error) {
-        setBrandingsCount(0);
-      }
-    };
-
-    if (isAuthenticated) {
-      loadBrandingsCount();
-      // Refresh count every 30 seconds
-      const interval = setInterval(loadBrandingsCount, 30000);
       return () => clearInterval(interval);
     }
   }, [isAuthenticated]);
@@ -177,7 +150,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-10 md:h-14 bg-background/95 backdrop-blur-[2px] border-b border-border flex items-center justify-between px-2 md:px-6 z-50">
+    <header className="fixed top-0 left-0 right-0 h-10 md:h-14 bg-background/95 border-b border-border flex items-center justify-between px-2 md:px-6 z-50">
       <Button
         variant="ghost"
         onClick={handleLogoClick}
@@ -189,60 +162,23 @@ export const Header: React.FC<HeaderProps> = ({
           className="h-5 md:h-7 w-auto opacity-90 group-hover:opacity-100 transition-opacity"
         />
         <div className="hidden sm:flex items-baseline gap-1.5">
-          <span className="text-xs md:text-sm text-muted-foreground uppercase">Visant Labs®</span>
+          <span className="text-xs md:text-sm text-muted-foreground">Visant Labs®</span>
           <span className="text-2xs font-mono text-muted-foreground">v1.1</span>
         </div>
       </Button>
       <div className="flex items-center gap-1.5 md:gap-4">
-        {/* Pricing button hidden */}
-        {/* <Button variant="ghost"           onClick={onPricingClick}
-          className="hidden md:block text-2xs md:text-xs text-muted-foreground hover:text-foreground transition-colors  uppercase"
-        >
-          {t('header.pricing')}
-        </Button> */}
-        {/* Mockup Machine button hidden */}
-        {/* <Button variant="ghost"           onClick={() => {
-            if (navigateToHome) {
-              navigateToHome();
-            } else {
-              window.location.href = '/';
-            }
-          }}
-          className="p-1.5 md:px-3 md:py-1.5 text-muted-foreground hover:text-brand-cyan transition-colors rounded border border-border hover:border-border-hover cursor-pointer"
-          title="Mockup Machine"
-          aria-label="Go to Mockup Machine"
-        >
-          <Pickaxe size={14} className="md:w-4 md:h-4" />
-        </Button> */}
-        {/* New Mockup button - hidden on WelcomeScreen */}
         {!isOnWelcomeScreen && (
           <Button
             onClick={handleNewMockupClick}
             variant="outline"
             size="sm"
-            className="text-2xs md:text-xs font-mono text-muted-foreground hover:text-brand-cyan border-border hover:border-border-hover hover:bg-accent"
-            title="New Mockup"
-            aria-label="Create new mockup"
+            className="text-2xs md:text-xs text-muted-foreground hover:text-foreground border-border hover:border-border-hover hover:bg-accent"
+            aria-label={t('header.createNewMockup')}
           >
             <Plus size={12} className="md:w-3.5 md:h-3.5" />
-            <span className="hidden sm:inline">New Mockup</span>
+            <span className="hidden sm:inline">{t('header.createNewMockup')}</span>
           </Button>
         )}
-        {/* Explore Mockups button */}
-        {/* Explore Mockups button - hidden */}
-        {/* <Button variant="ghost"           onClick={() => {
-            window.history.pushState({}, '', '/mockups');
-            const popStateEvent = new PopStateEvent('popstate', { state: {} });
-            window.dispatchEvent(popStateEvent);
-          }}
-          className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-2xs md:text-xs font-mono text-muted-foreground hover:text-brand-cyan transition-colors rounded border border-border hover:border-border-hover hover:bg-accent cursor-pointer"
-          title="Explore Mockups"
-          aria-label="Explore mockups"
-        >
-          <Search size={12} className="md:w-3.5 md:h-3.5" />
-          <span className="hidden sm:inline">{t('welcome.exploreMockups')}</span>
-        </Button> */}
-        {/* Community button */}
         <Button
           variant="ghost"
           onClick={() => {
@@ -250,13 +186,12 @@ export const Header: React.FC<HeaderProps> = ({
             const popStateEvent = new PopStateEvent('popstate', { state: {} });
             window.dispatchEvent(popStateEvent);
           }}
-          className="p-1.5 md:p-2 text-muted-foreground hover:text-brand-cyan transition-colors rounded hover:bg-accent cursor-pointer"
-          title="Community"
-          aria-label="Community"
+          className="p-1.5 md:p-2 text-muted-foreground hover:text-foreground transition-colors rounded hover:bg-accent cursor-pointer"
+          title={t('header.communityMockups')}
+          aria-label={t('header.communityMockups')}
         >
           <Globe size={14} className="md:w-4 md:h-4" strokeWidth={2} />
         </Button>
-        {/* About button - only on WelcomeScreen */}
         {isOnWelcomeScreen && (
           <Button
             variant="ghost"
@@ -265,35 +200,18 @@ export const Header: React.FC<HeaderProps> = ({
               const popStateEvent = new PopStateEvent('popstate', { state: {} });
               window.dispatchEvent(popStateEvent);
             }}
-            className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-2xs md:text-xs font-mono text-muted-foreground hover:text-brand-cyan transition-colors rounded border border-border hover:border-border-hover hover:bg-accent cursor-pointer"
-            title="About"
-            aria-label="About"
+            className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-2xs md:text-xs text-muted-foreground hover:text-foreground transition-colors rounded border border-border hover:border-border-hover hover:bg-accent cursor-pointer"
+            aria-label={t('header.about')}
           >
             <Info size={12} className="md:w-3.5 md:h-3.5" />
-            <span className="hidden sm:inline">{t('about.title') || 'About'}</span>
+            <span className="hidden sm:inline">{t('header.about')}</span>
           </Button>
         )}
-        {/* Temporarily hidden */}
-        {/* <Button variant="ghost"           onClick={() => {
-            window.location.href = '/branding-machine';
-          }}
-          className="hidden md:block text-2xs md:text-xs text-muted-foreground hover:text-foreground transition-colors  uppercase"
-        >
-          Branding
-        </Button> */}
-        {/* Budget Machine temporarily hidden */}
-        {/* <Button variant="ghost"           onClick={() => {
-            window.location.href = '/budget-machine';
-          }}
-          className="hidden md:block text-2xs md:text-xs text-muted-foreground hover:text-foreground transition-colors  uppercase"
-        >
-          Budget
-        </Button> */}
         {isAuthenticated === false && (
           <Button
             variant="ghost"
             onClick={() => setShowRegisterModal(true)}
-            className="flex items-center gap-0.5 md:gap-1.5 p-1.5 md:px-3 md:py-1.5 bg-brand-cyan/20 text-foreground rounded-md border border-border hover:border-border-hover hover:bg-brand-cyan/30 text-2xs md:text-xs font-mono transition-colors cursor-pointer"
+            className="flex items-center gap-0.5 md:gap-1.5 p-1.5 md:px-3 md:py-1.5 bg-brand-cyan/20 text-foreground rounded-md border border-border hover:border-border-hover hover:bg-brand-cyan/30 text-2xs md:text-xs transition-colors cursor-pointer"
           >
             <UserPlus size={11} className="md:w-[14px] md:h-[14px]" />
             <span className="hidden sm:inline">{t('header.register')}</span>
@@ -303,49 +221,19 @@ export const Header: React.FC<HeaderProps> = ({
           <Button
             variant="ghost"
             onClick={onMyOutputsClick}
-            className="relative p-1.5 md:p-2 text-muted-foreground hover:text-brand-cyan transition-colors rounded hover:bg-accent cursor-pointer"
-            title="Saved"
-            aria-label="View saved outputs"
+            className="relative p-1.5 md:p-2 text-muted-foreground hover:text-foreground transition-colors rounded hover:bg-accent cursor-pointer"
+            title={t('header.saved')}
+            aria-label={t('header.saved')}
           >
             <Heart size={14} className="md:w-4 md:h-4" strokeWidth={2} />
             {savedCount !== null && savedCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-muted text-muted-foreground text-2xs md:text-2xs font-mono font-medium px-0.5 md:px-1 py-0 md:py-0.5 rounded-md min-w-[14px] md:min-w-[16px] text-center">
+              <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-muted text-muted-foreground text-2xs font-medium tabular-nums px-0.5 md:px-1 py-0 md:py-0.5 rounded-md min-w-[14px] md:min-w-[16px] text-center">
                 {savedCount > 99 ? '99+' : savedCount}
               </span>
             )}
           </Button>
         )}
-        {/* My Branding Projects button hidden */}
-        {/* {isAuthenticated && onMyBrandingsClick && (
-          <Button variant="ghost"             onClick={onMyBrandingsClick}
-            className="relative p-1.5 md:p-2 text-muted-foreground hover:text-brand-cyan transition-colors rounded hover:bg-accent"
-            title="My Branding Projects"
-            aria-label="View my branding projects"
-          >
-            <FilePenLine size={14} className="md:w-4 md:h-4" strokeWidth={2} />
-            {brandingsCount !== null && brandingsCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-muted text-muted-foreground text-2xs md:text-2xs font-mono font-medium px-0.5 md:px-1 py-0 md:py-0.5 rounded-md min-w-[14px] md:min-w-[16px] text-center">
-                {brandingsCount > 99 ? '99+' : brandingsCount}
-              </span>
-            )}
-          </Button>
-        )} */}
         <AuthButton subscriptionStatus={subscriptionStatus} onCreditsClick={onCreditsClick} />
-        {/* Theme button hidden */}
-        {/* <Button variant="ghost"           onClick={() => {
-            toggleTheme();
-            window.location.reload();
-          }}
-          className="flex items-center justify-center p-1.5 md:px-3 md:py-1.5 text-2xs md:text-xs font-mono text-muted-foreground hover:text-foreground transition-colors rounded border border-border hover:border-border-hover cursor-pointer"
-          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          {theme === 'dark' ? (
-            <Sun size={11} className="md:w-3 md:h-3" />
-          ) : (
-            <Moon size={11} className="md:w-3 md:h-3" />
-          )}
-        </Button> */}
       </div>
 
       {showRegisterModal && (

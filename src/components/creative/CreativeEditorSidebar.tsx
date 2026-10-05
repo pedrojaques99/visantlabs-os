@@ -407,7 +407,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
                 }`}
               >
                 <Icon size={12} className="shrink-0" />
-                <span className="flex-1 truncate">Fundo · {label}</span>
+                <span className="flex-1 truncate">Fundo ({label})</span>
                 {hasOverlay && (
                   <span
                     className="w-3 h-3 rounded-sm shrink-0 border border-white/10"

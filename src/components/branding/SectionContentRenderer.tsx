@@ -69,10 +69,9 @@ export const SectionContentRenderer: React.FC<SectionContentRendererProps> = ({
     if (errored) {
       return (
         <ErrorState
-          title="Generation failed"
-          description="This section could not be generated. Your other work is safe — try again."
+          title={t('branding.sectionFailedTitle')}
+          description={t('branding.sectionFailedDescription')}
           onRetry={onGenerate}
-          retryLabel="Try again"
           className="py-8"
         />
       );

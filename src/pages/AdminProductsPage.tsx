@@ -20,7 +20,6 @@ import {
 } from '@/lib/ui/icons';
 import { AVAILABLE_IMAGE_MODELS, getModelDisplayName } from '../constants/geminiModels';
 import { SearchBar } from '../components/ui/SearchBar';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';

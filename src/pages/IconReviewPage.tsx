@@ -73,7 +73,9 @@ export function IconReviewPage() {
       if (!resp.ok) throw new Error(data?.error || 'falhou');
       setOverrides((o) => ({ ...o, [lucideName]: phosphorName }));
       setEditing(null);
-      toast.success(`${lucideName} → ${phosphorName}`, { description: 'barrel atualizado' });
+      toast.success(`${lucideName} agora usa ${phosphorName}`, {
+        description: 'barrel atualizado',
+      });
     } catch (err) {
       toast.error(`Não trocou: ${err instanceof Error ? err.message : 'erro'}`);
     } finally {
@@ -84,10 +86,9 @@ export function IconReviewPage() {
   return (
     <PageShell
       pageId="icon-catalog"
-      seoTitle="Icon Catalog — Visant Labs"
-      microTitle="Design System // Icons"
+      seoTitle="Icon Catalog"
       title="Icon Catalog"
-      description={`${ICON_USAGE.length} ícones (Phosphor sob nomes lucide) · ${ICON_USAGE_TOTAL} usos. Clique num ícone pra trocar o glifo — grava no barrel na hora.`}
+      description={`${ICON_USAGE.length} ícones (Phosphor sob nomes lucide), ${ICON_USAGE_TOTAL} usos. Trocar um glifo grava no barrel na hora.`}
       width="7xl"
       actions={
         <div className="flex items-center gap-3">
@@ -100,7 +101,7 @@ export function IconReviewPage() {
           <div className="flex items-center gap-1 rounded-md border border-white/10 p-0.5">
             <button
               onClick={() => setSort('usage')}
-              className={`rounded px-2 py-1 text-xs font-mono transition-colors ${
+              className={`rounded px-2 py-1 text-xs transition-colors ${
                 sort === 'usage' ? 'bg-white/15 text-white' : 'text-white/50 hover:text-white/80'
               }`}
             >
@@ -108,11 +109,11 @@ export function IconReviewPage() {
             </button>
             <button
               onClick={() => setSort('alpha')}
-              className={`rounded px-2 py-1 text-xs font-mono transition-colors ${
+              className={`rounded px-2 py-1 text-xs transition-colors ${
                 sort === 'alpha' ? 'bg-white/15 text-white' : 'text-white/50 hover:text-white/80'
               }`}
             >
-              a→z
+              nome
             </button>
           </div>
           <div className="flex items-center gap-1 rounded-md border border-white/10 p-0.5">
@@ -142,8 +143,8 @@ export function IconReviewPage() {
                 setEditing(name);
                 setPickerQuery('');
               }}
-              title={`${count} usos em ${files} arquivo(s) · clique pra trocar`}
-              className="group relative flex flex-col items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-5 text-center transition-colors hover:border-brand-cyan/50 hover:bg-white/[0.06]"
+              title={`${count} usos em ${files} arquivo(s)`}
+              className="group relative flex flex-col items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-5 text-center transition-colors hover:border-white/25 hover:bg-white/[0.06]"
             >
               <span
                 className={`absolute right-2 top-2 rounded-full px-1.5 py-0.5 font-mono text-2xs tabular-nums ${
@@ -159,7 +160,9 @@ export function IconReviewPage() {
               )}
               <div className="font-mono text-xs text-white/80">{name}</div>
               {overridden && (
-                <div className="font-mono text-2xs text-neutral-400">→ {overridden}</div>
+                <div className="flex items-center gap-1 font-mono text-2xs text-neutral-400">
+                  <Icons.ArrowRight size={10} /> {overridden}
+                </div>
               )}
             </button>
           );

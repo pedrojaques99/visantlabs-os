@@ -381,7 +381,7 @@ function ControlsContent({
                   variant="ghost"
                   size="xs"
                   onClick={() => onLoadPreset(p)}
-                  className="text-2xs text-[var(--brand-cyan)] hover:text-white"
+                  className="text-2xs text-neutral-300 hover:text-white"
                 >
                   {p.name}
                 </Button>
@@ -843,7 +843,7 @@ export function WindTunnelPage() {
   const isMobile = useIsMobile();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   useEffect(() => {
-    document.title = 'Wind Tunnel — Visant';
+    document.title = 'Wind Tunnel';
   }, []);
 
   const [config, setConfig] = useState<WindTunnelConfig>(DEFAULT_CONFIG);
@@ -1261,7 +1261,7 @@ export function WindTunnelPage() {
           onToggle={() => setMobileSheetOpen(!mobileSheetOpen)}
           height="50%"
         >
-          <GlassPanel className="backdrop-blur-xl bg-transparent scrollbar-none">
+          <GlassPanel className="bg-transparent scrollbar-none">
             <ControlsContent {...controlsProps} />
           </GlassPanel>
         </AppShellMobileSheet>
@@ -1270,30 +1270,14 @@ export function WindTunnelPage() {
       {!isMobile && (
         <AppShellStatusBar>
           <span aria-live="polite">{activeCount.toLocaleString()} particles</span>
-          <span className="text-neutral-800">|</span>
           <span>{fps} fps</span>
-          <span className="text-neutral-800">|</span>
           <span>{config.renderMode}</span>
-          <span className="text-neutral-800">|</span>
           <span>{config.colorMode}</span>
           {config.fieldOverlay !== 'none' && (
-            <>
-              <span className="text-neutral-800">|</span>
-              <span className="text-brand-cyan">{config.fieldOverlay}</span>
-            </>
+            <span className="text-foreground">{config.fieldOverlay}</span>
           )}
-          {isRecording && (
-            <>
-              <span className="text-neutral-800">|</span>
-              <span className="text-destructive animate-pulse">REC</span>
-            </>
-          )}
-          {config.paused && (
-            <>
-              <span className="text-neutral-800">|</span>
-              <span className="text-warning">PAUSED</span>
-            </>
-          )}
+          {isRecording && <span className="text-destructive animate-pulse">REC</span>}
+          {config.paused && <span className="text-warning">Paused</span>}
         </AppShellStatusBar>
       )}
     </AppShell>

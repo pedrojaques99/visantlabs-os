@@ -81,7 +81,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             s.input,
             'text-neutral-300 placeholder:text-neutral-600',
             'focus:outline-none focus:border-neutral-600',
-            'transition-all duration-150',
+            'transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-150',
             className
           )}
           {...props}

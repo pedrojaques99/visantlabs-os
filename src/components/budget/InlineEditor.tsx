@@ -160,7 +160,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   const getStatusIcon = () => {
     switch (saveStatus) {
       case 'saving':
-        return <GlitchLoader size={12} color="brand-cyan" className="inline-block ml-1" />;
+        return <GlitchLoader size={12} className="inline-block ml-1" />;
       case 'saved':
         return <Check size={12} className="inline-block ml-1 text-success" />;
       case 'error':
@@ -179,7 +179,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
       onClick={handleClick}
       className={`cursor-pointer group relative ${
         hasLineBreaks ? 'block' : 'inline-block'
-      } ${className} transition-colors hover:bg-brand-cyan/10 hover:rounded px-1 py-0.5`}
+      } ${className} transition-colors hover:bg-neutral-500/10 hover:rounded px-1 py-0.5`}
       title="Click to edit"
       style={{
         ...style,

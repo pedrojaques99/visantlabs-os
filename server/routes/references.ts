@@ -31,6 +31,7 @@ import {
   hydrateVectorMatches,
   visibilityFilter,
   BROWSABLE,
+  buildReferenceFilter,
   type ReferenceFilterParams,
 } from '../lib/references/engine.js';
 
@@ -227,13 +228,16 @@ router.get('/', apiRateLimiter, optionalAuthenticate, async (req: AuthRequest, r
 });
 
 // ── GET /facets — filter options ─────────────────────────────────────────────
-router.get('/facets', apiRateLimiter, async (_req: Request, res: Response) => {
+router.get('/facets', apiRateLimiter, async (req: Request, res: Response) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    // BROWSABLE here too: the facet COUNTS have to agree with the grid, or a
-    // filter advertises results the feed will not show (the PSD catalogue).
-    const base = { category: 'reference', ...BROWSABLE, ...visibilityFilter('public') };
+    // Same filter shape as the grid (BROWSABLE + visibility + kind): the facet
+    // COUNTS have to agree with the feed, or a filter advertises results the
+    // grid will not show (the PSD catalogue, or logos inside the mockup tab).
+    const kind =
+      req.query.kind === 'branding' || req.query.kind === 'mockup' ? req.query.kind : 'all';
+    const base = buildReferenceFilter({ visibility: 'public', kind });
 
     // Structured dimension facets — designer-friendly filter groups (additive to the tag cloud)
     const facetStages: Record<string, any[]> = {};

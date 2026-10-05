@@ -2108,36 +2108,13 @@ select.w-full.font-mono.node-interactive {
   border-radius: 0.5rem;
   border: 1px solid;
   background-color: var(--card);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
+  transition:
+    border-color 200ms var(--ease-out),
+    background-color 200ms var(--ease-out);
 }
 
 .tutorial-bento-box:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border-color: rgba(82, 221, 235, 0.2);
-}
-
-.tutorial-bento-box:active {
-  transform: translateY(-1px);
-  transition: transform 0.15s ease-out;
-}
-
-.tutorial-bento-image {
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.tutorial-bento-box:hover .tutorial-bento-image {
-  transform: scale(1.01);
-}
-
-.tutorial-bento-step-number {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.tutorial-bento-box:hover .tutorial-bento-step-number {
-  transform: scale(1.02);
-  opacity: 0.9;
+  border-color: var(--ring);
 }
 
 .tutorial-bento-content {

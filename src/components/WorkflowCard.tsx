@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Copy, Download, Edit2, Trash2, Heart, Play } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { authService } from '../services/authService';
 import type { CanvasWorkflow } from '../services/workflowApi';
 import { WORKFLOW_CATEGORY_CONFIG } from '../types/workflow';
 import { Button } from '@/components/ui/button';
+import { Thumb } from '@/components/ui/Thumb';
 
 interface WorkflowCardProps {
   workflow: CanvasWorkflow;
@@ -57,19 +59,18 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
 
   return (
     <div
-      className="bg-card border border-neutral-800/50 rounded-md p-4 hover:border-neutral-700 hover:bg-card/80 transition-all group relative cursor-pointer h-full flex flex-col"
+      className="bg-card border border-neutral-800/50 rounded-md p-4 hover:border-neutral-700 hover:bg-card/80 transition-colors group relative cursor-pointer h-full flex flex-col"
       onClick={onClick}
     >
       <div className="mb-3">
         {workflow.thumbnailUrl ? (
           <div className="relative w-full aspect-video rounded-md overflow-hidden border border-neutral-700/30 bg-neutral-900/30">
-            <img
+            <Thumb
               src={workflow.thumbnailUrl}
               alt={workflow.name}
-              className="w-full h-full object-cover bg-neutral-900/50 group-hover:scale-105 transition-transform duration-300"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
+              loading="lazy"
+              className="w-full h-full object-cover"
+              fallbackIcon={CategoryIcon}
             />
           </div>
         ) : (
@@ -99,7 +100,10 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                   e.stopPropagation();
                   onDuplicate();
                 }}
-                className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100"
+                className={cn(
+                  hoverReveal,
+                  'p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors'
+                )}
                 title={
                   isOwner
                     ? t('workflows.actions.duplicate') || 'Duplicate'
@@ -116,7 +120,10 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                   e.stopPropagation();
                   onEdit?.();
                 }}
-                className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100"
+                className={cn(
+                  hoverReveal,
+                  'p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors'
+                )}
                 title={t('common.edit') || 'Edit'}
               >
                 <Edit2 className="h-4 w-4" />
@@ -129,7 +136,10 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                   e.stopPropagation();
                   onDelete?.();
                 }}
-                className="p-1.5 text-neutral-500 hover:bg-destructive/10 hover:text-destructive rounded transition-colors opacity-0 group-hover:opacity-100"
+                className={cn(
+                  hoverReveal,
+                  'p-1.5 text-neutral-500 hover:bg-destructive/10 hover:text-destructive rounded transition-colors'
+                )}
                 title={t('common.delete') || 'Delete'}
               >
                 <Trash2 className="h-4 w-4" />

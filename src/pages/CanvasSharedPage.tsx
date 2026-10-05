@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { canvasApi, type CanvasProject } from '../services/canvasApi';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
 import {
   Breadcrumb,

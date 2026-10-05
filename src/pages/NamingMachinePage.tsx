@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 import { MiniAppShell } from '@/components/shared/MiniAppShell';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { useLayout } from '@/hooks/useLayout';
 import { copyToClipboard } from '@/utils/clipboard';
@@ -119,6 +121,11 @@ export const NamingMachinePage: React.FC = () => {
   const [finalists, setFinalists] = useState<string[]>([]);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [lastSwiped, setLastSwiped] = useState<NamingCard | null>(null);
+  /**
+   * Por que o deck está vazio quando NÃO está gerando. Sem isso, falha de API e
+   * "nenhum nome novo" caíam no skeleton "preparando o deck…" pra sempre.
+   */
+  const [deckStatus, setDeckStatus] = useState<'idle' | 'error' | 'exhausted' | 'auth'>('idle');
   /** id do registro backend da sessão atual (null = ainda não persistida / anônimo). */
   const [sessionId, setSessionId] = useState<string | null>(null);
 
@@ -327,20 +334,23 @@ export const NamingMachinePage: React.FC = () => {
 
   /* ── Erro de API ────────────────────────────────────────────────────── */
   const handleApiError = useCallback(
-    (err: any, retry: () => void) => {
+    (err: any, retry: () => void, quiet = false) => {
       const status = err?.status;
-      const msg: string = err?.message || 'Algo deu errado.';
-      if (status === 402 || /cr[eé]dit/i.test(msg)) {
+      const msg: string = err?.message || t('naming.errors.generic');
+      // Só 402 é falta de saldo. O 503 de provedor fora diz "seu crédito foi
+      // estornado" e casava a palavra: abria "Comprar créditos" pra quem tem saldo.
+      if (status === 402 || (!status && /cr[eé]dit/i.test(msg))) {
         onCreditPackagesModalOpen();
         return;
       }
       if (status === 401) {
-        toast.error('Faça login para continuar.');
+        toast.error(t('naming.errors.signIn'));
         return;
       }
-      toast.error(msg, { action: { label: 'tentar de novo', onClick: retry } });
+      // quiet = o erro já aparece no lugar do deck (ErrorState); toast seria eco.
+      if (!quiet) toast.error(msg, { action: { label: t('common.retry'), onClick: retry } });
     },
-    [onCreditPackagesModalOpen]
+    [onCreditPackagesModalOpen, t]
   );
 
   /* ── Geração de leva (com prefetch calibrado) ───────────────────────── */
@@ -354,10 +364,14 @@ export const NamingMachinePage: React.FC = () => {
         if (generatingRef.current) return;
         generatingRef.current = true;
         setGenerating(true);
+        setDeckStatus('idle');
       }
 
       try {
-        if (!isPrefetch && !(await requireAuth())) return;
+        if (!isPrefetch && !(await requireAuth())) {
+          setDeckStatus('auth');
+          return;
+        }
 
         let reading = tasteReading;
         const swipes = profile.liked.length + profile.superliked.length + profile.rejected.length;
@@ -423,10 +437,10 @@ export const NamingMachinePage: React.FC = () => {
         }
 
         if (fresh.length) setDeck((d) => [...d, ...fresh]);
-        else if (!isPrefetch)
-          toast.message('Sem novos nomes por aqui — ajuste o briefing ou tente de novo.');
+        else if (!isPrefetch) setDeckStatus('exhausted');
       } catch (err: any) {
-        handleApiError(err, () => fetchBatch(isPrefetch));
+        if (!isPrefetch) setDeckStatus('error');
+        handleApiError(err, () => fetchBatch(isPrefetch), !isPrefetch);
       } finally {
         if (isPrefetch) {
           prefetchingRef.current = false;
@@ -519,26 +533,25 @@ export const NamingMachinePage: React.FC = () => {
       namingEvent(verdict);
       if (verdict === 'superlike') void loadDefense(card);
 
-      toast(
+      const verdictLabel =
         verdict === 'superlike'
-          ? `⭐ ${card.name}`
+          ? t('naming.verdict.save')
           : verdict === 'like'
-            ? `♥ ${card.name}`
-            : `✕ ${card.name}`,
-        {
-          action: {
-            label: 'desfazer',
-            onClick: () => {
-              setProfile((p) => undoLast(p));
-              setDeck((d) => (d.some((c) => c.name === card.name) ? d : [card, ...d]));
-              setLastSwiped(null);
-            },
+            ? t('naming.verdict.like')
+            : t('naming.verdict.nope');
+      toast(`${verdictLabel}: ${card.name}`, {
+        action: {
+          label: t('naming.undo'),
+          onClick: () => {
+            setProfile((p) => undoLast(p));
+            setDeck((d) => (d.some((c) => c.name === card.name) ? d : [card, ...d]));
+            setLastSwiped(null);
           },
-          duration: 3000,
-        }
-      );
+        },
+        duration: 3000,
+      });
     },
-    [loadDefense]
+    [loadDefense, t]
   );
 
   const triggerVerdict = useCallback((verdict: Verdict) => {
@@ -567,10 +580,10 @@ export const NamingMachinePage: React.FC = () => {
   const handleMoreLikeThis = useCallback(
     (card: NamingCard) => {
       territoriesRef.current.add(card.territory);
-      toast.message(`Buscando mais como "${card.name}"…`);
+      toast.message(t('naming.moreLikeThis', { name: card.name }));
       void fetchBatch(true);
     },
-    [fetchBatch]
+    [fetchBatch, t]
   );
 
   const handleRemove = useCallback((card: NamingCard) => {
@@ -596,10 +609,10 @@ export const NamingMachinePage: React.FC = () => {
     async (card: NamingCard) => {
       const payload = `${card.name}\n\n${brief || ''}`.trim();
       await copyToClipboard(payload);
-      toast.success('Nome e brief copiados — cole na Branding Machine.');
+      toast.success(t('naming.copiedToBranding'));
       navigate('/branding-machine', { state: { name: card.name, brief: brief || '' } });
     },
-    [brief, navigate]
+    [brief, navigate, t]
   );
 
   const handleSaveToBrand = useCallback(async () => {
@@ -613,18 +626,18 @@ export const NamingMachinePage: React.FC = () => {
       const tag = c.territory && c.technique ? ` (${c.territory} · ${c.technique})` : '';
       return `- ${c.name}${tag}: ${summary}`;
     });
-    const text = `Shortlist da Naming Machine\n\n${lines.join('\n')}`;
+    const text = `${t('naming.shortlistHeader')}\n\n${lines.join('\n')}`;
     try {
       await brandGuidelineApi.uploadKnowledge(brandGuidelineId, {
         source: 'text',
         data: text,
         filename: `naming-shortlist-${Date.now()}.txt`,
       });
-      toast.success('Shortlist salva na marca.');
+      toast.success(t('naming.shortlistSaved'));
     } catch (err: any) {
-      toast.error(err?.message || 'Falha ao salvar na marca.');
+      toast.error(err?.message || t('naming.shortlistSaveFailed'));
     }
-  }, [brandGuidelineId, profile.superliked, profile.liked, defenseCache]);
+  }, [brandGuidelineId, profile.superliked, profile.liked, defenseCache, t]);
 
   /* ── Reset ────────────────────────────────────────────────────────────────
    * Logado: a sessão atual já está salva no histórico — só começamos uma nova
@@ -644,6 +657,7 @@ export const NamingMachinePage: React.FC = () => {
     // Sessão nova herda o default do usuário (não o de fábrica).
     setSettings(userDefaultSettingsRef.current || DEFAULT_NAMING_SETTINGS);
     setDeck([]);
+    setDeckStatus('idle');
     setBrief(null);
     setBriefObj(null);
     setBrandGuidelineId(null);
@@ -679,10 +693,10 @@ export const NamingMachinePage: React.FC = () => {
         setNudgeDismissed(false);
         setLastSwiped(null);
       } catch {
-        toast.error('Não foi possível abrir a sessão.');
+        toast.error(t('naming.sessionOpenFailed'));
       }
     },
-    [applySession]
+    [applySession, t]
   );
 
   /* ── Configurações avançadas (aplicam na próxima leva) ──────────────── */
@@ -724,18 +738,43 @@ export const NamingMachinePage: React.FC = () => {
   );
 
   const statusBar = (
-    <div className="flex items-center gap-3 text-2xs uppercase tracking-widest">
-      {seenCount > 0 && (
-        <span className="text-neutral-400">
-          {seenCount} vistos{likedCount > 0 && ` · ${likedCount} curtidos`}
-        </span>
+    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+      {seenCount > 0 && <span>{t('naming.status.seen', { count: seenCount })}</span>}
+      {seenCount > 0 && likedCount > 0 && (
+        <span>{t('naming.status.liked', { count: likedCount })}</span>
       )}
       {prefetching && (
-        <span className="flex items-center gap-1 text-neutral-400">
-          <Zap size={10} className="animate-pulse" /> calibrando pelo seu gosto
+        <span className="flex items-center gap-1">
+          <Zap size={10} className="animate-pulse" /> {t('naming.status.calibrating')}
         </span>
       )}
     </div>
+  );
+
+  const deckFallback = generating ? (
+    <DeckSkeleton label={t('naming.deck.generating')} />
+  ) : deckStatus === 'error' ? (
+    <div className="absolute inset-0 flex items-center justify-center rounded-xl border border-border bg-card">
+      <ErrorState
+        title={t('naming.deck.errorTitle')}
+        description={t('naming.deck.errorBody')}
+        onRetry={() => void fetchBatch(false)}
+      />
+    </div>
+  ) : deckStatus === 'exhausted' || deckStatus === 'auth' ? (
+    <div className="absolute inset-0 flex items-center justify-center rounded-xl border border-border bg-card">
+      <EmptyState
+        icon={Zap}
+        title={
+          deckStatus === 'auth' ? t('naming.deck.signInTitle') : t('naming.deck.exhaustedTitle')
+        }
+        description={deckStatus === 'auth' ? undefined : t('naming.deck.exhaustedBody')}
+        actionLabel={t('naming.deck.generateAgain')}
+        onAction={() => void fetchBatch(false)}
+      />
+    </div>
+  ) : (
+    <DeckSkeleton label={t('naming.deck.preparing')} />
   );
 
   return (
@@ -746,7 +785,7 @@ export const NamingMachinePage: React.FC = () => {
       documentTitle={t('apps.namingMachine.name')}
       onReset={handleReset}
       panel={phase === 'deck' ? panel : undefined}
-      panelLabel="Shortlist"
+      panelLabel={t('naming.shortlist')}
       statusBar={phase === 'deck' ? statusBar : undefined}
       centerContent={phase === 'briefing'}
     >
@@ -795,50 +834,47 @@ export const NamingMachinePage: React.FC = () => {
                 />
               </>
             ) : (
-              <DeckSkeleton generating={generating} />
+              deckFallback
             )}
           </div>
 
-          {/* Botões — label embaixo, paleta suave (só "Salvar" carrega o acento) */}
+          {/* Botões: label embaixo, atalho no title; só "Salvar" carrega o acento */}
           {activeCard && (
             <div className="flex items-start justify-center gap-6">
               <div className="flex flex-col items-center gap-2">
                 <button
                   onClick={() => triggerVerdict('nope')}
-                  className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-neutral-300 transition-colors hover:border-destructive/50 hover:text-destructive"
-                  aria-label="Não é isso (N)"
+                  className="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-muted/40 text-foreground transition-colors hover:border-destructive/50 hover:text-destructive"
+                  aria-label={`${t('naming.verdict.nope')} (N)`}
+                  title={`${t('naming.verdict.nope')} (N)`}
                 >
                   <X size={22} />
                 </button>
-                <span className="text-2xs text-neutral-500">Não é isso</span>
+                <span className="text-xs text-muted-foreground">{t('naming.verdict.nope')}</span>
               </div>
               <div className="flex flex-col items-center gap-2">
                 <button
                   onClick={() => triggerVerdict('like')}
-                  className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-neutral-100 transition-colors hover:border-white/25 hover:bg-white/10"
-                  aria-label="Gostei (C)"
+                  className="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-muted text-foreground transition-colors hover:border-ring"
+                  aria-label={`${t('naming.verdict.like')} (C)`}
+                  title={`${t('naming.verdict.like')} (C)`}
                 >
                   <Heart size={22} />
                 </button>
-                <span className="text-2xs text-neutral-300">Gostei</span>
+                <span className="text-xs text-foreground">{t('naming.verdict.like')}</span>
               </div>
               <div className="flex flex-col items-center gap-2">
                 <button
                   onClick={() => triggerVerdict('superlike')}
-                  className="flex h-14 w-14 items-center justify-center rounded-full border border-brand-cyan/30 bg-brand-cyan/[0.08] text-foreground transition-colors hover:border-neutral-700 hover:bg-brand-cyan/15"
-                  aria-label="Salvar (S)"
+                  className="flex h-14 w-14 items-center justify-center rounded-full border border-brand-cyan/30 bg-brand-cyan/[0.08] text-foreground transition-colors hover:bg-brand-cyan/15"
+                  aria-label={`${t('naming.verdict.save')} (S)`}
+                  title={`${t('naming.verdict.save')} (S)`}
                 >
                   <Bookmark size={22} />
                 </button>
-                <span className="text-2xs text-neutral-500">Salvar</span>
+                <span className="text-xs text-muted-foreground">{t('naming.verdict.save')}</span>
               </div>
             </div>
-          )}
-
-          {activeCard && (
-            <p className="text-2xs font-mono uppercase tracking-widest text-neutral-700">
-              N não é isso · C gostei · S salvar · D desfaz
-            </p>
           )}
         </div>
       )}
@@ -848,18 +884,16 @@ export const NamingMachinePage: React.FC = () => {
 
 /* ── Skeleton da primeira leva ──────────────────────────────────────────── */
 
-function DeckSkeleton({ generating }: { generating: boolean }) {
+function DeckSkeleton({ label }: { label: string }) {
   return (
     <GlassPanel
       intensity="strong"
       className="absolute inset-0 items-center justify-center gap-4 px-8 py-12 text-center"
     >
-      <div className="h-4 w-24 animate-pulse rounded-full bg-neutral-800/40" />
-      <div className="h-10 w-48 animate-pulse rounded-lg bg-neutral-800/50" />
-      <div className="h-3 w-56 animate-pulse rounded-full bg-neutral-800/30" />
-      <p className="mt-4 text-xs text-neutral-500">
-        {generating ? 'gerando nomes…' : 'preparando o deck…'}
-      </p>
+      <div className="h-4 w-24 animate-pulse rounded-full bg-muted" />
+      <div className="h-10 w-48 animate-pulse rounded-lg bg-muted" />
+      <div className="h-3 w-56 animate-pulse rounded-full bg-muted" />
+      <p className="mt-4 text-xs text-muted-foreground">{label}</p>
     </GlassPanel>
   );
 }

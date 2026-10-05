@@ -633,7 +633,7 @@ export const GridPaintPage: React.FC = () => {
   const [activeCount, setActiveCount] = useState(0);
 
   useEffect(() => {
-    document.title = 'Grid Paint — Visant';
+    document.title = 'Grid Paint';
   }, []);
 
   const [config, setConfig] = useState<VisualConfig>(DEFAULT_CONFIG);
@@ -1106,14 +1106,11 @@ export const GridPaintPage: React.FC = () => {
       {/* Bottom toolbar */}
       <div
         className={cn(
-          'fixed left-1/2 -translate-x-1/2 z-30 transition-all duration-300',
+          'fixed left-1/2 -translate-x-1/2 z-30 transition-[bottom] duration-300',
           isMobile ? (mobileSheetOpen ? 'bottom-[calc(45%+8px)]' : 'bottom-[56px]') : 'bottom-4'
         )}
       >
-        <div
-          className="flex items-center gap-0.5 backdrop-blur-xl border border-white/10 rounded-xl px-1.5 py-1 shadow-lg"
-          style={{ backgroundColor: '#0a0a0add' }}
-        >
+        <div className="flex items-center gap-0.5 bg-neutral-950/85 backdrop-blur-xl border border-white/10 rounded-xl px-1.5 py-1 shadow-lg">
           <Tooltip content="Zoom Out" position="top">
             <Button
               variant="ghost"
@@ -1350,6 +1347,7 @@ export const GridPaintPage: React.FC = () => {
 
             {/* Shape */}
             <div className="p-3 space-y-1 border-b border-neutral-800">
+              {/* EXCEÇÃO ao ruido-scan/mesma-info-dois-tamanhos: painel desktop e sheet mobile renderizam a mesma seção, nunca juntos */}
               <MicroTitle className="text-neutral-600 text-2xs">Shape</MicroTitle>
               <NodeSlider
                 label={t('grid.paint.dot_radius')}
@@ -1437,7 +1435,7 @@ export const GridPaintPage: React.FC = () => {
           open={mobileSheetOpen}
           onToggle={() => setMobileSheetOpen(!mobileSheetOpen)}
         >
-          <GlassPanel className="backdrop-blur-xl bg-transparent scrollbar-none">
+          <GlassPanel className="bg-transparent scrollbar-none">
             {/* Presets */}
             <div className="p-3 space-y-2 border-b border-neutral-800">
               <MicroTitle className="text-neutral-600 text-2xs">Presets</MicroTitle>
@@ -1660,22 +1658,13 @@ export const GridPaintPage: React.FC = () => {
       {!isMobile && (
         <AppShellStatusBar>
           <span>{Math.round(zoom * 100)}%</span>
-          <span>•</span>
           <span>{activeCount} dots</span>
-          <span>•</span>
           <span>
             {config.frameW}×{config.frameH}
           </span>
-          <span>•</span>
           <span>spacing {config.spacing}px</span>
-          <span>•</span>
           <span>r {config.dotRadius}px</span>
-          {config.strokeOnly && (
-            <>
-              <span>•</span>
-              <span className="text-brand-cyan">stroke</span>
-            </>
-          )}
+          {config.strokeOnly && <span className="text-foreground">stroke</span>}
         </AppShellStatusBar>
       )}
     </AppShell>

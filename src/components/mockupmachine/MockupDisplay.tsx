@@ -93,10 +93,7 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(
     if (!hasContent) {
       return (
         <div className="relative flex flex-col items-center justify-center h-full w-full min-w-0 text-center p-6 sm:p-8 md:p-12 animate-fade-in overflow-hidden">
-          <GlassPanel
-            padding="lg"
-            className="relative z-10 flex flex-col items-center backdrop-blur-md shadow-2xl"
-          >
+          <GlassPanel padding="lg" className="relative z-10 flex flex-col items-center shadow-2xl">
             <MicroTitle
               as="h3"
               className="text-xl md:text-2xl font-bold text-neutral-300 mb-4 drop-shadow-md"
@@ -184,10 +181,8 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(
             return (
               <div key={index} className="relative min-w-0 w-full">
                 {compareLabel && (
-                  <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm border border-white/10">
-                    <span className="text-2xs font-mono text-neutral-300 tracking-wide">
-                      {compareLabel}
-                    </span>
+                  <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded bg-black/70 border border-white/10">
+                    <span className="text-2xs text-neutral-300 ">{compareLabel}</span>
                   </div>
                 )}
                 <MockupCard

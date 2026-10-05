@@ -79,7 +79,7 @@ const Thumb: React.FC<ThumbProps> = ({
     >
       {/* Thumbnail body — placeholder canvas. Real render is too heavy at 56px. */}
       <div
-        className="rounded-md overflow-hidden border border-white/10 bg-neutral-900 flex items-center justify-center text-2xs font-mono uppercase tracking-widest text-neutral-600"
+        className="rounded-md overflow-hidden border border-white/10 bg-neutral-900 flex items-center justify-center text-2xs font-mono tabular-nums text-neutral-600"
         style={{ height: THUMB_HEIGHT }}
       >
         {page.format}

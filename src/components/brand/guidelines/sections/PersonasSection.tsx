@@ -69,7 +69,7 @@ const Avatar: React.FC<{
       <DropdownMenuContent align="start" className="w-52 p-1">
         {/* Gender — steers auto-resolved stock portraits */}
         <div className="flex items-center justify-between px-2 py-1.5">
-          <span className="text-2xs uppercase tracking-wide text-neutral-600">Stock gender</span>
+          <span className="text-2xs text-muted-foreground">Stock gender</span>
           <div className="flex gap-1">
             {GENDERS.map((g) => (
               <button
@@ -248,7 +248,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
                   set(i, { age: e.target.value ? Number(e.target.value) : undefined })
                 }
                 className="h-7 bg-transparent border-none px-0 text-sm text-neutral-500 focus-visible:ring-0 w-10 text-right shrink-0"
-                placeholder="—"
+                placeholder="Age"
               />
               <Button
                 variant="ghost"

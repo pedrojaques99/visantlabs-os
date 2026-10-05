@@ -16,7 +16,7 @@ export const SHORTCUTS: Shortcut[] = [
   // Seleção
   { group: 'Seleção', keys: [`${Mod}`, 'A'], label: 'Selecionar tudo' },
   { group: 'Seleção', keys: ['Esc'], label: 'Limpar seleção' },
-  { group: 'Seleção', keys: ['Drag em vazio'], label: 'Marquee — selecionar várias' },
+  { group: 'Seleção', keys: ['Drag em vazio'], label: 'Selecionar várias (marquee)' },
   { group: 'Seleção', keys: ['Shift', 'Click'], label: 'Adicionar/remover da seleção' },
   { group: 'Seleção', keys: ['Click direito'], label: 'Menu de contexto' },
 

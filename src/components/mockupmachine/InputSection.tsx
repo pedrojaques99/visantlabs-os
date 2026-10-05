@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Thumb } from '@/components/ui/Thumb';
 import { X, Plus, CheckCircle2, ArrowLeftRight } from '@/lib/ui/icons';
 import type { UploadedImage, DesignType, GeminiModel } from '@/types/types';
 import { toast } from 'sonner';
@@ -12,7 +13,7 @@ import { MicroTitle } from '../ui/MicroTitle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Diamond, MessageSquare, Share2 } from '@/lib/ui/icons';
+import { MessageSquare, Share2 } from '@/lib/ui/icons';
 import { BrandGuidelineSelector } from './BrandGuidelineSelector';
 import { useMockup } from '@/hooks/useMockup';
 import { MockupCard } from './MockupCard';
@@ -240,35 +241,33 @@ export const InputSection: React.FC<InputSectionProps> = ({
       className={cn(
         'relative flex flex-col p-2 rounded-2xl border transition-[color,background-color,border-color,box-shadow] group w-full animate-in fade-in zoom-in-95 duration-500',
         highlight
-          ? 'bg-brand-cyan/[0.02] border-brand-cyan/20 shadow-[0_10px_32px_rgba(var(--brand-cyan-rgb),0.05)]'
+          ? 'bg-neutral-900/30 border-border'
           : 'bg-neutral-900/20 border-white/[0.03] hover:border-white/10'
       )}
     >
       {/* Image Container */}
       <div className="relative h-32 sm:h-40 md:h-48 w-full rounded-xl overflow-hidden flex items-center justify-center group/img-container bg-black/20 p-4">
-        <img
+        <Thumb
           src={getImageSrc(img)}
           alt={label}
           loading="lazy"
-          className="max-h-full max-w-full object-contain transition-transform duration-700 group-hover/img-container:scale-[1.02] rounded-lg"
+          className="max-h-full max-w-full object-contain rounded-lg"
         />
 
         {/* Hover Overlay with Replace Action */}
-        <div className="absolute inset-0 flex items-center justify-center transition-all duration-300 backdrop-blur-md bg-black/40 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/img-container:opacity-100 group-focus-within/img-container:opacity-100">
+        <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 bg-black/40 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/img-container:opacity-100 group-focus-within/img-container:opacity-100">
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               onReplace();
             }}
-            className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all transform translate-y-4 group-hover/img-container:translate-y-0 duration-500"
+            className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <div className="p-3 rounded-full bg-brand-cyan text-black shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.4)]">
+            <div className="p-3 rounded-full bg-white/10 text-white">
               <ArrowLeftRight size={20} />
             </div>
-            <span className="text-2xs font-bold tracking-widest text-white uppercase">
-              {t('mockup.replace') || 'Substituir'}
-            </span>
+            <span className="text-xs font-semibold text-white">{t('mockup.replace')}</span>
           </button>
         </div>
       </div>
@@ -281,12 +280,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/[0.03] pb-6">
         <div className="flex items-center gap-4">
           <div className="flex flex-col">
-            <MicroTitle className="text-neutral-600 font-mono text-2xs mb-1">
-              WORKSPACE INITIALIZED
-            </MicroTitle>
-            <p className="text-sm font-bold text-white tracking-tight">
-              {t('mockup.filesLoaded', { count: referenceImages.length + 1 }) ||
-                `${referenceImages.length + 1} Assets Carregados`}
+            <p className="text-sm font-semibold text-foreground">
+              {t('mockup.filesLoaded', { count: referenceImages.length + 1 })}
             </p>
           </div>
         </div>
@@ -298,24 +293,26 @@ export const InputSection: React.FC<InputSectionProps> = ({
               <button
                 onClick={() => onDesignTypeChange('layout')}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-2xs font-bold font-mono tracking-widest uppercase transition-[color,background-color,border-color,box-shadow]',
+                  'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
                   designType === 'layout'
-                    ? 'bg-white/10 text-white shadow-lg'
-                    : 'text-neutral-600 hover:text-neutral-400'
+                    ? 'bg-white/10 text-foreground'
+                    : 'text-neutral-500 hover:text-neutral-300'
                 )}
+                aria-pressed={designType === 'layout'}
               >
-                Full Layout
+                {t('mockup.typeLayout')}
               </button>
               <button
                 onClick={() => onDesignTypeChange('logo')}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-2xs font-bold font-mono tracking-widest uppercase transition-[color,background-color,border-color,box-shadow]',
+                  'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
                   designType === 'logo'
-                    ? 'bg-brand-cyan/20 text-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]'
-                    : 'text-neutral-600 hover:text-neutral-400'
+                    ? 'bg-white/10 text-foreground'
+                    : 'text-neutral-500 hover:text-neutral-300'
                 )}
+                aria-pressed={designType === 'logo'}
               >
-                Isolate Logo
+                {t('mockup.typeLogo')}
               </button>
             </div>
 
@@ -327,12 +324,14 @@ export const InputSection: React.FC<InputSectionProps> = ({
               size="icon"
               onClick={() => setShowInstructions(!showInstructions)}
               className={cn(
-                'w-10 h-10 rounded-xl border transition-[color,background-color,border-color,box-shadow]',
+                'w-10 h-10 rounded-xl border transition-colors',
                 showInstructions
-                  ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]'
-                  : 'bg-neutral-900/50 border-neutral-800 text-neutral-500 hover:text-white'
+                  ? 'bg-brand-cyan/10 border-brand-cyan/40 text-foreground'
+                  : 'bg-neutral-900/50 border-neutral-800 text-neutral-500 hover:text-foreground'
               )}
               title={t('mockup.addInstructions')}
+              aria-label={t('mockup.addInstructions')}
+              aria-pressed={showInstructions}
             >
               <Share2 size={16} />
             </Button>
@@ -342,21 +341,13 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
       {showInstructions && (
         <div className="animate-in slide-in-from-top-2 duration-300">
-          <div className="relative group">
-            <div className="absolute -inset-px bg-gradient-to-r from-brand-cyan/20 to-transparent rounded-2xl blur-sm opacity-50 transition-opacity group-hover:opacity-100" />
+          <div className="relative">
             <Textarea
-              placeholder={
-                t('mockup.instructionsPlaceholder') ||
-                'Descreva detalhes específicos para a composição (ex: mesa de mármore, iluminação de pôr do sol, estilo tropical brasileiro...)'
-              }
-              className="relative min-h-[100px] bg-neutral-900/40 border-white/10 rounded-2xl text-sm focus:border-neutral-600 focus:ring-brand-cyan/10 transition-[color,background-color,border-color,opacity,filter] placeholder:text-neutral-700 custom-scrollbar"
+              placeholder={t('mockup.instructionsPlaceholder')}
+              className="relative min-h-[100px] bg-neutral-900/40 border-white/10 rounded-2xl text-sm focus:border-neutral-600 transition-colors placeholder:text-neutral-600 custom-scrollbar"
               value={mockupContext.instructions}
               onChange={(e) => mockupContext.setInstructions(e.target.value)}
             />
-            <div className="absolute bottom-3 right-3 flex items-center gap-2 pointer-events-none">
-              <Diamond size={12} className="text-neutral-500 opacity-40" />
-              <span className="text-2xs text-neutral-600">Context Engine Active</span>
-            </div>
           </div>
         </div>
       )}
@@ -376,7 +367,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
         {displayImage ? (
           <ImageCard
             img={displayImage}
-            label={t('mockup.mainFile') || 'PRIMARY DESIGN'}
+            label={t('mockup.mainFile')}
             onReplace={() => document.getElementById('image-upload-blank')?.click()}
             onAddRef={
               canAddMoreReferences
@@ -389,17 +380,17 @@ export const InputSection: React.FC<InputSectionProps> = ({
         ) : (
           <label
             htmlFor="image-upload-blank"
-            className="flex flex-col items-center justify-center p-12 rounded-3xl border-2 border-dashed border-neutral-800 hover:border-neutral-700 bg-white/[0.03] hover:bg-brand-cyan/[0.02] transition-all cursor-pointer group"
+            className="flex flex-col items-center justify-center p-12 rounded-3xl border-2 border-dashed border-neutral-800 hover:border-neutral-700 bg-white/[0.03] hover:bg-white/[0.05] transition-colors cursor-pointer group"
           >
-            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-brand-cyan/10 transition-all">
-              <Plus className="text-neutral-500 group-hover:text-brand-cyan" size={20} />
+            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
+              <Plus
+                className="text-neutral-500 group-hover:text-foreground transition-colors"
+                size={20}
+              />
             </div>
-            <MicroTitle className="text-neutral-600 group-hover:text-brand-cyan/60">
-              Initialize Workspace
-            </MicroTitle>
-            <p className="text-2xs text-neutral-700 mt-1 group-hover:text-neutral-500 transition-colors">
-              Drop primary design asset
-            </p>
+            <span className="text-sm text-neutral-400 group-hover:text-foreground transition-colors">
+              {t('mockup.uploadMainDesign')}
+            </span>
           </label>
         )}
 
@@ -408,7 +399,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
           <ImageCard
             key={index}
             img={img}
-            label={t('mockup.referenceLabel', { order: index + 1 }) || `REF-0${index + 1}`}
+            label={t('mockup.referenceLabel', { order: index + 1 })}
             onReplace={() => {
               setReplacingRefIndex(index);
               document.getElementById('replace-reference-upload')?.click();
@@ -425,7 +416,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
           >
             <Plus className="text-neutral-700 group-hover:text-neutral-500 mb-2" size={16} />
             <span className="text-2xs font-medium text-neutral-600 group-hover:text-neutral-400">
-              + Add Reference
+              {t('mockup.addReferenceImage', { count: referenceImages.length })}
             </span>
           </label>
         )}

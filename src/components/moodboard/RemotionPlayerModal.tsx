@@ -13,21 +13,7 @@ import {
 } from '../../types/moodboard';
 import { Button } from '../ui/button';
 import { useRenderQueue } from '../../hooks/moodboard/useRenderQueue';
-
-interface ControlGroupProps {
-  label: string;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-}
-const ControlGroup: React.FC<ControlGroupProps> = ({ label, icon, children }) => (
-  <div className="flex flex-col gap-3 p-4 rounded-2xl bg-neutral-900/60 border border-border hover:border-border/70 transition-colors">
-    <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.2em] text-neutral-500 font-bold">
-      {icon}
-      {label}
-    </div>
-    <div className="text-white">{children}</div>
-  </div>
-);
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface RemotionPlayerModalProps {
   isOpen: boolean;
@@ -53,6 +39,7 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
   thumbnailUrl,
 }) => {
   useScrollLock(isOpen);
+  const { t } = useTranslation();
   const playerRef = useRef<PlayerRef>(null);
   const { enqueue } = useRenderQueue();
   const fps = 30;
@@ -99,7 +86,11 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
   const handleEnqueueRender = () => {
     const composition: RenderComposition = {
       id: `render-${Date.now()}`,
-      name: name || (isMulti ? `${slides.length} Slides` : 'Single Clip'),
+      name:
+        name ||
+        (isMulti
+          ? t('moodboard.render.slides', { count: slides.length })
+          : t('moodboard.render.clip')),
       thumbnailUrl: thumbnailUrl || slides[0].imageUrl,
       slides,
       fps,
@@ -114,7 +105,7 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
     slides.forEach((slide, i) =>
       enqueue({
         id: `render-${Date.now()}-${i}`,
-        name: `Clip ${i + 1}`,
+        name: t('moodboard.render.clipN', { n: i + 1 }),
         thumbnailUrl: slide.imageUrl,
         slides: [slide],
         fps,
@@ -132,25 +123,27 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/80 backdrop-blur-2xl"
+          className="absolute inset-0 bg-black/80 backdrop-blur-sm"
           onClick={onClose}
         />
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative w-full max-w-6xl bg-neutral-950 rounded-[2rem] overflow-hidden flex flex-col md:flex-row shadow-2xl border border-border"
+          role="dialog"
+          aria-modal="true"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 16 }}
+          className="relative w-full max-w-6xl bg-neutral-950 rounded-2xl overflow-hidden flex flex-col md:flex-row shadow-2xl border border-border"
         >
           <div className="flex-1 flex flex-col overflow-hidden border-r border-border">
             <div className="p-5 border-b border-border flex items-center justify-between bg-neutral-900/50">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-white/80">
-                  {isMulti ? `${slides.length} Slides` : slides[0].preset?.replace('-', ' ')}
-                </h2>
-              </div>
+              <h2 className="text-sm font-semibold text-white">
+                {isMulti
+                  ? t('moodboard.render.slides', { count: slides.length })
+                  : t(`moodboard.item.presets.${slides[0].preset}`)}
+              </h2>
               <button
                 onClick={onClose}
+                aria-label={t('common.close')}
                 className="p-2 hover:bg-neutral-800 rounded-full transition-colors md:hidden text-white"
               >
                 <X size={20} />
@@ -196,30 +189,25 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
             </div>
 
             <div className="p-5 bg-neutral-900/50 border-t border-border flex items-center justify-between">
-              <div className="flex flex-col gap-1">
-                <p className="text-2xs text-neutral-500 uppercase tracking-[0.3em]">
-                  MP4 · {outputWidth}x{outputHeight}
-                </p>
-                <p className="text-2xs text-neutral-600 uppercase tracking-[0.3em]">
-                  {fps} FPS · {(totalFrames / fps).toFixed(1)}s
-                  {isMulti && ` · ${transition} transitions`}
-                </p>
-              </div>
+              {/* EXCEÇÃO ao ruido-scan/mono: spec técnica do arquivo (formato, px, fps, s) */}
+              <p className="text-2xs font-mono tabular-nums text-neutral-500">
+                MP4, {outputWidth}x{outputHeight}, {fps} fps, {(totalFrames / fps).toFixed(1)}s
+              </p>
               {isMulti ? (
                 <div className="flex items-center gap-3">
                   <Button variant="secondary" size="sm" onClick={handleRenderSeparately}>
                     <Video size={14} className="mr-1" />
-                    {slides.length} Separate
+                    {t('moodboard.render.separate', { count: slides.length })}
                   </Button>
                   <Button variant="default" size="sm" onClick={handleEnqueueRender}>
                     <Video size={14} className="mr-1" />
-                    Combined
+                    {t('moodboard.render.combined')}
                   </Button>
                 </div>
               ) : (
                 <Button variant="default" size="sm" onClick={handleEnqueueRender}>
                   <Video size={14} className="mr-1" />
-                  Render MP4
+                  {t('moodboard.render.renderMp4')}
                 </Button>
               )}
             </div>
@@ -227,12 +215,13 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
 
           <div className="w-full md:w-[300px] bg-neutral-950 flex flex-col">
             <div className="p-5 border-b border-border flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-neutral-500">
+              <div className="flex items-center gap-2 text-xs font-medium text-neutral-400">
                 <Settings2 size={14} />
-                Parameters
+                {t('moodboard.render.settings')}
               </div>
               <button
                 onClick={onClose}
+                aria-label={t('common.close')}
                 className="hidden md:flex p-2 hover:bg-neutral-800 rounded-full transition-colors text-white"
               >
                 <X size={18} />
@@ -242,7 +231,7 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
             <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-4">
               {[
                 {
-                  label: 'Duration',
+                  label: t('moodboard.render.duration'),
                   icon: <Clock size={12} />,
                   value: durationPerSlide,
                   min: 1,
@@ -252,7 +241,7 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
                   setter: setDurationPerSlide,
                 },
                 {
-                  label: 'Playback Speed',
+                  label: t('moodboard.render.speed'),
                   icon: <Zap size={12} />,
                   value: speed,
                   min: 0.5,
@@ -262,7 +251,7 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
                   setter: setSpeed,
                 },
                 {
-                  label: 'Zoom Magnitude',
+                  label: t('moodboard.render.zoom'),
                   icon: <Maximize2 size={12} />,
                   value: zoomScale,
                   min: 1,
@@ -273,7 +262,7 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
                   display: (v: number) => (v - 1).toFixed(2),
                 },
                 {
-                  label: 'Panning Amount',
+                  label: t('moodboard.render.pan'),
                   icon: <MoveHorizontal size={12} />,
                   value: panAmount,
                   min: 0,
@@ -283,26 +272,30 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
                   setter: setPanAmount,
                 },
               ].map(({ label, icon, value, min, max, step, unit, setter, display }) => (
-                <ControlGroup key={label} label={label} icon={icon}>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between items-center text-2xs font-mono text-neutral-500">
-                      <span>{label}</span>
-                      <span className="text-white bg-neutral-800 px-2 py-0.5 rounded-lg border border-border/70">
-                        {display ? display(value) : value}
-                        {unit}
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min={min}
-                      max={max}
-                      step={step}
-                      value={value}
-                      onChange={(e) => setter(Number(e.target.value))}
-                      className="w-full accent-white"
-                    />
-                  </div>
-                </ControlGroup>
+                <label
+                  key={label}
+                  className="flex flex-col gap-3 p-4 rounded-2xl bg-neutral-900/60 border border-border"
+                >
+                  <span className="flex items-center justify-between gap-2 text-xs font-medium text-neutral-400">
+                    <span className="flex items-center gap-2">
+                      {icon}
+                      {label}
+                    </span>
+                    <span className="text-2xs font-mono tabular-nums text-white bg-neutral-800 px-2 py-0.5 rounded-lg border border-border/70">
+                      {display ? display(value) : value}
+                      {unit}
+                    </span>
+                  </span>
+                  <input
+                    type="range"
+                    min={min}
+                    max={max}
+                    step={step}
+                    value={value}
+                    onChange={(e) => setter(Number(e.target.value))}
+                    className="w-full accent-white"
+                  />
+                </label>
               ))}
 
               <button
@@ -312,9 +305,9 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
                   setSpeed(1);
                   setDurationPerSlide(5);
                 }}
-                className="w-full py-3 text-2xs uppercase tracking-widest font-bold text-neutral-600 hover:text-white transition-colors mt-auto"
+                className="w-full py-3 text-xs font-medium text-neutral-500 hover:text-white transition-colors mt-auto"
               >
-                Reset to Defaults
+                {t('common.reset')}
               </button>
             </div>
           </div>

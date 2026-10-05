@@ -1,3 +1,6 @@
+// EXCEÇÃO ao audit:design/hardcoded-cyan-rgba: estas cores vão pro
+// ctx.fillStyle do canvas 2D (ImageEditorCanvas), que não resolve var(--x).
+// Por isso são literais; o valor espelha --brand-cyan.
 export const IMAGE_EDITOR = {
   mask: {
     fill: 'rgba(255, 255, 255, 1)',

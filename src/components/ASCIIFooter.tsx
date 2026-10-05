@@ -78,7 +78,6 @@ export default function ASCIIFooter({
   };
 
   const textColor = isDarkMode ? 'text-neutral-500' : 'text-neutral-600';
-  const hoverColor = isDarkMode ? '#fff' : '#000';
   const separator = (
     <span
       className={`${isDarkMode ? 'text-neutral-700/50' : 'text-neutral-400/50'} mx-1 select-none`}
@@ -88,74 +87,50 @@ export default function ASCIIFooter({
   );
 
   return (
-    <footer
-      className={`relative border-t ${
-        isDarkMode ? 'border-neutral-900/50 bg-background/50' : 'border-neutral-300/50 bg-white/10'
-      } backdrop-blur-sm z-50 ${className}`}
-    >
-      {/* Dynamic top line effect */}
-      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-cyan/20 to-transparent" />
-
+    <footer className={`relative border-t border-border bg-background z-50 ${className}`}>
       <div className="w-full px-4 sm:px-8 py-3">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 font-mono">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Left: VSN & App Version - Dynamic Scale Text */}
           <div
             className={`flex items-center gap-3 text-[clamp(10px,1vw,11px)] ${textColor} whitespace-nowrap order-2 md:order-1`}
           >
             <UniversalFooter isDarkMode={isDarkMode} className="text-left" />
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className={`px-1.5 py-0.5 rounded-sm ${
-                isDarkMode
-                  ? 'bg-neutral-900/30 border-neutral-800/50'
-                  : 'bg-neutral-900/60 border-neutral-700/50'
-              } border flex items-center gap-1.5`}
-            >
-              <div className="w-1 h-1 rounded-full bg-brand-cyan animate-pulse" />
-              <span className="text-neutral-600 uppercase tracking-tighter">LIVE_SYS_v1.2</span>
-            </motion.div>
           </div>
 
           {/* Center: Dynamic Info & Links - Responsive Wrapping */}
           <div
             className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[clamp(10px,1vw,11px)] ${textColor} order-1 md:order-2`}
           >
-            <motion.div
-              whileHover={{ color: hoverColor }}
-              className="flex items-center gap-1.5 transition-colors cursor-default group"
-            >
-              <Clock size={10} className="group-hover:text-brand-cyan transition-colors" />
+            <div className="flex items-center gap-1.5">
+              <Clock size={10} />
               <span className="tabular-nums">{time}</span>
-            </motion.div>
+            </div>
 
             {separator}
 
-            <motion.a
+            <a
               href="https://vsn-labs.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
-              whileHover={{ color: hoverColor }}
-              className="hover:underline decoration-neutral-700 underline-offset-2 transition-colors cursor-pointer whitespace-nowrap"
+              className="hover:underline decoration-neutral-700 underline-offset-2 transition-colors cursor-pointer hover:text-foreground whitespace-nowrap"
             >
               {t('footer.rightsReservedShort')}
-            </motion.a>
+            </a>
 
             {separator}
 
-            <motion.a
+            <a
               href="/privacy"
-              whileHover={{ color: hoverColor }}
               onClick={(e) => {
                 e.preventDefault();
                 if (onPrivacyClick) handlePolicyClick(onPrivacyClick);
                 else navigate('/privacy');
               }}
-              className="flex items-center gap-1 hover:underline decoration-neutral-700 underline-offset-2 transition-colors cursor-pointer"
+              className="flex items-center gap-1 hover:underline decoration-neutral-700 underline-offset-2 transition-colors cursor-pointer hover:text-foreground"
             >
               <Shield size={10} />
               <span>{t('footer.privacyPolicy')}</span>
-            </motion.a>
+            </a>
           </div>
 
           {/* Right: Menus & Language - Grouped for Desktop */}
@@ -165,12 +140,11 @@ export default function ASCIIFooter({
             {/* Policies Dropdown */}
             {(onTermsClick || onUsagePolicyClick || onRefundClick) && (
               <div className="relative" data-policies-dropdown>
-                <motion.button
-                  whileHover={{ color: hoverColor }}
+                <button
                   onClick={() => setIsPoliciesMenuOpen(!isPoliciesMenuOpen)}
                   className={`flex items-center gap-1.5 px-2 py-1 ${
                     isDarkMode ? 'hover:bg-neutral-900/50' : 'hover:bg-neutral-900/20'
-                  } rounded-sm transition-all`}
+                  } rounded-sm transition-colors hover:text-foreground`}
                 >
                   <Scale size={10} />
                   <span>{t('footer.legal')}</span>
@@ -180,7 +154,7 @@ export default function ASCIIFooter({
                       isPoliciesMenuOpen ? 'rotate-180' : ''
                     }`}
                   />
-                </motion.button>
+                </button>
 
                 <AnimatePresence>
                   {isPoliciesMenuOpen && (
@@ -195,7 +169,7 @@ export default function ASCIIFooter({
                           <Button
                             variant="ghost"
                             onClick={() => handlePolicyClick(onTermsClick)}
-                            className="w-full justify-start px-3 py-2 h-7 text-2xs font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
+                            className="w-full justify-start px-3 py-2 h-7 text-2xs transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
                           >
                             {t('footer.terms')}
                           </Button>
@@ -204,7 +178,7 @@ export default function ASCIIFooter({
                           <Button
                             variant="ghost"
                             onClick={() => handlePolicyClick(onUsagePolicyClick)}
-                            className="w-full justify-start px-3 py-2 h-7 text-2xs font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
+                            className="w-full justify-start px-3 py-2 h-7 text-2xs transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
                           >
                             {t('footer.usage')}
                           </Button>
@@ -213,7 +187,7 @@ export default function ASCIIFooter({
                           <Button
                             variant="ghost"
                             onClick={() => handlePolicyClick(onRefundClick)}
-                            className="w-full justify-start px-3 py-2 h-7 text-2xs font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
+                            className="w-full justify-start px-3 py-2 h-7 text-2xs transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
                           >
                             {t('footer.refund')}
                           </Button>
@@ -233,22 +207,21 @@ export default function ASCIIFooter({
 
             {/* Language Selector */}
             <div className="relative" data-language-dropdown>
-              <motion.button
-                whileHover={{ color: hoverColor }}
+              <button
                 onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
                 className={`flex items-center gap-1.5 px-2 py-1 ${
                   isDarkMode ? 'hover:bg-neutral-900/50' : 'hover:bg-neutral-900/20'
-                } rounded-sm transition-all`}
+                } rounded-sm transition-colors hover:text-foreground`}
               >
                 <Globe size={10} className={textColor} />
-                <span className="uppercase tracking-widest">{locale?.split('-')[0] || 'EN'}</span>
+                <span className="uppercase">{locale?.split('-')[0] || 'EN'}</span>
                 <ChevronDown
                   size={8}
                   className={`transition-transform duration-300 ${
                     isLanguageMenuOpen ? 'rotate-180' : ''
                   }`}
                 />
-              </motion.button>
+              </button>
 
               <AnimatePresence>
                 {isLanguageMenuOpen && (
@@ -262,14 +235,14 @@ export default function ASCIIFooter({
                       <Button
                         variant="ghost"
                         onClick={() => handleLocaleChange('en-US')}
-                        className="w-full justify-start px-3 py-2 h-7 text-2xs font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
+                        className="w-full justify-start px-3 py-2 h-7 text-2xs transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
                       >
                         {t('footer.english')}
                       </Button>
                       <Button
                         variant="ghost"
                         onClick={() => handleLocaleChange('pt-BR')}
-                        className="w-full justify-start px-3 py-2 h-7 text-2xs font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
+                        className="w-full justify-start px-3 py-2 h-7 text-2xs transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
                       >
                         {t('footer.portuguese')}
                       </Button>

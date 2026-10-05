@@ -33,6 +33,7 @@ import {
   type SSEResultEvent,
 } from '../services/benchmarkApi';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Thumb } from '@/components/ui/Thumb';
 
 const TIER_CONFIG: Record<BenchmarkTier, { label: string; color: string; description: string }> = {
   flagship: {
@@ -63,7 +64,7 @@ const PROVIDER_COLORS: Record<string, string> = {
   imagen: 'bg-purple-500/10 text-purple-400',
   seedream: 'bg-orange-500/10 text-orange-400',
   ideogram: 'bg-pink-500/10 text-pink-400',
-  reve: 'bg-brand-cyan/10 text-brand-cyan',
+  reve: 'bg-teal-500/10 text-teal-400',
 };
 
 // ─── Run Tab ─────────────────────────────────────────────────────────────────
@@ -113,7 +114,7 @@ const RunBenchmark: React.FC = () => {
     (modelId: string) => {
       const model = models.find((m) => m.id === modelId);
       if (model && !model.available) {
-        toast.error(`${model.label} — API key not configured`);
+        toast.error(`${model.label}: API key not configured`);
         return;
       }
       setSelectedModels((prev) => {
@@ -289,7 +290,7 @@ const RunBenchmark: React.FC = () => {
               onClick={() => selectTier(tier)}
               disabled={isStreaming}
               className={cn(
-                'px-3 py-1.5 rounded-full border text-2xs font-mono uppercase tracking-wider transition-[color,background-color,border-color,opacity]',
+                'px-3 py-1.5 rounded-full border text-xs transition-[color,background-color,border-color,opacity]',
                 cfg.color,
                 'hover:bg-white/5 disabled:opacity-40'
               )}
@@ -510,7 +511,7 @@ const RunBenchmark: React.FC = () => {
                       className={cn(
                         'overflow-hidden transition-colors',
                         isWinner && 'ring-1 ring-warning/30',
-                        result.isNew && 'ring-1 ring-brand-cyan/40'
+                        result.isNew && 'ring-1 ring-white/20'
                       )}
                     >
                       {hasImage ? (
@@ -520,7 +521,7 @@ const RunBenchmark: React.FC = () => {
                           animate={{ opacity: 1 }}
                           transition={{ duration: 0.5 }}
                         >
-                          <img
+                          <Thumb
                             src={result.imageUrl}
                             alt={`${result.label} result`}
                             className="w-full h-full object-cover"
@@ -741,12 +742,7 @@ const BenchmarkGallery: React.FC = () => {
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map((item) => (
-          <motion.div
-            key={item.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileHover={{ y: -2 }}
-          >
+          <motion.div key={item.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
             <GlassPanel
               className="overflow-hidden cursor-pointer hover:border-white/15 transition-colors"
               onClick={() => openBenchmark(item.id)}
@@ -754,7 +750,7 @@ const BenchmarkGallery: React.FC = () => {
               <div className="grid grid-cols-2 gap-0.5 aspect-square bg-black/20">
                 {item.thumbnails.slice(0, 4).map((t, i) => (
                   <div key={i} className="relative overflow-hidden">
-                    <img
+                    <Thumb
                       src={t.imageUrl}
                       alt={t.model}
                       className="w-full h-full object-cover"
@@ -875,7 +871,7 @@ const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<stri
               className={cn('overflow-hidden', isWinner && 'ring-1 ring-warning/30')}
             >
               <div className="relative aspect-square bg-black/20">
-                <img
+                <Thumb
                   src={result.imageUrl}
                   alt={result.model}
                   className="w-full h-full object-cover"
@@ -928,7 +924,7 @@ const BenchmarkArenaPage: React.FC = () => {
   return (
     <PageShell
       pageId="benchmark-arena"
-      seoTitle="Benchmark Arena — Visant Labs"
+      seoTitle="Benchmark Arena"
       seoDescription="Compare AI image models side-by-side. Test prompts across Gemini, OpenAI, Seedream, Imagen, Ideogram, and REVE."
       title="Benchmark Arena"
       microTitle="Labs // Arena"

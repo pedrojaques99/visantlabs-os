@@ -200,13 +200,11 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
       }
     >
       <div className="space-y-1.5 py-1">
-        {local.length === 0 && (
-          <p className="text-2xs text-neutral-700 py-2">No colors yet. Click + to add.</p>
-        )}
+        {local.length === 0 && <p className="text-2xs text-neutral-700 py-2">No colors yet.</p>}
         {local.map((c, i) => (
           <div key={i} className="flex items-center gap-3 group/color">
             {/* Color swatch + picker */}
-            <div className="relative w-8 h-8 shrink-0 cursor-pointer" title="Click to change color">
+            <div className="relative w-8 h-8 shrink-0 cursor-pointer">
               <div
                 className="w-full h-full rounded-md border border-white/10"
                 style={{ backgroundColor: c.hex }}

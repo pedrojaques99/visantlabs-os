@@ -265,7 +265,7 @@ function renderExportMetadata(
   ctx.textAlign = 'right';
   ctx.font = '8px Manrope, sans-serif';
   ctx.globalAlpha = 0.4;
-  ctx.fillText('VSN LABS — Wind Tunnel', w - 10, y0);
+  ctx.fillText('VSN LABS Wind Tunnel', w - 10, y0);
   ctx.restore();
 }
 
@@ -1004,6 +1004,7 @@ export const WindTunnelCanvas = forwardRef<
     if (e.button !== 0 && e.button !== 2) return;
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
+    // EXCEÇÃO ao ruido-scan/realce-que-nao-decide: estado do ponteiro no canvas, não realce visual
     mouseRef.current = {
       active: true,
       button: e.button,

@@ -24,7 +24,7 @@ export const BrandingCompactCard: React.FC<BrandingCompactCardProps> = ({
     <GlassPanel
       onClick={onClick}
       className={cn(
-        'aspect-square hover:border-brand-cyan/50 transition-all duration-200 cursor-pointer group relative animate-fade-in-down flex flex-col items-center justify-center w-1/2 md:max-w-[150px]',
+        'aspect-square hover:border-neutral-600 transition-colors duration-200 cursor-pointer group relative animate-fade-in-down flex flex-col items-center justify-center w-1/2 md:max-w-[150px]',
         'border-white/5',
         isGenerating && 'opacity-50'
       )}

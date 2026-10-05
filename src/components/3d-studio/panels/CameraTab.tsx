@@ -1,6 +1,8 @@
 import React, { useRef } from 'react';
 import { toast } from 'sonner';
 import { ScrubInput } from '@/components/ui/ScrubInput';
+import { Thumb } from '@/components/ui/Thumb';
+import { X } from '@/lib/ui/icons';
 import { Switch } from '@/components/ui/switch';
 import { Select, type SelectOption } from '@/components/ui/select';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
@@ -206,14 +208,14 @@ export const CameraTab: React.FC = React.memo(() => {
             step={1}
             suffix="°"
             onChange={setFov}
-            hint="Field of View — lower = telephoto, higher = wide-angle"
+            hint="Field of view. Lower is telephoto, higher is wide-angle"
           />
         )}
       </ToolPanelDisclosure>
 
       {/* Lighting — preset picker + intensities */}
       <ToolPanelDisclosure label={t('studio3d.lighting.title')} defaultOpen>
-        <span className="text-3xs text-neutral-500 uppercase tracking-widest">Preset</span>
+        <span className="text-3xs text-neutral-500">Preset</span>
         <Select
           options={LIGHTING_PRESET_OPTIONS}
           value=""
@@ -266,7 +268,7 @@ export const CameraTab: React.FC = React.memo(() => {
 
       {/* Rendering */}
       <ToolPanelDisclosure label={t('studio3d.panels.rendering')} defaultOpen>
-        <span className="text-3xs text-neutral-500 uppercase tracking-widest">Quality</span>
+        <span className="text-3xs text-neutral-500">Quality</span>
         <Select
           options={RENDER_QUALITY_OPTIONS}
           value={store.renderQuality}
@@ -279,13 +281,13 @@ export const CameraTab: React.FC = React.memo(() => {
           max={3}
           step={0.05}
           onChange={setToneMappingExposure}
-          hint="Scene brightness — adjust to match your lighting"
+          hint="Scene brightness, to match your lighting"
         />
       </ToolPanelDisclosure>
 
       {/* Background */}
       <ToolPanelDisclosure label={t('studio3d.background.title')} defaultOpen>
-        <span className="text-3xs text-neutral-500 uppercase tracking-widest">Type</span>
+        <span className="text-3xs text-neutral-500">Type</span>
         <Select
           options={[
             { value: 'solid', label: t('studio3d.background.types.solid') },
@@ -306,9 +308,7 @@ export const CameraTab: React.FC = React.memo(() => {
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <span className="text-3xs text-neutral-500 uppercase tracking-widest">
-                  {t('studio3d.background.color1')}
-                </span>
+                <span className="text-3xs text-neutral-500">{t('studio3d.background.color1')}</span>
                 <ExpandableColorPicker
                   color={store.bgGradient.color1}
                   onChange={(c) => store.setBgGradient({ color1: c })}
@@ -316,9 +316,7 @@ export const CameraTab: React.FC = React.memo(() => {
                 />
               </div>
               <div className="space-y-2">
-                <span className="text-3xs text-neutral-500 uppercase tracking-widest">
-                  {t('studio3d.background.color2')}
-                </span>
+                <span className="text-3xs text-neutral-500">{t('studio3d.background.color2')}</span>
                 <ExpandableColorPicker
                   color={store.bgGradient.color2}
                   onChange={(c) => store.setBgGradient({ color2: c })}
@@ -343,23 +341,22 @@ export const CameraTab: React.FC = React.memo(() => {
           <div className="space-y-2">
             {store.backgroundImageUrl ? (
               <div className="relative rounded-md overflow-hidden border border-white/10">
-                <img
+                <Thumb
                   src={store.backgroundImageUrl}
                   alt="Background"
                   className="w-full h-20 object-cover"
                 />
                 <button
                   onClick={() => store.setBackgroundImageUrl('')}
-                  className="absolute top-1 right-1 w-5 h-5 rounded bg-black/60 flex items-center justify-center text-neutral-400 hover:text-white transition-colors text-2xs"
+                  className="absolute top-1 right-1 w-5 h-5 rounded bg-black/60 flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
+                  aria-label="Remove background image"
                 >
-                  ✕
+                  <X size={12} />
                 </button>
               </div>
             ) : (
               <label className="flex flex-col items-center gap-1 p-3 border border-dashed border-white/10 hover:border-white/20 rounded-lg cursor-pointer transition-colors">
-                <span className="text-2xs uppercase tracking-wider text-neutral-500">
-                  Upload image
-                </span>
+                <span className="text-2xs text-neutral-500">Upload image</span>
                 <input
                   type="file"
                   accept=".png,.jpg,.jpeg,.webp"
@@ -433,9 +430,7 @@ export const CameraTab: React.FC = React.memo(() => {
         </ToolPanelRow>
         {store.shadow && (
           <>
-            <span className="text-3xs text-neutral-500 uppercase tracking-widest">
-              Shadow quality
-            </span>
+            <span className="text-3xs text-neutral-500">Shadow quality</span>
             <Select
               options={SHADOW_QUALITY_OPTIONS}
               value={store.shadowQuality}
@@ -455,9 +450,7 @@ export const CameraTab: React.FC = React.memo(() => {
       {/* Advanced — over-senior controls */}
       <ToolPanelDisclosure label="Advanced" defaultOpen={false}>
         {/* Per-light XYZ positions */}
-        <span className="text-3xs text-neutral-500 uppercase tracking-widest">
-          {t('studio3d.panels.lightPositions')}
-        </span>
+        <span className="text-3xs text-neutral-500">{t('studio3d.panels.lightPositions')}</span>
         <LightPositionSliders
           label="Key Position"
           position={store.lightPosition}
@@ -480,7 +473,7 @@ export const CameraTab: React.FC = React.memo(() => {
         />
 
         {/* HDRI environment */}
-        <span className="text-3xs text-neutral-500 uppercase tracking-widest">
+        <span className="text-3xs text-neutral-500">
           HDRI {store.customHdriUrl ? '(custom)' : `(${store.environment})`}
         </span>
         <Select
@@ -491,7 +484,7 @@ export const CameraTab: React.FC = React.memo(() => {
         />
         <button
           onClick={() => hdriInputRef.current?.click()}
-          className="w-full px-2 py-1.5 rounded text-2xs uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
+          className="w-full px-2 py-1.5 rounded text-2xs bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
         >
           {store.customHdriUrl
             ? t('studio3d.environment.customLoaded')
@@ -561,14 +554,14 @@ export const CameraTab: React.FC = React.memo(() => {
         {store.customHdriUrl && (
           <button
             onClick={() => store.setEnvironment('studio')}
-            className="w-full py-1 rounded text-2xs uppercase tracking-wider text-neutral-600 hover:text-destructive transition-colors"
+            className="w-full py-1 rounded text-2xs text-neutral-600 hover:text-destructive transition-colors"
           >
             {t('studio3d.environment.removeCustom')}
           </button>
         )}
 
         {/* Tone mapping algorithm */}
-        <span className="text-3xs text-neutral-500 uppercase tracking-widest">Tone mapping</span>
+        <span className="text-3xs text-neutral-500">Tone mapping</span>
         <Select
           options={TONE_MAPPING_SELECT_OPTIONS}
           value={store.toneMapping}

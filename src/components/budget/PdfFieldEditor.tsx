@@ -167,7 +167,7 @@ export const PdfFieldEditor: React.FC<PdfFieldEditorProps> = ({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold font-mono text-neutral-300">Variáveis Disponíveis</h3>
+      <h3 className="text-sm font-semibold text-neutral-300">Variáveis Disponíveis</h3>
 
       {/* Grid de thumbs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -208,7 +208,7 @@ export const PdfFieldEditor: React.FC<PdfFieldEditorProps> = ({
       )}
 
       {fieldMappings.length === 0 && (
-        <p className="text-xs text-neutral-500 font-mono text-center py-4">
+        <p className="text-xs text-neutral-500 text-center py-4">
           Clique em uma variável para adicionar ao PDF
         </p>
       )}

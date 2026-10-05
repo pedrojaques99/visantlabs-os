@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { authService } from '@/services/authService';
 import { toast } from 'sonner';
 import { ArrowRight } from '@/lib/ui/icons';
+import { useTranslation } from '@/hooks/useTranslation';
 import { FEATURE_ONBOARDING_V2 } from '@/config/featureFlags';
 import { OnboardingWizardV2 } from '@/components/onboarding/OnboardingWizardV2';
 import { PersonaGrid } from '@/components/onboarding/PersonaGrid';
@@ -16,6 +17,7 @@ import { SEGMENTS, NO_BRAND_ROUTE } from '@/components/onboarding/onboardingSegm
 // O wizard v2 (FEATURE_ONBOARDING_V2) adiciona o passo "Traga sua marca" para
 // TODAS as personas — ver components/onboarding/OnboardingWizardV2.tsx.
 const OnboardingWizardV1: React.FC = () => {
+  const { t, tOr } = useTranslation();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -27,10 +29,10 @@ const OnboardingWizardV1: React.FC = () => {
     setIsSubmitting(true);
     try {
       await authService.completeOnboarding(category);
-      toast.success('Bem-vindo a Visant Labs!');
+      toast.success(t('onboarding.welcomeToast'));
       navigate(route);
     } catch {
-      toast.error('Erro ao completar onboarding');
+      toast.error(t('onboarding.finishError'));
       setIsSubmitting(false);
     }
   };
@@ -53,11 +55,11 @@ const OnboardingWizardV1: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
             >
-              <h2 className="text-xl font-semibold text-foreground font-mono mb-2">
-                O que voce faz?
+              <h2 className="text-xl font-semibold text-foreground mb-2">
+                {t('onboarding.persona.title')}
               </h2>
-              <p className="text-muted-foreground text-sm font-mono mb-6">
-                Isso nos leva direto a ferramenta certa pra voce.
+              <p className="text-muted-foreground text-sm mb-6">
+                {t('onboarding.persona.subtitle')}
               </p>
 
               <PersonaGrid selectedId={selectedId} onSelect={setSelectedId} />
@@ -69,14 +71,14 @@ const OnboardingWizardV1: React.FC = () => {
                   disabled={isSubmitting}
                   className="flex-1"
                 >
-                  Pular
+                  {t('onboarding.skip')}
                 </Button>
                 <Button
                   onClick={() => (selected ? setStep(1) : handleSkip())}
                   disabled={isSubmitting}
                   className="flex-1 gap-2"
                 >
-                  Continuar <ArrowRight className="w-4 h-4" />
+                  {t('onboarding.continue')} <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>
             </motion.div>
@@ -89,15 +91,12 @@ const OnboardingWizardV1: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
             >
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-muted border border-border">
-                  <selected.icon className="w-5 h-5 text-brand-cyan" />
-                </div>
-                <h2 className="text-xl font-semibold text-foreground font-mono">
-                  {selected.actionTitle}
-                </h2>
-              </div>
-              <p className="text-muted-foreground text-sm font-mono mb-6">{selected.actionDesc}</p>
+              <h2 className="text-xl font-semibold text-foreground mb-2">
+                {tOr(`onboarding.persona.${selected.id}.actionTitle`, selected.actionTitle)}
+              </h2>
+              <p className="text-muted-foreground text-sm mb-6">
+                {tOr(`onboarding.persona.${selected.id}.actionDesc`, selected.actionDesc)}
+              </p>
 
               <div className="flex gap-3">
                 <Button
@@ -106,14 +105,15 @@ const OnboardingWizardV1: React.FC = () => {
                   disabled={isSubmitting}
                   className="flex-1"
                 >
-                  Voltar
+                  {t('onboarding.back')}
                 </Button>
                 <Button
                   onClick={() => finish(selected.route, selected.id)}
                   disabled={isSubmitting}
                   className="flex-1 gap-2"
                 >
-                  {selected.actionCta} <ArrowRight className="w-4 h-4" />
+                  {tOr(`onboarding.persona.${selected.id}.actionCta`, selected.actionCta)}{' '}
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>
             </motion.div>
@@ -125,8 +125,14 @@ const OnboardingWizardV1: React.FC = () => {
 };
 
 export const OnboardingWizardPage: React.FC = () => {
+  const { t } = useTranslation();
   return (
-    <PageShell pageId="onboarding-wizard" title="Bem-vindo" seoTitle="Bem-vindo" hideHeader>
+    <PageShell
+      pageId="onboarding-wizard"
+      title={t('onboarding.pageTitle')}
+      seoTitle={t('onboarding.pageTitle')}
+      hideHeader
+    >
       {FEATURE_ONBOARDING_V2 ? <OnboardingWizardV2 /> : <OnboardingWizardV1 />}
     </PageShell>
   );

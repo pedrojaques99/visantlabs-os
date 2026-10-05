@@ -20,7 +20,7 @@ export function ByokBadge({ active, showTooltip = true, className }: ByokBadgePr
   const badge = (
     <Badge
       className={cn(
-        'text-xs gap-1 font-mono',
+        'text-xs gap-1',
         active
           ? 'bg-success/20 text-success border-success/30 hover:bg-success/30'
           : 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30 hover:bg-neutral-500/30',
@@ -84,11 +84,12 @@ export function ByokCostIndicator({
   estimatedCostUSD,
   className,
 }: ByokCostIndicatorProps) {
+  const { t } = useTranslation();
   if (isByok) {
     return (
       <div className={cn('flex items-center gap-1.5 text-xs text-success', className)}>
         <Key size={12} />
-        <span>BYOK Active - Charges go to your Google account</span>
+        <span>{t('byok.activeCharges')}</span>
       </div>
     );
   }

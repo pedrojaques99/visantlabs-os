@@ -340,8 +340,6 @@ export const OgImagePage: React.FC = () => {
             <motion.button
               key={tpl.id}
               onClick={() => setTemplate(tpl.id)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               className="flex flex-col items-center gap-1 group"
               title={tpl.label}
             >
@@ -369,7 +367,7 @@ export const OgImagePage: React.FC = () => {
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Your blog post title"
           rows={2}
-          className="w-full bg-neutral-950/60 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 resize-none"
+          className="w-full bg-neutral-950/60 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 resize-none"
         />
       </div>
 
@@ -379,8 +377,8 @@ export const OgImagePage: React.FC = () => {
         <Input
           value={subtitle}
           onChange={(e) => setSubtitle(e.target.value)}
-          placeholder="A brief description"
-          className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:border-neutral-600"
+          placeholder="What the page is about"
+          className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 placeholder:text-neutral-600 focus:border-neutral-600"
         />
       </div>
 
@@ -391,7 +389,7 @@ export const OgImagePage: React.FC = () => {
           value={authorName}
           onChange={(e) => setAuthorName(e.target.value)}
           placeholder="Author name"
-          className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:border-neutral-600"
+          className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 placeholder:text-neutral-600 focus:border-neutral-600"
         />
       </div>
 
@@ -399,7 +397,7 @@ export const OgImagePage: React.FC = () => {
       <div>
         <label className="block text-xs font-medium text-neutral-300 mb-2">Logo</label>
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-2xs font-mono uppercase tracking-wider cursor-pointer transition-colors">
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-xs cursor-pointer transition-colors">
             <Upload size={10} />
             Upload
             <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
@@ -422,7 +420,7 @@ export const OgImagePage: React.FC = () => {
             Background Image
           </label>
           <div className="flex items-center gap-2">
-            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-2xs font-mono uppercase tracking-wider cursor-pointer transition-colors">
+            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-xs cursor-pointer transition-colors">
               <Upload size={10} />
               Upload
               <input type="file" accept="image/*" className="hidden" onChange={handleBgUpload} />
@@ -475,32 +473,28 @@ export const OgImagePage: React.FC = () => {
     <div className="flex items-center gap-3">
       <button
         onClick={handleDownload}
-        className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-widest text-foreground hover:text-brand-cyan/80 transition-colors"
+        className="flex items-center gap-1.5 text-xs font-medium text-foreground hover:text-muted-foreground transition-colors"
       >
         <Download className="w-3.5 h-3.5" />
         Download PNG
       </button>
-      <span className="text-neutral-700 select-none">·</span>
       <button
         onClick={handleCopy}
-        className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-widest text-foreground hover:text-brand-cyan/80 transition-colors"
+        className="flex items-center gap-1.5 text-xs font-medium text-foreground hover:text-muted-foreground transition-colors"
       >
         <Copy className="w-3.5 h-3.5" />
         Copy Image
       </button>
-      <span className="text-neutral-700 select-none">·</span>
       <button
         onClick={handleCopyMeta}
-        className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-widest text-foreground hover:text-brand-cyan/80 transition-colors"
+        className="flex items-center gap-1.5 text-xs font-medium text-foreground hover:text-muted-foreground transition-colors"
       >
         <Code className="w-3.5 h-3.5" />
         Copy Meta Tags
       </button>
     </div>
   ) : (
-    <span className="text-2xs uppercase tracking-widest text-neutral-600">
-      Configure your OG image
-    </span>
+    <span className="text-xs text-neutral-600">Configure your OG image</span>
   );
 
   /* ---------------------------------------------------------------- */
@@ -535,7 +529,7 @@ export const OgImagePage: React.FC = () => {
           />
         ) : (
           <div
-            className="w-full flex items-center justify-center text-neutral-600 text-xs font-mono"
+            className="w-full flex items-center justify-center text-neutral-600 text-xs"
             style={{ aspectRatio: `${width}/${height}` }}
           >
             Preview

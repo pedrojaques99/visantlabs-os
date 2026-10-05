@@ -68,6 +68,10 @@ import { useResizable } from '@/hooks/useResizable';
 import { fileToBase64 } from '@/utils/fileUtils';
 import { ImageIcon, FileText, RefreshCw, Globe, Link2, Check, ChevronDown } from '@/lib/ui/icons';
 import { MarkdownRenderer } from '@/utils/markdownRenderer';
+import { useTranslation } from '@/hooks/useTranslation';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { DropOverlay } from '@/components/ui/DropOverlay';
+import { ArrowRight } from '@/lib/ui/icons';
 
 const SandpackPreview = React.lazy(() =>
   import('@codesandbox/sandpack-react').then((m) => ({
@@ -97,59 +101,22 @@ const SandpackPreview = React.lazy(() =>
 );
 
 const SUGGESTIONS = [
-  {
-    label: 'Brand Color Palette',
-    prompt: 'A tool to extract and display color palette from any image, with export options',
-    description: 'Extract colors from any image with export options',
-  },
-  {
-    label: 'Mockup Machine',
-    prompt:
-      'A mockup generator where I select scene types and generate product mockups from my brand',
-    description: 'Generate product mockups from your brand',
-  },
-  {
-    label: 'Naming Generator',
-    prompt:
-      'A brand naming brainstorm tool with context input, style selector, and multiple suggestions',
-    description: 'Brainstorm brand names with style controls',
-  },
-  {
-    label: 'Social Post Creator',
-    prompt:
-      'A social media post template creator with size presets, text overlay, and image generation',
-    description: 'Create social media posts with templates',
-  },
-  {
-    label: 'Compliance Checker',
-    prompt: 'Upload a design and check it against brand guidelines for compliance scoring',
-    description: 'Check designs against brand guidelines',
-  },
-  {
-    label: 'Logo Tester',
-    prompt: 'A tool to test my logo across different mockup scenarios side by side',
-    description: 'Test your logo across mockup scenarios',
-  },
-  {
-    label: 'Typography Pairing',
-    prompt:
-      'A typography pairing lab where I pick two Google Fonts, preview heading + body combinations at different sizes, adjust weight and line-height with sliders, see light and dark previews side by side, and copy the CSS snippet',
-    description: 'Test font pairings with live preview and CSS export',
-  },
-  {
-    label: 'Brand Scorecard',
-    prompt:
-      'A brand audit scorecard dashboard that loads my brand guideline and shows completeness metrics for colors, typography, voice, imagery, and logos as a pie chart, plus a bar chart of asset counts per category, with a compliance score metric card and tips for improvement in a collapsible section',
-    description: 'Audit your brand guideline completeness with charts',
-  },
-];
+  'palette',
+  'mockup',
+  'naming',
+  'social',
+  'compliance',
+  'logo',
+  'typography',
+  'scorecard',
+] as const;
 
 // ─── Helpers ────────────────────────────────────────────────────────────
-function getGreeting(): string {
+function getGreetingKey(): string {
   const h = new Date().getHours();
-  if (h < 12) return 'Good morning';
-  if (h < 18) return 'Good afternoon';
-  return 'Good evening';
+  if (h < 12) return 'playground.greeting.morning';
+  if (h < 18) return 'playground.greeting.afternoon';
+  return 'playground.greeting.evening';
 }
 
 const FADE_INITIAL = { opacity: 0, y: 8 } as const;
@@ -171,19 +138,23 @@ class RendererErrorBoundary extends React.Component<
   }
   render() {
     if (this.state.error) {
-      return (
-        <div className="h-full flex flex-col items-center justify-center gap-3 text-neutral-500">
-          <AlertTriangle className="w-6 h-6 text-warning/60" />
-          <p className="text-2xs font-mono">Render error — try regenerating</p>
-          <p className="text-2xs text-neutral-600 max-w-sm text-center">
-            {this.state.error.message}
-          </p>
-        </div>
-      );
+      return <RenderErrorFallback message={this.state.error.message} />;
     }
     return this.props.children;
   }
 }
+
+const RenderErrorFallback: React.FC<{ message: string }> = ({ message }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="h-full flex flex-col items-center justify-center gap-3 text-neutral-500">
+      <AlertTriangle className="w-6 h-6 text-warning/60" />
+      <p className="text-xs">{t('playground.renderError')}</p>
+      {/* EXCEÇÃO ao ruido-scan/mono: mensagem de erro do renderer é texto técnico */}
+      <p className="text-2xs font-mono text-neutral-600 max-w-sm text-center">{message}</p>
+    </div>
+  );
+};
 
 // ─── Inner renderer (needs StateProvider context) ───────────────────────
 const PlaygroundRenderer: React.FC<{ spec: Spec }> = ({ spec }) => {
@@ -218,6 +189,7 @@ const PlaygroundRenderer: React.FC<{ spec: Spec }> = ({ spec }) => {
 
 // ─── Spec JSON Editor ───────────────────────────────────────────────────
 const SpecEditor: React.FC<{ spec: Spec; onUpdate: (s: Spec) => void }> = ({ spec, onUpdate }) => {
+  const { t } = useTranslation();
   const [text, setText] = useState(JSON.stringify(spec, null, 2));
   const [error, setError] = useState<string | null>(null);
 
@@ -233,10 +205,10 @@ const SpecEditor: React.FC<{ spec: Spec; onUpdate: (s: Spec) => void }> = ({ spe
         setError(null);
         onUpdate(parsed as Spec);
       } else {
-        setError('Missing "root" or "elements"');
+        setError(t('playground.specMissingRoot'));
       }
     } catch {
-      setError('Invalid JSON');
+      setError(t('playground.specInvalidJson'));
     }
   };
 
@@ -286,6 +258,7 @@ const SuggestionPills: React.FC<{
   size?: 'sm' | 'md';
   onSelect: (prompt: string) => void;
 }> = ({ suggestions, count, size = 'md', onSelect }) => {
+  const { t } = useTranslation();
   const items = count ? suggestions.slice(0, count) : suggestions;
   const cls =
     size === 'sm'
@@ -293,13 +266,18 @@ const SuggestionPills: React.FC<{
       : 'px-3 py-1.5 text-xs border-neutral-800/60 text-neutral-500 hover:border-neutral-600 hover:text-neutral-200 hover:bg-white/[0.03]';
   return (
     <div className="flex flex-wrap justify-center gap-2">
-      {items.map((s) => (
-        <Tooltip key={s.label} content={s.description} position="bottom" delay={400}>
+      {items.map((key) => (
+        <Tooltip
+          key={key}
+          content={t(`playground.suggestions.${key}.description`)}
+          position="bottom"
+          delay={400}
+        >
           <button
-            onClick={() => onSelect(s.prompt)}
-            className={cn('rounded-full border transition-all duration-150', cls)}
+            onClick={() => onSelect(t(`playground.suggestions.${key}.prompt`))}
+            className={cn('rounded-full border transition-colors duration-150', cls)}
           >
-            {s.label}
+            {t(`playground.suggestions.${key}.label`)}
           </button>
         </Tooltip>
       ))}
@@ -316,57 +294,60 @@ const ChatMessages: React.FC<{
   chatEndRef: React.RefObject<HTMLDivElement | null>;
   onRetry?: (prompt: string) => void;
   className?: string;
-}> = ({ messages, isGenerating, statusMessage, chatEndRef, onRetry, className }) => (
-  <div className={className}>
-    {messages.map((msg, i) => (
-      <div
-        key={i}
-        className={cn(
-          'text-xs leading-relaxed',
-          msg.role === 'user' ? 'text-neutral-400' : 'text-neutral-300'
-        )}
-      >
-        <span className="font-mono text-neutral-700 mr-1.5 select-none">
-          {msg.role === 'user' ? '›' : '◆'}
-        </span>
-        {msg.role === 'assistant' ? (
-          <span className="prose-xs">
-            <MarkdownRenderer content={msg.content} />
-          </span>
-        ) : (
-          msg.content
-        )}
-      </div>
-    ))}
-    {!isGenerating &&
-      messages.length > 0 &&
-      messages[messages.length - 1]?.role === 'assistant' &&
-      messages[messages.length - 1]?.content?.includes('failed') &&
-      onRetry && (
-        <button
-          onClick={() => {
-            const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user');
-            if (lastUserMsg) onRetry(lastUserMsg.content);
-          }}
-          className="flex items-center gap-1.5 text-2xs text-neutral-500 hover:text-neutral-300 transition-colors mt-1"
+}> = ({ messages, isGenerating, statusMessage, chatEndRef, onRetry, className }) => {
+  const { t } = useTranslation();
+  return (
+    <div className={className}>
+      {messages.map((msg, i) => (
+        <div
+          key={i}
+          className={cn(
+            'text-xs leading-relaxed',
+            msg.role === 'user' ? 'text-neutral-400' : 'text-neutral-300'
+          )}
         >
-          <RefreshCw size={10} />
-          Retry
-        </button>
-      )}
-    {isGenerating && <PremiumGlitchLoader steps={statusMessage ? [statusMessage] : undefined} />}
-    <div ref={chatEndRef} />
-  </div>
-);
+          <span className="font-mono text-neutral-700 mr-1.5 select-none">
+            {msg.role === 'user' ? '›' : '◆'}
+          </span>
+          {msg.role === 'assistant' ? (
+            <span className="prose-xs">
+              <MarkdownRenderer content={msg.content} />
+            </span>
+          ) : (
+            msg.content
+          )}
+        </div>
+      ))}
+      {!isGenerating &&
+        messages.length > 0 &&
+        messages[messages.length - 1]?.role === 'assistant' &&
+        messages[messages.length - 1]?.content?.includes('failed') &&
+        onRetry && (
+          <button
+            onClick={() => {
+              const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user');
+              if (lastUserMsg) onRetry(lastUserMsg.content);
+            }}
+            className="flex items-center gap-1.5 text-2xs text-neutral-500 hover:text-neutral-300 transition-colors mt-1"
+          >
+            <RefreshCw size={10} />
+            {t('common.retry')}
+          </button>
+        )}
+      {isGenerating && <PremiumGlitchLoader steps={statusMessage ? [statusMessage] : undefined} />}
+      <div ref={chatEndRef} />
+    </div>
+  );
+};
 
 const GeneratingState: React.FC<{ message: string; elapsed?: number }> = ({ message, elapsed }) => (
   <div className="h-full flex items-center justify-center">
     <div className="text-center space-y-6">
       <PremiumGlitchLoader />
       <div className="space-y-1">
-        {message && <p className="text-2xs text-neutral-600 font-mono">{message}</p>}
+        {message && <p className="text-xs text-neutral-600">{message}</p>}
         {elapsed != null && elapsed > 0 && (
-          <p className="text-2xs text-neutral-700 font-mono">{elapsed}s</p>
+          <p className="text-2xs text-neutral-700 font-mono tabular-nums">{elapsed}s</p>
         )}
       </div>
     </div>
@@ -415,6 +396,7 @@ type ViewTab = 'preview' | 'spec' | 'code';
 // ─── Main Page ──────────────────────────────────────────────────────────
 export const PlaygroundPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { slug } = useParams();
   const isMobile = useIsMobile();
   const { user } = useLayout();
@@ -467,10 +449,10 @@ export const PlaygroundPage: React.FC = () => {
   });
 
   const greeting = useMemo(() => {
-    const base = getGreeting();
+    const base = t(getGreetingKey());
     const firstName = user?.name?.split(' ')[0];
     return firstName ? `${base}, ${firstName}` : base;
-  }, [user?.name]);
+  }, [user?.name, t]);
 
   // Image paste handler
   usePasteImage(
@@ -562,7 +544,7 @@ export const PlaygroundPage: React.FC = () => {
         setIsPublished(miniApp.isPublished);
       })
       .catch(() => {
-        toast.error('Could not load this miniapp.');
+        toast.error(t('playground.loadFailed'));
       });
   }, [slug]);
 
@@ -596,9 +578,10 @@ export const PlaygroundPage: React.FC = () => {
         {
           role: 'user',
           content: currentFiles.length
-            ? `${finalPrompt} [${currentFiles.length} file${
-                currentFiles.length > 1 ? 's' : ''
-              } attached]`
+            ? `${finalPrompt} [${t(
+                currentFiles.length > 1 ? 'playground.filesAttached' : 'playground.fileAttached',
+                { count: currentFiles.length }
+              )}]`
             : finalPrompt,
         },
       ]);
@@ -653,7 +636,7 @@ export const PlaygroundPage: React.FC = () => {
             ...prev,
             {
               role: 'assistant',
-              content: isIteration ? `Updated: ${title}` : `Created: ${title}`,
+              content: t(isIteration ? 'playground.updated' : 'playground.created', { title }),
             },
           ]);
 
@@ -684,11 +667,11 @@ export const PlaygroundPage: React.FC = () => {
             }
           } catch (saveErr: any) {
             console.error('[playground] auto-save failed:', saveErr);
-            toast.error('Failed to auto-save — use ⌘S to save manually');
+            toast.error(t('playground.autoSaveFailed'));
           }
         }
       } catch (err: any) {
-        const msg = err?.message || 'Something went wrong.';
+        const msg = err?.message || t('playground.genericError');
         setChatHistory((prev) => [...prev, { role: 'assistant', content: msg }]);
         toast.error(msg);
       } finally {
@@ -726,9 +709,9 @@ export const PlaygroundPage: React.FC = () => {
         await deleteMiniApp(id);
         refetchMiniApps();
         if (miniAppId === id) handleReset();
-        toast.success('Deleted');
+        toast.success(t('playground.deleted'));
       } catch {
-        toast.error('Failed to delete');
+        toast.error(t('playground.deleteFailed'));
       }
     },
     [miniAppId, refetchMiniApps, handleReset]
@@ -768,9 +751,9 @@ export const PlaygroundPage: React.FC = () => {
       });
       setMiniAppId(result.miniApp.id);
       refetchMiniApps();
-      toast.success(thumbnail ? 'Saved with thumbnail!' : 'Saved!');
+      toast.success(t('playground.saved'));
     } catch {
-      toast.error('Failed to save');
+      toast.error(t('playground.saveFailed'));
     }
   }, [spec, meta, activeTab, refetchMiniApps]);
 
@@ -779,9 +762,9 @@ export const PlaygroundPage: React.FC = () => {
     try {
       await publishMiniApp(miniAppId);
       setIsPublished(true);
-      toast.success('Published to community!');
+      toast.success(t('playground.published'));
     } catch {
-      toast.error('Failed to publish');
+      toast.error(t('playground.publishFailed'));
     }
   }, [miniAppId]);
 
@@ -791,10 +774,10 @@ export const PlaygroundPage: React.FC = () => {
       const { shareUrl } = await shareMiniApp(miniAppId);
       await navigator.clipboard.writeText(shareUrl);
       setCopiedShare(true);
-      toast.success('Share link copied!');
+      toast.success(t('playground.shareCopied'));
       setTimeout(() => setCopiedShare(false), 2000);
     } catch {
-      toast.error('Failed to generate share link');
+      toast.error(t('playground.shareFailed'));
     }
   }, [miniAppId]);
 
@@ -859,7 +842,8 @@ export const PlaygroundPage: React.FC = () => {
           <span className="truncate max-w-[100px]">{file.name}</span>
           <button
             onClick={() => removeAttachedFile(i)}
-            className="opacity-0 group-hover/chip:opacity-100 transition-opacity text-neutral-500 hover:text-destructive"
+            aria-label={t('playground.removeFile')}
+            className="opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/chip:opacity-100 focus-visible:opacity-100 transition-opacity text-neutral-500 hover:text-destructive"
           >
             <X size={10} />
           </button>
@@ -884,7 +868,7 @@ export const PlaygroundPage: React.FC = () => {
         onChange={setPrompt}
         onSend={() => handleGenerate()}
         isLoading={isGenerating}
-        placeholder={spec ? 'Describe a change...' : 'Describe your mini-app...'}
+        placeholder={spec ? t('playground.describeChange') : t('playground.describeApp')}
         selectedModel={selectedModel}
         onModelChange={(m) => setSelectedModel(m)}
         showModelSelector
@@ -917,7 +901,7 @@ export const PlaygroundPage: React.FC = () => {
         <Tooltip
           content={
             <span>
-              New miniapp <kbd className="ml-1 text-2xs opacity-60">⌘N</kbd>
+              {t('playground.newApp')} <kbd className="ml-1 text-2xs opacity-60">⌘N</kbd>
             </span>
           }
           position="right"
@@ -927,7 +911,7 @@ export const PlaygroundPage: React.FC = () => {
             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-neutral-300 hover:bg-white/5 hover:text-neutral-100 transition-colors"
           >
             <Plus size={14} className="opacity-50" />
-            <span>New miniapp</span>
+            <span>{t('playground.newApp')}</span>
           </button>
         </Tooltip>
 
@@ -941,15 +925,16 @@ export const PlaygroundPage: React.FC = () => {
             }))}
             value={selectedBrandId}
             onChange={setSelectedBrandId}
-            placeholder="Brand context"
+            placeholder={t('playground.brandContext')}
             className="text-xs"
             variant="node"
           />
           {selectedBrandId && (
             <button
               onClick={() => setSelectedBrandId('')}
-              className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded opacity-0 group-hover/brand:opacity-100 transition-opacity bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 z-10"
-              title="Disconnect brand"
+              className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/brand:opacity-100 focus-visible:opacity-100 transition-opacity bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 z-10"
+              title={t('playground.disconnectBrand')}
+              aria-label={t('playground.disconnectBrand')}
             >
               <X size={12} />
             </button>
@@ -961,7 +946,7 @@ export const PlaygroundPage: React.FC = () => {
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
         {/* ─ RECENT ─ collapsible */}
         <SidebarDisclosure
-          label="Recent"
+          label={t('common.recent')}
           badge={myMiniApps.length > 0 ? String(myMiniApps.length) : undefined}
           defaultOpen
         >
@@ -970,7 +955,7 @@ export const PlaygroundPage: React.FC = () => {
               <SidebarSkeleton />
             ) : myMiniApps.length === 0 ? (
               <div className="px-3 py-3 text-center">
-                <p className="text-2xs text-neutral-600">No miniapps yet</p>
+                <p className="text-2xs text-neutral-600">{t('playground.noApps')}</p>
               </div>
             ) : (
               <div className="space-y-px">
@@ -994,8 +979,8 @@ export const PlaygroundPage: React.FC = () => {
                       </span>
                       <button
                         onClick={(e) => handleDeleteMiniApp(app.id, e)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded shrink-0"
-                        aria-label="Delete"
+                        className={cn(hoverReveal, 'p-0.5 rounded shrink-0')}
+                        aria-label={t('common.delete')}
                       >
                         <Trash2 size={11} className="text-neutral-600 hover:text-destructive" />
                       </button>
@@ -1015,7 +1000,7 @@ export const PlaygroundPage: React.FC = () => {
         {/* ─ CHAT ─ collapsible, takes remaining space */}
         {spec && (
           <SidebarDisclosure
-            label="Chat"
+            label={t('playground.chat')}
             badge={chatHistory.length > 0 ? String(chatHistory.length) : undefined}
             defaultOpen
             className="flex-1 min-h-0 flex flex-col"
@@ -1061,7 +1046,7 @@ export const PlaygroundPage: React.FC = () => {
         {...resizeHandleProps}
         role="separator"
         aria-orientation="vertical"
-        aria-label="Resize sidebar"
+        aria-label={t('playground.resizeSidebar')}
         style={{ touchAction: 'none' }}
         className="group shrink-0 w-1.5 cursor-col-resize flex items-center justify-center hover:bg-neutral-800/30 transition-colors"
       >
@@ -1080,7 +1065,7 @@ export const PlaygroundPage: React.FC = () => {
           <Tooltip
             content={
               <span>
-                Exit fullscreen <kbd className="ml-1 text-2xs opacity-60">Esc</kbd>
+                {t('playground.exitFullscreen')} <kbd className="ml-1 text-2xs opacity-60">Esc</kbd>
               </span>
             }
             position="bottom"
@@ -1092,7 +1077,7 @@ export const PlaygroundPage: React.FC = () => {
               className="gap-1.5 text-neutral-400 hover:text-neutral-200"
             >
               <Minimize2 className="w-3 h-3" />
-              <span className="text-2xs">Exit</span>
+              <span className="text-2xs">{t('playground.exit')}</span>
             </Button>
           </Tooltip>
         </div>
@@ -1109,6 +1094,7 @@ export const PlaygroundPage: React.FC = () => {
       <div className="shrink-0 flex items-center h-12 px-4 border-b border-white/10">
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
+          aria-label={sidebarOpen ? t('common.hidePanel') : t('common.showPanel')}
           className="p-1.5 -ml-1.5 rounded-md text-neutral-500 hover:text-neutral-300 transition-colors"
         >
           {sidebarOpen ? (
@@ -1121,7 +1107,7 @@ export const PlaygroundPage: React.FC = () => {
         <div className="flex-1" />
         {spec && (
           <div className="flex items-center gap-1">
-            <Tooltip content="Reset" position="bottom">
+            <Tooltip content={t('common.reset')} position="bottom">
               <Button
                 variant="ghost"
                 size="xs"
@@ -1131,7 +1117,7 @@ export const PlaygroundPage: React.FC = () => {
                 <RotateCcw className="w-3 h-3" />
               </Button>
             </Tooltip>
-            <Tooltip content="Export JSON" position="bottom">
+            <Tooltip content={t('playground.exportJson')} position="bottom">
               <Button
                 variant="ghost"
                 size="xs"
@@ -1144,7 +1130,7 @@ export const PlaygroundPage: React.FC = () => {
             <Tooltip
               content={
                 <span>
-                  Save <kbd className="ml-1 text-2xs opacity-60">⌘S</kbd>
+                  {t('common.save')} <kbd className="ml-1 text-2xs opacity-60">⌘S</kbd>
                 </span>
               }
               position="bottom"
@@ -1160,7 +1146,10 @@ export const PlaygroundPage: React.FC = () => {
             </Tooltip>
             {miniAppId && (
               <>
-                <Tooltip content={copiedShare ? 'Copied!' : 'Copy share link'} position="bottom">
+                <Tooltip
+                  content={copiedShare ? t('playground.copied') : t('playground.copyShareLink')}
+                  position="bottom"
+                >
                   <Button
                     variant="ghost"
                     size="xs"
@@ -1175,26 +1164,28 @@ export const PlaygroundPage: React.FC = () => {
                   </Button>
                 </Tooltip>
                 {!isPublished && (
-                  <Tooltip content="Publish to community" position="bottom">
+                  <Tooltip content={t('playground.publish')} position="bottom">
                     <Button
                       variant="ghost"
                       size="xs"
                       onClick={handlePublish}
-                      className="text-neutral-500 hover:text-brand-cyan"
+                      className="text-neutral-500 hover:text-neutral-300"
                     >
                       <Globe className="w-3 h-3" />
                     </Button>
                   </Tooltip>
                 )}
                 {isPublished && (
-                  <span className="text-2xs font-mono text-success/60 px-1">Published</span>
+                  <span className="text-2xs text-success/60 px-1">
+                    {t('playground.publishedBadge')}
+                  </span>
                 )}
               </>
             )}
             <Tooltip
               content={
                 <span>
-                  Fullscreen <kbd className="ml-1 text-2xs opacity-60">F</kbd>
+                  {t('playground.fullscreen')} <kbd className="ml-1 text-2xs opacity-60">F</kbd>
                 </span>
               }
               position="bottom"
@@ -1209,7 +1200,7 @@ export const PlaygroundPage: React.FC = () => {
               </Button>
             </Tooltip>
             <div className="w-px h-4 bg-neutral-800 mx-1" />
-            <Tooltip content="Expert mode" position="bottom">
+            <Tooltip content={t('playground.expertMode')} position="bottom">
               <Button
                 variant="ghost"
                 size="xs"
@@ -1244,16 +1235,17 @@ export const PlaygroundPage: React.FC = () => {
                   <h1 className="text-2xl font-semibold text-neutral-100 tracking-tight">
                     {greeting}
                   </h1>
-                  <p className="text-sm text-neutral-500">What would you like to build?</p>
+                  <p className="text-sm text-neutral-500">{t('playground.emptyPrompt')}</p>
                 </div>
                 <GlassPanel className="p-3">{inputBar}</GlassPanel>
                 <SuggestionPills suggestions={SUGGESTIONS} onSelect={handleGenerate} />
                 <div className="text-center">
                   <button
                     onClick={() => navigate('/playground/explore')}
-                    className="text-xs text-neutral-600 hover:text-neutral-400 transition-colors"
+                    className="inline-flex items-center gap-1 text-xs text-neutral-600 hover:text-neutral-400 transition-colors"
                   >
-                    explore community miniapps →
+                    {t('playground.exploreCommunity')}
+                    <ArrowRight size={12} />
                   </button>
                 </div>
               </div>
@@ -1285,7 +1277,7 @@ export const PlaygroundPage: React.FC = () => {
 
         {spec && !sidebarOpen && (
           <div className="absolute bottom-4 left-4 z-10">
-            <Tooltip content="Open chat panel" position="right">
+            <Tooltip content={t('playground.openChat')} position="right">
               <Button
                 variant="surface"
                 size="sm"
@@ -1293,7 +1285,7 @@ export const PlaygroundPage: React.FC = () => {
                 className="gap-2 text-neutral-400 hover:text-neutral-200"
               >
                 <MessageSquare size={14} />
-                <span className="text-xs">Chat</span>
+                <span className="text-xs">{t('playground.chat')}</span>
               </Button>
             </Tooltip>
           </div>
@@ -1323,15 +1315,7 @@ export const PlaygroundPage: React.FC = () => {
           {mainContent}
         </div>
 
-        {/* Drag-drop overlay */}
-        {isDraggingOver && (
-          <div className="absolute inset-0 z-50 bg-brand-cyan/5 border-2 border-dashed border-brand-cyan/30 flex items-center justify-center pointer-events-none">
-            <div className="text-center space-y-2">
-              <ImageIcon className="w-8 h-8 text-brand-cyan/50 mx-auto" />
-              <p className="text-sm text-brand-cyan/60 font-mono">Drop images here</p>
-            </div>
-          </div>
-        )}
+        <DropOverlay visible={isDraggingOver} message={t('playground.dropImages')} />
       </div>
     );
   }
@@ -1344,6 +1328,7 @@ export const PlaygroundPage: React.FC = () => {
     <div className="shrink-0 flex items-center h-10 px-3 border-b border-white/10 gap-2">
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
+        aria-label={sidebarOpen ? t('common.hidePanel') : t('common.showPanel')}
         className="p-1 rounded-md text-neutral-500 hover:text-neutral-300 transition-colors"
       >
         {sidebarOpen ? (
@@ -1358,7 +1343,7 @@ export const PlaygroundPage: React.FC = () => {
         {spec && (
           <>
             <Button variant="ghost" size="xs" onClick={handleReset} className="text-neutral-500">
-              <RotateCcw className="w-3 h-3 mr-1" /> Reset
+              <RotateCcw className="w-3 h-3 mr-1" /> {t('common.reset')}
             </Button>
             <Button
               variant="ghost"
@@ -1366,10 +1351,10 @@ export const PlaygroundPage: React.FC = () => {
               onClick={() => downloadSpec(spec, appTitle || 'miniapp')}
               className="text-neutral-500"
             >
-              <Download className="w-3 h-3 mr-1" /> Export
+              <Download className="w-3 h-3 mr-1" /> {t('common.export')}
             </Button>
             <Button variant="ghost" size="xs" onClick={handleSave} className="text-neutral-500">
-              <Save className="w-3 h-3 mr-1" /> Save
+              <Save className="w-3 h-3 mr-1" /> {t('common.save')}
             </Button>
             {miniAppId && (
               <>
@@ -1384,16 +1369,16 @@ export const PlaygroundPage: React.FC = () => {
                   ) : (
                     <Link2 className="w-3 h-3 mr-1" />
                   )}
-                  Share
+                  {t('playground.share')}
                 </Button>
                 {!isPublished && (
                   <Button
                     variant="ghost"
                     size="xs"
                     onClick={handlePublish}
-                    className="text-neutral-500 hover:text-brand-cyan"
+                    className="text-neutral-500 hover:text-neutral-300"
                   >
-                    <Globe className="w-3 h-3 mr-1" /> Publish
+                    <Globe className="w-3 h-3 mr-1" /> {t('playground.publishShort')}
                   </Button>
                 )}
               </>
@@ -1405,9 +1390,9 @@ export const PlaygroundPage: React.FC = () => {
           variant="ghost"
           size="xs"
           onClick={() => setExpertMode(false)}
-          className="text-neutral-500 hover:text-brand-cyan"
+          className="text-neutral-500 hover:text-neutral-300"
         >
-          <Eye className="w-3 h-3 mr-1" /> Simple
+          <Eye className="w-3 h-3 mr-1" /> {t('playground.simpleMode')}
         </Button>
       </div>
     </div>
@@ -1432,12 +1417,12 @@ export const PlaygroundPage: React.FC = () => {
               {tab === 'preview' && <Eye className="w-3 h-3 inline mr-1" />}
               {tab === 'spec' && <Code2 className="w-3 h-3 inline mr-1" />}
               {tab === 'code' && <FileCode className="w-3 h-3 inline mr-1" />}
-              {tab}
+              {t(`playground.tabs.${tab}`)}
             </button>
           ))}
           <div className="flex-1" />
-          <span className="text-2xs font-mono text-neutral-700">
-            {Object.keys(spec.elements || {}).length} elements
+          <span className="text-2xs text-neutral-700 tabular-nums">
+            {t('playground.elementCount', { count: Object.keys(spec.elements || {}).length })}
           </span>
         </div>
       )}
@@ -1452,7 +1437,7 @@ export const PlaygroundPage: React.FC = () => {
               transition={FADE_TRANSITION}
               className="h-full flex items-center justify-center"
             >
-              <p className="text-xs text-neutral-600">Your miniapp preview will appear here</p>
+              <p className="text-xs text-neutral-600">{t('playground.previewEmpty')}</p>
             </motion.div>
           ) : isGenerating && !spec ? (
             <motion.div
@@ -1515,14 +1500,7 @@ export const PlaygroundPage: React.FC = () => {
         {expertPreview}
       </div>
 
-      {isDraggingOver && (
-        <div className="absolute inset-0 z-50 bg-brand-cyan/5 border-2 border-dashed border-brand-cyan/30 flex items-center justify-center pointer-events-none">
-          <div className="text-center space-y-2">
-            <ImageIcon className="w-8 h-8 text-brand-cyan/50 mx-auto" />
-            <p className="text-sm text-brand-cyan/60 font-mono">Drop images here</p>
-          </div>
-        </div>
-      )}
+      <DropOverlay visible={isDraggingOver} message={t('playground.dropImages')} />
     </div>
   );
 };

@@ -1,43 +1,23 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import {
-  Key,
-  Copy,
-  Trash2,
-  Plus,
-  Shield,
-  AlertTriangle,
-  Check,
-  X,
-  Clock,
-  Eye,
-  EyeOff,
-} from '@/lib/ui/icons';
+import { useNavigate } from 'react-router-dom';
+import { Key, Copy, Trash2, Plus, AlertTriangle, Check, Clock, Eye, EyeOff } from '@/lib/ui/icons';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { useLayout } from '@/hooks/useLayout';
 import { trackEvent } from '@/utils/analytics';
 import { authService } from '../services/authService';
 import { toast } from 'sonner';
-import { SEO } from '../components/SEO';
-import {
-  BreadcrumbWithBack,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '../components/ui/BreadcrumbWithBack';
-import { BackButton } from '../components/ui/BackButton';
+import { PageShell } from '../components/ui/PageShell';
+import { EmptyState } from '../components/ui/EmptyState';
+import { ErrorState } from '../components/ui/ErrorState';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { API_BASE } from '@/config/api';
 import { useTranslation } from '@/hooks/useTranslation';
 import { copyToClipboard } from '@/utils/clipboard';
 import { formatDateShort } from '@/utils/localeUtils';
-import { useInAppShell } from '@/components/shell/InAppShellContext';
 import { cn } from '@/lib/utils';
 
 interface ApiKeyRaw {
@@ -62,11 +42,7 @@ function toApiKey(raw: ApiKeyRaw): ApiKey {
   return { ...raw, status };
 }
 
-const AVAILABLE_SCOPES = [
-  { value: 'read', label: 'Read', description: 'Read access to resources' },
-  { value: 'write', label: 'Write', description: 'Create and modify resources' },
-  { value: 'generate', label: 'Generate', description: 'Use AI generation endpoints' },
-];
+const AVAILABLE_SCOPES = ['read', 'write', 'generate'] as const;
 
 function getAuthHeaders(): Record<string, string> {
   const token = authService.getToken();
@@ -80,11 +56,11 @@ function getAuthHeaders(): Record<string, string> {
 export const ApiKeysPage: React.FC = () => {
   const { t } = useTranslation();
   const { isAuthenticated, isCheckingAuth } = useLayout();
-  const inShell = useInAppShell();
+  const navigate = useNavigate();
 
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   // Create key form
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -100,19 +76,19 @@ export const ApiKeysPage: React.FC = () => {
 
   // Revoke confirmation
   const [revokeTarget, setRevokeTarget] = useState<ApiKey | null>(null);
-  const [isRevoking, setIsRevoking] = useState(false);
 
   const fetchKeys = useCallback(async () => {
     try {
       setIsLoading(true);
-      setError(null);
+      setLoadFailed(false);
       const res = await fetch(`${API_BASE}/api-keys`, { headers: getAuthHeaders() });
-      if (!res.ok) throw new Error('Failed to fetch API keys');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const rawKeys: ApiKeyRaw[] = data.keys || data || [];
       setKeys(rawKeys.map(toApiKey));
-    } catch (err: any) {
-      setError(err.message || 'Failed to load API keys');
+    } catch (err) {
+      console.error('[ApiKeys] load failed:', err);
+      setLoadFailed(true);
     } finally {
       setIsLoading(false);
     }
@@ -148,7 +124,7 @@ export const ApiKeysPage: React.FC = () => {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || 'Failed to create API key');
+        throw new Error(errData.error || t('api.keys.createFailed'));
       }
 
       const data = await res.json();
@@ -169,30 +145,28 @@ export const ApiKeysPage: React.FC = () => {
       setNewKeyScopes(['read']);
       setNewKeyExpiry('');
       trackEvent('api_key_created', { scopes: newKeyScopes });
-      toast.success('API key created successfully');
+      toast.success(t('api.keys.createdToast'));
     } catch (err: any) {
-      toast.error(err.message || 'Failed to create API key');
+      toast.error(err?.message || t('api.keys.createFailed'));
     } finally {
       setIsCreating(false);
     }
   };
 
   const handleRevokeKey = async () => {
-    if (!revokeTarget) return;
-    setIsRevoking(true);
+    const target = revokeTarget;
+    if (!target) return;
     try {
-      const res = await fetch(`${API_BASE}/api-keys/${revokeTarget.id}`, {
+      const res = await fetch(`${API_BASE}/api-keys/${target.id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });
-      if (!res.ok) throw new Error('Failed to revoke API key');
-      setKeys((prev) => prev.filter((k) => k.id !== revokeTarget.id));
-      setRevokeTarget(null);
-      toast.success('API key revoked');
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to revoke API key');
-    } finally {
-      setIsRevoking(false);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setKeys((prev) => prev.filter((k) => k.id !== target.id));
+      toast.success(t('api.keys.revokedToast'));
+    } catch (err) {
+      console.error('[ApiKeys] revoke failed:', err);
+      toast.error(t('api.keys.revokeFailed'));
     }
   };
 
@@ -203,7 +177,7 @@ export const ApiKeysPage: React.FC = () => {
       toast.success(t('api.keys.copied_to_clipboard'));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error('Failed to copy');
+      toast.error(t('api.keys.copyFailed'));
     }
   };
 
@@ -213,138 +187,62 @@ export const ApiKeysPage: React.FC = () => {
     );
   };
 
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return '—';
-    return formatDateShort(dateStr, 'en-US');
+  const formatDate = (dateStr: string | null) => (dateStr ? formatDateShort(dateStr) : '');
+
+  const scopeLabel = (s: string) =>
+    (AVAILABLE_SCOPES as readonly string[]).includes(s) ? t(`connectedApps.scope.${s}`) : s;
+
+  const openCreateForm = () => {
+    setShowCreateForm(true);
+    setCreatedKeyRaw(null);
   };
 
-  const scopeColor = (scope: string) => {
-    switch (scope) {
-      case 'read':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      case 'write':
-        return 'bg-warning/20 text-warning border-warning/30';
-      case 'generate':
-        return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
-      default:
-        return 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30';
-    }
-  };
-
-  // Loading state
-  if (isCheckingAuth || (isLoading && keys.length === 0)) {
+  if (isCheckingAuth) {
     return (
-      <div
-        className={cn(
-          'bg-background text-muted-foreground flex items-center justify-center',
-          inShell ? 'min-h-full' : 'min-h-screen',
-          inShell ? 'pt-6' : 'pt-12 md:pt-14'
-        )}
-      >
+      <div className="flex items-center justify-center py-24">
         <GlitchLoader size={32} />
       </div>
     );
   }
 
-  // Not authenticated
-  if (!isAuthenticated) {
-    return (
-      <div
-        className={cn(
-          'bg-background text-muted-foreground flex items-center justify-center',
-          inShell ? 'min-h-full' : 'min-h-screen',
-          inShell ? 'pt-6' : 'pt-12 md:pt-14'
-        )}
-      >
-        <div className="text-center">
-          <p className="text-destructive font-mono mb-4">
-            {t('api.keys.please_sign_in_to_manage_api_keys')}
-          </p>
-          <BackButton
-            className="px-4 py-2 bg-muted text-muted-foreground rounded-md text-sm font-mono hover:bg-muted/70 transition-colors mb-0"
-            to="/"
-          />
-        </div>
-      </div>
+  const title = t('nav.profile.apiKeys');
+
+  const statusBadge = (status: ApiKey['status']) =>
+    status === 'active' ? (
+      <Badge variant="success">{t('api.keys.statusActive')}</Badge>
+    ) : status === 'expired' ? (
+      <Badge variant="neutral">{t('api.keys.statusExpired')}</Badge>
+    ) : (
+      <Badge variant="destructive">{t('api.keys.statusRevoked')}</Badge>
     );
-  }
 
   return (
-    <>
-      <SEO
-        title="API Keys"
-        description={t('api.keys.manage_your_api_keys_for_agent_and_progr')}
-        noindex={true}
-      />
-      <div
-        className={cn(
-          'bg-background text-muted-foreground relative',
-          inShell ? 'min-h-full' : 'min-h-screen',
-          inShell ? 'pt-6' : 'pt-12 md:pt-14'
-        )}
-      >
-        <div className={cn('inset-0 z-0', inShell ? 'absolute' : 'fixed')}></div>
-        <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10 space-y-6">
-          {/* Header Card */}
-          <Card className="bg-card border border-border rounded-xl">
-            <CardContent className="p-4 md:p-6">
-              <div className="mb-4">
-                <BreadcrumbWithBack to="/profile">
-                  <BreadcrumbList>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink asChild>
-                        <Link to="/">Home</Link>
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      <BreadcrumbLink asChild>
-                        <Link to="/profile">Profile</Link>
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage>API Keys</BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </BreadcrumbWithBack>
-              </div>
-
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <Key className="h-6 w-6 md:h-8 md:w-8 text-muted-foreground" />
-                    <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-foreground">
-                      API Keys
-                    </h1>
-                  </div>
-                  <p className="text-muted-foreground font-mono text-sm md:text-base ml-9 md:ml-11">
-                    Create and manage API keys for agent and programmatic access
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setShowCreateForm(true);
-                    setCreatedKeyRaw(null);
-                  }}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-brand-cyan text-black rounded-md font-medium text-sm hover:bg-brand-cyan/90 transition-colors shrink-0"
-                >
-                  <Plus size={16} />
-                  Create New Key
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {error && (
-            <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive font-mono flex items-center gap-2">
-              <X size={16} />
-              {error}
-            </div>
-          )}
-
-          {/* Newly Created Key Banner */}
+    <PageShell
+      pageId="api-keys"
+      seoTitle={title}
+      seoDescription={t('api.keys.manage_your_api_keys_for_agent_and_progr')}
+      title={title}
+      description={t('api.keys.manage_your_api_keys_for_agent_and_progr')}
+      breadcrumb={[{ label: t('common.profile'), to: '/profile' }, { label: title }]}
+      actions={
+        isAuthenticated ? (
+          <Button variant="brand" onClick={openCreateForm} className="shrink-0">
+            <Plus size={16} />
+            {t('api.keys.createNew')}
+          </Button>
+        ) : undefined
+      }
+    >
+      {!isAuthenticated ? (
+        <EmptyState
+          icon={Key}
+          title={t('api.keys.please_sign_in_to_manage_api_keys')}
+          actionLabel={t('auth.signIn')}
+          onAction={() => navigate('/login')}
+        />
+      ) : (
+        <div className="space-y-6">
+          {/* Newly created key: shown once */}
           {createdKeyRaw && (
             <Card className="bg-warning/5 border border-warning/30 rounded-xl">
               <CardContent className="p-4 md:p-6">
@@ -354,124 +252,124 @@ export const ApiKeysPage: React.FC = () => {
                     <p className="text-warning font-semibold text-sm">
                       {t('api.keys.save_your_api_key_now')}
                     </p>
-                    <p className="text-warning/70 text-xs mt-1">
+                    <p className="text-muted-foreground text-xs mt-1">
                       {t('api.keys.this_key_will_not_be_shown_again_copy_it')}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 bg-muted border border-border rounded-md p-3 font-mono text-sm">
                   <code className="flex-1 break-all text-foreground">
-                    {showRawKey ? createdKeyRaw : createdKeyRaw.replace(/./g, '\u2022')}
+                    {showRawKey ? createdKeyRaw : createdKeyRaw.replace(/./g, '•')}
                   </code>
                   <Button
-                    variant="ghost"
+                    variant="action"
                     onClick={() => setShowRawKey(!showRawKey)}
-                    className="p-1.5 hover:bg-muted rounded transition-colors text-muted-foreground hover:text-foreground"
-                    title={showRawKey ? 'Hide key' : 'Show key'}
+                    title={showRawKey ? t('api.keys.hideKey') : t('api.keys.showKey')}
+                    aria-label={showRawKey ? t('api.keys.hideKey') : t('api.keys.showKey')}
                   >
                     {showRawKey ? <EyeOff size={16} /> : <Eye size={16} />}
                   </Button>
                   <Button
-                    variant="ghost"
+                    variant="action"
                     onClick={() => handleCopyKey(createdKeyRaw)}
-                    className="p-1.5 hover:bg-muted rounded transition-colors text-muted-foreground hover:text-foreground"
                     title={t('api.keys.copy_to_clipboard')}
+                    aria-label={t('api.keys.copy_to_clipboard')}
                   >
                     {copied ? <Check size={16} className="text-success" /> : <Copy size={16} />}
                   </Button>
                 </div>
                 <Button
                   variant="ghost"
+                  size="sm"
                   onClick={() => setCreatedKeyRaw(null)}
-                  className="mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  className="mt-3 text-muted-foreground"
                 >
-                  Dismiss
+                  {t('common.dismiss')}
                 </Button>
               </CardContent>
             </Card>
           )}
 
-          {/* Create Key Form */}
+          {/* Create key form */}
           {showCreateForm && (
             <Card className="bg-card border border-border rounded-xl">
               <CardContent className="p-4 md:p-6">
-                <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <Shield size={18} className="text-muted-foreground" />
-                  Create New API Key
+                <h2 className="text-lg font-semibold text-foreground mb-4">
+                  {t('api.keys.createTitle')}
                 </h2>
                 <form onSubmit={handleCreateKey} className="space-y-4">
-                  {/* Name */}
                   <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-1.5">
-                      Name
+                    <label
+                      htmlFor="api-key-name"
+                      className="block text-sm font-medium text-muted-foreground mb-1.5"
+                    >
+                      {t('api.keys.name')}
                     </label>
                     <Input
+                      id="api-key-name"
                       type="text"
                       value={newKeyName}
                       onChange={(e) => setNewKeyName(e.target.value)}
-                      placeholder="e.g. Production Agent, CI/CD Pipeline"
-                      className="w-full px-3 py-2.5 bg-input border border-border rounded-md text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring transition-colors"
+                      placeholder={t('api.keys.namePlaceholder')}
                       autoFocus
                     />
                   </div>
 
-                  {/* Scopes */}
                   <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-1.5">
+                    <span className="block text-sm font-medium text-muted-foreground mb-1.5">
                       {t('api.keys.scopes')}
-                    </label>
+                    </span>
                     <div className="flex flex-wrap gap-2">
-                      {AVAILABLE_SCOPES.map((scope) => (
-                        <Button
-                          variant="ghost"
-                          key={scope.value}
-                          type="button"
-                          onClick={() => toggleScope(scope.value)}
-                          className={`px-3 py-2 rounded-md border text-sm transition-colors ${
-                            newKeyScopes.includes(scope.value)
-                              ? 'bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan'
-                              : 'bg-muted/40 border-border text-muted-foreground hover:border-border-hover'
-                          }`}
-                        >
-                          <span className="font-medium">{scope.label}</span>
-                          <span className="text-xs ml-1.5 opacity-70">— {scope.description}</span>
-                        </Button>
-                      ))}
+                      {AVAILABLE_SCOPES.map((scope) => {
+                        const selected = newKeyScopes.includes(scope);
+                        return (
+                          <Button
+                            variant="ghost"
+                            key={scope}
+                            type="button"
+                            aria-pressed={selected}
+                            onClick={() => toggleScope(scope)}
+                            className={cn(
+                              'h-auto px-3 py-2 border text-sm',
+                              selected
+                                ? 'bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan'
+                                : 'bg-muted/40 border-border text-muted-foreground'
+                            )}
+                          >
+                            <span className="font-medium">{scopeLabel(scope)}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {t(`api.keys.scopeDesc.${scope}`)}
+                            </span>
+                          </Button>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  {/* Expiry */}
                   <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-1.5">
-                      Expiry <span className="text-muted-foreground">(optional)</span>
+                    <label
+                      htmlFor="api-key-expiry"
+                      className="block text-sm font-medium text-muted-foreground mb-1.5"
+                    >
+                      {t('api.keys.expiry')}
                     </label>
                     <Input
+                      id="api-key-expiry"
                       type="date"
                       value={newKeyExpiry}
                       onChange={(e) => setNewKeyExpiry(e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full max-w-xs px-3 py-2.5 bg-input border border-border rounded-md text-sm text-foreground focus:outline-none focus:border-ring transition-colors"
+                      className="max-w-xs"
                     />
                   </div>
 
-                  {/* Actions */}
                   <div className="flex items-center gap-3 pt-2">
-                    <Button
-                      variant="brand"
-                      type="submit"
-                      disabled={isCreating}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-brand-cyan text-black rounded-md font-medium text-sm hover:bg-brand-cyan/90 transition-colors disabled:opacity-50"
-                    >
+                    <Button variant="brand" type="submit" disabled={isCreating}>
                       {isCreating ? <GlitchLoader size={14} /> : <Plus size={16} />}
-                      {isCreating ? 'Creating...' : 'Create Key'}
+                      {isCreating ? t('api.keys.creating') : t('api.keys.create')}
                     </Button>
-                    <Button
-                      variant="ghost"
-                      type="button"
-                      onClick={() => setShowCreateForm(false)}
-                      className="px-4 py-2.5 bg-muted text-muted-foreground rounded-md text-sm hover:bg-muted/70 transition-colors"
-                    >
-                      Cancel
+                    <Button variant="ghost" type="button" onClick={() => setShowCreateForm(false)}>
+                      {t('common.cancel')}
                     </Button>
                   </div>
                 </form>
@@ -479,46 +377,32 @@ export const ApiKeysPage: React.FC = () => {
             </Card>
           )}
 
-          {/* Keys List */}
+          {/* Keys list */}
           <Card className="bg-card border border-border rounded-xl">
             <CardContent className="p-0">
               {isLoading ? (
                 <div className="p-8 flex items-center justify-center">
                   <GlitchLoader size={24} />
                 </div>
-              ) : error && keys.length === 0 ? (
-                // Fetch failed: the error banner above already explains. Never show the
-                // "create your first key" empty state — keys may exist server-side.
-                <div className="p-12 text-center">
-                  <AlertTriangle className="h-10 w-10 text-destructive/70 mx-auto mb-4" />
-                  <p className="text-foreground font-medium mb-1">
-                    {t('api.keys.load_failed') || 'Could not load API keys'}
-                  </p>
-                  <Button
-                    variant="ghost"
-                    onClick={fetchKeys}
-                    className="mt-2 px-4 py-2 bg-muted text-muted-foreground rounded-md text-sm hover:bg-muted/70 transition-colors"
-                  >
-                    {t('api.keys.try_again') || 'Try again'}
-                  </Button>
-                </div>
+              ) : loadFailed && keys.length === 0 ? (
+                // Fetch failed: never show the "create your first key" empty
+                // state, keys may exist server-side.
+                <ErrorState title={t('api.keys.load_failed')} onRetry={fetchKeys} />
               ) : keys.length === 0 ? (
-                <div className="p-12 text-center">
-                  <Key className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-foreground font-medium mb-1">
-                    {t('api.keys.no_api_keys_yet')}
-                  </p>
-                  <p className="text-muted-foreground text-sm font-mono">
-                    Create your first key to start using the API programmatically.
-                  </p>
-                </div>
+                <EmptyState
+                  icon={Key}
+                  title={t('api.keys.no_api_keys_yet')}
+                  description={t('api.keys.emptyBody')}
+                  actionLabel={t('api.keys.createNew')}
+                  onAction={openCreateForm}
+                />
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-border">
                         <th className="text-left p-4 text-muted-foreground font-medium text-xs">
-                          Name
+                          {t('api.keys.name')}
                         </th>
                         <th className="text-left p-4 text-muted-foreground font-medium text-xs">
                           {t('api.keys.key')}
@@ -535,7 +419,7 @@ export const ApiKeysPage: React.FC = () => {
                         <th className="text-left p-4 text-muted-foreground font-medium text-xs">
                           {t('api.keys.status')}
                         </th>
-                        <th className="text-right p-4 text-muted-foreground font-medium text-xs"></th>
+                        <th className="p-4" />
                       </tr>
                     </thead>
                     <tbody>
@@ -553,50 +437,34 @@ export const ApiKeysPage: React.FC = () => {
                           <td className="p-4">
                             <div className="flex flex-wrap gap-1">
                               {key.scopes.map((scope) => (
-                                <Badge
-                                  key={scope}
-                                  className={`text-xs border ${scopeColor(scope)}`}
-                                >
-                                  {scope}
+                                <Badge key={scope} variant="neutral">
+                                  {scopeLabel(scope)}
                                 </Badge>
                               ))}
                             </div>
                           </td>
-                          <td className="p-4 text-muted-foreground text-xs font-mono hidden md:table-cell">
+                          <td className="p-4 text-muted-foreground text-xs hidden md:table-cell">
                             {key.lastUsed ? (
                               <span className="flex items-center gap-1">
                                 <Clock size={12} />
                                 {formatDate(key.lastUsed)}
                               </span>
                             ) : (
-                              <span className="text-muted-foreground">{t('api.keys.never')}</span>
+                              t('api.keys.never')
                             )}
                           </td>
-                          <td className="p-4 text-muted-foreground text-xs font-mono hidden md:table-cell">
+                          <td className="p-4 text-muted-foreground text-xs hidden md:table-cell">
                             {formatDate(key.createdAt)}
                           </td>
-                          <td className="p-4">
-                            {key.status === 'active' ? (
-                              <Badge className="bg-success/20 text-success border border-success/30 text-xs">
-                                Active
-                              </Badge>
-                            ) : key.status === 'expired' ? (
-                              <Badge className="bg-neutral-500/20 text-neutral-400 border border-neutral-500/30 text-xs">
-                                Expired
-                              </Badge>
-                            ) : (
-                              <Badge className="bg-destructive/20 text-destructive border border-destructive/30 text-xs">
-                                Revoked
-                              </Badge>
-                            )}
-                          </td>
+                          <td className="p-4">{statusBadge(key.status)}</td>
                           <td className="p-4 text-right">
                             {key.status === 'active' && (
                               <Button
-                                variant="ghost"
+                                variant="danger"
+                                size="icon-sm"
                                 onClick={() => setRevokeTarget(key)}
-                                className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
                                 title={t('api.keys.revoke_key')}
+                                aria-label={t('api.keys.revoke_key')}
                               >
                                 <Trash2 size={16} />
                               </Button>
@@ -610,53 +478,18 @@ export const ApiKeysPage: React.FC = () => {
               )}
             </CardContent>
           </Card>
-
-          {/* Revoke Confirmation Overlay */}
-          {revokeTarget && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-              <Card className="bg-card border border-border rounded-xl max-w-md w-full mx-4">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-destructive/10 rounded-md">
-                      <AlertTriangle className="h-5 w-5 text-destructive" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-foreground">
-                      {t('api.keys.revoke_api_key')}
-                    </h3>
-                  </div>
-                  <p className="text-muted-foreground text-sm mb-1">
-                    Are you sure you want to revoke{' '}
-                    <span className="text-foreground font-medium">"{revokeTarget.name}"</span>?
-                  </p>
-                  <p className="text-muted-foreground text-xs mb-6">
-                    This action cannot be undone. Any applications using this key will lose access
-                    immediately.
-                  </p>
-                  <div className="flex items-center gap-3 justify-end">
-                    <Button
-                      variant="ghost"
-                      onClick={() => setRevokeTarget(null)}
-                      className="px-4 py-2 bg-muted text-muted-foreground rounded-md text-sm hover:bg-muted/70 transition-colors"
-                      disabled={isRevoking}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={handleRevokeKey}
-                      disabled={isRevoking}
-                      className="flex items-center gap-2 px-4 py-2 bg-destructive/20 text-destructive border border-destructive/30 rounded-md text-sm hover:bg-destructive/30 transition-colors disabled:opacity-50"
-                    >
-                      {isRevoking ? <GlitchLoader size={14} /> : <Trash2 size={14} />}
-                      {isRevoking ? 'Revoking...' : 'Revoke Key'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
         </div>
-      </div>
-    </>
+      )}
+
+      <ConfirmationModal
+        isOpen={!!revokeTarget}
+        onClose={() => setRevokeTarget(null)}
+        onConfirm={handleRevokeKey}
+        title={t('api.keys.revoke_api_key')}
+        message={t('api.keys.revokeMessage', { name: revokeTarget?.name ?? '' })}
+        confirmText={t('api.keys.revoke_key')}
+        variant="danger"
+      />
+    </PageShell>
   );
 };

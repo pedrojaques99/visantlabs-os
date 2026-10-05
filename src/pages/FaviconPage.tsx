@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Upload, Copy, Image as ImageIcon, Check, Download } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -20,20 +20,19 @@ import { useBrandDefaults } from '@/hooks/useBrandDefaults';
 import JSZip from 'jszip';
 import { glassSurface } from '@/lib/ui/glass';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Thumb } from '@/components/ui/Thumb';
+import { fade, transitions } from '@/lib/ui/motion';
 
-const ease = [0.4, 0, 0.2, 1] as const;
-const fadeUp = {
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8 },
-  transition: { duration: 0.35, ease },
-};
 const fadeScale = {
   initial: { opacity: 0, scale: 0.96 },
   animate: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 0.96 },
-  transition: { duration: 0.3, ease },
+  transition: transitions.base,
 };
+
+/** Transparency checkerboard from theme tokens (no raw hex). */
+const checkerboard = (cell: number) =>
+  `repeating-conic-gradient(var(--muted) 0% 25%, var(--card) 0% 50%) 0 0 / ${cell}px ${cell}px`;
 
 const SIZE_LABELS: Record<number, string> = {
   16: 'favicon',
@@ -121,7 +120,6 @@ function buildManifestSnippet(): string {
 
 export const FaviconPage: React.FC = () => {
   const { t } = useTranslation();
-  const inputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null);
 
@@ -209,10 +207,10 @@ export const FaviconPage: React.FC = () => {
       });
       const icons = await generateIcons(sourceUrl, backgroundColor, borderRadius, padding);
       setGeneratedIcons(icons);
-      toast.success(`${icons.length} icons generated`);
+      toast.success(t('miniTools.favicon.generated', { count: icons.length }));
     } catch (err: any) {
       console.error('Favicon generation failed:', err);
-      toast.error(err?.message || 'Generation failed');
+      toast.error(err?.message || t('miniTools.favicon.generateFailed'));
     } finally {
       setIsGenerating(false);
     }
@@ -225,6 +223,7 @@ export const FaviconPage: React.FC = () => {
     generatedIcons,
     setGeneratedIcons,
     setIsGenerating,
+    t,
   ]);
 
   const handleDownloadZip = useCallback(async () => {
@@ -263,19 +262,22 @@ export const FaviconPage: React.FC = () => {
 
     const blob = await zip.generateAsync({ type: 'blob' });
     downloadBlob(blob, `favicon-pack-${Date.now()}.zip`);
-    toast.success('ZIP downloaded');
-  }, [generatedIcons]);
+    toast.success(t('miniTools.zipDownloaded'));
+  }, [generatedIcons, t]);
 
-  const handleCopySnippet = useCallback(async (key: string, text: string) => {
-    const ok = await copyToClipboard(text);
-    if (ok) {
-      setCopiedSnippet(key);
-      toast.success('Copied to clipboard');
-      setTimeout(() => setCopiedSnippet(null), 2000);
-    } else {
-      toast.error('Copy failed');
-    }
-  }, []);
+  const handleCopySnippet = useCallback(
+    async (key: string, text: string) => {
+      const ok = await copyToClipboard(text);
+      if (ok) {
+        setCopiedSnippet(key);
+        toast.success(t('miniTools.copied'));
+        setTimeout(() => setCopiedSnippet(null), 2000);
+      } else {
+        toast.error(t('miniTools.copyFailed'));
+      }
+    },
+    [t]
+  );
 
   const handleReset = useCallback(() => {
     generatedIcons.forEach((icon) => {
@@ -290,31 +292,33 @@ export const FaviconPage: React.FC = () => {
   /* ── Panel: controls (only shown when source is loaded) ── */
   const panel = sourceUrl ? (
     <div className="space-y-5">
-      <h2 className="text-2xs font-medium text-neutral-500">Settings</h2>
-
       <BrandToolSelect value={brandId} onChange={setBrandId} />
 
       {/* Background color */}
       <div className="space-y-1.5">
-        <span className="text-xs font-medium text-neutral-500">Background</span>
+        <span className="text-xs font-medium text-muted-foreground">
+          {t('miniTools.favicon.background')}
+        </span>
         <div className="flex items-center gap-2">
           <button
+            type="button"
+            aria-pressed={isTransparentBg}
             onClick={() => setBackgroundColor(isTransparentBg ? '#ffffff' : 'transparent')}
             className={cn(
-              'px-2 py-0.5 rounded text-2xs font-mono transition-colors duration-200 border',
+              'px-2 py-0.5 rounded text-xs transition-colors duration-200 border',
               isTransparentBg
-                ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40'
-                : 'bg-neutral-900 text-neutral-500 border-neutral-800 hover:border-neutral-600'
+                ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40'
+                : 'bg-muted/40 text-muted-foreground border-border hover:border-ring hover:text-foreground'
             )}
           >
-            None
+            {t('miniTools.favicon.none')}
           </button>
           {!isTransparentBg && (
             <Input
               type="text"
               value={backgroundColor}
               onChange={(e) => setBackgroundColor(e.target.value)}
-              className="h-6 w-24 text-2xs font-mono bg-neutral-900 border-neutral-800"
+              className="h-6 w-24 text-2xs font-mono"
               placeholder="#ffffff"
             />
           )}
@@ -323,7 +327,7 @@ export const FaviconPage: React.FC = () => {
               type="color"
               value={backgroundColor.startsWith('#') ? backgroundColor : '#ffffff'}
               onChange={(e) => setBackgroundColor(e.target.value)}
-              className="w-6 h-6 rounded cursor-pointer border border-neutral-700 bg-transparent"
+              className="w-6 h-6 rounded cursor-pointer border border-border bg-transparent"
             />
           )}
         </div>
@@ -332,8 +336,12 @@ export const FaviconPage: React.FC = () => {
       {/* Border radius */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-neutral-500">Radius</span>
-          <span className="text-2xs font-mono text-neutral-500">{borderRadius}%</span>
+          <span className="text-xs font-medium text-muted-foreground">
+            {t('miniTools.favicon.radius')}
+          </span>
+          <span className="text-2xs font-mono tabular-nums text-muted-foreground">
+            {borderRadius}%
+          </span>
         </div>
         <input
           type="range"
@@ -342,15 +350,17 @@ export const FaviconPage: React.FC = () => {
           step="1"
           value={borderRadius}
           onChange={(e) => setBorderRadius(parseInt(e.target.value))}
-          className="w-full h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
+          className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
         />
       </div>
 
       {/* Padding */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-neutral-500">Padding</span>
-          <span className="text-2xs font-mono text-neutral-500">{padding}%</span>
+          <span className="text-xs font-medium text-muted-foreground">
+            {t('miniTools.favicon.padding')}
+          </span>
+          <span className="text-2xs font-mono tabular-nums text-muted-foreground">{padding}%</span>
         </div>
         <input
           type="range"
@@ -359,47 +369,48 @@ export const FaviconPage: React.FC = () => {
           step="1"
           value={padding}
           onChange={(e) => setPadding(parseInt(e.target.value))}
-          className="w-full h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
+          className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
         />
       </div>
 
-      <div className="h-px bg-neutral-800" />
+      <div className="h-px bg-border" />
 
       {/* Generate button in panel */}
       <Button
         onClick={handleGenerate}
         disabled={isGenerating}
         className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
-        asChild
       >
-        <motion.button whileTap={{ scale: 0.98 }} disabled={isGenerating}>
-          {isGenerating ? <GlitchLoader size={14} color="currentColor" /> : <ImageIcon size={14} />}
-          <span className="ml-2">{isGenerating ? 'Generating...' : 'Generate Icons'}</span>
-        </motion.button>
+        {isGenerating ? <GlitchLoader size={14} color="currentColor" /> : <ImageIcon size={14} />}
+        <span className="ml-2">
+          {isGenerating ? t('miniTools.favicon.generating') : t('miniTools.favicon.generate')}
+        </span>
       </Button>
     </div>
   ) : undefined;
 
   /* ── Status bar: Generate + Download actions ── */
   const statusBar = sourceUrl ? (
-    <div className="flex items-center gap-3 text-2xs font-medium uppercase tracking-widest">
+    <div className="flex items-center gap-3 text-xs text-muted-foreground">
       <button
+        type="button"
         onClick={handleGenerate}
         disabled={isGenerating}
-        className="text-foreground hover:text-brand-cyan/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+        className="hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
       >
         <ImageIcon className="w-3.5 h-3.5" />
-        {isGenerating ? 'Generating...' : 'Generate'}
+        {isGenerating ? t('miniTools.favicon.generating') : t('miniTools.favicon.generate')}
       </button>
       {generatedIcons.length > 0 && (
         <>
-          <span className="text-neutral-700">·</span>
+          <span>·</span>
           <button
+            type="button"
             onClick={handleDownloadZip}
-            className="text-foreground hover:text-brand-cyan/80 transition-colors flex items-center gap-1.5"
+            className="hover:text-foreground transition-colors flex items-center gap-1.5"
           >
             <Download className="w-3.5 h-3.5" />
-            Download ZIP
+            {t('miniTools.favicon.downloadZip')}
           </button>
         </>
       )}
@@ -412,9 +423,9 @@ export const FaviconPage: React.FC = () => {
       title={t('apps.faviconGenerator.name')}
       toolId="favicon"
       documentTitle={t('apps.faviconGenerator.name')}
-      onReset={handleReset}
+      onReset={sourceUrl ? handleReset : undefined}
       panel={panel}
-      panelLabel="Settings"
+      panelLabel={t('miniTools.settings')}
       statusBar={statusBar}
       centerContent={!sourceUrl}
       dragDrop={{
@@ -427,76 +438,40 @@ export const FaviconPage: React.FC = () => {
       <AnimatePresence mode="wait">
         {/* Empty state — centered landing */}
         {!sourceUrl ? (
-          <motion.div
-            key="empty"
-            {...fadeUp}
-            className="flex flex-col items-center justify-center gap-5 text-center"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center">
-              <ImageIcon size={28} className="text-neutral-500" />
-            </div>
-            <div className="space-y-1.5">
-              <h2 className="text-sm font-medium text-neutral-200">
-                Generate favicons for every platform
-              </h2>
-              <p className="text-xs text-neutral-500">
-                ICO, Apple Touch, Android Chrome, PWA — all sizes
-              </p>
-            </div>
-            <motion.label
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              className={cn(
-                'flex flex-col items-center justify-center gap-3 w-full max-w-md h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-colors duration-200',
-                isDragOver
-                  ? 'border-brand-cyan bg-brand-cyan/5'
-                  : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40'
-              )}
-            >
-              <Upload size={24} className="text-neutral-500" />
-              <span className="text-xs font-medium text-neutral-500">
-                Drop image or click to upload
-              </span>
+          <motion.div key="empty" {...fade} className="flex w-full justify-center py-8">
+            <label className="flex h-48 w-full max-w-md cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border px-4 text-center text-sm text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
+              <Upload size={20} />
+              {t('miniTools.dropImage')}
               <input
-                ref={inputRef}
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/svg+xml"
                 className="hidden"
                 onChange={handleInputChange}
               />
-            </motion.label>
+            </label>
           </motion.div>
         ) : (
           /* Working state — centered max-width scrollable column */
           <div className="max-w-3xl mx-auto w-full py-8 px-4">
-            <motion.div key="workspace" {...fadeScale} className="space-y-6">
+            <motion.div key="workspace" {...fade} className="space-y-6">
               {/* Source preview */}
-              <motion.div {...fadeUp} className="flex items-center gap-3">
+              <div className="flex items-center gap-3">
                 <div
-                  className="w-20 h-20 rounded-2xl border border-neutral-800 overflow-hidden flex items-center justify-center flex-shrink-0"
-                  style={{
-                    background:
-                      'repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 0 0 / 10px 10px',
-                  }}
+                  className="w-20 h-20 rounded-2xl border border-border overflow-hidden flex items-center justify-center flex-shrink-0"
+                  style={{ background: checkerboard(10) }}
                 >
-                  <img src={sourceUrl} alt={fileName} className="w-full h-full object-contain" />
+                  <Thumb src={sourceUrl} alt={fileName} className="w-full h-full object-contain" />
                 </div>
-                <span className="text-2xs font-mono text-neutral-500 truncate max-w-[200px]">
+                <span className="text-2xs font-mono text-muted-foreground truncate max-w-[200px]">
                   {fileName}
                 </span>
-              </motion.div>
+              </div>
 
               {/* Generation animation */}
               <AnimatePresence>
                 {isGenerating && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.25 }}
-                    className="py-6"
-                  >
-                    <FlyingPaperLoader label="Generating icons..." />
+                  <motion.div {...fade} className="py-6">
+                    <FlyingPaperLoader label={t('miniTools.favicon.generating')} />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -506,23 +481,17 @@ export const FaviconPage: React.FC = () => {
                 {generatedIcons.length > 0 && (
                   <motion.div {...fadeScale} className="space-y-6">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {generatedIcons.map((icon, i) => (
-                        <motion.div
+                      {generatedIcons.map((icon) => (
+                        <div
                           key={icon.size}
-                          initial={{ opacity: 0, y: 12 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, ease, delay: i * 0.05 }}
                           className={cn(
-                            'flex flex-col items-center gap-1.5 p-3 rounded-2xl duration-200',
-                            glassSurface.panel
+                            'flex flex-col items-center gap-1.5 p-3 rounded-2xl',
+                            glassSurface.surface
                           )}
                         >
                           <div
                             className="w-16 h-16 rounded flex items-center justify-center overflow-hidden"
-                            style={{
-                              background:
-                                'repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 0 0 / 8px 8px',
-                            }}
+                            style={{ background: checkerboard(8) }}
                           >
                             <img
                               src={icon.url}
@@ -533,68 +502,70 @@ export const FaviconPage: React.FC = () => {
                               }}
                             />
                           </div>
-                          <span className="text-2xs font-mono text-neutral-300">
+                          <span className="text-2xs font-mono text-foreground">
                             {icon.size}x{icon.size}
                           </span>
-                          <span className="text-2xs text-neutral-600">
+                          <span className="text-2xs text-muted-foreground">
                             {SIZE_LABELS[icon.size] || ''}
                           </span>
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
 
                     {/* Code snippets */}
-                    <motion.div
-                      {...fadeUp}
-                      transition={{ ...fadeUp.transition, delay: 0.15 }}
-                      className="space-y-3"
-                    >
-                      <h2 className="text-2xs font-medium text-neutral-500">HTML Tags</h2>
+                    <div className="space-y-3">
+                      <h2 className="text-xs font-medium text-muted-foreground">
+                        {t('miniTools.favicon.htmlTags')}
+                      </h2>
                       <div className="relative">
                         <pre
                           className={cn(
-                            'p-3 rounded-2xl text-2xs font-mono text-neutral-400 overflow-x-auto whitespace-pre duration-200',
-                            glassSurface.panel
+                            'p-3 rounded-2xl text-2xs font-mono text-muted-foreground overflow-x-auto whitespace-pre',
+                            glassSurface.surface
                           )}
                         >
                           {buildHtmlSnippet()}
                         </pre>
-                        <motion.button
-                          whileTap={{ scale: 0.95 }}
+                        <button
+                          type="button"
                           onClick={() => handleCopySnippet('html', buildHtmlSnippet())}
-                          className="absolute top-2 right-2 text-neutral-600 hover:text-neutral-300 transition-colors duration-200"
-                          title="Copy"
+                          className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
+                          title={t('miniTools.copy')}
+                          aria-label={t('miniTools.copy')}
                         >
                           {copiedSnippet === 'html' ? <Check size={12} /> : <Copy size={12} />}
-                        </motion.button>
+                        </button>
                       </div>
 
-                      <h2 className="text-2xs font-medium text-neutral-500">Web Manifest</h2>
+                      <h2 className="text-xs font-medium text-muted-foreground">
+                        {t('miniTools.favicon.webManifest')}
+                      </h2>
                       <div className="relative">
                         <pre
                           className={cn(
-                            'p-3 rounded-2xl text-2xs font-mono text-neutral-400 overflow-x-auto whitespace-pre duration-200',
-                            glassSurface.panel
+                            'p-3 rounded-2xl text-2xs font-mono text-muted-foreground overflow-x-auto whitespace-pre',
+                            glassSurface.surface
                           )}
                         >
                           {buildManifestSnippet()}
                         </pre>
-                        <motion.button
-                          whileTap={{ scale: 0.95 }}
+                        <button
+                          type="button"
                           onClick={() => handleCopySnippet('manifest', buildManifestSnippet())}
-                          className="absolute top-2 right-2 text-neutral-600 hover:text-neutral-300 transition-colors duration-200"
-                          title="Copy"
+                          className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
+                          title={t('miniTools.copy')}
+                          aria-label={t('miniTools.copy')}
                         >
                           {copiedSnippet === 'manifest' ? <Check size={12} /> : <Copy size={12} />}
-                        </motion.button>
+                        </button>
                       </div>
-                    </motion.div>
+                    </div>
 
                     {/* Quick Actions — download, copy, send to other tools */}
                     <QuickActions
                       toolId="favicon"
                       outputMime="image/png"
-                      summary={`${generatedIcons.length} favicon sizes generated`}
+                      summary={t('miniTools.favicon.generated', { count: generatedIcons.length })}
                       onDownloadAll={handleDownloadZip}
                       assetData={
                         generatedIcons.find((i) => i.size === 512)?.url

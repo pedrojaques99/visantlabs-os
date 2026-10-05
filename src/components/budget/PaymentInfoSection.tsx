@@ -74,16 +74,12 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-neutral-200 font-mono">
-        {t('budget.paymentInfo') || 'Informações de Pagamento'}
-      </h3>
+      <h3 className="text-lg font-semibold text-neutral-200">{t('budget.paymentInfo')}</h3>
 
       <div className="space-y-4 p-4 bg-neutral-900 border border-neutral-800 rounded-xl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-neutral-400 mb-2 font-mono">
-              {t('budget.totalHours') || 'Total de Horas'}
-            </label>
+            <label className="block text-xs text-neutral-400 mb-2">{t('budget.totalHours')}</label>
             <FormInput
               type="number"
               min="0"
@@ -94,9 +90,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
             />
           </div>
           <div>
-            <label className="block text-xs text-neutral-400 mb-2 font-mono">
-              {t('budget.hourlyRate') || 'Valor por Hora'}
-            </label>
+            <label className="block text-xs text-neutral-400 mb-2">{t('budget.hourlyRate')}</label>
             <CurrencyInput
               value={paymentInfo.hourlyRate || 0}
               onChange={(value) => updateField('hourlyRate', value)}
@@ -107,9 +101,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
         </div>
         <div className="flex flex-col md:flex-row gap-4 items-end">
           <div className="flex-[2] w-full">
-            <label className="block text-xs text-neutral-400 mb-2 font-mono">
-              {t('budget.pixKey') || 'Chave PIX'}
-            </label>
+            <label className="block text-xs text-neutral-400 mb-2">{t('budget.pixKey')}</label>
             <FormInput
               value={paymentInfo.pixKey || ''}
               onChange={(e) => updateField('pixKey', e.target.value)}
@@ -118,8 +110,8 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
             />
           </div>
           <div className="flex-1 w-full">
-            <label className="block text-xs text-neutral-400 mb-2 font-mono">
-              {t('budget.cashDiscountPercent') || 'Desconto à Vista (%)'}
+            <label className="block text-xs text-neutral-400 mb-2">
+              {t('budget.cashDiscountPercent')}
             </label>
             <FormInput
               type="number"
@@ -136,7 +128,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
 
         {paymentInfo.totalHours && paymentInfo.hourlyRate && (
           <div className="pt-3 border-t border-neutral-800/50 space-y-1.5">
-            <div className="flex justify-between text-xs font-mono">
+            <div className="flex justify-between text-xs">
               <span className="text-neutral-500">
                 {paymentInfo.totalHours}h × R${paymentInfo.hourlyRate}/h:
               </span>
@@ -150,7 +142,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
             </div>
             {paymentInfo.cashDiscountPercent && (
               <>
-                <div className="flex justify-between text-xs font-mono">
+                <div className="flex justify-between text-xs">
                   <span className="text-neutral-500">
                     Desconto ({paymentInfo.cashDiscountPercent}%):
                   </span>
@@ -162,7 +154,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
                     })}
                   </span>
                 </div>
-                <div className="flex justify-between text-xs font-mono border-t border-neutral-800/30 pt-1.5">
+                <div className="flex justify-between text-xs border-t border-neutral-800/30 pt-1.5">
                   <span className="text-neutral-400">Total com Desconto:</span>
                   <span className="text-neutral-300">
                     R${' '}
@@ -179,13 +171,11 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
       </div>
 
       <div className="space-y-4">
-        <h4 className="text-md font-semibold text-neutral-200 font-mono">
-          {t('budget.paymentMethods') || 'Métodos de Pagamento'}
-        </h4>
+        <h4 className="text-md font-semibold text-neutral-200">{t('budget.paymentMethods')}</h4>
 
         {paymentInfo.paymentMethods.length === 0 ? (
-          <div className="text-center py-4 text-neutral-500 font-mono text-sm">
-            {t('budget.noPaymentMethods') || 'Nenhum método de pagamento adicionado'}
+          <div className="text-center py-4 text-neutral-500 text-sm">
+            {t('budget.noPaymentMethods')}
           </div>
         ) : (
           <div className="space-y-3">
@@ -195,8 +185,8 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
                   <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                     <div className="flex-1 w-full space-y-3">
                       <div>
-                        <label className="block text-xs text-neutral-400 mb-1 font-mono">
-                          {t('budget.methodType') || 'Tipo'}
+                        <label className="block text-xs text-neutral-400 mb-1">
+                          {t('budget.methodType')}
                         </label>
                         <Select
                           value={method.type}
@@ -211,8 +201,8 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-neutral-400 mb-1 font-mono">
-                          {t('budget.methodLabel') || 'Label'}
+                        <label className="block text-xs text-neutral-400 mb-1">
+                          {t('budget.methodLabel')}
                         </label>
                         <FormInput
                           value={method.label}
@@ -221,8 +211,8 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-neutral-400 mb-1 font-mono">
-                          {t('budget.methodDescription') || 'Descrição'}
+                        <label className="block text-xs text-neutral-400 mb-1">
+                          {t('budget.methodDescription')}
                         </label>
                         <FormInput
                           value={method.description}
@@ -234,8 +224,8 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
                       </div>
                       {method.type === 'credit' && (
                         <div>
-                          <label className="block text-xs text-neutral-400 mb-1 font-mono">
-                            {t('budget.installments') || 'Parcelas'}
+                          <label className="block text-xs text-neutral-400 mb-1">
+                            {t('budget.installments')}
                           </label>
                           <FormInput
                             type="number"
@@ -257,7 +247,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
                       variant="ghost"
                       onClick={() => removePaymentMethod(index)}
                       className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors self-start sm:self-auto"
-                      title={t('budget.removePaymentMethod') || 'Remover método'}
+                      title={t('budget.removePaymentMethod')}
                     >
                       <Trash2 size={18} />
                     </Button>
@@ -269,7 +259,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
                       variant="ghost"
                       onClick={addPaymentMethod}
                       className="flex items-center justify-center p-1.5 bg-neutral-950/30 hover:bg-neutral-950/50 border border-neutral-700/30 hover:border-neutral-600/50 rounded-md text-neutral-400 hover:text-neutral-300 transition-colors duration-200"
-                      title={t('budget.addPaymentMethod') || 'Adicionar Método'}
+                      title={t('budget.addPaymentMethod')}
                     >
                       <Plus size={16} />
                     </Button>

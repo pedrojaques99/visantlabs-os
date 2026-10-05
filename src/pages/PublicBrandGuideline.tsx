@@ -35,7 +35,6 @@ import type { BrandGuideline } from '@/lib/figma-types';
 import {
   BrandReadOnlyView,
   extractBrandTheme,
-  getRelativeLuminance,
   toCSSVariables,
   type BrandViewSection,
 } from '@/components/brand/BrandReadOnlyView';
@@ -68,6 +67,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Thumb } from '@/components/ui/Thumb';
 import {
   BrandRoomProvider,
   BrandCollaboratorAvatars,
@@ -397,16 +397,14 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="relative z-10 flex flex-col items-center gap-4"
         >
           <GlitchLoader size={40} />
-          <MicroTitle className="text-neutral-600">
-            {t('public.brand.guideline.decrypting_brand_assets')}
-          </MicroTitle>
+          <MicroTitle className="text-muted-foreground">{t('publicBrand.loading')}</MicroTitle>
         </motion.div>
       </div>
     );
@@ -416,42 +414,23 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
     // A transient network/5xx failure is not the visitor's fault and is retryable —
     // don't shame it with "Access Denied". Expected private/missing keeps that copy.
     const isNetwork = error?.kind === 'network';
-    const accentStyle = {
-      '--accent': guideline?.colors?.[0]?.hex || '#888888',
-    } as React.CSSProperties;
     return (
-      <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-6">
-        <GlassPanel
-          padding="lg"
-          className="relative z-10 max-w-md text-center border-destructive/10 bg-destructive/[0.02]"
-        >
-          <AlertCircle size={48} className="mx-auto text-destructive/40 mb-4" />
-          <h1 className="text-xl font-bold text-neutral-200 mb-2 font-manrope">
-            {isNetwork ? "Couldn't load this brand" : t('public.brand.guideline.access_denied')}
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <GlassPanel padding="lg" className="relative z-10 max-w-md text-center">
+          <AlertCircle size={32} className="mx-auto text-muted-foreground mb-4" />
+          <h1 className="text-xl font-semibold text-foreground mb-2 font-manrope">
+            {isNetwork ? t('publicBrand.networkTitle') : t('publicBrand.notFoundTitle')}
           </h1>
-          <p className="text-neutral-500 text-sm mb-6 leading-relaxed">
-            {isNetwork
-              ? 'Something went wrong reaching our servers. Check your connection and try again.'
-              : 'This brand guideline is either private or does not exist in our secure vault.'}
+          <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
+            {isNetwork ? t('publicBrand.networkBody') : t('publicBrand.notFoundBody')}
           </p>
           {isNetwork ? (
-            <Button
-              onClick={retryFetch}
-              variant="outline"
-              className="text-[var(--accent)] border-[var(--accent)]/20 hover:bg-[var(--accent)]/5"
-              style={accentStyle}
-            >
-              Try again
+            <Button onClick={retryFetch} variant="outline">
+              {t('common.retry')}
             </Button>
           ) : (
             <Link to="/">
-              <Button
-                variant="outline"
-                className="text-[var(--accent)] border-[var(--accent)]/20 hover:bg-[var(--accent)]/5"
-                style={accentStyle}
-              >
-                Return to Surface
-              </Button>
+              <Button variant="outline">{t('common.backToHome')}</Button>
             </Link>
           )}
         </GlassPanel>
@@ -460,13 +439,12 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   }
 
   const brandName = guideline.identity?.name || 'Brand Guidelines';
-  const isLightBg = getRelativeLuminance(brandTheme.bg) > 0.5;
-  const navBtnClass = isLightBg
-    ? 'bg-black/5 border-black/10 text-black hover:bg-black/10'
-    : 'bg-white/5 border-white/10 text-white hover:bg-white/10';
+  // brandTheme.text já sai com contraste AA sobre o fundo: os botões herdam dela.
+  const navBtnClass =
+    'bg-[var(--brand-text)]/5 border-[var(--brand-text)]/10 text-[var(--brand-text)] hover:bg-[var(--brand-text)]/10';
   // Unified top-right control pill — same design system as HOME/VOLTAR (contrast-safe hover).
   const ctrlBtnClass = cn(
-    'h-9 px-4 rounded-full text-2xs font-mono font-bold uppercase tracking-widest gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
+    'h-9 px-4 rounded-full text-xs font-medium gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
     navBtnClass
   );
   // In admin context (idOverride) the global app Header (h-10 md:h-14) is present,
@@ -479,7 +457,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   const pageContent = (
     <div
       className={cn(
-        'transition-all duration-1000 selection:bg-[var(--accent)]/30 overflow-x-hidden',
+        'transition-colors duration-1000 selection:bg-[var(--accent)]/30 overflow-x-hidden',
         // Admin (idOverride): cover the whole viewport over the native app header.
         // z-50 (tie with the header) wins by DOM order — same mechanism that lets
         // portaled overlays (dialogs/menus/sheets, z-50) render above this shell.
@@ -513,21 +491,21 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           onClick={() => navigate('/')}
           variant="ghost"
           className={cn(
-            'h-9 px-4 text-2xs font-mono gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
+            'h-9 px-4 text-xs font-medium gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
             navBtnClass
           )}
         >
-          <Home size={14} /> <span className="hidden sm:inline">HOME</span>
+          <Home size={14} /> <span className="hidden sm:inline">{t('common.home')}</span>
         </Button>
         <Button
           onClick={() => (onBack ? onBack() : navigate(-1))}
           variant="ghost"
           className={cn(
-            'h-9 px-4 text-2xs font-mono gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
+            'h-9 px-4 text-xs font-medium gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
             navBtnClass
           )}
         >
-          <ChevronLeft size={14} /> <span className="hidden sm:inline">VOLTAR</span>
+          <ChevronLeft size={14} /> <span className="hidden sm:inline">{t('common.back')}</span>
         </Button>
       </div>
 
@@ -557,15 +535,15 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                 className={cn(
                   ctrlBtnClass,
                   // Primary CTA — uses the brand accent so it reads as the main action.
-                  'bg-[var(--accent)] text-[var(--accent-text)] border-transparent hover:bg-[var(--accent)] shadow-[0_0_20px_rgba(var(--accent-rgb),0.25)]'
+                  'bg-[var(--accent)] text-[var(--accent-text)] border-transparent hover:bg-[var(--accent)] hover:opacity-90'
                 )}
               >
                 <Zap size={13} />
-                <span className="hidden sm:inline">Generate</span>
+                <span className="hidden sm:inline">{t('publicBrand.generate')}</span>
               </Button>
               <Button onClick={() => setIsShareOpen(true)} variant="ghost" className={ctrlBtnClass}>
                 <Share2 size={13} />
-                <span className="hidden sm:inline">Share</span>
+                <span className="hidden sm:inline">{t('publicBrand.share')}</span>
               </Button>
             </>
           )}
@@ -593,7 +571,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         {/* Unified overflow — the single mobile hamburger; ⋯ on larger screens. */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className={ctrlBtnClass} aria-label="Menu">
+            <Button variant="ghost" className={ctrlBtnClass} aria-label={t('common.moreOptions')}>
               <Menu size={16} className="sm:hidden" />
               <MoreHorizontal size={14} className="hidden sm:block" />
             </Button>
@@ -601,7 +579,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           <DropdownMenuContent
             align="end"
             style={themeVars}
-            className="w-auto min-w-0 p-2 rounded-2xl border border-[var(--brand-text)]/10 bg-[var(--brand-bg)]/70 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.25)] text-[var(--brand-text)]"
+            className="w-auto min-w-0 p-2 rounded-2xl border border-[var(--brand-text)]/10 bg-[var(--brand-bg)]/70 backdrop-blur-2xl shadow-lg text-[var(--brand-text)]"
           >
             {/* Mobile-only: primary actions that live inline on ≥sm screens. */}
             {canEdit && (
@@ -609,10 +587,10 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                 {editMode && (
                   <>
                     <Button variant="menuItem" onClick={() => setIsAiPopulateOpen(true)}>
-                      <Zap size={13} /> Generate
+                      <Zap size={13} /> {t('publicBrand.generate')}
                     </Button>
                     <Button variant="menuItem" onClick={() => setIsShareOpen(true)}>
-                      <Share2 size={13} /> Share
+                      <Share2 size={13} /> {t('publicBrand.share')}
                     </Button>
                   </>
                 )}
@@ -629,12 +607,12 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             {/* Import / Create — edit mode only */}
             {canEdit && editMode && (
               <>
-                <DropdownMenuLabel className="text-2xs font-medium text-neutral-500">
-                  Import / Create
+                <DropdownMenuLabel className="text-2xs font-medium text-[var(--brand-text)]/60">
+                  {t('publicBrand.menu.create')}
                 </DropdownMenuLabel>
                 {guideline.id && (
                   <Button variant="menuItem" onClick={() => ingestOpenRef.current?.()}>
-                    <FileInput size={13} /> Ingest
+                    <FileInput size={13} /> {t('publicBrand.menu.ingest')}
                   </Button>
                 )}
                 <Button variant="menuItem" onClick={() => setIsMockupOpen(true)}>
@@ -645,8 +623,8 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             )}
 
             {/* Export / Connect — always available */}
-            <DropdownMenuLabel className="text-2xs font-medium text-neutral-500">
-              Export / Connect
+            <DropdownMenuLabel className="text-2xs font-medium text-[var(--brand-text)]/60">
+              {t('publicBrand.menu.export')}
             </DropdownMenuLabel>
             <Button variant="menuItem" onClick={handleDownloadJSON}>
               <Download size={13} /> JSON
@@ -664,7 +642,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                 }}
               >
                 {figmaCopied ? <Check size={13} className="text-success" /> : <Figma size={13} />}
-                {figmaCopied ? 'Copied!' : 'Use in Figma'}
+                {figmaCopied ? t('publicBrand.menu.copied') : t('publicBrand.menu.useInFigma')}
               </Button>
             )}
             <Button variant="menuItem" onClick={handleConnect} disabled={connecting}>
@@ -678,19 +656,19 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             {canEdit && editMode && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-2xs font-medium text-neutral-500">
-                  Quality
+                <DropdownMenuLabel className="text-2xs font-medium text-[var(--brand-text)]/60">
+                  {t('publicBrand.menu.quality')}
                 </DropdownMenuLabel>
                 <Button variant="menuItem" onClick={() => setIsReviewOpen(true)}>
-                  <ShieldCheck size={13} /> Review
+                  <ShieldCheck size={13} /> {t('guidelineExport.review')}
                 </Button>
               </>
             )}
 
             {/* Display — theme (always) + advanced editor (edit mode) */}
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-2xs font-medium text-neutral-500">
-              Display
+            <DropdownMenuLabel className="text-2xs font-medium text-[var(--brand-text)]/60">
+              {t('publicBrand.menu.display')}
             </DropdownMenuLabel>
             {canEdit && editMode && (
               <Button
@@ -698,7 +676,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                 onClick={() => setAdvancedEdit((v) => !v)}
                 aria-pressed={advancedEdit}
               >
-                <SlidersHorizontal size={13} /> Advanced editor
+                <SlidersHorizontal size={13} /> {t('publicBrand.advancedEditor')}
                 {advancedEdit && <Check size={13} className="ml-auto text-success" />}
               </Button>
             )}
@@ -707,12 +685,14 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
               className="flex items-center gap-1.5 px-2 py-1.5"
               onPointerDown={(e) => e.stopPropagation()}
             >
-              <span className="text-2xs font-medium opacity-60 mr-auto">Theme</span>
+              <span className="text-2xs font-medium text-[var(--brand-text)]/60 mr-auto">
+                {t('publicBrand.theme.label')}
+              </span>
               {(
                 [
-                  { k: 'brand', Icon: Palette, label: 'Brand theme' },
-                  { k: 'light', Icon: Sun, label: 'Light' },
-                  { k: 'dark', Icon: Moon, label: 'Dark' },
+                  { k: 'brand', Icon: Palette, label: t('publicBrand.theme.brand') },
+                  { k: 'light', Icon: Sun, label: t('publicBrand.theme.light') },
+                  { k: 'dark', Icon: Moon, label: t('publicBrand.theme.dark') },
                 ] as const
               ).map(({ k, Icon, label }) => (
                 <button
@@ -726,7 +706,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                     'w-9 h-9 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center transition-colors',
                     theme === k
                       ? 'bg-[var(--accent)] text-[var(--accent-text)]'
-                      : 'opacity-50 hover:opacity-100 hover:bg-[var(--brand-text)]/10'
+                      : 'text-[var(--brand-text)]/60 hover:text-[var(--brand-text)] hover:bg-[var(--brand-text)]/10'
                   )}
                 >
                   <Icon size={13} />
@@ -757,19 +737,15 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           transition={{ duration: 1, ease: 'easeOut' }}
           className="relative mb-12 md:mb-16"
         >
-          {theme === 'dark' && brandTheme.isCustomBg && (
-            <div className="absolute -top-40 -left-60 w-[800px] h-[800px] bg-[var(--accent)]/5 rounded-full blur-[160px] opacity-20 pointer-events-none" />
-          )}
-
           <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-8 md:gap-12">
             {/* Identity column */}
             <div className="space-y-5 min-w-0">
-              <MicroTitle className="text-[var(--accent)] font-bold opacity-60 normal-case">
+              <MicroTitle className="text-[var(--brand-text)]/60">
                 <InlineEditable
                   as="span"
                   value={guideline.identity?.tagline || ''}
                   editable={canEdit && editMode}
-                  placeholder="Brand Guidelines"
+                  placeholder={t('brandView.taglinePlaceholder')}
                   onCommit={(v) =>
                     handleSave({ identity: { ...(guideline.identity || {}), tagline: v } })
                   }
@@ -777,10 +753,10 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
               </MicroTitle>
               <InlineEditable
                 as="h1"
-                className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black font-manrope tracking-tight leading-[0.95] sm:leading-[0.9] break-words max-w-full"
+                className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-semibold font-manrope tracking-tight leading-[0.95] sm:leading-[0.9] break-words max-w-full"
                 value={guideline.identity?.name || ''}
                 editable={canEdit && editMode}
-                placeholder="Brand name"
+                placeholder={t('publicBrand.namePlaceholder')}
                 onCommit={(v) =>
                   handleSave({ identity: { ...(guideline.identity || {}), name: v } })
                 }
@@ -795,18 +771,23 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
 
               {/* Color signature — thin strip, click to copy */}
               {tokens.palette.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1.5" aria-label="Brand colors">
+                <div
+                  className="flex flex-wrap items-center gap-1.5"
+                  aria-label={t('brandView.colors')}
+                >
                   {tokens.palette.slice(0, 8).map((c, i) => (
                     <button
                       key={`${c.hex}-${i}`}
                       type="button"
                       onClick={() => {
                         copyToClipboard(c.hex);
-                        toast.success(`Copied ${c.hex}`);
+                        toast.success(t('brandView.copied', { hex: c.hex }));
                       }}
                       title={`${c.name || ''} ${c.hex}`.trim()}
-                      aria-label={`Copy ${c.hex}${c.name ? ` — ${c.name}` : ''}`}
-                      className="w-8 h-8 rounded-lg border border-[var(--brand-text)]/10 shadow-sm transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
+                      aria-label={[t('brandView.copyHex', { hex: c.hex }), c.name]
+                        .filter(Boolean)
+                        .join(', ')}
+                      className="w-8 h-8 rounded-lg border border-[var(--brand-text)]/10 transition-colors hover:border-[var(--brand-text)]/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
                       style={{ backgroundColor: c.hex }}
                     />
                   ))}
@@ -819,7 +800,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                   type="button"
                   onClick={handleConnect}
                   disabled={connecting}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--accent)] text-[var(--accent-text)] text-sm font-semibold shadow-lg transition-opacity hover:opacity-90 disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--accent)] text-[var(--accent-text)] text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-50"
                 >
                   <Plug size={15} />
                   {connecting
@@ -847,7 +828,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                 type="button"
                 onClick={() => canEdit && setChangeLogoOpen(true)}
                 disabled={!canEdit}
-                title={canEdit ? 'Trocar logo' : undefined}
+                title={canEdit ? t('cockpit.changeLogoDialog.title') : undefined}
                 className={cn(
                   'relative group/logo block rounded-3xl',
                   canEdit
@@ -864,15 +845,15 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                   )}
                 >
                   {avatar.logoUrl ? (
-                    <img
+                    <Thumb
                       src={avatar.logoUrl}
-                      alt={`${tokens.name} logo`}
+                      alt={tokens.name}
                       className="max-h-24 md:max-h-28 max-w-[200px] object-contain"
                       loading="lazy"
                     />
                   ) : (
                     <span
-                      className="flex items-center justify-center w-24 h-24 md:w-28 md:h-28 rounded-2xl text-5xl md:text-6xl font-black"
+                      className="flex items-center justify-center w-24 h-24 md:w-28 md:h-28 rounded-2xl text-5xl md:text-6xl font-semibold"
                       style={{ backgroundColor: avatar.bg, color: avatar.fg }}
                     >
                       {avatar.initial}
@@ -880,8 +861,10 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                   )}
                 </div>
                 {canEdit && (
-                  <span className="absolute inset-0 flex items-center justify-center rounded-3xl bg-black/40 opacity-0 group-hover/logo:opacity-100 transition-opacity">
-                    <span className="text-xs font-medium text-white">Trocar logo</span>
+                  <span className="absolute inset-0 flex items-center justify-center rounded-3xl bg-black/40 opacity-0 group-hover/logo:opacity-100 group-focus-visible/logo:opacity-100 transition-opacity">
+                    <span className="text-xs font-medium text-white">
+                      {t('cockpit.changeLogoDialog.title')}
+                    </span>
                   </span>
                 )}
               </button>
@@ -918,19 +901,18 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
               onClick={() => setCreateOpen(true)}
               className="h-11 px-6 gap-2 font-medium border-[var(--brand-text)]/15 bg-transparent text-[var(--brand-text)]/70 hover:bg-[var(--brand-text)]/[0.04] hover:text-[var(--brand-text)] hover:border-[var(--brand-text)]/30"
             >
-              Criar com esta marca
+              {t('publicBrand.createWith')}
             </Button>
           </div>
         )}
 
         <Sheet open={createOpen} onOpenChange={setCreateOpen}>
-          <SheetContent
-            side="bottom"
-            className="h-[88vh] overflow-y-auto bg-neutral-950 border-white/10 p-0"
-          >
+          <SheetContent side="bottom" className="h-[88vh] overflow-y-auto p-0">
             <SheetHeader className="px-6 pt-6">
-              <SheetTitle className="text-neutral-200">
-                Criar com {guideline.identity?.name || guideline.name}
+              <SheetTitle>
+                {t('publicBrand.createWithName', {
+                  name: guideline.identity?.name || guideline.name || '',
+                })}
               </SheetTitle>
             </SheetHeader>
             {guideline.id && (
@@ -996,7 +978,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                         type="button"
                         aria-label={`${t('public.brand.guideline.edit_section')}: ${SECTION_LABELS[section]}`}
                         onClick={() => setActiveEditSection(section)}
-                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-transparent border border-[var(--brand-text)]/15 text-[var(--brand-text)]/45 text-2xs font-mono uppercase tracking-widest hover:border-warning/40 hover:text-warning hover:bg-warning/5 transition-colors"
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-transparent border border-[var(--brand-text)]/15 text-[var(--brand-text)]/60 text-xs hover:border-warning/40 hover:text-warning hover:bg-warning/5 transition-colors"
                       >
                         <Pencil size={10} />
                         {SECTION_LABELS[section]}
@@ -1012,10 +994,10 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         <footer className="mt-40 pt-20 border-t border-[var(--brand-text)]/10 text-center space-y-8">
           <div className="flex justify-center gap-12">
             <div className="text-left space-y-2">
-              <span className="text-2xs font-mono opacity-30 uppercase tracking-widest">
+              <span className="text-xs text-[var(--brand-text)]/50">
                 {t('public.brand.guideline.version')}
               </span>
-              <p className="text-xs font-bold opacity-40">
+              <p className="text-xs font-medium text-[var(--brand-text)]/50">
                 {t('public.brand.guideline.visant_labs')}
               </p>
             </div>
@@ -1033,17 +1015,19 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         >
           <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
             <SheetHeader className="mb-6">
-              <SheetTitle className="text-base font-semibold text-neutral-200">
+              <SheetTitle className="text-base font-semibold">
                 {t('public.brand.guideline.editing_section')}
                 {activeEditSection && (
-                  <span className="text-white ml-2">— {SECTION_LABELS[activeEditSection]}</span>
+                  <span className="text-muted-foreground ml-2">
+                    {SECTION_LABELS[activeEditSection]}
+                  </span>
                 )}
               </SheetTitle>
             </SheetHeader>
             {activeEditSection && guideline.id && (
               <React.Suspense
                 fallback={
-                  <div className="p-6 text-neutral-500 text-sm font-mono">Loading editor...</div>
+                  <div className="p-6 text-muted-foreground text-sm">{t('common.loading')}</div>
                 }
               >
                 <PublicSectionEditSheet
@@ -1066,13 +1050,13 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             className="w-full sm:max-w-3xl lg:max-w-4xl overflow-y-auto z-[1100]"
           >
             <SheetHeader className="mb-6">
-              <SheetTitle className="text-base font-semibold text-neutral-200 flex items-center gap-2">
-                <SlidersHorizontal size={14} /> Advanced editor
+              <SheetTitle className="text-base font-semibold flex items-center gap-2">
+                <SlidersHorizontal size={14} /> {t('publicBrand.advancedEditor')}
               </SheetTitle>
             </SheetHeader>
             <React.Suspense
               fallback={
-                <div className="p-6 text-neutral-500 text-sm font-mono">Loading editor…</div>
+                <div className="p-6 text-muted-foreground text-sm">{t('common.loading')}</div>
               }
             >
               <GuidelineDetail

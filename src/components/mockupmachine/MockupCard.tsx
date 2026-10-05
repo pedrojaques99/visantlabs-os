@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Thumb } from '@/components/ui/Thumb';
 import {
   Download,
   RefreshCw,
@@ -143,7 +144,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
     return (
       <GlassPanel
         className={cn(
-          'relative group transition-all duration-300 hover:border-neutral-700 hover:shadow-[0_0_40px_-10px_rgba(0,210,255,0.2)] hover:scale-[1.01] animate-fade-in',
+          'relative group transition-colors duration-300 hover:border-neutral-700 animate-fade-in',
           aspectRatioClass,
           className
         )}
@@ -171,16 +172,14 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
         )}
 
         {base64Image && (
-          <img
+          <Thumb
             key={base64Image}
             src={imageUrl}
-            alt="Generated mockup"
+            alt={t('mockup.generatedAlt')}
             loading="lazy"
             className={cn(
-              'w-full h-full object-contain cursor-pointer transition-all duration-700',
-              isRedrawing
-                ? 'filter blur-md scale-105 opacity-50'
-                : 'group-hover:scale-[1.02] animate-bloom'
+              'w-full h-full object-contain cursor-pointer transition-[color,background-color,border-color,opacity,transform,filter] duration-700',
+              isRedrawing ? 'filter blur-md scale-105 opacity-50' : ' animate-bloom'
             )}
             onClick={(e) => {
               e.stopPropagation();
@@ -190,13 +189,13 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
         )}
 
         {isRedrawing && (
-          <div className="absolute inset-0 flex items-center justify-center z-30 bg-neutral-950/10 backdrop-blur-[2px]">
+          <div className="absolute inset-0 flex items-center justify-center z-30 bg-neutral-950/10">
             <GlitchLoader size={32} color="white" />
           </div>
         )}
 
         {isLoading && !isRedrawing && !!base64Image && (
-          <div className="absolute inset-0 flex items-center justify-center bg-neutral-950/20 backdrop-blur-[2px]">
+          <div className="absolute inset-0 flex items-center justify-center bg-neutral-950/20">
             <ImageIcon size={40} className="text-white/20" />
           </div>
         )}
@@ -215,8 +214,9 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
                     e.stopPropagation();
                     onRemove();
                   }}
-                  className="p-2 rounded-md bg-neutral-950/60 backdrop-blur-md text-neutral-400 hover:bg-destructive/20 hover:text-destructive border border-neutral-800 transition-[color,background-color,border-color,box-shadow,opacity,filter] shadow-lg pointer-events-auto"
-                  title="Remove"
+                  className="p-2 rounded-md bg-neutral-950/60 text-neutral-400 hover:bg-destructive/20 hover:text-destructive border border-neutral-800 transition-[color,background-color,border-color,box-shadow,opacity,filter] shadow-lg pointer-events-auto"
+                  title={t('mockup.removeImage')}
+                  aria-label={t('mockup.removeImage')}
                 >
                   <X size={12} />
                 </Button>
@@ -228,7 +228,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
                     e.stopPropagation();
                     handleToggleLike();
                   }}
-                  className={`p-2 rounded-md backdrop-blur-md border transition-[color,background-color,border-color,box-shadow,filter] shadow-lg pointer-events-auto ${
+                  className={`p-2 rounded-md border transition-[color,background-color,border-color,box-shadow,filter] shadow-lg pointer-events-auto ${
                     localIsLiked
                       ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 hover:bg-brand-cyan/30'
                       : 'bg-neutral-950/60 text-neutral-400 border-neutral-800 hover:text-white hover:bg-neutral-950/80'
@@ -245,7 +245,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
                 padding="none"
                 className="flex flex-row items-center gap-0.5 p-1 bg-neutral-950/80 backdrop-blur-xl border-white/10 rounded-lg shadow-2xl pointer-events-auto"
               >
-                <Tooltip content={t('common.download') || 'Download'} position="top">
+                <Tooltip content={t('common.download')} position="top">
                   <a
                     href={imageUrl}
                     download={`mockup-${Date.now()}.png`}
@@ -280,8 +280,8 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
                 <Tooltip
                   content={
                     editButtonsDisabled
-                      ? t('mockup.insufficientCredits') || 'Insufficient credits'
-                      : t('mockup.redrawTooltip') || 'Re-draw'
+                      ? t('mockup.insufficientCredits')
+                      : t('mockup.redrawTooltip')
                   }
                   position="top"
                 >
@@ -311,8 +311,8 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
                   <Tooltip
                     content={
                       editButtonsDisabled
-                        ? t('mockup.insufficientCredits') || 'Insufficient credits'
-                        : t('mockup.reimagineTooltip') || 'Re-imagine'
+                        ? t('mockup.insufficientCredits')
+                        : t('mockup.reimagineTooltip')
                     }
                     position="top"
                   >
@@ -326,7 +326,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
                       className={`h-8 px-2 rounded-md flex items-center gap-1.5 transition-[color,background-color,border-color,opacity] min-w-0 ${
                         editButtonsDisabled || isRedrawing
                           ? 'text-neutral-600 cursor-not-allowed opacity-50'
-                          : 'text-foreground hover:bg-brand-cyan/20'
+                          : 'text-foreground hover:bg-muted'
                       }`}
                     >
                       <Pencil size={14} />

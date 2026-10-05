@@ -6,6 +6,7 @@ import { GlassPanel } from '@/components/ui/GlassPanel';
 import { cn } from '@/lib/utils';
 import { useBrandSuggestions, SUGGESTION_KIND_META } from '@/hooks/useBrandSuggestions';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useLayout } from '@/hooks/useLayout';
 import { brandGuidelineApi, type BrandSuggestion } from '@/services/brandGuidelineApi';
 
 // Suggestion kind → icon/labelKey/execution mode (SSoT shared with the cockpit).
@@ -91,7 +92,7 @@ const ghostBtn =
 
 // Bare monochrome icon action revealed on card hover (render / copy).
 const iconBtn =
-  'flex items-center justify-center w-7 h-7 rounded-md text-[var(--brand-text)]/40 ' +
+  'flex items-center justify-center w-7 h-7 rounded-md text-[var(--brand-text)]/60 ' +
   'hover:text-[var(--brand-text)] hover:bg-[var(--brand-text)]/[0.06] transition-colors';
 
 /**
@@ -112,12 +113,12 @@ const IdeaCard: React.FC<{
       onClick={onPrimary}
       className="w-full min-h-[104px] flex flex-col text-left rounded-xl border border-[var(--brand-text)]/10 bg-transparent p-5 pr-11 hover:border-[var(--brand-text)]/25 hover:bg-[var(--brand-text)]/[0.02] transition-colors"
     >
-      <span className="text-xs text-[var(--brand-text)]/40">{kicker}</span>
+      <span className="text-xs text-[var(--brand-text)]/60">{kicker}</span>
       <span className="mt-1.5 text-[0.9375rem] font-medium tracking-tight leading-snug text-[var(--brand-text)]">
         {title}
       </span>
       {body && (
-        <span className="mt-1.5 text-xs leading-relaxed text-[var(--brand-text)]/45 line-clamp-2">
+        <span className="mt-1.5 text-xs leading-relaxed text-[var(--brand-text)]/60 line-clamp-2">
           {body}
         </span>
       )}
@@ -125,7 +126,7 @@ const IdeaCard: React.FC<{
     <ArrowUpRight
       size={15}
       aria-hidden
-      className="pointer-events-none absolute top-5 right-4 text-[var(--brand-text)]/25 transition-all group-hover:text-[var(--brand-text)]/70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+      className="pointer-events-none absolute top-5 right-4 text-[var(--brand-text)]/25 transition-[color,transform] group-hover:text-[var(--brand-text)]/70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
     />
     {actions && (
       <div className="absolute bottom-3 right-3 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
@@ -206,6 +207,9 @@ export const BrandInteractivePanel: React.FC<Props> = ({
   className,
 }) => {
   const { t } = useTranslation();
+  // A dica de configuração fala de chave de provedor: só o admin pode agir nela.
+  const { user } = useLayout();
+  const isAdmin = !!user?.isAdmin;
   // Seasonal suggestions — shared SSoT hook (also powers the home cockpit).
   const { suggestions, seasonal, loading, refreshing, error, errorCode, load } =
     useBrandSuggestions(guidelineId, 4);
@@ -303,8 +307,8 @@ export const BrandInteractivePanel: React.FC<Props> = ({
               {t('brandPanel.makeSomething')}
             </span>
             {seasonal && (
-              <span className="hidden sm:inline truncate text-xs text-[var(--brand-text)]/35">
-                {seasonal.label} · {t('brandPanel.daysOut', { n: seasonal.daysAway })}
+              <span className="hidden sm:inline truncate text-xs text-[var(--brand-text)]/60">
+                {seasonal.label}, {t('brandPanel.daysOut', { n: seasonal.daysAway })}
               </span>
             )}
           </div>
@@ -312,7 +316,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
             <button
               onClick={() => load(true)}
               disabled={loading || refreshing}
-              className="flex items-center gap-1.5 shrink-0 text-xs text-[var(--brand-text)]/40 hover:text-[var(--brand-text)]/80 transition-colors disabled:opacity-40"
+              className="flex items-center gap-1.5 shrink-0 text-xs text-[var(--brand-text)]/60 hover:text-[var(--brand-text)]/80 transition-colors disabled:opacity-40"
               aria-label={t('brandPanel.refreshAria')}
             >
               <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''} />
@@ -358,21 +362,24 @@ export const BrandInteractivePanel: React.FC<Props> = ({
                   onPrimary={() => onGenerate(s.prompt)}
                 />
               ))}
-              <GenerateIdeaCard
-                label={
-                  seasonal
-                    ? t('brandPanel.generateFor', { label: seasonal.label })
-                    : t('brandPanel.generateTailored')
-                }
-                loading={refreshing}
-                onPrimary={() => load(true)}
-              />
+              {/* Sem provedor configurado, gerar ideia sob medida só devolve erro. */}
+              {aiConfigured && (
+                <GenerateIdeaCard
+                  label={
+                    seasonal
+                      ? t('brandPanel.generateFor', { label: seasonal.label })
+                      : t('brandPanel.generateTailored')
+                  }
+                  loading={refreshing}
+                  onPrimary={() => load(true)}
+                />
+              )}
             </div>
             {/* O erro das ideias ao vivo PRECISA aparecer: sem isto uma falha real
                 fica indistinguível de "ainda não gerei ideias" — os starters
                 estáticos escondiam a quebra (silent-empty). */}
-            {error && (
-              <p role="status" className="text-xs leading-relaxed text-[var(--brand-text)]/45">
+            {error && aiConfigured && (
+              <p role="status" className="text-xs leading-relaxed text-[var(--brand-text)]/60">
                 {t('brandPanel.ideasError', { message: error })}
               </p>
             )}
@@ -456,10 +463,6 @@ export const BrandInteractivePanel: React.FC<Props> = ({
           ))}
         </div>
 
-        <p className="text-sm text-[var(--brand-text)]/50 leading-relaxed mb-6 max-w-xs">
-          {t('brandPanel.assistantsBlurb')}
-        </p>
-
         {/* O que o agente enxerga HOJE. Este card é uma coluna só ao lado de um
             painel de duas, então o `mt-auto` abaixo abria um vão vertical morto
             de ~150px no meio da tela — bem no elemento que carrega a tese do
@@ -471,7 +474,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
                 <span className="text-lg font-medium tabular-nums leading-none text-[var(--brand-text)]/80">
                   {s.value}
                 </span>
-                <span className="mt-1 text-xs text-[var(--brand-text)]/40">{t(s.labelKey)}</span>
+                <span className="mt-1 text-xs text-[var(--brand-text)]/60">{t(s.labelKey)}</span>
               </div>
             ))}
           </div>
@@ -543,8 +546,8 @@ export const BrandInteractivePanel: React.FC<Props> = ({
             </button>
           </div>
         </div>
-        {!aiConfigured && (
-          <p className="text-xs text-[var(--brand-text)]/40 mt-5 leading-relaxed">
+        {!aiConfigured && isAdmin && (
+          <p className="text-xs text-[var(--brand-text)]/60 mt-5 leading-relaxed">
             {t('brandPanel.notConfigured')}
           </p>
         )}

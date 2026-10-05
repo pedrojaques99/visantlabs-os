@@ -29,7 +29,9 @@ type BrandPath = 'real' | 'minimal' | 'demo';
 /** Persona → rota final, sempre com a marca na mão quando houver. */
 const routeFor = (seg: Segment | null, brandId: string | null): string => {
   if (!seg) return brandId ? `${DEFAULT_ROUTE}?brand=${brandId}` : NO_BRAND_ROUTE;
-  if (seg.id === 'agency') return brandId ? `/brand-guidelines?id=${brandId}` : seg.route;
+  // A página de marcas lê `?id=`, não `?brand=`: vale pra toda persona que cai nela.
+  if (seg.route === '/brand-guidelines')
+    return brandId ? `/brand-guidelines?id=${brandId}` : seg.route;
   return brandId ? `${seg.route}?brand=${brandId}` : seg.route;
 };
 
@@ -228,7 +230,7 @@ export const OnboardingWizardV2: React.FC = () => {
   };
 
   const pathCard =
-    'w-full flex items-start gap-3 p-4 rounded-lg border text-left transition-[color,background-color,border-color,opacity] border-neutral-700/50 bg-neutral-800/30 hover:border-neutral-600 disabled:opacity-50';
+    'w-full flex items-start gap-3 p-4 rounded-lg border text-left transition-[color,background-color,border-color,opacity] border-border bg-muted/40 hover:border-border-hover disabled:opacity-50';
 
   return (
     <div className="flex items-center justify-center min-h-[70vh]">
@@ -237,14 +239,14 @@ export const OnboardingWizardV2: React.FC = () => {
           {step === 0 && (
             <motion.div
               key="step-0"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
             >
-              <h2 className="text-xl font-semibold text-white font-mono mb-2">
+              <h2 className="text-xl font-semibold text-foreground mb-2">
                 {t('onboarding.persona.title')}
               </h2>
-              <p className="text-neutral-400 text-sm font-mono mb-6">
+              <p className="text-muted-foreground text-sm mb-6">
                 {t('onboarding.persona.subtitle')}
               </p>
 
@@ -273,16 +275,14 @@ export const OnboardingWizardV2: React.FC = () => {
           {step === 1 && (
             <motion.div
               key="step-1"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
             >
-              <h2 className="text-xl font-semibold text-white font-mono mb-2">
+              <h2 className="text-xl font-semibold text-foreground mb-2">
                 {t('onboarding.step1Title')}
               </h2>
-              <p className="text-neutral-400 text-sm font-mono mb-6">
-                {t('onboarding.step1Subtitle')}
-              </p>
+              <p className="text-muted-foreground text-sm mb-6">{t('onboarding.step1Subtitle')}</p>
 
               <div className="flex flex-col gap-3 mb-6">
                 {/* (a) Ingestão real — PDF / URL / imagens / Figma */}
@@ -291,12 +291,12 @@ export const OnboardingWizardV2: React.FC = () => {
                   disabled={isBusy}
                   className={pathCard}
                 >
-                  <Upload className="w-5 h-5 mt-0.5 shrink-0 text-neutral-400" />
+                  <Upload className="w-5 h-5 mt-0.5 shrink-0 text-muted-foreground" />
                   <span className="min-w-0">
-                    <span className="block text-sm font-mono font-medium text-white">
+                    <span className="block text-sm font-medium text-foreground">
                       {t('onboarding.pathIngestTitle')}
                     </span>
-                    <span className="block text-xs text-neutral-500 mt-0.5">
+                    <span className="block text-xs text-muted-foreground mt-0.5">
                       {t('onboarding.pathIngestDesc')}
                     </span>
                   </span>
@@ -308,12 +308,12 @@ export const OnboardingWizardV2: React.FC = () => {
                   disabled={isBusy}
                   className={cn(pathCard, showMiniForm && 'border-brand-cyan/40 bg-brand-cyan/5')}
                 >
-                  <PencilLine className="w-5 h-5 mt-0.5 shrink-0 text-neutral-400" />
+                  <PencilLine className="w-5 h-5 mt-0.5 shrink-0 text-muted-foreground" />
                   <span className="min-w-0">
-                    <span className="block text-sm font-mono font-medium text-white">
+                    <span className="block text-sm font-medium text-foreground">
                       {t('onboarding.pathManualTitle')}
                     </span>
-                    <span className="block text-xs text-neutral-500 mt-0.5">
+                    <span className="block text-xs text-muted-foreground mt-0.5">
                       {t('onboarding.pathManualDesc')}
                     </span>
                   </span>
@@ -322,10 +322,13 @@ export const OnboardingWizardV2: React.FC = () => {
                 {showMiniForm && (
                   <form
                     onSubmit={handleCreateMinimal}
-                    className="flex flex-col gap-3 p-4 rounded-lg border border-white/10 bg-neutral-900/40"
+                    className="flex flex-col gap-3 p-4 rounded-lg border border-border bg-muted/30"
                   >
                     <div className="flex flex-col gap-1.5">
-                      <label htmlFor="onboarding-mini-name" className="text-xs text-neutral-400">
+                      <label
+                        htmlFor="onboarding-mini-name"
+                        className="text-xs text-muted-foreground"
+                      >
                         {t('onboarding.manualNameLabel')}
                       </label>
                       <Input
@@ -339,7 +342,7 @@ export const OnboardingWizardV2: React.FC = () => {
                     </div>
                     <div className="flex items-end gap-4">
                       <div className="flex flex-col gap-1.5">
-                        <span className="text-xs text-neutral-400">
+                        <span className="text-xs text-muted-foreground">
                           {t('onboarding.manualColorsLabel')}
                         </span>
                         <div className="flex items-center gap-2">
@@ -349,7 +352,7 @@ export const OnboardingWizardV2: React.FC = () => {
                             value={miniColor1}
                             onChange={(e) => setMiniColor1(e.target.value)}
                             disabled={isCreatingMinimal}
-                            className="h-9 w-12 rounded-md border border-white/10 bg-neutral-900/60 p-1 cursor-pointer"
+                            className="h-9 w-12 rounded-md border border-border bg-muted p-1 cursor-pointer"
                           />
                           <input
                             type="color"
@@ -357,12 +360,15 @@ export const OnboardingWizardV2: React.FC = () => {
                             value={miniColor2}
                             onChange={(e) => setMiniColor2(e.target.value)}
                             disabled={isCreatingMinimal}
-                            className="h-9 w-12 rounded-md border border-white/10 bg-neutral-900/60 p-1 cursor-pointer"
+                            className="h-9 w-12 rounded-md border border-border bg-muted p-1 cursor-pointer"
                           />
                         </div>
                       </div>
                       <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                        <label htmlFor="onboarding-mini-tone" className="text-xs text-neutral-400">
+                        <label
+                          htmlFor="onboarding-mini-tone"
+                          className="text-xs text-muted-foreground"
+                        >
                           {t('onboarding.manualToneLabel')}
                         </label>
                         <Input
@@ -387,14 +393,14 @@ export const OnboardingWizardV2: React.FC = () => {
 
                 {/* (c) Explorar antes — marca demo */}
                 <button onClick={handleExplore} disabled={isBusy} className={pathCard}>
-                  <Compass className="w-5 h-5 mt-0.5 shrink-0 text-neutral-400" />
+                  <Compass className="w-5 h-5 mt-0.5 shrink-0 text-muted-foreground" />
                   <span className="min-w-0">
-                    <span className="block text-sm font-mono font-medium text-white">
+                    <span className="block text-sm font-medium text-foreground">
                       {isCreatingDemo
                         ? t('onboarding.demoCreating')
                         : t('onboarding.pathDemoTitle')}
                     </span>
-                    <span className="block text-xs text-neutral-500 mt-0.5">
+                    <span className="block text-xs text-muted-foreground mt-0.5">
                       {t('onboarding.pathDemoDesc')}
                     </span>
                   </span>
@@ -425,30 +431,21 @@ export const OnboardingWizardV2: React.FC = () => {
           {step === 2 && (
             <motion.div
               key="step-2"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
             >
-              {selected ? (
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 rounded-lg bg-neutral-800/50 border border-white/10">
-                    <selected.icon className="w-5 h-5 text-brand-cyan" />
-                  </div>
-                  <h2 className="text-xl font-semibold text-white font-mono">
-                    {t(`onboarding.persona.${selected.id}.actionTitle`) || selected.actionTitle}
-                  </h2>
-                </div>
-              ) : (
-                <h2 className="text-xl font-semibold text-white font-mono mb-2">
-                  {t('onboarding.step2Ready')}
-                </h2>
-              )}
-              <p className="text-neutral-400 text-sm font-mono mb-2">
+              <h2 className="text-xl font-semibold text-foreground mb-2">
                 {selected
-                  ? t(`onboarding.persona.${selected.id}.actionDesc`) || selected.actionDesc
+                  ? t(`onboarding.persona.${selected.id}.actionTitle`)
+                  : t('onboarding.step2Ready')}
+              </h2>
+              <p className="text-muted-foreground text-sm mb-2">
+                {selected
+                  ? t(`onboarding.persona.${selected.id}.actionDesc`)
                   : t('onboarding.step2Desc')}
               </p>
-              <p className="text-xs font-mono text-brand-cyan/80 mb-6">
+              <p className="text-xs text-muted-foreground mb-6">
                 {brandPath === 'demo'
                   ? t('onboarding.step2BrandDemo')
                   : t('onboarding.step2BrandLoaded')}
@@ -461,7 +458,7 @@ export const OnboardingWizardV2: React.FC = () => {
                   className="flex-1 gap-2"
                 >
                   {selected
-                    ? t(`onboarding.persona.${selected.id}.actionCta`) || selected.actionCta
+                    ? t(`onboarding.persona.${selected.id}.actionCta`)
                     : t('onboarding.continue')}{' '}
                   <ArrowRight className="w-4 h-4" />
                 </Button>

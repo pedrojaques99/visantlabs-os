@@ -107,7 +107,7 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
     >
       {selected && !dragging && (
         <NodeResizer
-          color="brand-cyan"
+          color="var(--brand-cyan)"
           isVisible={selected}
           minWidth={240}
           minHeight={200}
@@ -121,14 +121,10 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
         type="source"
         position={Position.Right}
         id="pdf-output"
-        className="w-2 h-2 bg-brand-cyan border-2 border-black node-handle"
+        className="node-handle handle-generic"
       />
 
-      <NodeHeader
-        icon={FileText}
-        title={t('canvasNodes.pdfNode.title') || 'PDF Node'}
-        selected={selected}
-      />
+      <NodeHeader icon={FileText} title={t('canvasNodes.pdfNode.title')} selected={selected} />
 
       {/* PDF Upload Section */}
       <div className="node-margin flex-1 flex flex-col gap-[var(--node-gap)]">
@@ -150,9 +146,7 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
               )}
             </div>
             {fileName && (
-              <div className="text-2xs font-mono truncate text-foreground px-1 uppercase ">
-                {fileName}
-              </div>
+              <div className="text-2xs font-mono truncate text-foreground px-1">{fileName}</div>
             )}
           </div>
         ) : (
@@ -168,10 +162,10 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
               variant="primary"
               size="full"
               onClick={handlePdfUploadClick}
-              className="nodrag shadow-sm backdrop-blur-sm"
+              className="nodrag shadow-sm"
             >
               <UploadCloud size={14} className="mr-2" />
-              {t('canvasNodes.pdfNode.uploadPdf') || 'Upload PDF'}
+              {t('canvasNodes.pdfNode.uploadPdf')}
             </NodeButton>
           </div>
         )}

@@ -94,7 +94,7 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
     const setStageRef = (node: Konva.Stage | null) => {
       stageRef.current = node;
       if (typeof ref === 'function') ref(node);
-      else if (ref) (ref as React.MutableRefObject<Konva.Stage | null>).current = node;
+      else if (ref) ref.current = node;
     };
 
     // Memoize proxied bg URL to prevent useImage re-render loop (RESEARCH Pitfall 5)
@@ -598,8 +598,8 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
 
         {/* Distortion hint — only while Ctrl is held with a selection active */}
         {allowDistort && selectedLayerIds.length > 0 && (
-          <div className="pointer-events-none absolute bottom-2 left-2 px-2 py-1 rounded bg-black/70 backdrop-blur text-2xs font-mono uppercase tracking-wider text-brand-cyan border border-brand-cyan/30">
-            Distort
+          <div className="pointer-events-none absolute bottom-2 left-2 px-2 py-1 rounded bg-black/80 text-2xs text-neutral-200 border border-white/10">
+            Distorcer
           </div>
         )}
 

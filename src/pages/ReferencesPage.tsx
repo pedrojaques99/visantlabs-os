@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { createPortal } from 'react-dom';
 import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import { Masonry, useMasonryColumns } from '@/components/ui/Masonry';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
@@ -20,7 +19,6 @@ import {
   SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
-  AlertTriangle,
   Bookmark,
   FolderPlus,
   Folder,
@@ -40,10 +38,13 @@ import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { PageShell } from '@/components/ui/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { Badge, badgeVariants } from '@/components/ui/badge';
+import { Thumb } from '@/components/ui/Thumb';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { Select } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Modal } from '@/components/ui/Modal';
+import { ErrorState } from '@/components/ui/ErrorState';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -55,13 +56,14 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { authService } from '@/services/authService';
-import { REGIONS, DESIGN_COUNTRIES, REGION_LABELS, countryFlag } from '@/lib/references/taxonomy';
+import { REGIONS, DESIGN_COUNTRIES, REGION_LABELS, countryName } from '@/lib/references/taxonomy';
 import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
-import { useRailSlot } from '@/components/shell/RailSlotContext';
 import { brandRankingTerms } from '@/lib/references/brandTerms';
 import { localizedName, type LocalizableRef } from '@/lib/references/naming';
 import { isLowResolution } from '@/lib/references/quality';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useRailSlot } from '@/components/shell/RailSlotContext';
+import { REFERENCES_NAV } from '@/config/navConfig';
 import {
   FACET_DIMENSION_KEYS,
   DIMENSION_LABELS,
@@ -117,14 +119,34 @@ function getSessionSeed(): string {
   }
 }
 
-const REGION_OPTIONS = [
-  { value: '', label: 'Todas as regiões' },
-  ...REGIONS.map((r) => ({ value: r.id, label: r.label })),
-];
-const COUNTRY_OPTIONS = [
-  { value: '', label: 'Todos os países' },
-  ...DESIGN_COUNTRIES.map((c) => ({ value: c, label: `${countryFlag(c)} ${c}`.trim() })),
-];
+type Option = { value: string; label: string };
+type TOr = (key: string, fallback: string) => string;
+
+/** Rótulo de região no idioma do usuário (a taxonomia guarda o nome em inglês). */
+function regionLabel(id: string, tOr: TOr): string {
+  return tOr(`references.region.${id}`, REGION_LABELS[id] || id);
+}
+
+/**
+ * Opções de país/região a partir do que a biblioteca TEM (facets do servidor),
+ * pra o filtro nunca anunciar um recorte vazio. Sem facets, cai na taxonomia.
+ */
+function countryOptions(tOr: TOr, locale: string, available?: string[]): Option[] {
+  const list = available?.length ? available : DESIGN_COUNTRIES;
+  const opts = list
+    .map((c) => ({ value: c, label: countryName(c, locale) }))
+    .sort((a, b) => a.label.localeCompare(b.label, locale));
+  return [{ value: '', label: tOr('references.allCountries', 'Todos os países') }, ...opts];
+}
+function regionOptions(tOr: TOr, available?: string[]): Option[] {
+  const ids = available?.length
+    ? REGIONS.map((r) => r.id).filter((id) => available.includes(id))
+    : REGIONS.map((r) => r.id);
+  return [
+    { value: '', label: tOr('references.allRegions', 'Todas as regiões') },
+    ...ids.map((id) => ({ value: id, label: regionLabel(id, tOr) })),
+  ];
+}
 
 // Dimension filter SSoT — keys/labels/groups shared with the backend.
 // (kept as local aliases so the JSX below reads unchanged)
@@ -246,8 +268,7 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
   // Só nomeia a lente quando ela REALMENTE muda a ordem: marca sem termos
   // utilizáveis cai no feed neutro, e anunciar afinidade ali seria mentira.
   const activeBrandName = brandTerms ? activeBrand?.activeBrand?.name?.trim() || '' : '';
-  // Rail slot — the tag facets live in the drill-in rail, below the categories.
-  const railSlot = useRailSlot()?.railSlot ?? null;
+  const { t, tOr, locale } = useTranslation();
 
   const [items, setItems] = useState<ReferenceItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -284,6 +305,16 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
   const [kind, setKind] = useState<'all' | 'branding' | 'mockup'>(
     (searchParams.get('kind') as 'all' | 'branding' | 'mockup') || 'all'
   );
+  // Slot do rail montado = rail desktop expandido mostrando as tabs da seção.
+  const railSlot = useRailSlot()?.railSlot ?? null;
+  const activeNavId =
+    scope !== 'library'
+      ? scope
+      : kind === 'branding'
+        ? 'logos'
+        : kind === 'mockup'
+          ? 'mockups'
+          : 'library';
   const [dims, setDims] = useState<Record<string, string>>(initialDims);
   const [collections, setCollections] = useState<ReferenceCollection[]>([]);
   const [collectionView, setCollectionView] = useState<CollectionDetail | null>(null);
@@ -343,7 +374,6 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
     country ||
     region ||
     activeTag ||
-    kind !== 'all' ||
     activeDimEntries.length
   );
 
@@ -360,7 +390,6 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
     setCountry('');
     setRegion('');
     setActiveTag('');
-    setKind('all');
     setDims({});
   };
   const baseGrid = collectionView ? collectionView.items : similar ? similar.items : items;
@@ -430,13 +459,13 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
     ]
   );
 
-  // facets once
+  // facets per kind: the counts must match the grid the user is looking at
   useEffect(() => {
     referencesApi
-      .facets()
+      .facets(kind)
       .then(setFacets)
       .catch(() => {});
-  }, []);
+  }, [kind]);
 
   // taste hints from the user's saved items (semantic suggestion)
   useEffect(() => {
@@ -594,11 +623,11 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
     setLightboxIndex(null);
     setCollectionView(null);
     setSimilarLoading(true);
-    setSimilar({ label: 'busca por imagem', items: [] });
+    setSimilar({ label: 'Busca por imagem', items: [] });
     try {
       const base64 = await fileToBase64(file);
       const data = await referencesApi.searchByImage(base64, { limit: 40 });
-      setSimilar({ label: 'busca por imagem', items: data.references });
+      setSimilar({ label: 'Busca por imagem', items: data.references });
       if (data.references.length === 0) toast.info('Nenhuma referência parecida encontrada');
     } catch (e: any) {
       toast.error(e.message || 'Erro na busca por imagem');
@@ -608,34 +637,39 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
     }
   }, []);
 
-  const runSimilarTo = useCallback(async (ref: ReferenceItem) => {
-    setLightboxIndex(null);
-    setCollectionView(null);
-    setSimilarLoading(true);
-    setSimilar({ label: `parecidas com "${ref.name}"`, items: [], source: ref });
-    try {
-      const data = await referencesApi.similarTo(ref.id, 40);
-      setSimilar({ label: `parecidas com "${ref.name}"`, items: data.references, source: ref });
-      if (data.references.length === 0)
-        toast.info('Sem parecidas ainda — popule mais a biblioteca');
-    } catch (e: any) {
-      toast.error(e.message || 'Erro ao buscar parecidas');
-      setSimilar(null);
-    } finally {
-      setSimilarLoading(false);
-    }
-  }, []);
+  const runSimilarTo = useCallback(
+    async (ref: ReferenceItem) => {
+      const label = `Parecidas com "${refTitle(ref, locale)}"`;
+      setLightboxIndex(null);
+      setCollectionView(null);
+      setSimilarLoading(true);
+      setSimilar({ label, items: [], source: ref });
+      try {
+        const data = await referencesApi.similarTo(ref.id, 40);
+        setSimilar({ label, items: data.references, source: ref });
+        if (data.references.length === 0) toast.info('Nenhuma parecida encontrada');
+      } catch (e: any) {
+        toast.error(e.message || 'Erro ao buscar parecidas');
+        setSimilar(null);
+      } finally {
+        setSimilarLoading(false);
+      }
+    },
+    [locale]
+  );
 
   const clearSimilar = () => setSimilar(null);
 
   // ── Collections ────────────────────────────────────────────────
+  const [collectionsError, setCollectionsError] = useState(false);
   const loadCollections = useCallback(async () => {
     if (!authService.isAuthenticated()) return;
+    setCollectionsError(false);
     try {
       const data = await collectionsApi.list();
       setCollections(data.collections);
     } catch {
-      /* non-fatal */
+      setCollectionsError(true);
     }
   }, []);
 
@@ -922,15 +956,35 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
     prevLightbox.current = lightboxIndex;
   }, [lightboxIndex]);
 
+  const countryOpts = useMemo(
+    () => countryOptions(tOr, locale, facets?.countries),
+    [tOr, locale, facets?.countries]
+  );
+  const regionOpts = useMemo(() => regionOptions(tOr, facets?.regions), [tOr, facets?.regions]);
+  const pickCountry = (v: string) => {
+    setCountry(v);
+    if (v) setRegion('');
+  };
+  const countrySelect = (
+    <Select options={countryOpts} value={country} onChange={pickCountry} placeholder="País" />
+  );
+  const searchByImageButton = (
+    <button
+      type="button"
+      aria-label="Buscar por imagem"
+      title="Buscar por imagem"
+      onClick={() => requireAuth() && searchByImageInput.current?.click()}
+      className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+    >
+      <ScanSearch className="h-3.5 w-3.5" />
+    </button>
+  );
   const filterControls = (
     <FilterControls
+      searchByImage={searchByImageButton}
+      regionOptions={regionOpts}
       search={search}
       setSearch={setSearch}
-      country={country}
-      setCountry={(v) => {
-        setCountry(v);
-        if (v) setRegion('');
-      }}
       region={region}
       setRegion={(v) => {
         setRegion(v);
@@ -954,50 +1008,39 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
     >
       <PageShell
         pageId="references"
-        seoTitle="Reference Library — Visant Labs"
+        seoTitle={t('nav.references.label')}
         seoDescription="Biblioteca curada de referências de design do mundo inteiro, filtrável por tag e por país de origem."
-        microTitle="Library // References"
-        title="Reference Library"
-        description="Referências de design world-class, taggeadas por conteúdo e por país de origem. Suba, arraste ou cole uma imagem para achar parecidas — ou mergulhe de uma ref pra outra."
+        title={t('nav.references.label')}
         width={embedded ? 'full' : '7xl'}
         hideHeader={embedded}
         actions={
-          <div className="flex items-center gap-2">
-            <input
-              ref={searchByImageInput}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) runSearchByImage(f);
-                e.currentTarget.value = '';
-              }}
-            />
+          embedded ? undefined : (
             <Button
               variant="outline"
               size="sm"
-              title="Buscar por imagem"
-              className="shrink-0 bg-card border-border text-xs px-2 sm:px-3"
-              onClick={() => requireAuth() && searchByImageInput.current?.click()}
+              title="Subir referência"
+              className="shrink-0 text-xs px-2 sm:px-3"
+              onClick={() => requireAuth() && setUploadOpen(true)}
             >
-              <ScanSearch className="h-3.5 w-3.5 sm:mr-1.5" />
-              <span className="hidden sm:inline">Buscar por imagem</span>
+              <Upload className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Subir referência</span>
             </Button>
-            {!embedded && (
-              <Button
-                size="sm"
-                title="Subir referência"
-                className="shrink-0 bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs px-2 sm:px-3"
-                onClick={() => requireAuth() && setUploadOpen(true)}
-              >
-                <Upload className="h-3.5 w-3.5 sm:mr-1.5" />
-                <span className="hidden sm:inline">Subir referência</span>
-              </Button>
-            )}
-          </div>
+          )
         }
       >
+        {/* Busca por imagem: o botão vive na barra de busca (aparece também no
+            /refs embedded, onde as `actions` do shell não renderizam). */}
+        <input
+          ref={searchByImageInput}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) runSearchByImage(f);
+            e.currentTarget.value = '';
+          }}
+        />
         {/* Lente do feed — o que está moldando a ordem, dito em uma linha.
             A marca ativa JÁ ranqueava o feed e isso não aparecia em lugar
             nenhum: um default silencioso é uma recomendação anônima. Só
@@ -1058,16 +1101,17 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
         <AnimatePresence>
           {similar && (
             <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.16 }}
               className="flex items-center justify-between gap-3 mb-4 rounded-xl border border-border bg-muted px-4 py-2.5"
             >
               <span className="flex items-center gap-2 text-xs text-muted-foreground truncate">
                 <ScanSearch className="h-3.5 w-3.5 shrink-0" />
                 {similarLoading
                   ? 'Buscando parecidas...'
-                  : `${similar.items.length} · ${similar.label}`}
+                  : `${similar.label}: ${similar.items.length}`}
               </span>
               <Button
                 variant="ghost"
@@ -1087,7 +1131,7 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
           <div className="flex items-center justify-between gap-3 mb-4 rounded-xl border border-border bg-muted px-4 py-2.5">
             <span className="flex items-center gap-2 text-xs text-muted-foreground truncate">
               <Folder className="h-3.5 w-3.5 shrink-0" />
-              {collectionView.collection.name} · {collectionView.items.length}
+              {collectionView.collection.name} ({collectionView.items.length})
             </span>
             <div className="flex items-center gap-1 shrink-0">
               {collectionView.collection.isOwner && (
@@ -1141,6 +1185,41 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
             NAVEGAÇÃO: vivem na rail drill-in (navConfig REFERENCES_NAV), não aqui. */}
         {!similar && !collectionView && (
           <div className="space-y-3 mb-6">
+            {/* Tabs da seção = fallback do rail. Sem slot (rail recolhido, mobile
+                ou fora do shell) aparecem sempre; com slot, só abaixo de md
+                (mesma regra da AppsPage). */}
+            <nav
+              aria-label={t('nav.references.label')}
+              className={cn(
+                '-mx-4 sm:-mx-6 px-4 sm:px-6 overflow-x-auto scrollbar-none',
+                railSlot && 'md:hidden'
+              )}
+            >
+              <div className="flex items-center gap-1.5 w-max">
+                {REFERENCES_NAV.map((item) => {
+                  const active = item.id === activeNavId;
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      type="button"
+                      key={item.id}
+                      aria-current={active ? 'page' : undefined}
+                      onClick={() => navigate(item.to)}
+                      className={cn(
+                        badgeVariants({ variant: 'outline' }),
+                        'gap-1.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+                        active
+                          ? 'bg-muted text-foreground border-border'
+                          : 'border-border text-muted-foreground hover:border-border-hover hover:text-foreground'
+                      )}
+                    >
+                      {Icon && <Icon className="h-3 w-3" />}
+                      {t(item.labelKey)}
+                    </button>
+                  );
+                })}
+              </div>
+            </nav>
             {scope === 'library' && (
               <div className="flex items-center gap-2">
                 <div className="min-w-0 flex-1">{filterControls}</div>
@@ -1189,15 +1268,18 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
             {scope === 'library' && !hasActiveFilters && taste.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="text-xs text-muted-foreground">Pra você</span>
-                {taste.map((t) => (
-                  <Badge
-                    key={t.key + t.value}
-                    variant="outline"
-                    className="cursor-pointer border-border bg-muted text-muted-foreground hover:bg-muted hover:text-foreground text-xs"
-                    onClick={() => setDim(t.key, t.value)}
+                {taste.map((hint) => (
+                  <button
+                    type="button"
+                    key={hint.key + hint.value}
+                    className={cn(
+                      badgeVariants({ variant: 'neutral' }),
+                      'text-xs transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
+                    )}
+                    onClick={() => setDim(hint.key, hint.value)}
                   >
-                    {t.value}
-                  </Badge>
+                    {hint.value}
+                  </button>
                 ))}
               </div>
             )}
@@ -1208,18 +1290,14 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
                 <span className="mr-1 text-xs text-muted-foreground">
                   {total.toLocaleString('pt-BR')} {total === 1 ? 'ref' : 'refs'}
                 </span>
-                {kind !== 'all' && (
+                {country && (
                   <FilterChip
-                    label={kind === 'branding' ? 'Logos' : 'Mockups'}
-                    onRemove={() => setKind('all')}
+                    label={countryName(country, locale)}
+                    onRemove={() => setCountry('')}
                   />
                 )}
-                {country && <FilterChip label={country} onRemove={() => setCountry('')} />}
                 {region && (
-                  <FilterChip
-                    label={REGION_LABELS[region] || region}
-                    onRemove={() => setRegion('')}
-                  />
+                  <FilterChip label={regionLabel(region, tOr)} onRemove={() => setRegion('')} />
                 )}
                 {debouncedSearch && (
                   <FilterChip label={`"${debouncedSearch}"`} onRemove={() => setSearch('')} />
@@ -1229,6 +1307,7 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
                   <FilterChip key={k} label={v} onRemove={() => setDim(k, '')} />
                 ))}
                 <button
+                  type="button"
                   onClick={clearAllFilters}
                   className="ml-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
@@ -1238,14 +1317,19 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
             )}
 
             {/* Structured dimension facets — folded until "Filtros" is opened */}
-            {scope === 'library' && filtersOpen && facets?.dimensions && (
+            {scope === 'library' && filtersOpen && (
               <motion.div
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.16 }}
                 className="hidden md:flex flex-col gap-1.5"
               >
+                <div className="flex items-center gap-1.5">
+                  <span className="w-[88px] shrink-0 text-xs text-muted-foreground">País</span>
+                  <div className="w-56">{countrySelect}</div>
+                </div>
                 {DIM_GROUPS_BY_KIND[kind].map((dk) => {
-                  const vals = facets.dimensions?.[dk];
+                  const vals = facets?.dimensions?.[dk];
                   if (!vals || !vals.length) return null;
                   return (
                     <div key={dk} className="flex flex-wrap items-center gap-1.5">
@@ -1255,11 +1339,13 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
                       {vals.slice(0, 10).map((v) => {
                         const active = dims[dk] === v.value;
                         return (
-                          <Badge
+                          <button
+                            type="button"
                             key={v.value}
-                            variant={active ? 'secondary' : 'outline'}
+                            aria-pressed={active}
                             className={cn(
-                              'cursor-pointer text-xs',
+                              badgeVariants({ variant: 'outline' }),
+                              'text-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
                               active
                                 ? 'bg-muted text-foreground border-border'
                                 : 'border-border text-muted-foreground hover:border-border-hover hover:text-foreground'
@@ -1274,7 +1360,7 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
                                 {v.count}
                               </span>
                             )}
-                          </Badge>
+                          </button>
                         );
                       })}
                     </div>
@@ -1282,46 +1368,51 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
                 })}
               </motion.div>
             )}
-            {/* Os tag facets migraram pra rail (portal abaixo das categorias) — ver railTags. */}
           </div>
         )}
 
         {/* Admin-only: user uploads awaiting moderation. Nothing here is public
             or AI-analysed yet — approving runs enrichment, then reveals it. */}
-        {isAdmin && pendingCount > 0 && (
-          <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2">
-            <span className="text-xs font-mono text-warning">
-              {pendingCount} referência(s) aguardando revisão
-            </span>
-            <Button
-              size="sm"
-              className="ml-auto h-7 bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs"
-              onClick={() => setModerationOpen(true)}
-            >
-              Revisar
-            </Button>
-          </div>
-        )}
-
-        {/* Admin-only duplicate calibration bar. Shows what the content-hash
-            grouping found; the badges on the cards show WHERE. Delete is
-            explicit and one-way, so it confirms first. */}
-        {isAdmin && dupeReport && dupeReport.redundant > 0 && (
-          <DuplicateAdminBar report={dupeReport} onDedupe={handleDedupe} deduping={deduping} />
-        )}
-
-        {isAdmin && lowResReport && lowResReport.total > 0 && (
-          <LowResAdminBar
-            report={lowResReport}
-            onPurge={handlePurgeLowRes}
-            purging={purgingLowRes}
-          />
-        )}
+        {/* Curadoria (só admin): uma linha discreta, sem cor de alerta. A
+            duplicata e a baixa resolução confirmam antes de apagar. */}
+        {isAdmin &&
+          (pendingCount > 0 ||
+            (dupeReport && dupeReport.redundant > 0) ||
+            (lowResReport && lowResReport.total > 0)) && (
+            <div className="mb-4 flex flex-wrap items-center gap-x-1 gap-y-1 text-xs text-muted-foreground">
+              {pendingCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => setModerationOpen(true)}
+                >
+                  {pendingCount} para revisar
+                </Button>
+              )}
+              {dupeReport && dupeReport.redundant > 0 && (
+                <DuplicateAdminBar
+                  report={dupeReport}
+                  onDedupe={handleDedupe}
+                  deduping={deduping}
+                />
+              )}
+              {lowResReport && lowResReport.total > 0 && (
+                <LowResAdminBar
+                  report={lowResReport}
+                  onPurge={handlePurgeLowRes}
+                  purging={purgingLowRes}
+                />
+              )}
+            </div>
+          )}
 
         {/* Content */}
         {scope === 'collections' && !collectionView ? (
           <CollectionsGrid
             collections={collections}
+            error={collectionsError}
+            onRetry={loadCollections}
             onOpen={openBoard}
             onCreate={async (name) => {
               try {
@@ -1334,7 +1425,10 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
             }}
           />
         ) : error ? (
-          <ErrorState onRetry={() => loadList(1, false)} />
+          <ErrorState
+            title="Não foi possível carregar as referências"
+            onRetry={() => loadList(1, false)}
+          />
         ) : (isLoading || similarLoading) && grid.length === 0 ? (
           <MasonrySkeleton cols={cols} />
         ) : grid.length === 0 ? (
@@ -1405,7 +1499,7 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
             onDone={(madePublic) => {
               setUploadOpen(false);
               referencesApi
-                .facets()
+                .facets(kind)
                 .then(setFacets)
                 .catch(() => {});
               setSimilar(null);
@@ -1420,11 +1514,12 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
           <Dialog open onOpenChange={() => setFilterSheet(false)}>
             <DialogContent className="max-w-sm bg-card border-border">
               <DialogHeader>
-                <DialogTitle className="text-sm font-mono text-muted-foreground">
-                  Filtros
-                </DialogTitle>
+                <DialogTitle>Filtros</DialogTitle>
               </DialogHeader>
-              <div className="space-y-3 pt-1">{filterControls}</div>
+              <div className="space-y-3 pt-1">
+                {filterControls}
+                {countrySelect}
+              </div>
             </DialogContent>
           </Dialog>
         )}
@@ -1437,11 +1532,11 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm pointer-events-none"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 pointer-events-none"
           >
-            <div className="flex flex-col items-center gap-3 text-neutral-200 border-2 border-dashed border-white/20 rounded-2xl px-12 py-10">
+            <div className="flex flex-col items-center gap-3 text-foreground border-2 border-dashed border-border rounded-2xl px-12 py-10">
               <ImageIcon className="h-8 w-8" />
-              <p className="text-sm font-medium">Solte a imagem para achar parecidas</p>
+              <p className="text-sm font-medium">Solte para buscar parecidas</p>
             </div>
           </motion.div>
         )}
@@ -1539,44 +1634,6 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
           }}
         />
       )}
-
-      {/* Tag facets — portaled INTO the drill-in rail, below the categories. Tags
-          read like sub-categories, so they belong in the nav rail (not the body).
-          Clicking one filters the feed via activeTag. */}
-      {railSlot &&
-        scope === 'library' &&
-        !similar &&
-        !collectionView &&
-        !!facets?.tags?.length &&
-        createPortal(
-          <div className="px-2 pb-3">
-            <p className="px-1 pb-1.5 text-2xs text-sidebar-foreground/50">Tags</p>
-            <div className="flex flex-wrap gap-1">
-              {activeTag && (
-                <button
-                  onClick={() => setActiveTag('')}
-                  className="inline-flex items-center gap-1 rounded-md bg-sidebar-accent text-sidebar-accent-foreground px-1.5 py-0.5 text-2xs"
-                >
-                  {activeTag}
-                  <X className="h-2.5 w-2.5" />
-                </button>
-              )}
-              {facets.tags
-                .filter((t) => t.value !== activeTag)
-                .slice(0, 24)
-                .map((t) => (
-                  <button
-                    key={t.value}
-                    onClick={() => setActiveTag(t.value)}
-                    className="rounded-md px-1.5 py-0.5 text-2xs text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-                  >
-                    {t.value}
-                  </button>
-                ))}
-            </div>
-          </div>,
-          railSlot
-        )}
     </div>
   );
 };
@@ -1587,9 +1644,11 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
 
 const CollectionsGrid: React.FC<{
   collections: ReferenceCollection[];
+  error?: boolean;
+  onRetry?: () => void;
   onOpen: (id: string) => void;
   onCreate: (name: string) => void;
-}> = ({ collections, onOpen, onCreate }) => {
+}> = ({ collections, error, onRetry, onOpen, onCreate }) => {
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState('');
   const submit = () => {
@@ -1606,6 +1665,10 @@ const CollectionsGrid: React.FC<{
         Faça login para criar e ver suas coleções.
       </div>
     );
+  }
+
+  if (error) {
+    return <ErrorState title="Não foi possível carregar suas coleções" onRetry={onRetry} />;
   }
 
   return (
@@ -1656,13 +1719,13 @@ const CollectionsGrid: React.FC<{
         <button
           key={c.id}
           onClick={() => onOpen(c.id)}
-          className="group text-left rounded-xl overflow-hidden bg-card ring-1 ring-border hover:ring-ring transition-all hover:-translate-y-0.5"
+          className="text-left rounded-xl overflow-hidden bg-card ring-1 ring-border hover:ring-ring transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <div className="aspect-[4/3] relative bg-muted">
             {c.covers && c.covers.length > 1 ? (
               <div className="grid grid-cols-2 grid-rows-2 w-full h-full gap-px">
                 {c.covers.slice(0, 4).map((u, i) => (
-                  <img
+                  <Thumb
                     key={i}
                     src={u}
                     alt=""
@@ -1672,7 +1735,7 @@ const CollectionsGrid: React.FC<{
                 ))}
               </div>
             ) : c.coverUrl || c.covers?.[0] ? (
-              <img
+              <Thumb
                 src={c.coverUrl || c.covers?.[0]}
                 alt={c.name}
                 loading="lazy"
@@ -1689,7 +1752,7 @@ const CollectionsGrid: React.FC<{
               {!c.isPublic && <Lock className="h-3 w-3 text-muted-foreground shrink-0" />}
               {c.name}
             </p>
-            <p className="text-2xs font-mono text-muted-foreground">
+            <p className="text-2xs text-muted-foreground tabular-nums">
               {c.count} {c.count === 1 ? 'item' : 'itens'}
             </p>
           </div>
@@ -1704,16 +1767,22 @@ const SaveToCollectionDialog: React.FC<{ items: ReferenceItem[]; onClose: () => 
   onClose,
 }) => {
   const [cols, setCols] = useState<ReferenceCollection[] | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [creating, setCreating] = useState('');
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const count = items.length;
 
-  useEffect(() => {
+  const loadCols = useCallback(() => {
+    setLoadError(false);
+    setCols(null);
     collectionsApi
       .list()
       .then((d) => setCols(d.collections))
-      .catch(() => setCols([]));
+      .catch(() => setLoadError(true));
   }, []);
+  useEffect(() => {
+    loadCols();
+  }, [loadCols]);
 
   const addTo = async (id: string) => {
     if (savedIds.has(id)) return;
@@ -1754,7 +1823,7 @@ const SaveToCollectionDialog: React.FC<{ items: ReferenceItem[]; onClose: () => 
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-sm bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="text-sm font-mono text-muted-foreground">
+          <DialogTitle>
             {count > 1 ? `Salvar ${count} em coleção` : 'Salvar em coleção'}
           </DialogTitle>
         </DialogHeader>
@@ -1777,12 +1846,19 @@ const SaveToCollectionDialog: React.FC<{ items: ReferenceItem[]; onClose: () => 
           </Button>
         </div>
         <div className="max-h-64 overflow-y-auto flex flex-col gap-1 mt-1">
-          {cols === null ? (
+          {loadError ? (
+            <div className="flex flex-col items-center gap-2 py-4 text-center">
+              <p className="text-xs text-muted-foreground">
+                Não foi possível carregar suas coleções.
+              </p>
+              <Button variant="outline" size="sm" className="h-7 text-xs" onClick={loadCols}>
+                Tentar de novo
+              </Button>
+            </div>
+          ) : cols === null ? (
             <p className="text-xs text-muted-foreground py-4 text-center">Carregando...</p>
           ) : cols.length === 0 ? (
-            <p className="text-xs text-muted-foreground py-4 text-center">
-              Nenhuma coleção ainda — crie a primeira acima.
-            </p>
+            <p className="text-xs text-muted-foreground py-4 text-center">Nenhuma coleção ainda.</p>
           ) : (
             cols.map((c) => (
               <button
@@ -1798,9 +1874,7 @@ const SaveToCollectionDialog: React.FC<{ items: ReferenceItem[]; onClose: () => 
                 {savedIds.has(c.id) ? (
                   <Check className="h-4 w-4 text-foreground shrink-0" />
                 ) : (
-                  <span className="text-2xs font-mono text-muted-foreground tabular-nums">
-                    {c.count}
-                  </span>
+                  <span className="text-2xs text-muted-foreground tabular-nums">{c.count}</span>
                 )}
               </button>
             ))
@@ -1881,20 +1955,12 @@ const BatchActionBar: React.FC<{
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: 16 }}
     transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 rounded-full border border-border bg-card/95 backdrop-blur px-3 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
+    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 rounded-full border border-border bg-card/95 backdrop-blur px-3 py-2 shadow-lg"
     role="toolbar"
     aria-label="Ações da seleção"
   >
-    <span className="px-1 text-xs font-mono text-muted-foreground tabular-nums">
-      <motion.span
-        key={count}
-        initial={{ scale: 0.7, opacity: 0.4 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 600, damping: 24 }}
-        className="inline-block text-foreground"
-      >
-        {count}
-      </motion.span>{' '}
+    <span className="px-1 text-xs text-muted-foreground tabular-nums">
+      <span className="text-foreground">{count}</span>{' '}
       {count === 1 ? 'selecionada' : 'selecionadas'}
     </span>
     {count < total && (
@@ -2031,14 +2097,18 @@ const EditReferenceDialog: React.FC<{
 
 // Removable active-filter pill used in the summary bar.
 const FilterChip: React.FC<{ label: string; onRemove: () => void }> = ({ label, onRemove }) => (
-  <Badge
-    variant="secondary"
-    className="cursor-pointer bg-muted text-foreground border-border text-xs"
+  <button
+    type="button"
+    aria-label={`Remover filtro ${label}`}
+    className={cn(
+      badgeVariants({ variant: 'secondary' }),
+      'bg-muted text-foreground border-border text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
+    )}
     onClick={onRemove}
   >
     {label}
     <X className="h-2.5 w-2.5 ml-1" />
-  </Badge>
+  </button>
 );
 
 // ─── Admin-only moderation queue (pending user uploads) ──────────────────────
@@ -2048,15 +2118,17 @@ const ModerationQueue: React.FC<{ onClose: () => void; onResolved: () => void }>
 }) => {
   const [items, setItems] = useState<PendingReference[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const res = await adminReferencesApi.pending(50, 0);
       setItems(res.items);
-    } catch (e: any) {
-      toast.error(e.message || 'Erro ao carregar fila');
+    } catch {
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -2086,11 +2158,11 @@ const ModerationQueue: React.FC<{ onClose: () => void; onResolved: () => void }>
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-3xl bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="text-sm font-mono text-muted-foreground">
-            Fila de moderação · {items.length} aguardando
-          </DialogTitle>
+          <DialogTitle>Fila de moderação ({items.length})</DialogTitle>
         </DialogHeader>
-        {loading ? (
+        {loadError ? (
+          <ErrorState title="Não foi possível carregar a fila" onRetry={load} />
+        ) : loading ? (
           <div className="py-10 text-center">
             <Loader2 className="h-5 w-5 mx-auto animate-spin text-muted-foreground" />
           </div>
@@ -2103,10 +2175,11 @@ const ModerationQueue: React.FC<{ onClose: () => void; onResolved: () => void }>
                 key={ref.id}
                 className="rounded-lg border border-border bg-background/40 overflow-hidden"
               >
-                <img
+                <Thumb
                   src={ref.thumbnailUrl || ref.referenceImageUrl}
                   alt={ref.name}
-                  className="w-full aspect-square object-cover"
+                  aspectRatio={1}
+                  className="w-full"
                 />
                 <div className="p-2 space-y-2">
                   <p className="text-2xs truncate" title={ref.name}>
@@ -2115,7 +2188,8 @@ const ModerationQueue: React.FC<{ onClose: () => void; onResolved: () => void }>
                   <div className="flex gap-1.5">
                     <Button
                       size="sm"
-                      className="h-7 flex-1 bg-brand-cyan text-black hover:bg-brand-cyan/80 text-2xs"
+                      variant="outline"
+                      className="h-7 flex-1 border-border text-foreground hover:bg-muted text-2xs"
                       disabled={busy === ref.id}
                       onClick={() => act(ref.id, 'approve')}
                     >
@@ -2147,30 +2221,19 @@ const DuplicateAdminBar: React.FC<{
   onDedupe: () => void;
   deduping: boolean;
 }> = ({ report, onDedupe, deduping }) => (
-  <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2">
-    <span className="text-xs font-mono text-warning">
-      {report.groups.length} grupo(s) · {report.redundant} cópia(s) redundante(s)
-    </span>
-    <span className="text-2xs text-muted-foreground">
-      Marcadas no grid: <span className="text-warning">×N</span> = mantida,{' '}
-      <span className="text-destructive">dup</span> = removível
-      {report.unhashed > 0 && ` · ${report.unhashed} sem hash (não comparáveis)`}
-    </span>
-    <Button
-      size="sm"
-      variant="outline"
-      className="ml-auto h-7 border-destructive/40 text-xs text-destructive hover:bg-destructive/10"
-      disabled={deduping}
-      onClick={onDedupe}
-    >
-      {deduping ? (
-        <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-      ) : (
-        <Trash2 className="mr-1.5 h-3 w-3" />
-      )}
-      Remover redundantes
-    </Button>
-  </div>
+  <Button
+    size="sm"
+    variant="ghost"
+    className="h-7 text-xs text-muted-foreground hover:text-destructive"
+    title={`${report.groups.length} grupo(s) de cópias idênticas. No grid, ×N marca a que fica e "dup" a que sai.${
+      report.unhashed > 0 ? ` ${report.unhashed} sem hash, não comparáveis.` : ''
+    }`}
+    disabled={deduping}
+    onClick={onDedupe}
+  >
+    {deduping ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+    {report.redundant} duplicada(s)
+  </Button>
 );
 
 /**
@@ -2189,100 +2252,90 @@ const LowResAdminBar: React.FC<{
 }> = ({ report, onPurge, purging }) => {
   const deletable = report.total - report.protected;
   return (
-    <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2">
-      <span className="text-xs font-mono text-warning">
-        {report.total} abaixo de {report.maxShortSide}px
-      </span>
-      <span className="text-2xs text-muted-foreground">
-        Tiras e fragmentos raspados (ex.: 654×4) que não carregam ideia de design
-        {report.protected > 0 && ` · ${report.protected} em coleção, preservada(s)`}
-      </span>
-      {report.samples.length > 0 && (
-        <span className="flex items-center gap-1">
-          {report.samples.slice(0, 6).map((sample) => (
-            <span
-              key={sample.id}
-              title={`${sample.name || 'sem nome'} — ${sample.width}×${sample.height}`}
-              className="h-6 w-6 overflow-hidden rounded border border-border bg-muted"
-            >
-              {sample.thumbnailUrl && (
-                <img src={sample.thumbnailUrl} alt="" className="h-full w-full object-cover" />
-              )}
-            </span>
-          ))}
-        </span>
-      )}
+    <span className="inline-flex items-center gap-1">
+      {report.samples.slice(0, 6).map((sample) => (
+        <Thumb
+          key={sample.id}
+          src={sample.thumbnailUrl}
+          alt=""
+          title={`${sample.name || 'sem nome'} (${sample.width}×${sample.height})`}
+          className="h-6 w-6 rounded border border-border object-cover"
+          fallbackClassName="[&_svg]:h-3 [&_svg]:w-3"
+        />
+      ))}
       <Button
         size="sm"
-        variant="outline"
-        className="ml-auto h-7 border-destructive/40 text-xs text-destructive hover:bg-destructive/10"
+        variant="ghost"
+        className="h-7 text-xs text-muted-foreground hover:text-destructive"
+        title={`Menor lado abaixo de ${report.maxShortSide}px.${
+          report.protected > 0 ? ` ${report.protected} em coleção ficam.` : ''
+        }`}
         disabled={purging || deletable === 0}
         onClick={onPurge}
       >
-        {purging ? (
-          <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-        ) : (
-          <Trash2 className="mr-1.5 h-3 w-3" />
-        )}
-        Apagar {deletable}
+        {purging ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+        {deletable} abaixo de {report.maxShortSide}px
       </Button>
-    </div>
+    </span>
   );
 };
 
 const FilterControls: React.FC<{
   search: string;
   setSearch: (v: string) => void;
-  country: string;
-  setCountry: (v: string) => void;
   region: string;
   setRegion: (v: string) => void;
+  regionOptions: Option[];
   semantic: boolean;
   setSemantic: (v: boolean) => void;
-}> = ({ search, setSearch, country, setCountry, region, setRegion, semantic, setSemantic }) => (
-  <div className="flex flex-col md:flex-row md:items-center gap-2">
-    <div className="relative flex-1 min-w-[200px]">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-      <Input
-        id="ref-search"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder={
-          semantic
-            ? 'Buscar por significado...  ( / )'
-            : 'Buscar por nome, estúdio, descrição...  ( / )'
-        }
-        className="pl-9 pr-24 bg-input border-border text-sm h-9"
-      />
-      {/* Semantic (meaning) vs exact (substring). Only relevant with a query. */}
-      {search.trim() && (
-        <button
-          type="button"
-          onClick={() => setSemantic(!semantic)}
-          title={
-            semantic
-              ? 'Busca por significado (IA). Clique para busca exata.'
-              : 'Busca exata (substring). Clique para busca por significado.'
-          }
+  /** Busca por imagem: ícone dentro do campo (a busca é uma só). */
+  searchByImage?: React.ReactNode;
+}> = ({
+  search,
+  setSearch,
+  region,
+  setRegion,
+  regionOptions,
+  semantic,
+  setSemantic,
+  searchByImage,
+}) => {
+  const hasQuery = !!search.trim();
+  return (
+    <div className="flex flex-col md:flex-row md:items-center gap-2 min-w-0">
+      <div className="relative flex-1 min-w-0">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+        <Input
+          id="ref-search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar"
           className={cn(
-            'absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-2 py-0.5 text-2xs font-mono transition-colors',
-            semantic
-              ? 'bg-brand-cyan/15 text-brand-cyan'
-              : 'bg-muted text-muted-foreground hover:text-foreground'
+            'pl-9 bg-input border-border text-sm h-9',
+            hasQuery ? 'pr-32' : searchByImage ? 'pr-10' : 'pr-3'
           )}
-        >
-          {semantic ? 'significado' : 'exata'}
-        </button>
-      )}
+        />
+        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          {/* Significado (IA) vs exata (substring). Só faz sentido com texto. */}
+          {hasQuery && (
+            <button
+              type="button"
+              onClick={() => setSemantic(!semantic)}
+              title={semantic ? 'Busca por significado' : 'Busca exata'}
+              className="rounded-full bg-muted px-2 py-0.5 text-2xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {semantic ? 'Significado' : 'Exata'}
+            </button>
+          )}
+          {searchByImage}
+        </div>
+      </div>
+      <div className="min-w-0 md:w-44 md:shrink-0">
+        <Select options={regionOptions} value={region} onChange={setRegion} placeholder="Região" />
+      </div>
     </div>
-    <div className="md:w-[190px]">
-      <Select options={COUNTRY_OPTIONS} value={country} onChange={setCountry} placeholder="País" />
-    </div>
-    <div className="md:w-[190px]">
-      <Select options={REGION_OPTIONS} value={region} onChange={setRegion} placeholder="Região" />
-    </div>
-  </div>
-);
+  );
+};
 
 // ─── Masonry card with blur-up ───────────────────────────────────
 
@@ -2314,11 +2367,16 @@ const MasonryCard: React.FC<{
 }) => {
   const { locale } = useTranslation();
   const [loaded, setLoaded] = useState(false);
+  // Thumb que falha cai pra imagem cheia; se ela também falhar, o Thumb mostra o
+  // estado quebrado dentro da MESMA caixa (nunca borrão eterno nem tile vazio).
+  const [useFull, setUseFull] = useState(false);
+  const [failed, setFailed] = useState(false);
   const reduce = useReducedMotion();
   const cardRef = useRef<HTMLDivElement>(null);
-  const flag = countryFlag(item.country);
-  const src = item.thumbnailUrl || item.referenceImageUrl;
+  const thumbSrc = item.thumbnailUrl || item.referenceImageUrl;
+  const src = useFull ? item.referenceImageUrl : thumbSrc;
   const placeholder = useThumbPlaceholder(item.thumbHash);
+  const title = refTitle(item, locale);
 
   useEffect(() => {
     if (focused)
@@ -2326,12 +2384,7 @@ const MasonryCard: React.FC<{
   }, [focused, reduce]);
 
   return (
-    <motion.div
-      initial={reduce ? false : { opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '120px' }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-    >
+    <div>
       <div
         className="group relative"
         ref={cardRef}
@@ -2343,9 +2396,7 @@ const MasonryCard: React.FC<{
       >
         <button
           aria-label={
-            selectionActive
-              ? `${selected ? 'Desmarcar' : 'Selecionar'} ${refTitle(item, locale)}`
-              : `Abrir ${refTitle(item, locale)}`
+            selectionActive ? `${selected ? 'Desmarcar' : 'Selecionar'} ${title}` : `Abrir ${title}`
           }
           onClick={(e) => {
             // Once anything is selected, clicking a card toggles it (fast multi-select).
@@ -2353,10 +2404,10 @@ const MasonryCard: React.FC<{
             else onOpen();
           }}
           className={cn(
-            'block w-full text-left rounded-xl overflow-hidden bg-card ring-1 transition-[box-shadow,transform,opacity] duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] active:scale-[0.985] focus:outline-none',
+            'block w-full text-left rounded-xl overflow-hidden bg-card ring-1 transition-[box-shadow,opacity] duration-[var(--dur-fast)] ease-out focus:outline-none',
             selected || focused
               ? 'ring-2 ring-brand-cyan'
-              : 'ring-border hover:ring-ring focus-visible:ring-2 focus-visible:ring-brand-cyan/60',
+              : 'ring-border hover:ring-ring focus-visible:ring-2 focus-visible:ring-ring',
             // In select-mode, dim what isn't chosen so the mode is unmistakable.
             selectionActive && !selected && 'opacity-55 hover:opacity-100'
           )}
@@ -2372,6 +2423,7 @@ const MasonryCard: React.FC<{
           >
             {/* LQIP: thumbhash if available, else a soft shimmer */}
             {!loaded &&
+              !failed &&
               (placeholder ? (
                 <img
                   src={placeholder}
@@ -2382,43 +2434,36 @@ const MasonryCard: React.FC<{
               ) : (
                 <div className="absolute inset-0 animate-pulse bg-muted/50" />
               ))}
-            <motion.img
-              layoutId={`card-${item.id}`}
-              transition={
-                reduce ? { duration: 0 } : { type: 'spring', stiffness: 320, damping: 34 }
-              }
+            <Thumb
               src={src}
-              alt={refTitle(item, locale)}
+              alt={title}
               loading="lazy"
               decoding="async"
               onLoad={() => setLoaded(true)}
+              onError={() => {
+                if (!useFull && item.referenceImageUrl && item.referenceImageUrl !== thumbSrc) {
+                  setUseFull(true);
+                } else {
+                  setFailed(true);
+                }
+              }}
               className={cn(
-                'w-full h-auto block transition-[opacity,filter] duration-700 ease-out',
-                loaded ? 'opacity-100 blur-0' : 'opacity-0 blur-md'
+                'w-full h-auto block transition-opacity duration-[var(--dur-base)] ease-out',
+                loaded ? 'opacity-100' : 'opacity-0'
               )}
+              fallbackClassName="absolute inset-0 h-full w-full opacity-100"
             />
-            {/* gradient + meta on hover */}
-            <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <p className="text-2xs font-medium text-white truncate">{refTitle(item, locale)}</p>
+            {/* título + país no hover/foco (informação, não controle) */}
+            <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-[var(--dur-fast)]">
+              <p className="text-2xs font-medium text-white truncate">{title}</p>
               {item.country && (
-                <p className="text-2xs font-mono text-neutral-300 truncate">
-                  {countryFlag(item.country)} {item.country}
+                <p className="text-2xs text-neutral-300 truncate">
+                  {countryName(item.country, locale)}
                 </p>
               )}
             </div>
-            {flag && (
-              <span
-                className={cn(
-                  'absolute top-2 left-2 text-base leading-none drop-shadow transition-opacity',
-                  selected || selectionActive ? 'opacity-0' : 'opacity-100 group-hover:opacity-0'
-                )}
-                title={item.country}
-              >
-                {flag}
-              </span>
-            )}
             {typeof item.score === 'number' && (
-              <span className="absolute top-2 right-2 rounded-full bg-black/60 backdrop-blur px-1.5 py-0.5 text-2xs font-mono text-neutral-100">
+              <span className="absolute top-2 right-2 rounded-full bg-background/80 px-1.5 py-0.5 text-2xs tabular-nums text-foreground">
                 {Math.round(item.score * 100)}%
               </span>
             )}
@@ -2428,15 +2473,15 @@ const MasonryCard: React.FC<{
             {dupe && (
               <span
                 className={cn(
-                  'absolute bottom-2 right-2 rounded-full px-1.5 py-0.5 text-2xs font-mono backdrop-blur',
+                  'absolute bottom-2 right-2 rounded-full px-1.5 py-0.5 text-2xs tabular-nums',
                   dupe.isKeeper
-                    ? 'bg-warning/80 text-black'
-                    : 'bg-destructive/80 text-destructive-foreground'
+                    ? 'bg-background/80 text-foreground'
+                    : 'bg-destructive text-destructive-foreground'
                 )}
                 title={
                   dupe.isKeeper
-                    ? `${dupe.count} cópias idênticas — esta é a mais antiga e seria mantida`
-                    : `${dupe.count} cópias idênticas — esta seria removida`
+                    ? `${dupe.count} cópias idênticas. Esta é a mais antiga e fica.`
+                    : `${dupe.count} cópias idênticas. Esta sai na limpeza.`
                 }
               >
                 {dupe.isKeeper ? `×${dupe.count}` : 'dup'}
@@ -2456,9 +2501,9 @@ const MasonryCard: React.FC<{
             aria-label={selected ? 'Desmarcar' : 'Selecionar'}
             aria-pressed={selected}
             className={cn(
-              'absolute top-1.5 left-1.5 z-10 h-6 w-6 grid place-items-center rounded-md bg-black/60 backdrop-blur transition-opacity',
-              selected || selectionActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
-              selected ? 'text-brand-cyan' : 'text-neutral-200 hover:text-neutral-100'
+              'absolute top-1.5 left-1.5 z-10 h-6 w-6 grid place-items-center rounded-md bg-background/80',
+              selected || selectionActive ? 'opacity-100' : hoverReveal,
+              selected ? 'text-brand-cyan' : 'text-muted-foreground hover:text-foreground'
             )}
           >
             {selected ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
@@ -2466,7 +2511,7 @@ const MasonryCard: React.FC<{
         )}
         {/* Quick actions */}
         <div
-          className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+          className={cn('absolute top-2 right-2 flex flex-col gap-1', hoverReveal)}
           style={{
             display: typeof item.score === 'number' || selectionActive ? 'none' : undefined,
           }}
@@ -2475,7 +2520,7 @@ const MasonryCard: React.FC<{
             onClick={onSimilar}
             title="Ver parecidas"
             aria-label="Ver parecidas"
-            className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-neutral-100"
+            className="h-7 w-7 grid place-items-center rounded-full bg-background/80 text-muted-foreground hover:text-foreground"
           >
             <Images className="h-3.5 w-3.5" />
           </button>
@@ -2484,7 +2529,7 @@ const MasonryCard: React.FC<{
               onClick={onRemove}
               title="Remover da coleção"
               aria-label="Remover da coleção"
-              className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-destructive"
+              className="h-7 w-7 grid place-items-center rounded-full bg-background/80 text-muted-foreground hover:text-destructive"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -2493,14 +2538,14 @@ const MasonryCard: React.FC<{
               onClick={onSave}
               title="Salvar em coleção"
               aria-label="Salvar em coleção"
-              className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-neutral-100"
+              className="h-7 w-7 grid place-items-center rounded-full bg-background/80 text-muted-foreground hover:text-foreground"
             >
               <Bookmark className="h-3.5 w-3.5" />
             </button>
           ) : null}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -2534,12 +2579,10 @@ const Lightbox: React.FC<{
   similarSource,
   onColor,
 }) => {
-  const { locale } = useTranslation();
+  const { locale, tOr } = useTranslation();
   const item = index !== null ? items[index] : null;
   const isLowRes = isLowResolution({ width: item?.width, height: item?.height });
   const prov = item?.provenance || {};
-  const flag = item ? countryFlag(item.country) : '';
-  const reduce = useReducedMotion();
   const [showAllTags, setShowAllTags] = useState(false);
 
   // Collapse the tag list back to the top few whenever the reference changes.
@@ -2566,14 +2609,14 @@ const Lightbox: React.FC<{
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 bg-neutral-950/95 backdrop-blur-sm"
+          className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm"
           onClick={onClose}
         >
           {/* Close */}
           <button
             onClick={onClose}
             aria-label="Fechar"
-            className="absolute top-4 right-4 z-10 h-9 w-9 grid place-items-center rounded-full bg-neutral-900/80 text-neutral-300 hover:text-white"
+            className="absolute top-4 right-4 z-10 h-9 w-9 grid place-items-center rounded-full bg-card/80 text-muted-foreground hover:text-foreground"
           >
             <X className="h-4 w-4" />
           </button>
@@ -2586,7 +2629,7 @@ const Lightbox: React.FC<{
                 onNav(-1);
               }}
               aria-label="Anterior"
-              className="absolute left-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 grid place-items-center rounded-full bg-neutral-900/80 text-neutral-300 hover:text-white"
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 grid place-items-center rounded-full bg-card/80 text-muted-foreground hover:text-foreground"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
@@ -2598,7 +2641,7 @@ const Lightbox: React.FC<{
                 onNav(1);
               }}
               aria-label="Próxima"
-              className="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 grid place-items-center rounded-full bg-neutral-900/80 text-neutral-300 hover:text-white"
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 grid place-items-center rounded-full bg-card/80 text-muted-foreground hover:text-foreground"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
@@ -2610,12 +2653,8 @@ const Lightbox: React.FC<{
               className="flex-1 min-h-0 flex items-center justify-center p-4 sm:p-8"
               onClick={onClose}
             >
-              <motion.img
+              <Thumb
                 key={item.id}
-                layoutId={`card-${item.id}`}
-                transition={
-                  reduce ? { duration: 0 } : { type: 'spring', stiffness: 280, damping: 32 }
-                }
                 src={item.referenceImageUrl}
                 alt={refTitle(item, locale)}
                 onClick={(e) => e.stopPropagation()}
@@ -2624,6 +2663,8 @@ const Lightbox: React.FC<{
                 // piso relativo escala a pequena pra um tamanho legível — a
                 // pixelação é honesta e o aviso de baixa resolução explica.
                 className="max-h-full max-w-full w-auto h-auto object-contain rounded-lg"
+                fallbackClassName="h-64 w-64"
+                fallbackLabel="Imagem indisponível"
                 style={
                   isLowRes ? { minWidth: 'min(38vw, 420px)', imageRendering: 'auto' } : undefined
                 }
@@ -2644,7 +2685,7 @@ const Lightbox: React.FC<{
                       {title}
                     </h3>
                     {sub && sub !== title && (
-                      <p className="text-xs font-mono text-muted-foreground mt-0.5">{sub}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>
                     )}
                   </div>
                 );
@@ -2653,9 +2694,9 @@ const Lightbox: React.FC<{
               {/* Resolução — só quando é BAIXA. Um selo em 100% das refs seria
                   ruído; aqui ele explica por que a imagem está pixelada. */}
               {isLowRes && item.width && (
-                <p className="inline-flex items-center gap-1.5 text-2xs font-mono text-muted-foreground border border-border rounded-full px-2 py-0.5">
+                <p className="inline-flex items-center gap-1.5 text-2xs text-muted-foreground border border-border rounded-full px-2 py-0.5">
                   <ImageIcon className="h-3 w-3" />
-                  Baixa resolução · {item.width}×{item.height}
+                  Baixa resolução ({item.width}×{item.height})
                 </p>
               )}
 
@@ -2664,9 +2705,7 @@ const Lightbox: React.FC<{
                   referência visual. */}
               {item.palette && item.palette.length > 0 && (
                 <div>
-                  <p className="text-2xs font-mono uppercase tracking-wide text-muted-foreground mb-1.5">
-                    Paleta
-                  </p>
+                  <p className="text-2xs text-muted-foreground mb-1.5">Paleta</p>
                   <div className="flex flex-wrap gap-1.5">
                     {item.palette.slice(0, 6).map((hex) => (
                       <button
@@ -2675,7 +2714,7 @@ const Lightbox: React.FC<{
                         title={`Ver referências nesta cor (${hex})`}
                         aria-label={`Ver referências na cor ${hex}`}
                         onClick={() => onColor?.(hex)}
-                        className="h-6 w-6 rounded-md border border-border transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="h-6 w-6 rounded-md border border-border transition-shadow hover:ring-2 hover:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         style={{ backgroundColor: hex }}
                       />
                     ))}
@@ -2709,12 +2748,8 @@ const Lightbox: React.FC<{
               <div className="flex flex-wrap gap-1.5">
                 {item.country && (
                   <Badge className="bg-muted text-foreground border-border text-2xs">
-                    {flag ? (
-                      <span className="mr-1">{flag}</span>
-                    ) : (
-                      <MapPin className="h-3 w-3 mr-1" />
-                    )}
-                    {item.country}
+                    <MapPin className="h-3 w-3 mr-1" />
+                    {countryName(item.country, locale)}
                     {prov.countryInferred && (
                       <span className="ml-1 text-muted-foreground">auto</span>
                     )}
@@ -2723,7 +2758,7 @@ const Lightbox: React.FC<{
                 {item.region && (
                   <Badge variant="outline" className="border-border text-muted-foreground text-2xs">
                     <Globe className="h-3 w-3 mr-1" />
-                    {REGION_LABELS[item.region] || item.region}
+                    {regionLabel(item.region, tOr)}
                   </Badge>
                 )}
                 {prov.year && (
@@ -2759,23 +2794,13 @@ const Lightbox: React.FC<{
                 <div>
                   <span className="text-2xs text-muted-foreground">Tags</span>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {(showAllTags ? item.tags : item.tags.slice(0, 6)).map((t) => (
-                      <Badge
-                        key={t}
-                        variant="outline"
-                        className={cn(
-                          'text-2xs px-1.5 py-0 border-border text-muted-foreground transition-colors',
-                          onTag && 'cursor-pointer hover:border-border-hover hover:text-foreground'
-                        )}
-                        onClick={onTag ? () => onTag(t) : undefined}
-                      >
-                        {t}
-                      </Badge>
+                    {(showAllTags ? item.tags : item.tags.slice(0, 6)).map((tag) => (
+                      <TagPill key={tag} label={tag} onClick={onTag && (() => onTag(tag))} />
                     ))}
                     {!showAllTags && item.tags.length > 6 && (
                       <button
                         onClick={() => setShowAllTags(true)}
-                        className="text-2xs font-mono text-muted-foreground hover:text-foreground px-1 transition-colors"
+                        className="text-2xs text-muted-foreground hover:text-foreground px-1 transition-colors"
                       >
                         +{item.tags.length - 6}
                       </button>
@@ -2792,17 +2817,7 @@ const Lightbox: React.FC<{
                 return extra.length ? (
                   <div className="flex flex-wrap gap-1">
                     {extra.slice(0, 12).map((v, i) => (
-                      <Badge
-                        key={`${v}-${i}`}
-                        variant="outline"
-                        className={cn(
-                          'text-2xs px-1.5 py-0 border-border text-muted-foreground transition-colors',
-                          onTag && 'cursor-pointer hover:border-border-hover hover:text-foreground'
-                        )}
-                        onClick={onTag ? () => onTag(v) : undefined}
-                      >
-                        {v}
-                      </Badge>
+                      <TagPill key={`${v}-${i}`} label={v} onClick={onTag && (() => onTag(v))} />
                     ))}
                   </div>
                 ) : null;
@@ -2888,6 +2903,27 @@ const Lightbox: React.FC<{
   );
 };
 
+/** Tag do lightbox: clicável (button) quando filtra, rótulo estático quando não. */
+const TagPill: React.FC<{ label: string; onClick?: () => void }> = ({ label, onClick }) => {
+  const cls = cn(
+    badgeVariants({ variant: 'outline' }),
+    'text-2xs px-1.5 py-0 border-border text-muted-foreground'
+  );
+  if (!onClick) return <span className={cls}>{label}</span>;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        cls,
+        'transition-colors hover:border-border-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
+      )}
+    >
+      {label}
+    </button>
+  );
+};
+
 // ─── States ──────────────────────────────────────────────────────
 
 const MasonrySkeleton: React.FC<{ cols: number }> = ({ cols }) => {
@@ -2914,10 +2950,6 @@ const FirstRun: React.FC<{ onUpload: () => void }> = ({ onUpload }) => (
       <ImageIcon className="h-7 w-7 text-muted-foreground" />
     </div>
     <h3 className="text-lg font-semibold text-foreground">Sua biblioteca de referências</h3>
-    <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
-      Design world-class do mundo inteiro, taggeado por conteúdo e por país. Suba, arraste ou cole
-      uma imagem — o pipeline analisa, taggeia e popula. Depois mergulhe de uma ref pra outra.
-    </p>
     <Button
       size="sm"
       className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs mt-1"
@@ -2940,22 +2972,15 @@ const NoResults: React.FC<{ onClear: () => void }> = ({ onClear }) => (
   </div>
 );
 
-const ErrorState: React.FC<{ onRetry: () => void }> = ({ onRetry }) => (
-  <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
-    <AlertTriangle className="h-8 w-8 text-warning/80" />
-    <p className="text-sm text-muted-foreground">Não foi possível carregar as referências</p>
-    <Button variant="outline" size="sm" className="bg-card border-border text-xs" onClick={onRetry}>
-      Tentar de novo
-    </Button>
-  </div>
-);
-
 // ─── Upload Dialog ───────────────────────────────────────────────
 
 const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean) => void }> = ({
   onClose,
   onDone,
 }) => {
+  const { tOr, locale } = useTranslation();
+  // Upload options are taxonomy-wide: a new ref may come from anywhere.
+  const uploadCountryOptions = useMemo(() => countryOptions(tOr, locale), [tOr, locale]);
   const [files, setFiles] = useState<File[]>([]);
   const [country, setCountry] = useState('');
   const [designer, setDesigner] = useState('');
@@ -3019,12 +3044,10 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
       <Dialog open onOpenChange={() => {}}>
         <DialogContent className="max-w-lg bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="text-sm font-mono text-muted-foreground">
-              Analisando referências
-            </DialogTitle>
+            <DialogTitle>Enviando referências</DialogTitle>
           </DialogHeader>
           <div className="py-8">
-            <FlyingPaperLoader label={`Analisando ${files.length} imagem(ns)...`} />
+            <FlyingPaperLoader label={`Enviando ${files.length} imagem(ns)...`} />
           </div>
         </DialogContent>
       </Dialog>
@@ -3035,33 +3058,31 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
     <Dialog open onOpenChange={() => !uploading && onClose()}>
       <DialogContent className="max-w-lg bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="text-sm font-mono text-muted-foreground">
-            Subir referências
-          </DialogTitle>
+          <DialogTitle>Subir referências</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          <div
+          <button
+            type="button"
             onClick={pick}
-            className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-border-hover transition-colors cursor-pointer"
+            className="w-full border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-border-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Upload className="h-7 w-7 mx-auto text-muted-foreground mb-2" />
             <p className="text-sm text-muted-foreground">
               {files.length > 0
                 ? `${files.length} imagem(ns) selecionada(s)`
-                : 'Clique para selecionar imagens (máx 10)'}
+                : 'Selecionar imagens (máx. 10)'}
             </p>
             <p className="text-2xs text-muted-foreground mt-1">
-              Grátis — as imagens entram na fila de revisão. Após aprovação, a IA extrai dimensões e
-              infere a origem.
+              Grátis. As imagens entram na fila de revisão antes de aparecer na biblioteca.
             </p>
-          </div>
+          </button>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground">País (opcional)</label>
               <Select
-                options={COUNTRY_OPTIONS}
+                options={uploadCountryOptions}
                 value={country}
                 onChange={setCountry}
                 placeholder="Auto"
@@ -3127,16 +3148,11 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
               onClick={submit}
             >
               {uploading ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                  Analisando...
-                </>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
-                <>
-                  <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-                  Analisar e popular
-                </>
+                <Upload className="h-3.5 w-3.5" />
               )}
+              Enviar para revisão
             </Button>
           </div>
         </div>

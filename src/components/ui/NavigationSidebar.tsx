@@ -145,11 +145,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
         )}
       >
         <div className={cn('p-4 space-y-2', inShell ? 'pt-6' : 'pt-24 md:pt-28')}>
-          {title && (
-            <h2 className="text-sm font-semibold font-mono text-neutral-400 uppercase  mb-4 px-2">
-              {title}
-            </h2>
-          )}
+          {title && <h2 className="text-sm font-semibold text-neutral-400 mb-4 px-2">{title}</h2>}
           {items.map((item, index) => {
             const Icon = item.icon;
             const isActive = activeItemId === item.id;
@@ -162,7 +158,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                 {showDivider && (
                   <div className="pt-3 mt-2 border-t border-sidebar-border/50">
                     {externalGroupLabel && (
-                      <h3 className="text-2xs font-semibold font-mono text-neutral-500 uppercase tracking-wider px-2 pt-2 pb-1">
+                      <h3 className="text-xs font-medium text-neutral-500 px-2 pt-2 pb-1">
                         {externalGroupLabel}
                       </h3>
                     )}
@@ -176,7 +172,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                         onToggleOpen(false);
                       }}
                       className={cn(
-                        'flex-1 flex items-center gap-2 px-3 py-2 rounded-md text-sm font-mono transition-colors',
+                        'flex-1 flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors',
                         isActive
                           ? 'bg-neutral-800/50 text-neutral-200 border border-neutral-700'
                           : 'text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50'
@@ -227,7 +223,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                               onToggleOpen(false);
                             }}
                             className={cn(
-                              'w-full text-left px-3 py-1.5 text-xs font-mono rounded transition-colors relative',
+                              'w-full text-left px-3 py-1.5 text-xs rounded transition-colors relative',
                               isSectionActive
                                 ? 'text-neutral-200 bg-neutral-800/30 border-l-2 border-neutral-500'
                                 : activeItemId === item.id

@@ -59,14 +59,10 @@ export const TextNode = memo(
         if (nodeData.onUpdateData) {
           nodeData.onUpdateData(id, { text: improvedText });
         }
-        toast.success(t('canvasNodes.textNode.promptImproved') || 'Prompt improved!');
+        toast.success(t('canvasNodes.textNode.promptImproved'));
       } catch (error: any) {
         console.error('Error improving prompt:', error);
-        toast.error(
-          error?.message ||
-            t('canvasNodes.textNode.errorImprovingPrompt') ||
-            'Failed to improve prompt'
-        );
+        toast.error(error?.message || t('canvasNodes.textNode.errorImprovingPrompt'));
       } finally {
         setIsImproving(false);
       }
@@ -77,11 +73,11 @@ export const TextNode = memo(
       try {
         await copyToClipboard(text);
         setIsCopied(true);
-        toast.success(t('canvasNodes.textNode.copied') || 'Text copied!', { duration: 2000 });
+        toast.success(t('canvasNodes.textNode.copied'), { duration: 2000 });
         setTimeout(() => setIsCopied(false), 2000);
       } catch (error) {
         console.error('Failed to copy:', error);
-        toast.error(t('canvasNodes.textNode.copyFailed') || 'Failed to copy text');
+        toast.error(t('canvasNodes.textNode.copyFailed'));
       }
     };
 
@@ -119,7 +115,7 @@ export const TextNode = memo(
       >
         {selected && !dragging && (
           <NodeResizer
-            color="brand-cyan"
+            color="var(--brand-cyan)"
             isVisible={selected}
             minWidth={NODE_LAYOUT.MIN_WIDTH}
             minHeight={NODE_LAYOUT.MIN_HEIGHT}
@@ -131,11 +127,7 @@ export const TextNode = memo(
           />
         )}
 
-        <NodeHeader
-          icon={Type}
-          title={t('canvasNodes.textNode.title') || 'Text Node'}
-          selected={selected}
-        >
+        <NodeHeader icon={Type} title={t('canvasNodes.textNode.title')} selected={selected}>
           {text.trim() && (
             <NodeButton
               variant="ghost"
@@ -146,9 +138,9 @@ export const TextNode = memo(
               }}
               onMouseDown={(e) => e.stopPropagation()}
               className="nodrag"
-              title={t('canvasNodes.textNode.copy') || 'Copy text'}
+              title={t('canvasNodes.textNode.copy')}
             >
-              {isCopied ? <Check size={14} className="text-brand-cyan" /> : <Copy size={14} />}
+              {isCopied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
             </NodeButton>
           )}
         </NodeHeader>
@@ -165,13 +157,13 @@ export const TextNode = memo(
               }}
               onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => e.stopPropagation()}
-              placeholder={t('canvasNodes.textNode.placeholder') || 'Enter text...'}
+              placeholder={t('canvasNodes.textNode.placeholder')}
               className={cn(
                 'h-full w-full resize-none nodrag nopan text-xs',
                 'pr-12 pb-8',
                 'bg-neutral-900/60 border-neutral-700/40',
                 'focus:border-neutral-600 ',
-                'backdrop-blur-sm transition-[color,background-color,border-color,filter] duration-200',
+                'transition-[color,background-color,border-color,filter] duration-200',
                 'placeholder:text-neutral-500 placeholder:font-mono',
                 'overflow-y-auto'
               )}
@@ -190,15 +182,15 @@ export const TextNode = memo(
                 onMouseDown={(e) => e.stopPropagation()}
                 disabled={isImproving || !text.trim()}
                 className={cn(
-                  'absolute top-2 right-2 transition-[color,background-color,border-color,box-shadow,filter] nodrag shadow-sm backdrop-blur-sm',
+                  'absolute top-2 right-2 transition-[color,background-color,border-color,box-shadow,filter] nodrag shadow-sm',
                   !isImproving &&
                     text.trim() &&
                     'text-foreground border-neutral-800 bg-brand-cyan/5 hover:bg-brand-cyan/10'
                 )}
                 title={
                   isImproving
-                    ? t('canvasNodes.textNode.improvingPrompt') || 'Improving prompt...'
-                    : t('canvasNodes.textNode.improvePrompt') || 'Improve with AI'
+                    ? t('canvasNodes.textNode.improvingPrompt')
+                    : t('canvasNodes.textNode.improvePrompt')
                 }
               >
                 {isImproving ? (
@@ -213,7 +205,7 @@ export const TextNode = memo(
             <div
               className={cn(
                 'absolute bottom-2 right-2 text-2xs font-mono transition-[color,background-color,border-color,filter] duration-200',
-                'px-2 py-0.5 rounded-full backdrop-blur-sm',
+                'px-2 py-0.5 rounded-full',
                 isVeryLongText
                   ? 'text-warning bg-warning/10 border-node border-warning/20'
                   : isLongText
@@ -221,15 +213,15 @@ export const TextNode = memo(
                     : 'text-neutral-500 bg-neutral-800/30'
               )}
             >
-              {charCount.toLocaleString()} {t('canvasNodes.textNode.characters') || 'chars'}
+              {charCount.toLocaleString()} {t('canvasNodes.textNode.characters')}
             </div>
           </div>
 
           {/* AI Enhancement Hint */}
           {text.trim() && !isImproving && (
             <div className="mt-3 flex items-center gap-2 text-2xs text-neutral-500 font-mono animate-in fade-in duration-300">
-              <Diamond size={10} className="text-brand-cyan/70" />
-              <span>{t('canvasNodes.textNode.aiHint') || 'Click the wand to enhance with AI'}</span>
+              <Diamond size={10} className="text-neutral-500" />
+              <span>{t('canvasNodes.textNode.aiHint')}</span>
             </div>
           )}
         </div>

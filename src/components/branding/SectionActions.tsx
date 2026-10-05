@@ -50,16 +50,16 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
     try {
       const text = extractTextFromContent(content);
       if (!text.trim()) {
-        toast.error(t('branding.copyEmpty') || 'No content to copy');
+        toast.error(t('branding.copyEmpty'));
         return;
       }
       await copyToClipboard(text);
       setCopied(true);
-      toast.success(t('branding.copied') || 'Copied to clipboard');
+      toast.success(t('branding.copied'));
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
-      toast.error(t('branding.copyFailed') || 'Failed to copy');
+      toast.error(t('branding.copyFailed'));
     }
   };
 
@@ -67,7 +67,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
   if (isEditing) {
     return (
       <div className="flex items-center gap-1 opacity-100 transition-opacity duration-200">
-        <Tooltip content={t('common.save') || 'Save'} position="top">
+        <Tooltip content={t('common.save')} position="top">
           <Button
             variant="ghost"
             onClick={(e) => {
@@ -75,12 +75,12 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
               onSave();
             }}
             disabled={isSaving}
-            className="h-7 w-7 px-2 hover:bg-brand-cyan/20 rounded-md flex items-center justify-center text-foreground hover:bg-brand-cyan/30 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-[color,background-color,border-color,opacity]"
+            className="h-7 w-7 px-2 rounded-md flex items-center justify-center text-foreground hover:bg-neutral-800 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-[color,background-color,border-color,opacity]"
           >
             <Check className="h-4 w-4" />
           </Button>
         </Tooltip>
-        <Tooltip content={t('branding.cancelEdit') || 'Cancel'} position="top">
+        <Tooltip content={t('branding.cancelEdit')} position="top">
           <Button
             variant="ghost"
             onClick={(e) => {
@@ -104,7 +104,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
   return (
     <div className={cn('flex items-center gap-1 duration-200', hoverReveal)}>
       {hasData && onRegenerate && (
-        <Tooltip content={t('branding.regenerate') || 'Regenerate'} position="top">
+        <Tooltip content={t('branding.regenerate')} position="top">
           <Button
             variant="ghost"
             onClick={(e) => {
@@ -112,7 +112,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
               onRegenerate();
             }}
             disabled={isGenerating}
-            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed relative transition-[color,background-color,border-color,box-shadow,opacity] duration-300 hover:text-brand-cyan ${
+            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed relative transition-[color,background-color,border-color,box-shadow,opacity] duration-300 hover:text-foreground ${
               theme === 'dark'
                 ? 'hover:bg-neutral-950/70 text-neutral-400 shadow-[0_0_10px_rgba(82,221,235,0.3)] hover:shadow-[0_0_12px_rgba(82,221,235,0.5)]'
                 : 'hover:bg-neutral-200 text-neutral-600'
@@ -123,32 +123,29 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
         </Tooltip>
       )}
       {hasData && (
-        <Tooltip
-          content={copied ? t('branding.copied') || 'Copied!' : t('branding.copy') || 'Copy text'}
-          position="top"
-        >
+        <Tooltip content={copied ? t('branding.copied') : t('branding.copy')} position="top">
           <Button
             variant="ghost"
             onClick={handleCopy}
-            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 transition-colors hover:text-brand-cyan ${
+            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 transition-colors hover:text-foreground ${
               theme === 'dark'
                 ? 'hover:bg-neutral-950/70 text-neutral-400'
                 : 'hover:bg-neutral-200 text-neutral-600'
             }`}
           >
-            {copied ? <Check className="h-4 w-4 text-brand-cyan" /> : <Copy className="h-4 w-4" />}
+            {copied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
           </Button>
         </Tooltip>
       )}
       {canEdit && (
-        <Tooltip content={t('common.edit') || 'Edit'} position="top">
+        <Tooltip content={t('common.edit')} position="top">
           <Button
             variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
               onEdit();
             }}
-            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 hover:text-brand-cyan ${
+            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 hover:text-foreground ${
               theme === 'dark'
                 ? 'hover:bg-neutral-950/70 text-neutral-400'
                 : 'hover:bg-neutral-200 text-neutral-600'
@@ -160,11 +157,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
       )}
       {hasData && onFeedback && prompt && stepNumber && (
         <Tooltip
-          content={
-            feedbackGiven === 'up'
-              ? t('branding.feedbackGiven') || 'Thanks for your feedback!'
-              : t('branding.thumbsUp') || 'Good result'
-          }
+          content={feedbackGiven === 'up' ? t('branding.feedbackGiven') : t('branding.thumbsUp')}
           position="top"
         >
           <Button
@@ -180,8 +173,8 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
               feedbackGiven === 'up'
                 ? 'text-brand-cyan'
                 : theme === 'dark'
-                  ? 'hover:bg-neutral-950/70 text-neutral-400 hover:text-brand-cyan'
-                  : 'hover:bg-neutral-200 text-neutral-600 hover:text-brand-cyan'
+                  ? 'hover:bg-neutral-950/70 text-neutral-400 hover:text-foreground'
+                  : 'hover:bg-neutral-200 text-neutral-600 hover:text-foreground'
             }`}
           >
             <ThumbsUp className={`h-4 w-4 ${feedbackGiven === 'up' ? 'fill-current' : ''}`} />

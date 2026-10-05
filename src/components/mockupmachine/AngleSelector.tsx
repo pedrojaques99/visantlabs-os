@@ -50,15 +50,15 @@ export const AngleSelector: React.FC<AngleSelectorProps> = ({
         variant="ghost"
         onClick={handleToggle}
         disabled={disabled}
-        className={`w-full flex items-center gap-2 px-4 py-2 bg-neutral-950/30 backdrop-blur-sm text-neutral-300 rounded-md border border-white/10 hover:border-white/20 hover:bg-white/5 hover:text-white transition-[color,background-color,border-color,opacity,filter] duration-200 ${
+        className={`w-full flex items-center gap-2 px-4 py-2 bg-neutral-950/30 text-neutral-300 rounded-md border border-white/10 hover:border-white/20 hover:bg-white/5 hover:text-white transition-[color,background-color,border-color,opacity,filter] duration-200 ${
           disabled ? 'opacity-50 cursor-not-allowed' : ''
         } ${buttonClassName}`}
-        title="New Angle"
-        aria-label="Select camera angle"
+        title={t('mockup.newAngle')}
+        aria-label={t('mockup.newAngleAria')}
         aria-expanded={isExpanded}
       >
         <Camera size={16} />
-        <span className="text-sm font-medium">New Angle</span>
+        <span className="text-sm font-medium">{t('mockup.newAngle')}</span>
         {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
           <span className="text-xs font-mono text-foreground ml-auto mr-1 font-semibold">
             {creditsPerOperation}
@@ -84,7 +84,7 @@ export const AngleSelector: React.FC<AngleSelectorProps> = ({
                 variant="ghost"
                 key={angle}
                 onClick={(e) => handleAngleClick(angle, e)}
-                className="px-3 py-2 text-xs font-medium text-neutral-300 bg-neutral-950/30 hover:bg-brand-cyan/20 hover:text-brand-cyan rounded-md border border-neutral-800 hover:border-neutral-600/30 transition-all duration-200 text-left"
+                className="px-3 py-2 text-xs font-medium text-neutral-300 bg-neutral-950/30 hover:bg-muted hover:text-foreground rounded-md border border-neutral-800 hover:border-neutral-600/30 transition-[color,background-color,border-color,opacity,transform,filter] duration-200 text-left"
                 title={`Change to ${angle}`}
               >
                 {angle}

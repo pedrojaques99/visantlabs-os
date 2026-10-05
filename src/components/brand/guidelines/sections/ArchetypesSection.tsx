@@ -144,7 +144,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
                     onClick={() =>
                       set(i, { role: arch.role === 'primary' ? 'secondary' : 'primary' })
                     }
-                    className="text-2xs font-mono uppercase px-1.5 py-0.5 rounded border border-white/10 text-neutral-600 hover:text-neutral-400 hover:border-white/20 transition-colors shrink-0"
+                    className="text-2xs px-1.5 py-0.5 rounded border border-border text-muted-foreground hover:text-foreground hover:border-ring transition-colors shrink-0"
                   >
                     {arch.role || 'primary'}
                   </button>
@@ -156,9 +156,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
                   placeholder="Objetivo..."
                 />
                 {preset && (
-                  <p className="text-2xs text-neutral-700 font-mono">
-                    {preset.valores.join(' · ')}
-                  </p>
+                  <p className="text-2xs text-muted-foreground">{preset.valores.join(', ')}</p>
                 )}
               </div>
               <Button

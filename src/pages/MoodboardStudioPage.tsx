@@ -312,10 +312,10 @@ function MoodboardStudio() {
 
       setCroppedImages(newCrops);
       setSelectedIds(new Set());
-      toast.success(t('moodboard.studio.detected_newcropslength_images'));
+      toast.success(t('moodboard.studio.detectedCount', { count: newCrops.length }));
       handleAISuggest(newCrops);
     } catch (err: any) {
-      toast.error(err.message || 'Failed to detect grid');
+      toast.error(err.message || t('moodboard.studio.detectFailed'));
     } finally {
       setIsAnalyzing(false);
     }
@@ -339,7 +339,7 @@ function MoodboardStudio() {
         )
       );
     } catch (err: any) {
-      toast.error(err.message || 'Upscale failed');
+      toast.error(err.message || t('moodboard.studio.upscaleFailed'));
       setCroppedImages((prev) => prev.map((c) => (c.id === id ? { ...c, isUpscaling: false } : c)));
     }
   };
@@ -362,7 +362,7 @@ function MoodboardStudio() {
         prev.map((c) => (c.id === id ? { ...c, videoUrl, isAnimating: false } : c))
       );
     } catch (err: any) {
-      toast.error(err.message || 'Video generation failed');
+      toast.error(err.message || t('moodboard.studio.videoFailed'));
       setCroppedImages((prev) => prev.map((c) => (c.id === id ? { ...c, isAnimating: false } : c)));
     }
   };
@@ -388,7 +388,7 @@ function MoodboardStudio() {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          promptText: `Reimagine em 4k — enhance quality, lighting and detail while preserving the original composition and style [${Date.now()}]`,
+          promptText: `Reimagine em 4k: enhance quality, lighting and detail while preserving the original composition and style [${Date.now()}]`,
           baseImage: { base64: pureBase64, mimeType },
           model,
           provider,
@@ -402,7 +402,7 @@ function MoodboardStudio() {
       if (!imageBase64 && !imageUrl) throw new Error('No image returned');
       const regeneratedUrl = imageUrl || `data:image/png;base64,${imageBase64}`;
       setCroppedImages((prev) => prev.map((c) => (c.id === id ? { ...c, regeneratedUrl } : c)));
-      toast.success(t('moodboard.studio.ai_regeneration_ready'), {
+      toast.success(t('moodboard.studio.regenReady'), {
         description: 'Accept or discard on the image card.',
         action: {
           label: 'Download',
@@ -442,7 +442,7 @@ function MoodboardStudio() {
       const videoUrl = await generateVideoFromFrames(start, end, prompt, allowSound);
       setVideoModalUrl(videoUrl);
     } catch (err: any) {
-      toast.error(err.message || 'Frame animation failed');
+      toast.error(err.message || t('moodboard.studio.videoFailed'));
     }
   };
 
@@ -459,7 +459,7 @@ function MoodboardStudio() {
       const videoUrl = await generateVideoFromMoodboard(referenceImages, prompt, allowSound);
       setVideoModalUrl(videoUrl);
     } catch (err: any) {
-      toast.error(err.message || 'Full video generation failed');
+      toast.error(err.message || t('moodboard.studio.videoFailed'));
     } finally {
       setIsCreatingFullVideo(false);
     }
@@ -599,9 +599,12 @@ function MoodboardStudio() {
   return (
     <PageShell
       pageId="moodboard-studio"
-      title="Moodboard Studio"
+      title={t('apps.moodboardStudio.name')}
       description={t('moodboard.studio.extract_upscale_and_animate_image')}
-      breadcrumb={[{ label: 'Apps', to: '/apps' }, { label: 'Moodboard Studio' }]}
+      breadcrumb={[
+        { label: t('apps.title'), to: '/apps' },
+        { label: t('apps.moodboardStudio.name') },
+      ]}
     >
       {/* Funil de marca (Fase 5) — mesma instanciação da ColorPalettePage. */}
       <BrandFunnelBanner toolId="moodboard" />
@@ -625,21 +628,21 @@ function MoodboardStudio() {
             exit={{ opacity: 0 }}
             className="flex flex-col items-center justify-center min-h-[60vh]"
           >
-            <motion.div
+            <button
+              type="button"
               onClick={() => fileInputRef.current?.click()}
-              whileHover={{ scale: 1.01 }}
               className="aspect-video w-full max-w-lg rounded-2xl border-2 border-dashed border-border hover:border-neutral-600 flex flex-col items-center justify-center gap-6 transition-colors duration-300 cursor-pointer bg-neutral-950/40 px-8 py-10"
             >
               <Upload size={28} className="text-neutral-600" strokeWidth={1} />
               <div className="text-center">
-                <p className="text-2xs uppercase tracking-[0.4em] font-medium text-neutral-500">
+                <p className="text-sm font-medium text-neutral-400">
                   {t('moodboard.studio.upload_or_drop_moodboard')}
                 </p>
-                <p className="text-2xs text-neutral-700 uppercase tracking-[0.2em] mt-2">
+                <p className="text-xs text-neutral-600 mt-2">
                   {t('moodboard.studio.single_image_for_ai_grid_detectio')}
                 </p>
               </div>
-            </motion.div>
+            </button>
           </motion.div>
         )}
 
@@ -660,6 +663,7 @@ function MoodboardStudio() {
               />
               <button
                 onClick={handleReset}
+                aria-label={t('common.close')}
                 className="absolute top-4 right-4 p-2 rounded-lg bg-black/50 text-neutral-400 hover:text-white transition-colors border border-white/10"
               >
                 <X size={16} />
@@ -673,7 +677,7 @@ function MoodboardStudio() {
                 ) : (
                   <Scissors size={15} className="mr-2" />
                 )}
-                {isAnalyzing ? 'Detecting Grid...' : 'Detect & Extract'}
+                {isAnalyzing ? t('moodboard.studio.detecting') : t('moodboard.studio.detect')}
               </Button>
               <Button
                 variant="secondary"
@@ -681,7 +685,7 @@ function MoodboardStudio() {
                 disabled={isCreatingFullVideo}
               >
                 <Video size={15} className="mr-2" />
-                Frame Animation
+                {t('moodboard.studio.frameAnimation')}
               </Button>
             </div>
           </motion.div>
@@ -692,7 +696,9 @@ function MoodboardStudio() {
           <motion.div key="grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <span className="text-sm font-bold text-white">{croppedImages.length} images</span>
+                <span className="text-sm font-bold text-white">
+                  {t('moodboard.studio.imageCount', { count: croppedImages.length })}
+                </span>
                 {croppedImages.length > 0 && (
                   <Button
                     variant="secondary"
@@ -705,7 +711,9 @@ function MoodboardStudio() {
                     ) : (
                       <Video size={13} className="mr-1.5" />
                     )}
-                    {isCreatingFullVideo ? 'Generating...' : 'Full Video (Veo 3)'}
+                    {isCreatingFullVideo
+                      ? t('moodboard.studio.generating')
+                      : t('moodboard.studio.fullVideo')}
                   </Button>
                 )}
               </div>
@@ -727,23 +735,25 @@ function MoodboardStudio() {
                   disabled={regeneratingIds.size > 0}
                 >
                   <Zap size={13} className="mr-1.5" />
-                  Regenerar todos
-                  <span className="ml-1.5 text-2xs opacity-60">
-                    {getCreditsRequired(batchRegenModel, undefined, batchRegenProvider) *
-                      croppedImages.filter((c) => c.url).length}
-                    cr
+                  {t('moodboard.studio.regenAll')}
+                  <span className="ml-1.5 text-2xs opacity-60 tabular-nums">
+                    {t('moodboard.studio.credits', {
+                      count:
+                        getCreditsRequired(batchRegenModel, undefined, batchRegenProvider) *
+                        croppedImages.filter((c) => c.url).length,
+                    })}
                   </span>
                 </Button>
                 <Button variant="secondary" size="sm" onClick={downloadAll}>
                   <Download size={13} className="mr-1.5" />
-                  Baixar todos
+                  {t('moodboard.studio.downloadAll')}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={handleReset}>
-                  Reset
+                  {t('common.reset')}
                 </Button>
                 <Button variant="secondary" size="sm" onClick={handleAddManualCard}>
                   <Plus size={13} className="mr-1" />
-                  Add
+                  {t('common.add')}
                 </Button>
               </div>
             </div>
@@ -804,8 +814,9 @@ function MoodboardStudio() {
             onClick={() => setFullscreenUrl(null)}
           >
             <button
-              className="absolute top-6 right-6 p-3 rounded-full bg-white text-black hover:scale-110 transition-transform"
+              className="absolute top-6 right-6 p-3 rounded-full bg-white text-black"
               onClick={() => setFullscreenUrl(null)}
+              aria-label={t('common.close')}
             >
               <X size={20} strokeWidth={1.5} />
             </button>
@@ -827,8 +838,9 @@ function MoodboardStudio() {
             onClick={() => setVideoModalUrl(null)}
           >
             <button
-              className="absolute top-6 right-6 p-3 rounded-full bg-white text-black hover:scale-110 transition-transform"
+              className="absolute top-6 right-6 p-3 rounded-full bg-white text-black"
               onClick={() => setVideoModalUrl(null)}
+              aria-label={t('common.close')}
             >
               <X size={20} strokeWidth={1.5} />
             </button>
@@ -892,8 +904,8 @@ function MoodboardStudio() {
             className="fixed bottom-24 right-6 z-40 bg-neutral-950/90 backdrop-blur-xl border border-border px-4 py-3 rounded-2xl flex items-center gap-3 shadow-2xl"
           >
             <GlitchLoader size={14} />
-            <span className="text-2xs font-bold uppercase tracking-widest text-neutral-400">
-              {t('moodboard.studio.ai_analyzing')}
+            <span className="text-xs font-medium text-neutral-400">
+              {t('moodboard.studio.analyzing')}
             </span>
           </motion.div>
         )}

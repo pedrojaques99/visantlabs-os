@@ -920,7 +920,7 @@ export const XProfileMock: React.FC<MockProps> = ({ tokens, className }) => {
           >
             {smartTrunc(tokens.description, 80) ||
               smartTrunc(tokens.tagline, 80) ||
-              `Assets by creatives → for creatives`}
+              `Assets by creatives, for creatives`}
           </p>
         </div>
       </div>
@@ -1094,7 +1094,7 @@ export const NotificationMock: React.FC<MockProps> = ({ tokens, className }) => 
               className="opacity-60 truncate"
               style={{ fontFamily: tokens.bodyFamily, fontSize: 'clamp(8px, 1.6cqi, 13px)' }}
             >
-              {smartTrunc(tokens.description, 50) || 'Assets by creatives → for creatives'}
+              {smartTrunc(tokens.description, 50) || 'Assets by creatives, for creatives'}
             </p>
           </div>
         </div>

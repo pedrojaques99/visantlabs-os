@@ -137,7 +137,7 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/60 backdrop-blur-sm">
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 w-full max-w-md mx-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold font-mono text-neutral-200">{label}</h3>
+          <h3 className="text-lg font-semibold text-neutral-200">{label}</h3>
           <Button variant="ghost" onClick={onClose}>
             <X size={20} />
           </Button>
@@ -147,8 +147,8 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
           {/* Preview do valor atual */}
           {!showCustomInput && defaultValue && (
             <div>
-              <label className="block text-xs text-neutral-400 mb-2 font-mono">Valor Atual</label>
-              <div className="p-3 bg-neutral-950/70 border border-neutral-800 rounded-md text-sm text-neutral-300 font-mono">
+              <label className="block text-xs text-neutral-400 mb-2">Valor Atual</label>
+              <div className="p-3 bg-neutral-950/70 border border-neutral-800 rounded-md text-sm text-neutral-300">
                 {defaultValue}
               </div>
             </div>
@@ -157,7 +157,7 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
           {/* Input para valor customizado */}
           {showCustomInput && (
             <div>
-              <label className="block text-xs text-neutral-400 mb-2 font-mono">
+              <label className="block text-xs text-neutral-400 mb-2">
                 {isCurrencyField ? 'Valor (R$)' : 'Valor'}
               </label>
               <FormInput
@@ -174,7 +174,7 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
                 autoFocus
               />
               {isCurrencyField && customValue && (
-                <p className="text-xs text-neutral-500 font-mono mt-1">
+                <p className="text-xs text-neutral-500 mt-1">
                   Preview: R$ {formatCurrencyDisplay(customValue)}
                 </p>
               )}
@@ -183,20 +183,16 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
 
           {/* Botões */}
           <div className="flex gap-3 pt-2">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="flex-1 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 font-mono text-sm transition-colors"
-            >
+            <Button variant="outline" onClick={onClose} className="flex-1">
               Cancelar
             </Button>
             <Button
               variant="brand"
               onClick={handleConfirm}
               disabled={showCustomInput && !customValue.trim()}
-              className="flex-1 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-md text-foreground font-mono text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1"
             >
-              OK - Posicionar no PDF
+              Posicionar no PDF
             </Button>
           </div>
         </div>

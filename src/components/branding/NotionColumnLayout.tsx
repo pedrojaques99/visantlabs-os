@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { Minus, Plus } from '@/lib/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from '@/hooks/useTranslation';
 import type { SectionLayout } from '@/types/types';
 import { Button } from '@/components/ui/button';
 
@@ -53,6 +54,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
   onSetColumnCount,
 }) => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const [draggedStepNumber, setDraggedStepNumber] = useState<number | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<number | null>(null);
   const [dragOverOrder, setDragOverOrder] = useState<number | null>(null);
@@ -373,15 +375,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
   const renderDropIndicator = (columnIndex: number, order: number) => {
     if (dragOverColumn !== columnIndex || dragOverOrder !== order) return null;
 
-    return (
-      <div
-        className="h-2 bg-brand-cyan rounded-md mx-2 my-1 transition-colors duration-300"
-        style={{
-          boxShadow: '0 0 12px rgba(82, 221, 235, 0.8), 0 0 20px rgba(82, 221, 235, 0.4)',
-          animation: 'pulse 1.2s ease-in-out infinite',
-        }}
-      />
-    );
+    return <div className="h-0.5 bg-ring rounded-full mx-2 my-1" />;
   };
 
   return (
@@ -397,30 +391,11 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
         {fullWidthSections.length === 0 && isDraggingToFullWidth && draggedStepNumber !== null && (
           <div
             data-drop-zone-order={0}
-            className="relative h-[10px] flex items-center bg-gradient-to-r from-neutral-600/15 via-neutral-600/20 to-neutral-600/15 rounded-xl border-2 border-neutral-600 border-dashed transition-colors duration-200"
+            className="relative h-[10px] flex items-center rounded-md bg-muted/40"
           >
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="flex items-center gap-3 w-full px-4">
-                <div
-                  className="h-1 flex-1 bg-brand-cyan rounded-md"
-                  style={{
-                    boxShadow: '0 0 12px rgba(82, 221, 235, 0.8), 0 0 20px rgba(82, 221, 235, 0.4)',
-                    animation: 'pulse 1.2s ease-in-out infinite',
-                  }}
-                />
-                <div className="px-4 py-2 bg-brand-cyan/20 border border-neutral-600/50 rounded-md text-foreground text-sm font-mono font-semibold whitespace-nowrap">
-                  DROP FOR FULL WIDTH
-                </div>
-                <div
-                  className="h-1 flex-1 bg-brand-cyan rounded-md"
-                  style={{
-                    boxShadow: '0 0 12px rgba(82, 221, 235, 0.8), 0 0 20px rgba(82, 221, 235, 0.4)',
-                    animation: 'pulse 1.2s ease-in-out infinite',
-                  }}
-                />
-              </div>
+              <div className="h-0.5 w-full mx-4 bg-ring rounded-full" />
             </div>
-            <div className="absolute inset-0 bg-brand-cyan/5 rounded-xl" />
           </div>
         )}
 
@@ -454,9 +429,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                   <div
                     data-drop-zone-order={index}
                     className={`relative transition-colors duration-200 h-[10px] flex items-center ${
-                      isDropTargetBefore
-                        ? 'bg-gradient-to-r from-neutral-600/15 via-neutral-600/20 to-neutral-600/15 rounded-xl border-2 border-neutral-600 border-dashed'
-                        : 'hover:bg-brand-cyan/5'
+                      isDropTargetBefore ? 'rounded-md bg-muted/40' : ''
                     }`}
                     onDragOver={handleContainerDragOver}
                     onDrop={handleContainerDrop}
@@ -464,45 +437,24 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                     {isDropTargetBefore && (
                       <>
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="flex items-center gap-3 w-full px-4">
-                            <div
-                              className="h-1 flex-1 bg-brand-cyan rounded-md"
-                              style={{
-                                boxShadow:
-                                  '0 0 12px rgba(82, 221, 235, 0.8), 0 0 20px rgba(82, 221, 235, 0.4)',
-                                animation: 'pulse 1.2s ease-in-out infinite',
-                              }}
-                            />
-                            <div className="px-3 py-1 bg-brand-cyan/20 border border-neutral-600/50 rounded-md text-foreground text-xs font-mono font-semibold whitespace-nowrap">
-                              DROP HERE
-                            </div>
-                            <div
-                              className="h-1 flex-1 bg-brand-cyan rounded-md"
-                              style={{
-                                boxShadow:
-                                  '0 0 12px rgba(82, 221, 235, 0.8), 0 0 20px rgba(82, 221, 235, 0.4)',
-                                animation: 'pulse 1.2s ease-in-out infinite',
-                              }}
-                            />
-                          </div>
+                          <div className="h-0.5 w-full mx-4 bg-ring rounded-full" />
                         </div>
-                        <div className="absolute inset-0 bg-brand-cyan/5 rounded-xl" />
                       </>
                     )}
                     {!isDropTargetBefore && isDraggingToFullWidth && draggedStepNumber !== null && (
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30">
-                        <div className="h-0.5 w-full bg-brand-cyan/30 rounded-md mx-4" />
+                        <div className="h-0.5 w-full bg-border rounded-full mx-4" />
                       </div>
                     )}
                   </div>
 
                   {/* Section card */}
                   <div
-                    className={`transition-all duration-300 ${
+                    className={`transition-opacity duration-200 ${
                       isDragged
-                        ? 'opacity-100 scale-95'
+                        ? 'opacity-50'
                         : isDropTargetBefore || isDropTargetAfter
-                          ? 'ring-2 ring-neutral-600/60 rounded-xl shadow-lg shadow-neutral-600/20'
+                          ? 'ring-2 ring-neutral-600/60 rounded-xl'
                           : ''
                     }`}
                   >
@@ -514,9 +466,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                     <div
                       data-drop-zone-order={index + 1}
                       className={`relative transition-colors duration-200 h-[10px] flex items-center ${
-                        isDropTargetAfter
-                          ? 'bg-gradient-to-r from-neutral-600/15 via-neutral-600/20 to-neutral-600/15 rounded-xl border-2 border-neutral-600 border-dashed'
-                          : 'hover:bg-brand-cyan/5'
+                        isDropTargetAfter ? 'rounded-md bg-muted/40' : ''
                       }`}
                       onDragOver={handleContainerDragOver}
                       onDrop={handleContainerDrop}
@@ -524,36 +474,15 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                       {isDropTargetAfter && (
                         <>
                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <div className="flex items-center gap-3 w-full px-4">
-                              <div
-                                className="h-1 flex-1 bg-brand-cyan rounded-md"
-                                style={{
-                                  boxShadow:
-                                    '0 0 12px rgba(82, 221, 235, 0.8), 0 0 20px rgba(82, 221, 235, 0.4)',
-                                  animation: 'pulse 1.2s ease-in-out infinite',
-                                }}
-                              />
-                              <div className="px-3 py-1 bg-brand-cyan/20 border border-neutral-600/50 rounded-md text-foreground text-xs font-mono font-semibold whitespace-nowrap">
-                                DROP HERE
-                              </div>
-                              <div
-                                className="h-1 flex-1 bg-brand-cyan rounded-md"
-                                style={{
-                                  boxShadow:
-                                    '0 0 12px rgba(82, 221, 235, 0.8), 0 0 20px rgba(82, 221, 235, 0.4)',
-                                  animation: 'pulse 1.2s ease-in-out infinite',
-                                }}
-                              />
-                            </div>
+                            <div className="h-0.5 w-full mx-4 bg-ring rounded-full" />
                           </div>
-                          <div className="absolute inset-0 bg-brand-cyan/5 rounded-xl" />
                         </>
                       )}
                       {!isDropTargetAfter &&
                         isDraggingToFullWidth &&
                         draggedStepNumber !== null && (
                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30">
-                            <div className="h-0.5 w-full bg-brand-cyan/30 rounded-md mx-4" />
+                            <div className="h-0.5 w-full bg-border rounded-full mx-4" />
                           </div>
                         )}
                     </div>
@@ -565,67 +494,36 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
         )}
       </div>
 
-      {/* Preview de drop full-width - só mostra se não houver sections full-width ou se estiver arrastando para área vazia */}
       {isDraggingToFullWidth && draggedStepNumber !== null && fullWidthSections.length === 0 && (
         <div
-          className="w-full border-2 border-dashed border-neutral-600 rounded-xl p-12 text-center bg-gradient-to-b from-neutral-600/10 to-neutral-600/5 transition-colors duration-300 relative overflow-hidden"
-          style={{
-            boxShadow: '0 0 30px rgba(82, 221, 235, 0.4), inset 0 0 20px rgba(82, 221, 235, 0.1)',
-            animation: 'fadeInScale 0.3s ease-out',
-          }}
+          className="w-full border-2 border-dashed border-neutral-600 rounded-xl p-12 text-center text-sm font-medium text-foreground"
           onDragOver={handleContainerDragOver}
           onDrop={handleContainerDrop}
         >
-          {/* Efeito de brilho animado */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-neutral-600/20 to-transparent animate-shimmer" />
-
-          <div
-            className={`relative z-10 ${
-              theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
-            }`}
-          >
-            <div className="text-foreground text-2xl font-semibold mb-3 flex items-center justify-center gap-2">
-              <div className="w-8 h-8 border-2 border-neutral-600 rounded flex items-center justify-center">
-                <div className="w-4 h-4 bg-brand-cyan rounded-md" />
-              </div>
-              Full Width Panel
-            </div>
-            <div className="text-sm opacity-80 font-mono">
-              Solte aqui para ocupar toda a largura
-            </div>
-            <div className="mt-4 text-xs opacity-60">
-              O panel ocupará 100% da largura disponível
-            </div>
-          </div>
+          {t('branding.layout.fullWidth')}
         </div>
       )}
 
       {/* Indicador visual quando arrastando sobre área de full-width existente */}
       {isDraggingToFullWidth && draggedStepNumber !== null && fullWidthSections.length > 0 && (
-        <div
-          className="w-full h-2 bg-gradient-to-r from-transparent via-neutral-600/50 to-transparent rounded-md transition-[color,background-color,border-color,opacity] duration-300"
-          style={{
-            boxShadow: '0 0 20px rgba(82, 221, 235, 0.6)',
-            animation: 'pulse 1.5s ease-in-out infinite',
-          }}
-        />
+        <div className="w-full h-0.5 bg-ring rounded-full" />
       )}
 
       {/* Column Control - Only show on desktop and when onSetColumnCount is provided */}
       {isDesktop && onSetColumnCount && (
         <div className="flex items-center justify-end mb-4">
-          <div className="flex items-center gap-1 bg-neutral-950/20 backdrop-blur-sm border border-neutral-800/40 rounded-md p-1">
+          <div className="flex items-center gap-1 border border-neutral-800/40 rounded-md p-1">
             <Button
               variant="ghost"
               onClick={() => handleColumnsChange(columns - 1)}
               disabled={columns <= 1}
               className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              aria-label="Decrease columns"
+              aria-label={t('common.decreaseColumns')}
             >
               <Minus size={14} />
             </Button>
             <div className="px-2">
-              <span className="text-xs font-mono text-neutral-400 min-w-[1.5rem] text-center">
+              <span className="text-xs tabular-nums text-neutral-400 min-w-[1.5rem] text-center">
                 {columns}
               </span>
             </div>
@@ -634,7 +532,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
               onClick={() => handleColumnsChange(columns + 1)}
               disabled={columns >= 3}
               className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              aria-label="Increase columns"
+              aria-label={t('common.increaseColumns')}
             >
               <Plus size={14} />
             </Button>
@@ -697,7 +595,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
             return (
               <div
                 key={stepNumber}
-                className={`transition-all duration-300 ${isDragged ? 'opacity-100 scale-95' : ''}`}
+                className={`transition-opacity duration-200 ${isDragged ? 'opacity-50' : ''}`}
                 style={{
                   // Mobile: sempre span 1 (1 coluna)
                   // Desktop: usa o span definido no layout
@@ -732,7 +630,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
               }}
               className={`flex flex-col gap-4 md:gap-6 min-h-[200px] relative rounded-md transition-colors duration-300 ${
                 isColumnHighlighted
-                  ? 'bg-brand-cyan/5 border-2 border-neutral-600/40'
+                  ? 'bg-muted/40 border-2 border-neutral-600/40'
                   : isEmptyColumn
                     ? 'bg-transparent'
                     : ''
@@ -745,7 +643,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
               }`}
             >
               {sectionsInColumn.length === 0 && dragOverColumn === columnIndex && (
-                <div className="border-2 border-dashed border-neutral-600/60 rounded-xl p-8 text-center text-neutral-400 text-sm bg-brand-cyan/5 transition-colors duration-300">
+                <div className="border-2 border-dashed border-neutral-600/60 rounded-xl p-8 text-center text-neutral-400 text-sm bg-muted/40 transition-colors duration-300">
                   {draggedStepNumber !== null ? 'Drop here' : ''}
                 </div>
               )}
@@ -784,7 +682,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                     <div
                       className={`relative -my-3 py-3 transition-colors duration-200 ${
                         dragOverColumn === columnIndex && dragOverOrder === index
-                          ? 'bg-brand-cyan/5 rounded-md'
+                          ? 'bg-muted/40 rounded-md'
                           : ''
                       }`}
                       onDragOver={(e) => {
@@ -824,11 +722,11 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                     {/* Section card */}
                     <div
                       draggable={false}
-                      className={`transition-all duration-300 ${
+                      className={`transition-opacity duration-200 ${
                         isDragged
-                          ? 'opacity-100 scale-95'
+                          ? 'opacity-50'
                           : isDropTarget
-                            ? 'ring-2 ring-neutral-600/60 rounded-xl shadow-lg shadow-neutral-600/20'
+                            ? 'ring-2 ring-neutral-600/60 rounded-xl'
                             : ''
                       }`}
                     >
@@ -840,7 +738,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                       <div
                         className={`relative -my-3 py-3 transition-[color,background-color,border-color,box-shadow] duration-200 ${
                           dragOverColumn === columnIndex && dragOverOrder === index + 1
-                            ? 'bg-brand-cyan/5 rounded-md'
+                            ? 'bg-muted/40 rounded-md'
                             : ''
                         }`}
                         onDragOver={(e) => {
@@ -872,7 +770,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                       : 'border-neutral-300 text-neutral-400'
                   }`}
                 >
-                  Empty column
+                  {t('branding.layout.emptyColumn')}
                 </div>
               )}
             </div>
@@ -882,11 +780,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
         {/* Preview de nova coluna - aparece quando arrasta próximo à borda direita */}
         {showNewColumnPreview && layout.columns < 3 && draggedStepNumber !== null && (
           <div
-            className="flex flex-col gap-4 md:gap-6 min-h-[200px] border-2 border-dashed border-neutral-600 rounded-xl bg-gradient-to-b from-neutral-600/10 to-neutral-600/5 transition-colors duration-300"
-            style={{
-              boxShadow: '0 0 30px rgba(82, 221, 235, 0.4), inset 0 0 20px rgba(82, 221, 235, 0.1)',
-              animation: 'fadeInScale 0.3s ease-out',
-            }}
+            className="flex flex-col gap-4 md:gap-6 min-h-[200px] border-2 border-dashed border-neutral-600 rounded-xl"
             onDragOver={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -928,17 +822,16 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
               }
             }}
             role="group"
-            aria-label="New column preview - drop here to create"
+            aria-label={t('branding.layout.newColumn')}
           >
             <div
-              className={`flex-1 flex items-center justify-center text-sm font-mono ${
+              className={`flex-1 flex items-center justify-center text-sm ${
                 theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
               }`}
             >
-              <div className="text-center space-y-3">
-                <div className="text-foreground text-2xl font-semibold">+</div>
-                <div className="text-sm font-medium text-foreground">Nova coluna</div>
-                <div className="text-xs opacity-70">Solte aqui para criar</div>
+              <div className="flex flex-col items-center gap-2 text-sm font-medium text-foreground">
+                <Plus size={20} />
+                {t('branding.layout.newColumn')}
               </div>
             </div>
           </div>

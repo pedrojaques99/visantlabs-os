@@ -109,7 +109,7 @@ export const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({ onEditAI }
     >
       <div className="flex items-center gap-1.5 pr-1">
         <ImageIcon size={12} className="text-neutral-400" />
-        <span className="text-2xs font-bold uppercase tracking-widest text-neutral-400">Fundo</span>
+        <span className="text-2xs font-bold text-neutral-400">Fundo</span>
       </div>
       <Divider />
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
@@ -223,7 +223,7 @@ export const CreativeToolbar: React.FC = () => {
             <select
               value={logoUrl || ''}
               onChange={(e) => updateLogo(e.target.value)}
-              className="bg-neutral-800 text-2xs font-bold uppercase tracking-widest text-neutral-300 px-3 py-1.5 rounded-md border border-white/10 outline-none focus:border-neutral-600 max-w-[120px] appearance-none cursor-pointer pr-7 transition-colors hover:bg-neutral-750"
+              className="bg-neutral-800 text-2xs font-bold text-neutral-300 px-3 py-1.5 rounded-md border border-white/10 outline-none focus:border-neutral-600 max-w-[120px] appearance-none cursor-pointer pr-7 transition-colors hover:bg-neutral-750"
             >
               <option disabled value="">
                 Trocar...
@@ -319,13 +319,13 @@ export const CreativeToolbar: React.FC = () => {
                   key={c.hex}
                   onClick={() => updateText({ color: c.hex })}
                   title={c.name || c.hex}
-                  className="w-4.5 h-4.5 rounded-full border border-white/20 hover:scale-110 transition-transform"
+                  className="w-4.5 h-4.5 rounded-full border border-white/20"
                   style={{ backgroundColor: c.hex, width: 18, height: 18 }}
                 />
               ))}
               <div className="relative w-[18px] h-[18px]">
                 <div
-                  className="w-[18px] h-[18px] rounded-full border border-white/20 cursor-pointer hover:scale-110 transition-transform"
+                  className="w-[18px] h-[18px] rounded-full border border-white/20 cursor-pointer"
                   style={{ backgroundColor: textData.color }}
                   title="Cor personalizada"
                 />
@@ -353,13 +353,13 @@ export const CreativeToolbar: React.FC = () => {
                 key={c.hex}
                 onClick={() => updateShape({ color: c.hex })}
                 title={c.name || c.hex}
-                className="rounded-full border border-white/20 hover:scale-110 transition-transform"
+                className="rounded-full border border-white/20"
                 style={{ backgroundColor: c.hex, width: 18, height: 18 }}
               />
             ))}
             <div className="relative w-[18px] h-[18px]">
               <div
-                className="w-[18px] h-[18px] rounded-full border border-white/20 cursor-pointer hover:scale-110 transition-transform"
+                className="w-[18px] h-[18px] rounded-full border border-white/20 cursor-pointer"
                 style={{ backgroundColor: shapeData.color }}
                 title="Cor personalizada"
               />
@@ -401,7 +401,7 @@ export const CreativeToolbar: React.FC = () => {
             />
             <div className="relative w-[18px] h-[18px]">
               <div
-                className="w-[18px] h-[18px] rounded-full border border-white/20 cursor-pointer hover:scale-110 transition-transform"
+                className="w-[18px] h-[18px] rounded-full border border-white/20 cursor-pointer"
                 style={{ backgroundColor: shapeData.strokeColor ?? '#ffffff' }}
                 title="Cor da borda"
               />

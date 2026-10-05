@@ -29,6 +29,7 @@ import {
   User as UserIcon,
 } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { useLayout } from '@/hooks/useLayout';
@@ -45,7 +46,6 @@ import {
   contextNavFor,
   isDrillInSection,
   sectionUsesRailSlot,
-  DRILL_TITLES,
   LIBRARY_ITEMS,
   type NavCtx,
 } from '@/config/navConfig';
@@ -117,7 +117,6 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
   const drillIn =
     isDrillInSection(activeSection) &&
     (contextItems.length > 0 || sectionUsesRailSlot(activeSection));
-  const drillTitleKey = activeSection ? DRILL_TITLES[activeSection] : undefined;
 
   // Active-state do L2 genérico por query (?tab no profile, ?type na comunidade):
   // sem query na URL, o 1º item daquele path é o default (Conta em /profile,
@@ -212,7 +211,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
             </div>
           ) : (
             <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
-              <div className="px-2.5 py-1 text-2xs font-mono uppercase tracking-wider text-sidebar-foreground/50">
+              <div className="px-2.5 py-1 text-xs text-sidebar-foreground/50">
                 {t('nav.library.title')}
               </div>
               <nav className="space-y-0.5">
@@ -265,7 +264,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
               </div>
             ) : (
               <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
-                <div className="px-2.5 py-1 text-2xs font-mono uppercase tracking-wider text-sidebar-foreground/50">
+                <div className="px-2.5 py-1 text-xs text-sidebar-foreground/50">
                   {t('nav.pinned')}
                 </div>
                 <nav className="space-y-0.5">
@@ -290,7 +289,10 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
                           onClick={() => unpin(p.type, p.id)}
                           aria-label={t('nav.unpin')}
                           title={t('nav.unpin')}
-                          className="absolute right-1 opacity-0 group-hover:opacity-100 p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-opacity"
+                          className={cn(
+                            'absolute right-1 p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted',
+                            hoverReveal
+                          )}
                         >
                           <X size={12} />
                         </button>
@@ -321,7 +323,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
               </div>
             ) : (
               <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
-                <div className="px-2.5 py-1 text-2xs font-mono uppercase tracking-wider text-sidebar-foreground/50">
+                <div className="px-2.5 py-1 text-xs text-sidebar-foreground/50">
                   {t('nav.recent')}
                 </div>
                 <nav className="space-y-0.5">
@@ -358,7 +360,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
                             'absolute right-1 p-1 rounded transition-opacity hover:bg-muted',
                             pinnedBrand
                               ? 'opacity-100 text-brand-cyan'
-                              : 'opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground'
+                              : cn(hoverReveal, 'text-muted-foreground hover:text-foreground')
                           )}
                         >
                           <Star size={12} className={pinnedBrand ? 'fill-brand-cyan' : ''} />
@@ -373,7 +375,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
           {/* Nível 2 — contexto da seção atual (escondido quando colapsado) */}
           {!collapsed && contextItems.length > 0 && (
             <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
-              <div className="px-2.5 py-1 text-2xs font-mono uppercase tracking-wider text-sidebar-foreground/50">
+              <div className="px-2.5 py-1 text-xs text-sidebar-foreground/50">
                 {t('nav.context')}
               </div>
               {/* Cap + scroll: seções com muitos itens (categorias da comunidade)
@@ -419,9 +421,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
               )}
             >
               <ArrowLeft size={16} className="shrink-0" />
-              {!collapsed && (
-                <span className="truncate font-medium">{t(drillTitleKey ?? 'nav.back')}</span>
-              )}
+              {/* Só "Voltar": o nome da seção já está no AppTopBar. */}
+              {!collapsed && <span className="truncate">{t('nav.back')}</span>}
             </button>
           </div>
           <nav
@@ -500,7 +501,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
           <AppShellLegalMenu openUp />
           <button
             onClick={toggleCollapsed}
-            aria-label="expand sidebar"
+            aria-label={t('nav.expand')}
             title={t('nav.expand')}
             className={iconBtn}
           >
@@ -536,7 +537,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
             {!isMobile && (
               <button
                 onClick={toggleCollapsed}
-                aria-label="collapse sidebar"
+                aria-label={t('nav.collapse')}
                 title={t('nav.collapse')}
                 className={iconBtn}
               >

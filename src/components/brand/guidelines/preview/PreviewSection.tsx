@@ -138,15 +138,11 @@ const BentoCard = ({
           <div className="p-1.5 rounded-md bg-white/[0.01] text-neutral-700 group-hover:text-neutral-500 transition-colors">
             <Icon size={12} strokeWidth={1.5} />
           </div>
-          <span className="text-3xs uppercase tracking-[0.2em] text-neutral-700 group-hover:text-neutral-600 transition-colors">
-            {format.label}
-          </span>
+          <span className="text-xs text-muted-foreground">{format.label}</span>
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-3xs font-mono text-neutral-800 transition-colors">
-            {dimsLabel(format.id)}
-          </span>
+          <span className="text-2xs font-mono text-muted-foreground">{dimsLabel(format.id)}</span>
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowExport(!showExport)}
@@ -160,7 +156,7 @@ const BentoCard = ({
                   <button
                     key={f.id}
                     onClick={() => handleExport(f.id)}
-                    className="w-full text-left px-3 py-1.5 text-3xs font-mono uppercase tracking-widest text-neutral-500 hover:text-white hover:bg-white/[0.06] transition-colors"
+                    className="w-full text-left px-3 py-1.5 text-2xs font-mono text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                   >
                     {f.label}
                   </button>
@@ -181,7 +177,7 @@ const BentoCard = ({
       >
         <div
           className={cn(
-            'w-full transition-transform duration-700 ease-out group-hover:scale-[1.012]',
+            'w-full',
             viewMode === 'bento' &&
               (format.id === 'stories' || format.id === 'poster' || format.id === 'appstore') &&
               'max-w-[280px]',
@@ -264,7 +260,7 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span 
         <div className="flex flex-col items-center justify-center gap-3 py-12 px-6 text-center">
           <p className="text-xs text-neutral-500 max-w-[320px] leading-relaxed">
             Adicione cores, tipografia e um logo pra visualizar como sua marca aparece em criativos
-            reais. Sem chamada de IA — render local com seus tokens.
+            reais. Sem chamada de IA, render local com seus tokens.
           </p>
         </div>
       ) : (

@@ -69,15 +69,15 @@ export const SupportModal: React.FC<SupportModalProps> = ({
 
   const validateForm = (): boolean => {
     if (!subject.trim()) {
-      toast.error(t('support.subjectRequired') || 'Subject is required');
+      toast.error(t('support.subjectRequired'));
       return false;
     }
     if (!message.trim()) {
-      toast.error(t('support.messageRequired') || 'Message is required');
+      toast.error(t('support.messageRequired'));
       return false;
     }
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      toast.error(t('support.invalidEmail') || 'Invalid email format');
+      toast.error(t('support.invalidEmail'));
       return false;
     }
     return true;
@@ -128,14 +128,14 @@ ${message}
         window.location.href = mailtoLink;
       }
 
-      toast.success(t('support.success') || 'Message sent successfully!', { duration: 3000 });
+      toast.success(t('support.success'), { duration: 3000 });
 
       setTimeout(() => {
         handleClose();
       }, 1000);
     } catch (error) {
       console.error('Error sending message:', error);
-      toast.error(t('support.error') || 'Error sending message');
+      toast.error(t('support.error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -145,7 +145,7 @@ ${message}
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-neutral-950/50 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-background/60 backdrop-blur-sm overflow-y-auto"
       onClick={handleClose}
     >
       <div
@@ -153,14 +153,12 @@ ${message}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-neutral-200">
-            {t('support.title') || 'Support / Report Bug'}
-          </h2>
+          <h2 className="text-lg font-semibold text-neutral-200">{t('support.title')}</h2>
           <Button
             variant="ghost"
             onClick={handleClose}
             className="text-neutral-500 hover:text-neutral-300 transition-colors"
-            aria-label="Close"
+            aria-label={t('common.close')}
           >
             <X size={20} />
           </Button>
@@ -169,126 +167,115 @@ ${message}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Contact Type Selection */}
           <div>
-            <label className="block text-xs font-mono text-neutral-400 mb-2">
-              {t('support.contactType') || 'Contact Type'}
+            <label className="block text-xs text-neutral-400 mb-2">
+              {t('support.contactType')}
             </label>
             <div className="flex gap-2">
               <Button
                 variant="ghost"
                 type="button"
                 onClick={() => setContactType('customerService')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-colors text-sm font-mono ${
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-colors text-sm ${
                   contactType === 'customerService'
                     ? 'bg-brand-cyan/20 border-neutral-600/50 text-brand-cyan'
                     : 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400 hover:border-neutral-600'
                 }`}
               >
                 <MessageCircle size={16} />
-                {t('support.customerService') || 'Customer Service'}
+                {t('support.customerService')}
               </Button>
               <Button
                 variant="ghost"
                 type="button"
                 onClick={() => setContactType('reportBug')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-colors text-sm font-mono ${
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-colors text-sm ${
                   contactType === 'reportBug'
                     ? 'bg-brand-cyan/20 border-neutral-600/50 text-brand-cyan'
                     : 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400 hover:border-neutral-600'
                 }`}
               >
                 <Bug size={16} />
-                {t('support.reportBug') || 'Report Bug'}
+                {t('support.reportBug')}
               </Button>
             </div>
           </div>
 
           {/* Name Field */}
           <div>
-            <label className="block text-xs font-mono text-neutral-400 mb-1">
-              {t('support.name') || 'Name'}{' '}
-              {!userName && (
-                <span className="text-neutral-600">({t('support.optional') || 'Optional'})</span>
-              )}
+            <label className="block text-xs text-neutral-400 mb-1">
+              {t('support.name')}{' '}
+              {!userName && <span className="text-neutral-600">({t('support.optional')})</span>}
             </label>
             <Input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono"
-              placeholder={t('support.namePlaceholder') || 'Your name'}
+              className="w-full"
             />
           </div>
 
           {/* Email Field */}
           <div>
-            <label className="block text-xs font-mono text-neutral-400 mb-1">
-              {t('support.email') || 'Email'}{' '}
-              {!userEmail && (
-                <span className="text-neutral-600">({t('support.optional') || 'Optional'})</span>
-              )}
+            <label className="block text-xs text-neutral-400 mb-1">
+              {t('support.email')}{' '}
+              {!userEmail && <span className="text-neutral-600">({t('support.optional')})</span>}
             </label>
             <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono"
-              placeholder={t('support.emailPlaceholder') || 'your@email.com'}
+              className="w-full"
+              placeholder={t('support.emailPlaceholder')}
             />
           </div>
 
           {/* Subject Field */}
           <div>
-            <label className="block text-xs font-mono text-neutral-400 mb-1">
-              {t('support.subject') || 'Subject'} <span className="text-destructive">*</span>
+            <label className="block text-xs text-neutral-400 mb-1">
+              {t('support.subject')} <span className="text-destructive">*</span>
             </label>
             <Input
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               required
-              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono"
-              placeholder={t('support.subjectPlaceholder') || 'Brief description'}
+              className="w-full"
             />
           </div>
 
           {/* Message Field */}
           <div>
-            <label className="block text-xs font-mono text-neutral-400 mb-1">
-              {t('support.message') || 'Message'} <span className="text-destructive">*</span>
+            <label className="block text-xs text-neutral-400 mb-1">
+              {t('support.message')} <span className="text-destructive">*</span>
             </label>
             <Textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               required
               rows={6}
-              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono resize-none"
-              placeholder={t('support.messagePlaceholder') || 'Describe your issue or question...'}
+              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 resize-none"
+              placeholder={t('support.messagePlaceholder')}
             />
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-800/50">
-            <Button
-              variant="ghost"
-              type="button"
-              onClick={handleClose}
-              className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors border border-neutral-700/50 hover:border-neutral-600 rounded-md"
-            >
-              {t('common.cancel') || 'Cancel'}
+            <Button variant="surface" type="button" onClick={handleClose} className="text-xs">
+              {t('common.cancel')}
             </Button>
             <Button
               variant="brand"
               type="submit"
               disabled={isSubmitting || !subject.trim() || !message.trim()}
-              className="flex items-center justify-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold rounded-md transition-colors duration-200"
+              className="text-xs font-semibold"
             >
               {isSubmitting ? (
                 <>
                   <GlitchLoader size={14} color="currentColor" />
-                  {t('support.sending') || 'Sending...'}
+                  {t('support.sending')}
                 </>
               ) : (
-                t('support.send') || 'Send'
+                t('support.send')
               )}
             </Button>
           </div>

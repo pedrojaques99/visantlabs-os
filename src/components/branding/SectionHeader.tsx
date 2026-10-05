@@ -43,7 +43,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
         </h3>
       </div>
       {!isCollapsed && !hasData && (
-        <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
+        <div className="flex flex-wrap items-center gap-3 text-xs">
           <div
             className={`flex items-center gap-1.5 ${
               theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
@@ -62,7 +62,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
                 }`}
               />
               <span className={theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}>
-                {t('branding.requires') || 'Requires'}:{' '}
+                {t('branding.requires')}:{' '}
                 <span
                   className={
                     missingDeps.length > 0

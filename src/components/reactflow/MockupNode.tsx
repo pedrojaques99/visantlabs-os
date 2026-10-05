@@ -16,6 +16,7 @@ import {
   Box,
   LayoutGrid,
   Diamond,
+  Check,
 } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -63,7 +64,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
   id,
   dragging,
 }) => {
-  const { t } = useTranslation();
+  const { t, tOr } = useTranslation();
 
   const { setNodes } = useReactFlow();
   const nodes = useNodes();
@@ -169,7 +170,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
   const categoryConfig =
     CATEGORY_CONFIG[presetCategory as keyof typeof CATEGORY_CONFIG] || CATEGORY_CONFIG.mockup;
   const CategoryIcon = categoryConfig.icon;
-  const categoryTitle = t(`communityPresets.tabs.${presetCategory}`) || categoryConfig.label;
+  const categoryTitle = tOr(`communityPresets.tabs.${presetCategory}`, categoryConfig.label);
 
   // Get base prompt from preset
   const basePrompt = selectedPreset?.prompt || '';
@@ -421,7 +422,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
     >
       {selected && !dragging && (
         <NodeResizer
-          color="brand-cyan"
+          color="var(--brand-cyan)"
           isVisible={selected}
           minWidth={280}
           minHeight={200}
@@ -436,12 +437,12 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
       <LabeledHandle
         type="target"
         position={Position.Left}
-        label={t('canvasNodes.mockupNode.imageInput') || 'Image'}
+        label={t('canvasNodes.mockupNode.imageInput')}
       />
       <LabeledHandle
         type="source"
         position={Position.Right}
-        label={t('canvasNodes.mockupNode.output') || 'Output'}
+        label={t('canvasNodes.mockupNode.output')}
       />
 
       {/* Header */}
@@ -567,7 +568,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
           />
         )}
         {connectedTextDirection && (
-          <div className="p-2 rounded border-node border-neutral-800 bg-brand-cyan/5">
+          <div className="p-2 rounded border-node border-neutral-800 bg-neutral-900/50">
             <div className="text-xs font-mono text-neutral-400 mb-1">
               {t('canvasNodes.mockupNode.textDirectionFromBrandCore')}
             </div>
@@ -844,22 +845,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
                       : 'bg-neutral-700 border-neutral-600'
                   )}
                 >
-                  {withHuman && (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-2.5 w-2.5 text-black"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={3}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  )}
+                  {withHuman && <Check size={10} strokeWidth={3} className="text-black" />}
                 </div>
                 <label className="ml-2 text-xs select-none cursor-pointer text-neutral-400 font-mono">
                   {t('canvasNodes.mockupNode.includeHumanInteraction')}
@@ -891,7 +877,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
 
       {/* Generate Button */}
       <Tooltip
-        content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${getCreditsRequired(
+        content={`${t('canvasNodes.promptNode.creditsRequired')} ${getCreditsRequired(
           model,
           resolution
         )} ${t('canvasNodes.promptNode.credits')}`}
@@ -910,7 +896,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
         >
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
-              <GlitchLoader size={14} color="brand-cyan" />
+              <GlitchLoader size={14} />
               <span>{t('canvasNodes.mockupNode.generating')}</span>
             </div>
           ) : (

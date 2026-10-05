@@ -104,7 +104,7 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(
       >
         {selected && !dragging && (
           <NodeResizer
-            color="brand-cyan"
+            color="var(--brand-cyan)"
             isVisible={selected}
             minWidth={240}
             minHeight={200}
@@ -190,9 +190,9 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(
 
         {/* Upscale Button */}
         <Tooltip
-          content={`${
-            t('canvasNodes.promptNode.creditsRequired') || 'Costs'
-          } ${creditsRequired} ${t('canvasNodes.promptNode.credits')}`}
+          content={`${t(
+            'canvasNodes.promptNode.creditsRequired'
+          )} ${creditsRequired} ${t('canvasNodes.promptNode.credits')}`}
           delay={500}
         >
           <NodeButton
@@ -210,14 +210,14 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(
           >
             {isLoading ? (
               <div className="flex items-center justify-center gap-2">
-                <GlitchLoader size={14} color="brand-cyan" />
-                <span>{t('canvasNodes.upscaleNode.upscaling') || 'Upscaling...'}</span>
+                <GlitchLoader size={14} />
+                <span>{t('canvasNodes.upscaleNode.upscaling')}</span>
               </div>
             ) : (
               <div className="flex items-center justify-center gap-2">
                 <Maximize2 size={14} className="group-hover/gen:rotate-12 transition-transform" />
                 <span className="font-semibold tracking-tight">
-                  {t('canvasNodes.upscaleNode.upscale') || 'Upscale'}
+                  {t('canvasNodes.upscaleNode.upscale')}
                 </span>
                 <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-2xs text-foreground/80">
                   <Diamond size={10} className="opacity-50 fill-current" />

@@ -4,6 +4,7 @@ import { SectionBlock } from '../SectionBlock';
 import { MediaKitGallery } from '@/components/brand/MediaKitGallery';
 import { Image as ImageIcon, Zap, Loader2, Search, X } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
+import { Thumb } from '@/components/ui/Thumb';
 import { Input } from '@/components/ui/input';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
@@ -76,11 +77,11 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
         toast.info('All assets are already analyzed.');
       } else if (res.analyzed === 0) {
         toast.error(
-          `Couldn’t analyze ${res.total} asset${res.total === 1 ? '' : 's'} — the AI service is temporarily unavailable. Try again shortly.`
+          `Couldn’t analyze ${res.total} asset${res.total === 1 ? '' : 's'}. The AI service is temporarily unavailable, try again shortly.`
         );
       } else if (res.failed > 0) {
         toast.warning(
-          `${res.analyzed} asset${res.analyzed === 1 ? '' : 's'} analyzed · ${res.failed} couldn’t be processed (try again to retry those).`
+          `${res.analyzed} asset${res.analyzed === 1 ? '' : 's'} analyzed, ${res.failed} couldn’t be processed. Run again to retry those.`
         );
       } else {
         toast.success(`${res.analyzed} asset${res.analyzed === 1 ? '' : 's'} analyzed by AI`);
@@ -125,7 +126,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
             size="icon-sm"
             onClick={analyzeAssets}
             disabled={analyzing}
-            title="Analyze assets with AI (vibe, aesthetic, theme, mood) — also powers semantic search below"
+            title="Analyze assets with AI"
             aria-label="Analyze assets with AI"
           >
             {analyzing ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
@@ -185,9 +186,9 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
                   <div
                     key={h.id}
                     className="relative aspect-square rounded-md overflow-hidden border border-neutral-800 group"
-                    title={`${h.label || ''} · ${Math.round(h.score * 100)}% match`}
+                    title={h.label || undefined}
                   >
-                    <img src={h.url} alt={h.label || ''} className="w-full h-full object-cover" />
+                    <Thumb src={h.url} alt={h.label || ''} className="w-full h-full object-cover" />
                     <span className="absolute bottom-1 right-1 px-1 rounded bg-black/70 text-2xs font-mono text-white/80">
                       {Math.round(h.score * 100)}%
                     </span>

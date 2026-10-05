@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, X, ImageIcon, Trash2, Sparkles } from '@/lib/ui/icons';
+import { Search, X, ImageIcon } from '@/lib/ui/icons';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { mockupApi, type Mockup } from '../services/mockupApi';
 import { FullScreenViewer } from '../components/FullScreenViewer';
@@ -11,7 +11,6 @@ import { useNavigate } from 'react-router-dom';
 import { SEO } from '../components/SEO';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Masonry } from '@/components/ui/Masonry';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useActiveBrand } from '@/contexts/ActiveBrandContext';
 import { useInAppShell } from '@/components/shell/InAppShellContext';
@@ -19,48 +18,54 @@ import { useRailSlot } from '@/components/shell/RailSlotContext';
 import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 import { ErrorState } from '@/components/ui/ErrorState';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Thumb } from '@/components/ui/Thumb';
-import { hoverReveal } from '@/lib/ui/hoverReveal';
 
 export const MyOutputsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [mockups, setMockups] = useState<Mockup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(false);
   const [selectedMockup, setSelectedMockup] = useState<Mockup | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTag, setFilterTag] = useState<string | null>(null);
   const inShell = useInAppShell();
   // Tag cloud vai pro rail (L2, SSoT igual /references) via RailSlot.
   const railSlot = useRailSlot()?.railSlot ?? null;
-  // Filtro opcional pela marca ativa — mockups guardam brandGuidelineId.
-  // Lista segue a marca ativa do BrandSwitcher (null = "Todas as marcas").
-  const { activeBrandId: brandId, setActiveBrand } = useActiveBrand();
+  // A lista segue a marca ativa do BrandSwitcher (null = "Todas as marcas"):
+  // nesta rota o switcher FILTRA (contrato do navConfig). Mockups guardam brandGuidelineId.
+  const { activeBrandId: brandId, setActiveBrand, allBrands } = useActiveBrand();
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const { isAuthenticated, subscriptionStatus } = useLayout();
+  const { isAuthenticated } = useLayout();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  // Ids cujo <img> já decodificou: a partir daí a altura natural manda e a
+  // proporção gravada deixa de reservar a caixa (ela é só o placeholder).
+  const [loadedIds, setLoadedIds] = useState<Set<string>>(() => new Set());
 
-  // Get all unique tags for filtering
+  // Tags da marca ativa (ou de todas), sem duplicata por caixa e sem nome de
+  // marca: o nome da marca já é o filtro do switcher, não uma tag.
   const allTags = useMemo(() => {
-    if (!Array.isArray(mockups) || mockups.length === 0) {
-      return [];
+    const brandNames = new Set(
+      allBrands
+        .flatMap((b) => [b.identity?.name, b.name])
+        .filter((n): n is string => !!n)
+        .map((n) => n.trim().toLowerCase())
+    );
+    const byKey = new Map<string, string>();
+    for (const m of mockups) {
+      if (brandId && m.brandGuidelineId !== brandId) continue;
+      for (const raw of [...(m.tags || []), ...(m.brandingTags || [])]) {
+        const label = String(raw).trim();
+        const key = label.toLowerCase();
+        if (!key || brandNames.has(key) || byKey.has(key)) continue;
+        byKey.set(key, label);
+      }
     }
-    try {
-      return Array.from(
-        new Set(
-          mockups.flatMap((m) => [
-            ...(Array.isArray(m.tags) ? m.tags : []),
-            ...(Array.isArray(m.brandingTags) ? m.brandingTags : []),
-          ])
-        )
-      ).sort();
-    } catch {
-      return [];
-    }
-  }, [mockups]);
+    return Array.from(byKey.values()).sort((a, b) => a.localeCompare(b));
+  }, [mockups, brandId, allBrands]);
 
-  // Search+tag match, independente da marca — base pras duas seções abaixo.
+  // Busca + tag. A marca entra logo abaixo.
   const searchTagMatches = useMemo(() => {
     if (!Array.isArray(mockups) || mockups.length === 0) {
       return [];
@@ -99,18 +104,10 @@ export const MyOutputsPage: React.FC = () => {
     }
   }, [mockups, searchQuery, filterTag]);
 
-  // Mockups da marca ativa (o grid principal).
+  // Mockups da marca ativa: o grid inteiro. Outras marcas não entram.
   const filteredMockups = useMemo(() => {
     if (!brandId) return searchTagMatches;
     return searchTagMatches.filter((m) => m.brandGuidelineId === brandId);
-  }, [searchTagMatches, brandId]);
-
-  // De outras marcas — só existe quando há marca ativa: mostra o resto do
-  // acervo (mesmo filtro de busca/tag) abaixo da seção da marca selecionada,
-  // em vez de deixar o usuário preso a um grid vazio.
-  const otherBrandMockups = useMemo(() => {
-    if (!brandId) return [];
-    return searchTagMatches.filter((m) => m.brandGuidelineId !== brandId);
   }, [searchTagMatches, brandId]);
 
   // Handler functions
@@ -136,7 +133,7 @@ export const MyOutputsPage: React.FC = () => {
         setDeletingId(null);
       }
     },
-    [isAuthenticated]
+    [isAuthenticated, t]
   );
 
   const handleToggleLike = useCallback(
@@ -182,18 +179,13 @@ export const MyOutputsPage: React.FC = () => {
 
       // Update in backend
       try {
-        console.log(`[Like] Updating like status for mockup ${mockup._id}: isLiked=${isLiked}`);
         await mockupApi.update(mockup._id, { isLiked: isLiked });
-        console.log(`[Like] Successfully updated like status for mockup ${mockup._id}`);
-        toast.success(isLiked ? 'Added to favorites' : 'Removed from favorites', {
-          duration: 2000,
-        });
+        toast.success(
+          isLiked ? t('myOutputs.addedToFavorites') : t('myOutputs.removedFromFavorites'),
+          { duration: 2000 }
+        );
       } catch (error: any) {
-        console.error('[Like] Failed to update like status:', {
-          mockupId: mockup._id,
-          isLiked,
-          error: error?.message || error,
-        });
+        console.error('[Like] Failed to update like status:', error?.message || error);
         // Revert local state on error
         setMockups((prev) =>
           prev.map((m) => (m._id === mockup._id ? { ...m, isLiked: !isLiked } : m))
@@ -201,10 +193,10 @@ export const MyOutputsPage: React.FC = () => {
         if (selectedMockup?._id === mockup._id) {
           setSelectedMockup((prev) => (prev ? { ...prev, isLiked: !isLiked } : null));
         }
-        toast.error('Failed to update like status. Please try again.', { duration: 3000 });
+        toast.error(t('myOutputs.likeFailed'), { duration: 3000 });
       }
     },
-    [isAuthenticated, selectedMockup]
+    [isAuthenticated, selectedMockup, t]
   );
 
   useEffect(() => {
@@ -220,7 +212,7 @@ export const MyOutputsPage: React.FC = () => {
 
   const loadMockups = async () => {
     setIsLoading(true);
-    setError(null);
+    setError(false);
     try {
       const data = await mockupApi.getAll();
 
@@ -264,11 +256,11 @@ export const MyOutputsPage: React.FC = () => {
       setMockups(sorted);
     } catch (err: any) {
       setMockups([]);
-      if (err?.message?.includes('Failed to fetch') || err?.status === 401) {
-        setError('Please sign in to view your outputs.');
+      // Sem sessão pede login; qualquer outra falha (rede, 5xx) é erro com retry.
+      if (err?.status === 401) {
         setShowAuthModal(true);
       } else {
-        setError('Failed to load your outputs. Please try again.');
+        setError(true);
       }
     } finally {
       setIsLoading(false);
@@ -279,12 +271,7 @@ export const MyOutputsPage: React.FC = () => {
     setSelectedMockup(null);
   };
 
-  // Ordem visual real do scroll (marca ativa + outras marcas abaixo) — o
-  // viewer navega por essa lista combinada, não só pela seção da marca.
-  const visibleMockups = useMemo(
-    () => [...filteredMockups, ...otherBrandMockups],
-    [filteredMockups, otherBrandMockups]
-  );
+  const visibleMockups = filteredMockups;
 
   // Get current index for navigation
   const getCurrentIndex = useCallback(() => {
@@ -313,88 +300,36 @@ export const MyOutputsPage: React.FC = () => {
     }
   }, [hasNext, visibleMockups, currentIndex]);
 
-  // Handler to navigate to MockupMachinePage with image for editing
-  const handleNavigateToMockupMachine = useCallback(
-    async (
-      mockup: Mockup,
-      operation?: 'zoom-in' | 'zoom-out' | 'new-angle' | 'new-background' | 're-imagine',
-      operationData?: string
-    ) => {
-      try {
-        // Store mockup data in localStorage for MockupMachinePage to pick up
-        const mockupData = {
-          imageBase64: mockup.imageBase64,
-          imageUrl: mockup.imageUrl,
-          prompt: mockup.prompt,
-          designType: mockup.designType,
-          tags: mockup.tags,
-          brandingTags: mockup.brandingTags,
-          aspectRatio: mockup.aspectRatio,
-          operation,
-          operationData, // For angle name or re-imagine prompt
-        };
-        localStorage.setItem('edit-mockup', JSON.stringify(mockupData));
-        navigate('/');
-      } catch (error) {
-        console.error('Failed to store mockup for editing:', error);
-      }
-    },
-    [navigate]
-  );
-
-  // Calculate credits needed (default to 1 credit for edit operations)
-  const creditsNeededForEdit = useMemo(() => {
-    // Default to 1 credit for edit operations (assuming HD model)
-    return 1;
-  }, []);
-
-  // Check if edit operations should be disabled
-  const isEditOperationDisabled = useMemo(() => {
-    if (isAuthenticated !== true) return true;
-    if (!subscriptionStatus) return true;
-    const totalCredits = subscriptionStatus.totalCredits || 0;
-    return totalCredits < creditsNeededForEdit;
-  }, [isAuthenticated, subscriptionStatus, creditsNeededForEdit]);
-
   const renderMockupTile = useCallback(
     (mockup: Mockup) => {
       const imageUrl = getImageUrl(mockup)!;
+      const key = mockup._id || imageUrl;
+      // Reserva a caixa com a proporção gravada até o decode: sem isso o tile
+      // mede 0px, o lazy não segura nada e as colunas 2 e 3 viram pilha de linhas.
+      const reserved = loadedIds.has(key) ? undefined : mockup.aspectRatio.replace(':', ' / ');
+      // Excluir fica no viewer, onde a decisão é tomada olhando a imagem.
       return (
-        <div className="group relative rounded-xl overflow-hidden bg-card ring-1 ring-border hover:ring-ring transition-all">
+        <div className="relative rounded-xl overflow-hidden bg-card ring-1 ring-border hover:ring-ring transition-shadow">
           <button
             type="button"
             onClick={() => handleView(mockup)}
-            className="block w-full cursor-pointer focus:outline-none"
+            className="block w-full cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label={t('apps.open')}
           >
             <Thumb
               src={imageUrl}
-              alt={mockup.prompt || 'Output'}
-              className="w-full h-auto block group-hover:scale-[1.02] transition-transform duration-300"
-              fallbackLabel={t('common.unavailable') || 'unavailable'}
+              alt={mockup.prompt || t('myOutputs.imageAlt')}
+              aspectRatio={reserved}
+              className="w-full h-auto block"
+              fallbackLabel={t('common.unavailable')}
               loading="lazy"
+              onLoad={() => setLoadedIds((prev) => (prev.has(key) ? prev : new Set(prev).add(key)))}
             />
           </button>
-          {isAuthenticated && mockup._id && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete(mockup._id!);
-              }}
-              disabled={deletingId === mockup._id}
-              className={cn(
-                hoverReveal,
-                'absolute top-2 right-2 p-2 bg-neutral-950/60 backdrop-blur-sm border border-destructive/30 rounded text-destructive hover:border-destructive/50 disabled:opacity-50 disabled:cursor-not-allowed z-10'
-              )}
-              aria-label={t('my.outputs.delete_output')}
-            >
-              <Trash2 size={14} />
-            </button>
-          )}
         </div>
       );
     },
-    [handleView, isAuthenticated, deletingId, handleDelete, t]
+    [handleView, loadedIds, t]
   );
 
   if (isLoading) {
@@ -432,7 +367,7 @@ export const MyOutputsPage: React.FC = () => {
           inShell ? 'min-h-full' : 'min-h-screen'
         )}
       >
-        {/* Busca in-page só (barra fina). A identidade (voltar + "Salvos" + contagem)
+        {/* Busca in-page só (barra fina). A identidade (voltar + "Meus Mockups" + contagem)
             vem do rail drill-in / AppSpine; a tag cloud virou L2 no rail (portal
             abaixo). Sem header próprio — evita o header morto. */}
         {mockups.length > 0 && (
@@ -443,10 +378,44 @@ export const MyOutputsPage: React.FC = () => {
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={`${t('common.search') || 'Buscar'}...`}
+                  placeholder={t('myOutputs.searchPlaceholder')}
                   className="h-9 max-w-md border-border bg-input pl-9 text-sm"
                 />
               </div>
+              {/* Tags = fallback do rail. Sem slot (rail recolhido, mobile ou fora
+                  do shell) aparecem sempre; com slot, só abaixo de md (mesma
+                  regra da AppsPage). */}
+              {allTags.length > 0 && (
+                <div
+                  className={cn(
+                    '-mx-4 md:-mx-6 mt-3 overflow-x-auto px-4 md:px-6 scrollbar-none',
+                    railSlot && 'md:hidden'
+                  )}
+                >
+                  <div className="flex w-max items-center gap-1.5">
+                    {allTags.map((tg) => {
+                      const active = tg === filterTag;
+                      return (
+                        <button
+                          type="button"
+                          key={tg}
+                          aria-pressed={active}
+                          onClick={() => setFilterTag(active ? null : tg)}
+                          className={cn(
+                            'inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs transition-colors',
+                            active
+                              ? 'border-border bg-muted text-foreground'
+                              : 'border-transparent bg-muted/40 text-muted-foreground hover:text-foreground'
+                          )}
+                        >
+                          {tg}
+                          {active && <X className="h-3 w-3" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -456,7 +425,7 @@ export const MyOutputsPage: React.FC = () => {
           allTags.length > 0 &&
           createPortal(
             <div className="px-2 pb-3">
-              <p className="px-1 pb-1.5 text-2xs text-sidebar-foreground/50">Tags</p>
+              <p className="px-1 pb-1.5 text-2xs text-muted-foreground">{t('myOutputs.tags')}</p>
               <div className="flex flex-wrap gap-1">
                 {filterTag && (
                   <button
@@ -473,7 +442,7 @@ export const MyOutputsPage: React.FC = () => {
                     <button
                       key={tg}
                       onClick={() => setFilterTag(tg)}
-                      className="rounded-md px-1.5 py-0.5 text-2xs text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                      className="rounded-md px-1.5 py-0.5 text-2xs text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
                     >
                       {tg}
                     </button>
@@ -485,78 +454,46 @@ export const MyOutputsPage: React.FC = () => {
 
         {/* Grid Gallery */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 pb-12 md:pb-16">
-          {/* Floating Column Control */}
           {error && mockups.length === 0 ? (
             <ErrorState onRetry={loadMockups} />
-          ) : filteredMockups.length === 0 && otherBrandMockups.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-              <ImageIcon size={64} className="text-muted-foreground mb-4" strokeWidth={1} />
-              <h2 className="text-lg font-semibold text-foreground mb-1.5">
-                {mockups.length === 0 ? 'No outputs yet' : 'No results'}
-              </h2>
-              <p className="text-sm text-muted-foreground mb-5">
-                {mockups.length === 0
-                  ? 'Generate your first mockup and it shows up here.'
-                  : 'Adjust your search or filter.'}
-              </p>
-              {mockups.length === 0 ? (
-                <Button
-                  onClick={() => navigate('/mockupmachine')}
-                  className="bg-brand-cyan text-black hover:bg-brand-cyan/80"
-                >
-                  <Sparkles size={16} className="mr-1.5" />
-                  Generate my first mockup
-                </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSearchQuery('');
-                    setFilterTag(null);
-                    // Também limpa a marca ativa → "Todas as marcas" (o filtro por
-                    // marca é o que costuma zerar o grid; clear tem que soltar ele).
-                    setActiveBrand(null);
-                  }}
-                  className="border-border text-foreground"
-                >
-                  Clear filters
-                </Button>
-              )}
-            </div>
+          ) : mockups.length === 0 ? (
+            <EmptyState
+              icon={ImageIcon}
+              title={t('myOutputs.emptyTitle')}
+              description={t('myOutputs.emptyDescription')}
+              actionLabel={t('myOutputs.emptyAction')}
+              onAction={() => navigate('/mockupmachine')}
+            />
+          ) : filteredMockups.length === 0 ? (
+            brandId && !searchQuery && !filterTag ? (
+              // Marca ativa sem mockup: vazio honesto, e a saída é soltar a marca.
+              <EmptyState
+                icon={ImageIcon}
+                title={t('myOutputs.noResultsForBrand')}
+                description={t('myOutputs.noResultsForBrandDescription')}
+                actionLabel={t('myOutputs.showAllBrands')}
+                onAction={() => setActiveBrand(null)}
+              />
+            ) : (
+              <EmptyState
+                icon={Search}
+                title={t('myOutputs.noResultsTitle')}
+                description={t('myOutputs.noResultsDescription')}
+                actionLabel={t('myOutputs.clearFilters')}
+                onAction={() => {
+                  setSearchQuery('');
+                  setFilterTag(null);
+                }}
+              />
+            )
           ) : (
-            <>
-              {filteredMockups.length > 0 ? (
-                // SSoT masonry (mesmo componente da /references) — colunas responsivas,
-                // sem reflow ao paginar, aspect-ratio natural (fim do aspect-square).
-                <Masonry
-                  items={filteredMockups.filter((m) => getImageUrl(m))}
-                  getKey={(m) => m._id || getImageUrl(m)}
-                  gap={12}
-                  renderItem={renderMockupTile}
-                />
-              ) : (
-                // Marca ativa sem resultado, mas há acervo de outras marcas logo
-                // abaixo — nota curta em vez do empty-state cheio (que já cobre
-                // o caso "nada em lugar nenhum" acima).
-                <div className="py-6 text-sm text-muted-foreground">
-                  {t('myOutputs.noResultsForBrand') || 'No results for this brand.'}
-                </div>
-              )}
-
-              {otherBrandMockups.length > 0 && (
-                <div className={filteredMockups.length > 0 ? 'mt-10' : undefined}>
-                  <h3 className="mb-3 text-sm font-medium text-foreground">
-                    {t('myOutputs.otherBrands') || 'From other brands'}
-                  </h3>
-                  <Masonry
-                    items={otherBrandMockups.filter((m) => getImageUrl(m))}
-                    getKey={(m) => m._id || getImageUrl(m)}
-                    gap={12}
-                    renderItem={renderMockupTile}
-                  />
-                </div>
-              )}
-            </>
+            // SSoT masonry (mesmo componente da /references): colunas responsivas.
+            <Masonry
+              items={filteredMockups}
+              getKey={(m) => m._id || getImageUrl(m)}
+              gap={12}
+              renderItem={renderMockupTile}
+            />
           )}
         </div>
 
@@ -592,20 +529,9 @@ export const MyOutputsPage: React.FC = () => {
               }
             }}
             isLiked={selectedMockup.isLiked || false}
-            // RCD: activate the re-imagine/credit loop from the library — the wiring
-            // below was built but hidden (showActions defaults to false).
+            // Só "abrir no editor": zoom/ângulo/re-imagine gravavam no localStorage
+            // e navegavam pra "/", onde ninguém lê. Sem consumidor, sem botão.
             showActions={isAuthenticated === true}
-            onZoomIn={() => handleNavigateToMockupMachine(selectedMockup, 'zoom-in')}
-            onZoomOut={() => handleNavigateToMockupMachine(selectedMockup, 'zoom-out')}
-            onNewAngle={(angle) =>
-              handleNavigateToMockupMachine(selectedMockup, 'new-angle', angle)
-            }
-            onNewBackground={() => handleNavigateToMockupMachine(selectedMockup, 'new-background')}
-            onReImagine={(reimaginePrompt) =>
-              handleNavigateToMockupMachine(selectedMockup, 're-imagine', reimaginePrompt)
-            }
-            editButtonsDisabled={isEditOperationDisabled}
-            creditsPerOperation={creditsNeededForEdit}
             onNavigatePrevious={hasPrevious ? handlePreviousMockup : undefined}
             onNavigateNext={hasNext ? handleNextMockup : undefined}
             hasPrevious={hasPrevious}

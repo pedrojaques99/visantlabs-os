@@ -14,10 +14,8 @@ export interface CollaborativeCanvasProps {
   // Core React Flow state
   nodes: Node<FlowNodeData>[];
   edges: Edge[];
-  setNodes: (
-    nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])
-  ) => void;
-  setEdges: (edges: Edge[] | ((prev: Edge[]) => Edge[])) => void;
+  setNodes: React.Dispatch<React.SetStateAction<Node<FlowNodeData>[]>>;
+  setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
 
   // Event handlers
   handleNodesChange: (changes: any[]) => void;

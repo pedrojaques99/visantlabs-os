@@ -42,7 +42,7 @@ export function ToolCallCard({ tc }: ToolCallCardProps) {
   const elapsed = useElapsed(tc.startedAt, tc.status === 'running');
   const statusColor =
     tc.status === 'running'
-      ? 'text-brand-cyan'
+      ? 'text-foreground'
       : tc.status === 'done'
         ? 'text-success'
         : 'text-destructive';

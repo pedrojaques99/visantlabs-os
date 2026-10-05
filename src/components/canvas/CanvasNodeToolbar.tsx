@@ -183,8 +183,8 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           {
             id: 'director',
             icon: <Compass className="w-3.5 h-3.5" />,
-            label: t('canvasToolbar.labels.director') || 'Director',
-            tooltip: t('canvasToolbar.addDirectorNode') || 'Add Director Node',
+            label: t('canvasToolbar.labels.director'),
+            tooltip: t('canvasToolbar.addDirectorNode'),
             onClick: onAddDirector,
           },
         ]
@@ -194,8 +194,8 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           {
             id: 'merge',
             icon: <Layers className="w-3.5 h-3.5" />,
-            label: t('canvasToolbar.labels.merge') || 'Merge',
-            tooltip: t('canvasToolbar.addMergeNode') || 'Add Merge Node',
+            label: t('canvasToolbar.labels.merge'),
+            tooltip: t('canvasToolbar.addMergeNode'),
             onClick: onAddMerge,
           },
         ]
@@ -205,8 +205,8 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           {
             id: 'upscale',
             icon: <Diamond className="w-3.5 h-3.5" />,
-            label: t('canvasToolbar.labels.upscale') || 'Upscale',
-            tooltip: t('canvasToolbar.addUpscaleNode') || 'Add Upscale Node',
+            label: t('canvasToolbar.labels.upscale'),
+            tooltip: t('canvasToolbar.addUpscaleNode'),
             onClick: onAddUpscale,
           },
         ]
@@ -257,7 +257,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
             id: 'chat',
             icon: <MessageSquare className="w-3.5 h-3.5" />,
             label: 'Chat',
-            tooltip: t('canvasToolbar.addChatNode') || 'Add Chat Node',
+            tooltip: t('canvasToolbar.addChatNode'),
             onClick: onAddChat,
           },
         ]
@@ -268,8 +268,8 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           {
             id: 'ambience',
             icon: <Target className="w-3.5 h-3.5" />,
-            label: t('canvasToolbar.labels.ambience') || 'Ambience',
-            tooltip: t('canvasToolbar.addAmbienceNode') || 'Add Ambience Node',
+            label: t('canvasToolbar.labels.ambience'),
+            tooltip: t('canvasToolbar.addAmbienceNode'),
             onClick: onAddAmbience,
           },
         ]
@@ -279,8 +279,8 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           {
             id: 'luminance',
             icon: <Grid3x3 className="w-3.5 h-3.5" />,
-            label: t('canvasToolbar.labels.luminance') || 'Luminance',
-            tooltip: t('canvasToolbar.addLuminanceNode') || 'Add Luminance Node',
+            label: t('canvasToolbar.labels.luminance'),
+            tooltip: t('canvasToolbar.addLuminanceNode'),
             onClick: onAddLuminance,
           },
         ]
@@ -290,8 +290,8 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           {
             id: 'texture',
             icon: <Dna className="w-3.5 h-3.5" />,
-            label: t('canvasToolbar.labels.texture') || 'Texture',
-            tooltip: t('canvasToolbar.addTextureNode') || 'Add Texture Node',
+            label: t('canvasToolbar.labels.texture'),
+            tooltip: t('canvasToolbar.addTextureNode'),
             onClick: onAddTexture,
           },
         ]
@@ -416,7 +416,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
         aria-label={tool.label}
       >
         <span className="flex-shrink-0">{tool.icon}</span>
-        <span className="text-2xs font-medium whitespace-nowrap tracking-wide">{tool.label}</span>
+        <span className="text-2xs font-medium whitespace-nowrap">{tool.label}</span>
       </button>
     </Tooltip>
   );
@@ -453,10 +453,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
             isLight ? 'border-neutral-300/30' : 'border-neutral-800/30'
           )}
         >
-          <h2
-            className="text-2xs font-semibold tracking-wide px-3 py-2"
-            style={{ color: textColors.primary }}
-          >
+          <h2 className="text-2xs font-semibold px-3 py-2" style={{ color: textColors.primary }}>
             {t('canvasToolbar.title')}
           </h2>
           <div className="flex items-center">
@@ -507,7 +504,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
                   onClick={() => setShowAdvanced(!showAdvanced)}
                   className={cn(
                     'w-full flex items-center gap-1.5 px-2 py-1 mt-1 rounded',
-                    'text-2xs font-medium uppercase tracking-widest',
+                    'text-2xs font-medium',
                     'transition-colors duration-100',
                     isLight ? 'hover:bg-neutral-200/40' : 'hover:bg-white/[0.04]'
                   )}
@@ -520,7 +517,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
                       showAdvanced && 'rotate-180'
                     )}
                   />
-                  {t('canvasToolbar.categories.advanced') || 'Advanced'}
+                  {t('canvasToolbar.categories.advanced')}
                   <span
                     className="ml-auto text-3xs tabular-nums"
                     style={{ color: textColors.subtle }}

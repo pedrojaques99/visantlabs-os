@@ -23,7 +23,7 @@ const getSiteUrl = (): string => {
   return '';
 };
 
-const defaultTitle = 'Visant Labs® | Tools for Designers';
+const defaultTitle = 'Visant Labs®: Tools for Designers';
 const defaultDescription = branding.description;
 
 /**
@@ -55,7 +55,7 @@ export const SEO: React.FC<SEOProps> = ({
   const currentLocale = locale || getCurrentLocale();
   const siteUrl = getSiteUrl();
   const currentUrl = url || `${siteUrl}${location.pathname}${location.search}`;
-  const fullTitle = title ? `${title} | Visant Labs®` : defaultTitle;
+  const fullTitle = title ? `${title}: Visant Labs®` : defaultTitle;
   const finalDescription = description || defaultDescription;
   const imageUrl = image.startsWith('http') ? image : `${siteUrl}${image}`;
   const finalUrl = url || currentUrl;

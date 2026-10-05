@@ -30,23 +30,19 @@ export const SignaturesSection: React.FC<SignaturesSectionProps> = ({ signatures
   return (
     <div className="space-y-4 mb-[30px]">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-neutral-200 font-mono">
-          {t('budget.signatures') || 'Assinaturas'}
-        </h3>
+        <h3 className="text-lg font-semibold text-neutral-200">{t('budget.signatures')}</h3>
         <Button
           variant="brand"
           onClick={addSignature}
-          className="p-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-foreground transition-colors duration-300 flex items-center justify-center"
-          title={t('budget.addSignature') || 'Adicionar Assinatura'}
+          className="p-2 bg-neutral-800/60 hover:bg-neutral-800 border border-neutral-700 rounded-xl text-foreground transition-colors duration-300 flex items-center justify-center"
+          title={t('budget.addSignature')}
         >
           <Plus size={18} />
         </Button>
       </div>
 
       {signatures.length === 0 ? (
-        <div className="text-center py-8 text-neutral-500 font-mono text-sm">
-          {t('budget.noSignatures') || 'Nenhuma assinatura adicionada ainda'}
-        </div>
+        <div className="text-center py-8 text-neutral-500 text-sm">{t('budget.noSignatures')}</div>
       ) : (
         <div className="space-y-4">
           {signatures.map((signature, index) => (
@@ -57,23 +53,23 @@ export const SignaturesSection: React.FC<SignaturesSectionProps> = ({ signatures
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs text-neutral-400 mb-1 font-mono">
-                      {t('budget.signatureName') || 'Nome'}
+                    <label className="block text-xs text-neutral-400 mb-1">
+                      {t('budget.signatureName')}
                     </label>
                     <FormInput
                       value={signature.name}
                       onChange={(e) => updateSignature(index, 'name', e.target.value)}
-                      placeholder={t('budget.placeholders.signatureName') || 'Nome do signatário'}
+                      placeholder={t('budget.placeholders.signatureName')}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-neutral-400 mb-1 font-mono">
-                      {t('budget.signatureRole') || 'Cargo'}
+                    <label className="block text-xs text-neutral-400 mb-1">
+                      {t('budget.signatureRole')}
                     </label>
                     <FormInput
                       value={signature.role}
                       onChange={(e) => updateSignature(index, 'role', e.target.value)}
-                      placeholder={t('budget.placeholders.signatureRole') || 'Cargo/Função'}
+                      placeholder={t('budget.placeholders.signatureRole')}
                     />
                   </div>
                 </div>
@@ -81,7 +77,7 @@ export const SignaturesSection: React.FC<SignaturesSectionProps> = ({ signatures
                   variant="ghost"
                   onClick={() => removeSignature(index)}
                   className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-                  title={t('budget.removeSignature') || 'Remover assinatura'}
+                  title={t('budget.removeSignature')}
                 >
                   <Trash2 size={18} />
                 </Button>

@@ -144,7 +144,7 @@ export const EffectsTab: React.FC = React.memo(() => {
             max={1}
             step={0.01}
             onChange={setBloomThreshold}
-            hint="Brightness cutoff — only pixels above this value glow"
+            hint="Pixels brighter than this glow"
           />
         </div>
       )}
@@ -276,7 +276,7 @@ export const EffectsTab: React.FC = React.memo(() => {
               max={0.1}
               step={0.001}
               onChange={setDofFocusDistance}
-              hint="Focus distance — objects at this depth stay sharp"
+              hint="Objects at this depth stay sharp"
             />
             <ScrubInput
               label="DOF Bokeh"
@@ -305,7 +305,7 @@ export const EffectsTab: React.FC = React.memo(() => {
             max={0.02}
             step={0.0005}
             onChange={setChromaticAberrationOffset}
-            hint="RGB color fringe at edges — simulates lens imperfection"
+            hint="RGB fringe at edges, like a real lens"
           />
         )}
 
@@ -324,7 +324,7 @@ export const EffectsTab: React.FC = React.memo(() => {
             max={2}
             step={0.05}
             onChange={setSsaoIntensity}
-            hint="Screen-space ambient occlusion — darkens crevices and contact areas"
+            hint="Ambient occlusion darkens crevices and contact areas"
           />
         )}
       </ToolPanelDisclosure>

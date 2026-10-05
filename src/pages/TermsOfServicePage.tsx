@@ -21,7 +21,7 @@ export const TermsOfServicePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background text-muted-foreground relative">
       <SEO
-        title="Terms of Service — Visant Labs"
+        title="Visant Labs Terms of Service"
         description="Visant Labs terms of service: accounts, subscriptions, acceptable use, intellectual property, disclaimers, and liability."
         keywords="terms of service, terms of use, Visant Labs"
       />
@@ -30,7 +30,7 @@ export const TermsOfServicePage: React.FC = () => {
         <Button
           variant="ghost"
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-mono text-sm"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
         >
           <ArrowLeft size={16} />
           {t('privacy.backToHome')}

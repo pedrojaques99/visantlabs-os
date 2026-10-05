@@ -35,7 +35,7 @@ export const PremiumGate: React.FC<PremiumGateProps> = ({ children, toolName }) 
           <Lock size={28} className="text-neutral-500" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-sm font-medium text-white uppercase tracking-wider">{toolName}</h2>
+          <h2 className="text-sm font-medium text-white">{toolName}</h2>
           <p className="text-xs text-neutral-500 leading-relaxed">{t('premium.upgradeRequired')}</p>
         </div>
         <div className="flex gap-3">
@@ -48,7 +48,7 @@ export const PremiumGate: React.FC<PremiumGateProps> = ({ children, toolName }) 
             {t('premium.seePlans')}
           </Button>
           <Button variant="ghost" size="sm" onClick={() => navigate('/apps')}>
-            {t('mobile.desktopOnly.backToApps') || 'Back'}
+            {t('mobile.desktopOnly.backToApps')}
           </Button>
         </div>
       </div>

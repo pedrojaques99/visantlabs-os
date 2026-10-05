@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { Upload, Gem } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Thumb } from '@/components/ui/Thumb';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { useUpdateGuideline } from '@/hooks/queries/useBrandGuidelines';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -96,18 +97,13 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
     }, t('cockpit.changeLogoDialog.primarySet'));
 
   const gridCls = 'grid grid-cols-3 sm:grid-cols-5 gap-2';
-  const labelCls = 'text-2xs font-mono uppercase tracking-widest text-neutral-600 mb-2';
+  const labelCls = 'text-xs font-medium text-muted-foreground mb-2';
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="bottom"
-        className="max-h-[85vh] overflow-y-auto bg-neutral-950 border-white/10"
-      >
+      <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle className="text-neutral-200">
-            {t('cockpit.changeLogoDialog.title')}
-          </SheetTitle>
+          <SheetTitle>{t('cockpit.changeLogoDialog.title')}</SheetTitle>
         </SheetHeader>
 
         <div
@@ -119,7 +115,7 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
           {/* Upload */}
           <button
             onClick={() => fileRef.current?.click()}
-            className="w-full h-24 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-white/15 text-neutral-500 hover:border-brand-cyan/40 hover:text-neutral-300 transition-colors"
+            className="w-full h-24 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border text-muted-foreground hover:border-ring hover:text-foreground transition-colors"
           >
             <Upload size={18} />
             <span className="text-xs">{t('cockpit.changeLogoDialog.upload')}</span>
@@ -151,13 +147,13 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
                         : t('cockpit.changeLogoDialog.setPrimary')
                     }
                     className={cn(
-                      'relative aspect-square rounded-md border p-2 flex items-center justify-center bg-white/[0.03] transition-colors',
+                      'relative aspect-square rounded-md border p-2 flex items-center justify-center bg-muted/40 transition-colors',
                       l.variant === 'primary'
                         ? 'border-brand-cyan/50 ring-1 ring-brand-cyan/20 cursor-default'
-                        : 'border-neutral-800 hover:border-white/20'
+                        : 'border-border hover:border-ring'
                     )}
                   >
-                    <img src={l.url} alt="" className="max-h-full max-w-full object-contain" />
+                    <Thumb src={l.url} alt="" className="max-h-full max-w-full object-contain" />
                     {l.variant === 'primary' && (
                       <Gem
                         size={11}
@@ -179,10 +175,15 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
                   <button
                     key={m.id}
                     onClick={() => onPickMedia(m.url)}
-                    title={m.label || 'Usar como logo'}
-                    className="aspect-square rounded-md border border-neutral-800 hover:border-brand-cyan/40 bg-white/[0.03] overflow-hidden transition-colors"
+                    title={m.label || t('cockpit.changeLogoDialog.setPrimary')}
+                    className="aspect-square rounded-md border border-border hover:border-ring bg-muted/40 overflow-hidden transition-colors"
                   >
-                    <img src={m.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    <Thumb
+                      src={m.url}
+                      alt=""
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                    />
                   </button>
                 ))}
               </div>

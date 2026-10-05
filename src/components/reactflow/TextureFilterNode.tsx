@@ -16,6 +16,9 @@ import { NodeSlider } from './shared/node-slider';
 import { TEXTURE_FILTER_RENDER_DEFAULTS } from '@/utils/textureFilter/renderTextureFilter';
 import { FILTER_PRESETS } from '@/stores/textureFilterStore';
 
+import { Thumb } from '@/components/ui/Thumb';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+
 const BLEND_MODES = [
   { id: 'multiply', label: 'Multiply' },
   { id: 'screen', label: 'Screen' },
@@ -125,7 +128,7 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
     >
       {selected && !dragging && (
         <NodeResizer
-          color="brand-cyan"
+          color="var(--brand-cyan)"
           isVisible={selected}
           minWidth={320}
           minHeight={200}
@@ -139,7 +142,7 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
 
       <NodeHeader
         icon={Layers}
-        title="Texture Filter"
+        title={t('canvasNodes.textureFilterNode.title')}
         selected={selected}
         isBrandActive={data.isBrandActive}
         onToggleBrand={(active) => data.onUpdateData?.(id, { isBrandActive: active })}
@@ -147,16 +150,19 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
 
       {/* Empty state */}
       {!hasConnectedImage && (
-        <div className="w-full px-4 py-3 bg-neutral-800/30 border-node border-neutral-700/30 rounded text-xs font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-50">
+        <div className="w-full px-4 py-3 bg-neutral-800/30 border-node border-neutral-700/30 rounded text-xs text-neutral-500 flex items-center justify-center gap-3 opacity-50">
           <ImageIcon size={14} />
-          Connect an image
+          {t('canvasNodes.textureFilterNode.connect')}
         </div>
       )}
 
       {/* Processing indicator */}
       {hasConnectedImage && !hasResult && isLoading && (
         <div className="mt-2 pt-2 border-t border-neutral-700/30 flex-1 min-h-[100px] flex items-center justify-center">
-          <NodePlaceholder isLoading={true} emptyMessage="Applying texture..." />
+          <NodePlaceholder
+            isLoading={true}
+            emptyMessage={t('canvasNodes.textureFilterNode.applying')}
+          />
         </div>
       )}
 
@@ -168,9 +174,9 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
           onMouseLeave={() => setIsHovered(false)}
         >
           <div className="relative w-full h-full flex items-center justify-center">
-            <img
+            <Thumb
               src={resultImageUrl}
-              alt="Texture filter result"
+              alt={t('canvasNodes.textureFilterNode.title')}
               className="w-full h-full object-contain rounded"
               onLoad={(e) => {
                 const img = e.target as HTMLImageElement;
@@ -186,16 +192,16 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
 
           {isLoading && (
             <div className="absolute top-3 left-3 z-20">
-              <div className="p-1.5 rounded-md bg-neutral-950/60 backdrop-blur-sm border-node border-neutral-800 shadow-lg">
-                <GlitchLoader size={14} color="brand-cyan" />
+              <div className="p-1.5 rounded-md bg-neutral-950/80 border-node border-neutral-800 shadow-lg">
+                <GlitchLoader size={14} />
               </div>
             </div>
           )}
 
           <div
             className={cn(
-              'absolute top-3 right-3 flex gap-1.5 transition-[color,background-color,border-color,box-shadow,opacity,filter] backdrop-blur-sm z-10',
-              selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              'absolute top-3 right-3 flex gap-1.5 transition-[color,background-color,border-color,box-shadow,opacity,filter] z-10',
+              selected ? 'opacity-100' : hoverReveal
             )}
           >
             {data.onViewFullscreen && (
@@ -214,7 +220,7 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
               variant="ghost"
               size="xs"
               onClick={handleDownload}
-              aria-label="Download result"
+              aria-label={t('common.download')}
             >
               <Download size={14} />
             </NodeButton>
@@ -234,7 +240,7 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
                   const preset = FILTER_PRESETS[name];
                   Object.entries(preset).forEach(([k, v]) => updateSetting(k, v));
                 }}
-                className="px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider border-node transition-colors bg-brand-cyan/5 text-brand-cyan/70 border-white/15 hover:bg-brand-cyan/15 hover:text-brand-cyan"
+                className="px-2 py-0.5 rounded text-2xs border-node transition-colors bg-neutral-800/50 text-neutral-400 border-neutral-700/30 hover:bg-neutral-800 hover:text-neutral-200"
               >
                 {name}
               </button>
@@ -246,13 +252,13 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
             <button
               onClick={() => updateSetting('maskMode', !maskMode)}
               className={cn(
-                'px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider border-node transition-colors',
+                'px-2 py-0.5 rounded text-2xs border-node transition-colors',
                 maskMode
-                  ? 'bg-brand-cyan/20 text-brand-cyan border-white/20'
+                  ? 'bg-white/10 text-white border-white/20'
                   : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
               )}
             >
-              Mask
+              {t('canvasNodes.textureFilterNode.mask')}
             </button>
             {!maskMode &&
               BLEND_MODES.map((m) => (
@@ -260,7 +266,7 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
                   key={m.id}
                   onClick={() => updateSetting('blendMode', m.id)}
                   className={cn(
-                    'px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider border-node transition-colors',
+                    'px-2 py-0.5 rounded text-2xs border-node transition-colors',
                     blendMode === m.id
                       ? 'bg-white/10 text-white border-white/20'
                       : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
@@ -272,7 +278,7 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
           </div>
 
           <NodeSlider
-            label="Opacity"
+            label={t('canvasNodes.textureFilterNode.opacity')}
             value={opacity}
             min={0}
             max={1}
@@ -280,7 +286,7 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
             onChange={(v) => updateSetting('opacity', v)}
           />
           <NodeSlider
-            label="Scale"
+            label={t('canvasNodes.textureFilterNode.scale')}
             value={scale}
             min={0.1}
             max={5}
@@ -288,7 +294,7 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
             onChange={(v) => updateSetting('scale', v)}
           />
           <NodeSlider
-            label="Rotation"
+            label={t('canvasNodes.textureFilterNode.rotation')}
             value={rotation}
             min={0}
             max={360}
@@ -301,13 +307,15 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
           <button
             onClick={() => updateSetting('tileMode', !tileMode)}
             className={cn(
-              'w-full px-2 py-1 rounded text-2xs font-mono uppercase tracking-wider border-node transition-colors text-center',
+              'w-full px-2 py-1 rounded text-2xs border-node transition-colors text-center',
               tileMode
                 ? 'bg-white/10 text-white border-white/20'
                 : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
             )}
           >
-            {tileMode ? 'Tile: On' : 'Tile: Off'}
+            {tileMode
+              ? t('canvasNodes.textureFilterNode.tileOn')
+              : t('canvasNodes.textureFilterNode.tileOff')}
           </button>
         </div>
       )}

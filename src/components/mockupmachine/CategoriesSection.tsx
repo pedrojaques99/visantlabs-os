@@ -111,7 +111,7 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
               <MicroTitle className="text-2xs truncate max-w-[200px]">
                 {hasSelection && <span className="text-foreground">{selectionSummary}</span>}
                 {hasSelection && poolTags.length > 0 && (
-                  <span className="text-neutral-500"> · </span>
+                  <span className="text-neutral-500">, </span>
                 )}
                 {poolTags.length > 0 && (
                   <span className="text-neutral-500">
@@ -123,7 +123,7 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />}
+          {isSurpriseMeMode && <Dices size={12} className="text-neutral-500" />}
           {isExpanded ? (
             <ChevronUp size={16} className="" />
           ) : (
@@ -438,15 +438,15 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
         <Button
           variant="ghost"
           onClick={() => setIsSectionExpanded(!isSectionExpanded)}
-          className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${
+          className={`w-full flex justify-between items-center text-left p-3 transition-[color,background-color,border-color,opacity,transform,filter] duration-200 ${
             theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
           }`}
         >
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
               <MicroTitle as="span" className="flex items-center gap-2">
-                {t('mockup.categories') || 'TIPOS DE MOCKUP'}
-                {isAnalyzing && <GlitchLoader size={16} color="#71717a" />}
+                {t('mockup.categories')}
+                {isAnalyzing && <GlitchLoader size={16} />}
               </MicroTitle>
               {!isSectionExpanded && hasSectionSelection && (
                 <span className="text-2xs truncate max-w-[200px]">
@@ -457,10 +457,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {hasAnyTagsSelected && (
-              <Tooltip
-                content={t('mockup.clearAllTags') || 'Limpar todas as tags selecionadas'}
-                position="top"
-              >
+              <Tooltip content={t('mockup.clearAllTags')} position="top">
                 <div
                   onClick={(e) => {
                     e.stopPropagation();
@@ -472,8 +469,8 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                       ? ' hover:text-neutral-300 hover:bg-neutral-800/50 border border-transparent hover:border-neutral-700/50'
                       : ' hover:text-neutral-700 hover:bg-neutral-100 border border-transparent hover:border-neutral-300'
                   )}
-                  title={t('mockup.clearAllTags') || 'Limpar todas as tags'}
-                  aria-label={t('mockup.clearAllTags') || 'Limpar todas as tags'}
+                  title={t('mockup.clearAllTags')}
+                  aria-label={t('mockup.clearAllTags')}
                 >
                   <X size={14} />
                 </div>
@@ -492,7 +489,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
             {/* Comment */}
             {!isComplete && (
               <div className="mb-2 px-1 mt-4">
-                <p className="text-2xs tracking-tighter">{t('mockup.categoriesComment')}</p>
+                <p className="text-2xs ">{t('mockup.categoriesComment')}</p>
               </div>
             )}
 
@@ -551,7 +548,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                         (hasFinalSelection ||
                           finalPoolTags.length > 0 ||
                           customSelectedTags.length > 0) && (
-                          <span className="text-2xs font-mono truncate max-w-[200px]">
+                          <span className="text-2xs truncate max-w-[200px]">
                             {hasFinalSelection && (
                               <span className="text-foreground">
                                 {finalSelectedTags.map((tag) => translateTag(tag)).join(', ')}
@@ -559,7 +556,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                             )}
                             {hasFinalSelection &&
                               (finalPoolTags.length > 0 || customSelectedTags.length > 0) && (
-                                <span className="text-neutral-500"> · </span>
+                                <span className="text-neutral-500">, </span>
                               )}
                             {finalPoolTags.length > 0 && (
                               <span className="text-neutral-500">
@@ -576,7 +573,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />}
+                    {isSurpriseMeMode && <Dices size={12} className="text-neutral-500" />}
                     {isFinalExpanded ? (
                       <ChevronUp size={16} className="text-neutral-500" />
                     ) : (
@@ -608,12 +605,12 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                     >
                       <div className="flex items-center gap-1.5 mb-2">
                         <MicroTitle as="span" className="text-2xs">
-                          {t('mockup.customCategories') || 'CUSTOM'}
+                          {t('mockup.customCategories')}
                         </MicroTitle>
                         {customSelectedTags.length > 0 && (
                           <span
                             className={cn(
-                              'text-2xs font-mono',
+                              'text-2xs ',
                               theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
                             )}
                           >
@@ -644,7 +641,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                             onBlur={handleBlur}
                             placeholder={t('mockup.customCategoryPlaceholder')}
                             className={cn(
-                              'px-3 py-1 text-2xs h-7 transition-colors duration-200 focus:ring-0 w-[160px] font-mono rounded-full border animate-in fade-in',
+                              'px-3 py-1 text-2xs h-7 transition-colors duration-200 focus:ring-0 w-[160px] rounded-full border animate-in fade-in',
                               theme === 'dark'
                                 ? 'bg-neutral-800/50 border-neutral-700/50 text-neutral-200 placeholder:text-neutral-500 focus:border-neutral-600'
                                 : 'bg-neutral-100 border-neutral-300 text-neutral-900 placeholder:text-neutral-500 focus:border-neutral-600'
@@ -653,7 +650,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                           />
                         ) : (
                           <Tag
-                            label={t('mockup.addCustomCategoryLabel') || 'Custom tag'}
+                            label={t('mockup.addCustomCategoryLabel')}
                             onToggle={handleCustomTagClick}
                             size="sm"
                             className="scale-90 group [&_svg]:group-hover:rotate-90 [&_svg]:transition-transform [&_svg]:duration-300"
@@ -664,12 +661,11 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                         {customSelectedTags.length === 0 && !isEditingCustom && (
                           <span
                             className={cn(
-                              'text-2xs font-mono ml-1',
+                              'text-2xs ml-1',
                               theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
                             )}
                           >
-                            {t('mockup.addCustomCategoryHint') ||
-                              'Adicione categorias personalizadas'}
+                            {t('mockup.addCustomCategoryHint')}
                           </span>
                         )}
                       </div>

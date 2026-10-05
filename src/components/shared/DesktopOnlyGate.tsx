@@ -24,7 +24,7 @@ export const DesktopOnlyGate: React.FC<DesktopOnlyGateProps> = ({ children, tool
           <Monitor size={28} className="text-neutral-500" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-sm font-medium text-white uppercase tracking-wider">{toolName}</h2>
+          <h2 className="text-sm font-medium text-white">{toolName}</h2>
           <p className="text-xs text-neutral-500 leading-relaxed">
             {t('mobile.desktopOnly.message')}
           </p>

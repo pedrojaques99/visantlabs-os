@@ -227,10 +227,9 @@ export const CurvesEditor = React.memo<CurvesEditorProps>(
           onPointerCancel={endDrag}
           onDoubleClick={onDoubleClick}
           onPointerLeave={() => dragRef.current === null && setHover(null)}
+          /* EXCEÇÃO ao ruido-scan/ensina-a-usar: duplo-clique pra remover ponto não tem afordância visível no canvas. */
+          title="Click to add a point, drag to move it, double-click to remove it"
         />
-        <span className="text-3xs uppercase tracking-widest text-neutral-600 select-none">
-          click add · drag move · dbl-click remove
-        </span>
       </div>
     );
   }

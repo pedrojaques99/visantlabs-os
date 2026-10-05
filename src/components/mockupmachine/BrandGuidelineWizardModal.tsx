@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Thumb } from '@/components/ui/Thumb';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Modal } from '../ui/Modal';
@@ -8,6 +9,7 @@ import { MediaKitGallery } from '../brand/MediaKitGallery';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { toast } from 'sonner';
 import { FileText, X, Image as ImageIcon, Figma } from '@/lib/ui/icons';
 import { validatePdfFile } from '@/utils/pdfUtils';
@@ -266,7 +268,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         if (!validation.isValid) toast.error(validation.error);
         else {
           setPdfFile(pdfs[0]);
-          toast.success(t('mockup.brandWizardPdfSelected') || 'PDF adicionado');
+          toast.success(t('mockup.brandWizardPdfSelected'));
         }
       }
 
@@ -281,7 +283,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
           let added = 0;
           for (const file of images) {
             if (nextFiles.length >= 10) {
-              toast.warning('Máximo de 10 imagens');
+              toast.warning(t('mockup.maxImages', { max: 10 }));
               break;
             }
             const error = validateFile(file, 'image');
@@ -298,11 +300,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         });
       }
 
-      rejected.forEach((f) =>
-        toast.error(
-          `${f.name}: ${t('mockup.brandWizardUnsupportedFile') || 'formato não suportado'}`
-        )
-      );
+      rejected.forEach((f) => toast.error(`${f.name}: ${t('mockup.brandWizardUnsupportedFile')}`));
     },
     [t]
   );
@@ -364,7 +362,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
       if (!canSubmit) return;
 
       setIsSubmitting(true);
-      setIngestPhase(t('mockup.brandWizardCreating') || 'Criando guideline…');
+      setIngestPhase(t('mockup.brandWizardCreating'));
       try {
         let workingId: string;
 
@@ -387,14 +385,11 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
           if (!isEditMode || (isEditMode && trimmedUrl !== oldUrl)) {
             setIsSubmitting(false);
             setIsIngesting(true);
-            setIngestPhase(t('mockup.brandWizardExtracting') || 'Extraindo do site…');
+            setIngestPhase(t('mockup.brandWizardExtracting'));
             // Validate before spending a round-trip + credit on a malformed URL.
             const validUrl = /^https?:\/\/.+\..+/i.test(trimmedUrl);
             if (!validUrl) {
-              toast.warning(
-                t('mockup.brandWizardInvalidUrl') ||
-                  'That doesn’t look like a valid website URL (e.g. https://acme.com) — skipped extraction.'
-              );
+              toast.warning(t('mockup.brandWizardInvalidUrl'));
             } else {
               try {
                 const result = await brandGuidelineApi.ingest(workingId, {
@@ -426,7 +421,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         if (pdfFile || imageFiles.length > 0) {
           setIsSubmitting(false);
           setIsIngesting(true);
-          setIngestPhase(t('mockup.brandWizardReadingFiles') || 'Lendo materiais…');
+          setIngestPhase(t('mockup.brandWizardReadingFiles'));
           try {
             const inputFiles: File[] = [];
             if (pdfFile) inputFiles.push(pdfFile);
@@ -450,7 +445,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         // Handle .fig file upload
         if (figFile) {
           setIsIngesting(true);
-          setIngestPhase(t('mockup.brandWizardReadingFig') || 'Lendo arquivo .fig…');
+          setIngestPhase(t('mockup.brandWizardReadingFig'));
           try {
             const form = new FormData();
             form.append('file', figFile);
@@ -474,7 +469,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         const trimmedFigma = figmaUrl.trim();
         if (trimmedFigma && isFigmaUrl(trimmedFigma)) {
           setIsIngesting(true);
-          setIngestPhase(t('mockup.brandWizardImportingFigma') || 'Importando tokens do Figma…');
+          setIngestPhase(t('mockup.brandWizardImportingFigma'));
           try {
             await brandGuidelineApi.linkFigmaFile(workingId, trimmedFigma);
             await brandGuidelineApi.importFromFigma(workingId, {
@@ -485,9 +480,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
           } catch (err: any) {
             if (err?.needsToken) {
               toast.warning(t('mockup.brandWizardFigmaNoToken'), {
-                description:
-                  t('mockup.brandWizardFigmaNoTokenHint') ||
-                  'Link a Figma token in Settings → Connected Apps, then try again.',
+                description: t('mockup.brandWizardFigmaNoTokenHint'),
               });
             } else {
               toast.warning(t('mockup.brandWizardFigmaLinkedTokensFailed'));
@@ -625,14 +618,14 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         onDragLeave={handleZoneDragLeave}
         onDrop={handleZoneDrop}
         className={cn(
-          'relative cursor-pointer rounded-xl border-2 border-dashed transition-all duration-200 px-6 flex flex-col items-center justify-center text-center select-none focus:outline-none',
+          'relative cursor-pointer rounded-xl border-2 border-dashed transition-[color,background-color,border-color,opacity,transform,filter] duration-200 px-6 flex flex-col items-center justify-center text-center select-none focus:outline-none',
           isDragging
             ? 'border-brand-cyan/60 bg-brand-cyan/[0.06] py-6'
             : 'border-white/10 hover:border-neutral-600 bg-neutral-900/40 py-8'
         )}
       >
         {isDragging ? (
-          <FlyingPaperLoader label={t('mockup.brandWizardDropActive') || 'Solte para adicionar'} />
+          <FlyingPaperLoader label={t('mockup.brandWizardDropActive')} />
         ) : (
           <>
             <div className="flex items-center gap-3 mb-3 text-neutral-500">
@@ -640,13 +633,8 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
               <ImageIcon size={20} />
               <Figma size={20} />
             </div>
-            <p className="text-sm text-neutral-300">
-              {t('mockup.brandWizardDropTitle') || 'Arraste seus arquivos aqui'}
-            </p>
-            <p className="text-xs text-neutral-600 mt-1">
-              {t('mockup.brandWizardDropHint') ||
-                'PDF, imagens ou .fig — ou clique para selecionar'}
-            </p>
+            <p className="text-sm text-neutral-300">{t('mockup.brandWizardDropTitle')}</p>
+            <p className="text-xs text-neutral-600 mt-1">{t('mockup.brandWizardDropHint')}</p>
           </>
         )}
       </div>
@@ -690,7 +678,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                   key={index}
                   className="relative group aspect-square rounded bg-neutral-900 border border-neutral-800 overflow-hidden"
                 >
-                  <img
+                  <Thumb
                     src={sanitizePreviewUrl(preview)}
                     alt=""
                     className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
@@ -698,7 +686,11 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
-                    className="absolute top-0.5 right-0.5 p-1 bg-black/60 rounded-full text-white/40 hover:text-white opacity-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity]"
+                    className={cn(
+                      hoverReveal,
+                      'absolute top-0.5 right-0.5 p-1 bg-black/60 rounded-full text-white/60 hover:text-white'
+                    )}
+                    aria-label={t('mockup.removeImage')}
                   >
                     <X size={10} />
                   </button>
@@ -716,7 +708,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
           className="flex items-center gap-1.5 text-xs text-neutral-400"
         >
           <Figma size={12} className="shrink-0" />
-          {t('mockup.brandWizardFigmaLabel') || 'Figma (opcional)'}
+          {t('mockup.brandWizardFigmaLabel')}
         </label>
         <Input
           id="brand-wizard-figma"
@@ -738,10 +730,10 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
 
   // ── Footer (depends on mode / step / processing) ──────────────────────────
   const ghostBtn =
-    'px-4 py-2 text-sm font-mono text-neutral-400 hover:text-white transition-colors disabled:opacity-50';
+    'px-4 py-2 text-sm text-neutral-400 hover:text-white transition-colors disabled:opacity-50';
   const brandBtn = (enabled: boolean) =>
     cn(
-      'flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md font-mono text-sm font-bold transition-[color,background-color,border-color,opacity]',
+      'flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md text-sm font-bold transition-[color,background-color,border-color,opacity]',
       enabled
         ? 'bg-brand-cyan text-black hover:bg-brand-cyan/80'
         : 'bg-neutral-800/60 text-neutral-600 cursor-not-allowed'
@@ -768,7 +760,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
           disabled={!trimmedName}
           className={brandBtn(!!trimmedName)}
         >
-          <span>{t('mockup.brandWizardNext') || 'Próximo'}</span>
+          <span>{t('mockup.brandWizardNext')}</span>
         </Button>
       </div>
     );
@@ -787,7 +779,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
           onClick={isWizard ? () => setStep(1) : handleClose}
           className={ghostBtn}
         >
-          {isWizard ? t('mockup.brandWizardBack') || 'Voltar' : t('common.cancel')}
+          {isWizard ? t('mockup.brandWizardBack') : t('common.cancel')}
         </Button>
         <Button
           variant="brand"
@@ -826,8 +818,8 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
           {isWizard && (
             <div className="flex items-center gap-2 mb-5">
               {[
-                { n: 1, label: t('mockup.brandWizardStepIdentity') || 'Identidade' },
-                { n: 2, label: t('mockup.brandWizardStepMaterials') || 'Materiais' },
+                { n: 1, label: t('mockup.brandWizardStepIdentity') },
+                { n: 2, label: t('mockup.brandWizardStepMaterials') },
               ].map((s, i) => (
                 <React.Fragment key={s.n}>
                   <button
@@ -835,9 +827,9 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                     onClick={() => s.n === 1 && setStep(1)}
                     disabled={s.n === 2 && !trimmedName}
                     className={cn(
-                      'flex items-center gap-2 text-xs font-mono transition-colors',
+                      'flex items-center gap-2 text-xs transition-colors',
                       step === s.n
-                        ? 'text-brand-cyan'
+                        ? 'text-foreground'
                         : 'text-neutral-600 hover:text-neutral-400 disabled:hover:text-neutral-600'
                     )}
                   >
@@ -845,7 +837,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                       className={cn(
                         'flex items-center justify-center w-5 h-5 rounded-full border text-2xs transition-colors',
                         step === s.n
-                          ? 'border-brand-cyan text-brand-cyan'
+                          ? 'border-brand-cyan text-foreground'
                           : 'border-neutral-700 text-neutral-600'
                       )}
                     >

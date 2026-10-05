@@ -214,7 +214,7 @@ export function AdminProductAnalytics() {
             icon: Activity,
           },
           {
-            label: 'Signup → Paying',
+            label: 'Signup to Paying',
             value: `${
               data.funnel.steps[0].count > 0
                 ? Math.round((data.funnel.steps[3].count / data.funnel.steps[0].count) * 1000) / 10
@@ -252,9 +252,9 @@ export function AdminProductAnalytics() {
                 <span className="text-neutral-300">{FUNNEL_LABELS[step.key] || step.key}</span>
                 <span className="font-mono text-neutral-500">
                   {step.count.toLocaleString()}
-                  <span className="text-neutral-600"> · {step.pctOfPrev}% of prev</span>
+                  <span className="text-neutral-600">, {step.pctOfPrev}% of prev</span>
                   {step.medianHoursToStep != null && (
-                    <span className="text-neutral-600"> · ~{step.medianHoursToStep}h</span>
+                    <span className="text-neutral-600">, ~{step.medianHoursToStep}h median</span>
                   )}
                 </span>
               </div>
@@ -529,7 +529,7 @@ export function AdminProductAnalytics() {
                           className="ml-1 text-neutral-600"
                           title={u.features.map((f) => FEATURE_LABELS[f] || f).join(', ')}
                         >
-                          ({u.features.map((f) => (FEATURE_LABELS[f] || f).slice(0, 2)).join('·')})
+                          ({u.features.map((f) => (FEATURE_LABELS[f] || f).slice(0, 2)).join(', ')})
                         </span>
                       </TableCell>
                     </TableRow>

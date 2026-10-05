@@ -293,7 +293,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       toast.success('Copied to clipboard');
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error('Failed to copy — try downloading instead');
+      toast.error('Failed to copy. Try downloading instead.');
     }
   }, [canvasRef, format, scale, getShaderSettings, onExportScaled]);
 
@@ -362,7 +362,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       toast.success(`Exported ${fmt.label} (${dims})`);
       onClose();
     } catch {
-      toast.error('Export failed — try again');
+      toast.error('Export failed. Try again.');
     } finally {
       setIsExporting(false);
     }
@@ -397,7 +397,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   return (
     <div
       className={cn(
-        'fixed inset-0 z-50 flex items-center justify-center bg-black/60 transition-all duration-200',
+        'fixed inset-0 z-50 flex items-center justify-center bg-black/60 transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-200',
         isVisible ? 'backdrop-blur-sm opacity-100' : 'backdrop-blur-none opacity-0'
       )}
       onClick={onClose}
@@ -405,16 +405,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       <div
         ref={modalRef}
         className={cn(
-          'w-[400px] bg-neutral-950 border border-neutral-800/50 rounded-xl shadow-2xl transition-all duration-200',
+          'w-[400px] bg-neutral-950 border border-neutral-800/50 rounded-xl shadow-2xl transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-200',
           isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         )}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800/50">
-          <span className="text-2xs uppercase tracking-widest text-neutral-300">
-            Export Settings
-          </span>
+          <span className="text-2xs text-neutral-300">Export Settings</span>
           <button
             onClick={onClose}
             className="text-neutral-600 hover:text-neutral-300 transition-colors p-1"
@@ -473,14 +471,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
           {/* Format */}
           <div className="space-y-2">
-            <span className="text-2xs uppercase tracking-widest text-neutral-500">Format</span>
+            <span className="text-2xs text-neutral-500">Format</span>
             <div className="flex flex-wrap gap-1.5">
               {FORMAT_OPTIONS.map((f) => (
                 <button
                   key={f.id}
                   onClick={() => setFormat(f.id)}
                   className={cn(
-                    'flex-1 min-w-[52px] py-2 rounded-md text-2xs font-mono uppercase tracking-wider transition-colors duration-200 border',
+                    'flex-1 min-w-[52px] py-2 rounded-md text-2xs font-mono transition-colors duration-200 border',
                     format === f.id
                       ? 'bg-white/10 text-white border-white/20'
                       : 'bg-neutral-900/50 text-neutral-400 border-neutral-800/50 hover:bg-neutral-800/30'
@@ -506,7 +504,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                     if (p.duration) onVideoDurationChange?.(p.duration);
                     if (p.fps) onVideoFpsChange?.(p.fps);
                   }}
-                  className="px-2.5 py-1 rounded-full text-2xs font-mono text-neutral-500 bg-neutral-900/50 border border-neutral-800/50 hover:bg-white/5 hover:text-neutral-300 transition-colors"
+                  className="px-2.5 py-1 rounded-full text-2xs text-neutral-500 bg-neutral-900/50 border border-neutral-800/50 hover:bg-white/5 hover:text-neutral-300 transition-colors"
                 >
                   {p.label}
                 </button>
@@ -532,14 +530,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           {/* Scale (raster image only) */}
           {!isVideoFormat && format !== 'svg' && (
             <div className="space-y-2">
-              <span className="text-2xs uppercase tracking-widest text-neutral-500">Scale</span>
+              <span className="text-2xs text-neutral-500">Scale</span>
               <div className="flex gap-1.5">
                 {SCALE_OPTIONS.map((s) => (
                   <button
                     key={s.id}
                     onClick={() => setScale(s.id)}
                     className={cn(
-                      'flex-1 py-2 rounded-md text-2xs font-mono uppercase tracking-wider transition-colors duration-200 border',
+                      'flex-1 py-2 rounded-md text-2xs font-mono transition-colors duration-200 border',
                       scale === s.id
                         ? 'bg-white/10 text-white border-white/20'
                         : 'bg-neutral-900/50 text-neutral-400 border-neutral-800/50 hover:bg-neutral-800/30'
@@ -567,9 +565,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   hint="Video duration in seconds"
                 />
                 <div className="space-y-1">
-                  <span className="text-2xs font-mono text-neutral-500 uppercase tracking-widest">
-                    FPS
-                  </span>
+                  <span className="text-xs text-neutral-500">FPS</span>
                   <div className="flex gap-1">
                     {FPS_OPTIONS.map((f) => (
                       <button

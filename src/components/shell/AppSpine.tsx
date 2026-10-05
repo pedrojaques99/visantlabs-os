@@ -18,7 +18,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Menu, ChevronLeft } from '@/lib/ui/icons';
-import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
@@ -108,11 +107,11 @@ export const AppSpine: React.FC<AppSpineProps> = ({ variant, onMenuClick, title 
 
   return (
     <header className={outerClass}>
-      <div className="flex items-center gap-2 text-sm min-w-0">
+      <div className="flex items-center gap-2 text-sm min-w-0 flex-1">
         {isFocus ? (
           <button
             onClick={() => navigate(backTo)}
-            aria-label={t('nav.back') || 'Voltar'}
+            aria-label={t('nav.back')}
             className="flex items-center gap-1 -ml-1.5 p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <ChevronLeft size={18} />
@@ -121,7 +120,7 @@ export const AppSpine: React.FC<AppSpineProps> = ({ variant, onMenuClick, title 
         ) : (
           <button
             onClick={onMenuClick}
-            aria-label="open navigation"
+            aria-label={t('nav.openNavigation')}
             className="md:hidden p-1.5 -ml-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <Menu size={18} />
@@ -130,20 +129,15 @@ export const AppSpine: React.FC<AppSpineProps> = ({ variant, onMenuClick, title 
 
         {showBrand && brand && (
           <>
-            {/* O chip de marca carrega um piso de 160px (o `Select` interno do
-                BrandSwitcher) que, a 390px, sozinho consome TODO o espaço livre
-                da espinha — sem ele nenhuma ação de página caberia no mobile.
-                Aqui (e só aqui: os outros usos do componente seguem intactos) o
-                chip vira elástico abaixo de `sm` — largura natural de 172px que
-                encolhe até 104px quando a página injeta ações. O nome da marca
-                trunca; avatar e chevron continuam inteiros. De `sm` pra cima
-                nada muda. */}
+            {/* O chip de marca é elástico em TODA largura: a largura natural é a
+                do nome, com teto, e ele encolhe até 104px quando a página injeta
+                ações. O nome trunca; avatar e chevron continuam inteiros. */}
             <BrandSwitcher
               brands={brand.brands}
               value={brand.activeBrandId}
               onChange={brand.setActiveBrand}
               showAllOption={showAllBrandsOption}
-              className="max-sm:w-[10.75rem] max-sm:min-w-[6.5rem] max-sm:overflow-hidden max-sm:[&_button]:min-w-0"
+              className="min-w-[6.5rem] max-w-[14rem] shrink overflow-hidden"
             />
             {(isFocus ? focusTitle : sectionLabel) && (
               <span className="text-muted-foreground/40">/</span>
@@ -156,19 +150,17 @@ export const AppSpine: React.FC<AppSpineProps> = ({ variant, onMenuClick, title 
           : sectionLabel && <span className="text-muted-foreground truncate">{sectionLabel}</span>}
       </div>
 
-      {/* Sem `min-w-0` de propósito: o grupo direito nunca deve encolher abaixo
-          do próprio conteúdo — senão a página "para de estourar" só porque os
-          botões foram recortados por baixo da pílula de créditos, e a métrica
-          passa a mentir. Quem cede espaço no mobile é o grupo esquerdo, cujo
-          conteúdo (chip de marca + label da seção) é truncável. */}
-      <div className="flex items-center gap-2">
+      {/* O grupo direito nunca encolhe abaixo do próprio conteúdo (senão os
+          botões seriam recortados por baixo da pílula de créditos). Quem cede
+          espaço é o grupo esquerdo, cujo conteúdo é truncável. */}
+      <div className="flex shrink-0 items-center gap-2">
         {/* Buscar / Cmd+K — descobribilidade do palette global */}
         <button
           onClick={openCommandPalette}
-          title={`${t('command.goto')} · Ctrl+K`}
+          title={`${t('command.goto')} (Ctrl+K)`}
           className="hidden sm:flex items-center gap-2 rounded-md border border-border bg-muted/40 px-2.5 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
         >
-          <span className="hidden md:inline">{t('command.search') || 'Buscar'}</span>
+          <span className="hidden md:inline">{t('command.search')}</span>
           <kbd className="hidden md:inline font-mono text-2xs px-1 py-0.5 rounded bg-background/60 border border-border">
             ⌘K
           </kbd>
@@ -177,30 +169,23 @@ export const AppSpine: React.FC<AppSpineProps> = ({ variant, onMenuClick, title 
         {/* Ações da página/editor — teleportadas via portal (ShellHeaderContext).
             Universal: funciona no dashboard E no editor (F1 montou o provider
             também no branch focus do Layout). */}
-        <div
-          ref={shellHeader?.setActionsSlot}
-          className={cn('flex max-sm:shrink-0 items-center gap-2 empty:hidden')}
-        />
+        <div ref={shellHeader?.setActionsSlot} className="flex items-center gap-2 empty:hidden" />
 
         {isFree && (
           <button
             onClick={() => onSubscriptionModalOpen()}
-            className="max-sm:shrink-0 rounded-md px-3 py-1 text-xs font-medium bg-brand-cyan/90 text-black hover:bg-brand-cyan transition-colors"
+            className="rounded-md px-3 py-1 text-xs font-medium bg-brand-cyan/90 text-black hover:bg-brand-cyan transition-colors"
           >
             {t('nav.upgrade')}
           </button>
         )}
 
-        {/* Conta + créditos (SSoT) — vivem no topo, ao lado do Buscar ⌘K.
-            `max-sm:shrink-0`: superfície de dinheiro não encolhe nem recorta no
-            mobile; quem cede espaço é o chip de marca. */}
-        <div className="max-sm:shrink-0">
-          <AuthButton
-            subscriptionStatus={subscriptionStatus}
-            onCreditsClick={() => onCreditPackagesModalOpen()}
-            menuPlacement="bottom"
-          />
-        </div>
+        {/* Conta + créditos (SSoT) — vivem no topo, ao lado do Buscar ⌘K. */}
+        <AuthButton
+          subscriptionStatus={subscriptionStatus}
+          onCreditsClick={() => onCreditPackagesModalOpen()}
+          menuPlacement="bottom"
+        />
       </div>
     </header>
   );

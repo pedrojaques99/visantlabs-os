@@ -341,16 +341,13 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         const imageData = await fileToBase64(file);
         const b64 = imageData?.base64?.trim();
         if (!b64) {
-          toast.error(t('upload.couldNotProcess') || 'Failed to process image', { duration: 3000 });
+          toast.error(t('upload.couldNotProcess'), { duration: 3000 });
           return;
         }
         nodeData.onUpload(id, b64);
-        toast.success(
-          t('canvasNodes.imageNode.uploadImageTitle') || 'Image uploaded successfully!',
-          { duration: 2000 }
-        );
+        toast.success(t('canvasNodes.imageNode.uploadImageTitle'), { duration: 2000 });
       } catch (error: any) {
-        toast.error(error?.message || t('upload.couldNotProcess') || 'Failed to process image', {
+        toast.error(error?.message || t('upload.couldNotProcess'), {
           duration: 5000,
         });
         console.error('Failed to process image:', error);
@@ -394,7 +391,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     >
       {selected && !dragging && (
         <NodeResizer
-          color="brand-cyan"
+          color="var(--brand-cyan)"
           isVisible={selected}
           minWidth={NODE_LAYOUT.MIN_WIDTH}
           minHeight={NODE_LAYOUT.MIN_HEIGHT}
@@ -416,7 +413,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             <img
               ref={imageRef}
               src={imageUrl}
-              alt={t('mockup.input') || 'Mockup'}
+              alt={t('mockup.input')}
               className={cn(
                 'object-contain w-full h-full node-image',
                 dragging ? 'node-image-dragging' : 'node-image-static'
@@ -448,7 +445,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   />
                   <NodeButton onClick={handleUploadClick}>
                     <UploadCloud size={14} />
-                    {t('canvasNodes.imageNode.uploadImageTitle') || 'Upload Image'}
+                    {t('canvasNodes.imageNode.uploadImageTitle')}
                   </NodeButton>
                 </>
               ) : undefined
@@ -467,8 +464,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         <div
           className={cn(
             'px-[var(--node-padding)] py-[var(--node-gap)] border-t border-neutral-700/30 flex-shrink-0',
-            imageUrl &&
-              'absolute bottom-0 left-0 w-full z-10 bg-neutral-950/60 backdrop-blur-md border-t-0'
+            imageUrl && 'absolute bottom-0 left-0 w-full z-10 bg-neutral-950/80 border-t-0'
           )}
         >
           <div className="flex items-center justify-between mb-[var(--node-gap-sm)]">
@@ -482,7 +478,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   e.stopPropagation();
                   handleCopyDescription();
                 }}
-                className="p-1 !text-brand-cyan !bg-brand-cyan/10 hover:!bg-brand-cyan/20"
+                className="p-1"
                 title={t('canvasNodes.imageNode.copyDescription')}
                 onMouseDown={(e) => e.stopPropagation()}
               >

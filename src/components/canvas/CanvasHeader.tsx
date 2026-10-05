@@ -202,7 +202,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
               onClick={() => navigate('/canvas')}
               className="hover:text-neutral-300 transition-colors truncate cursor-pointer"
             >
-              {t('canvas.title') || 'Canvas'}
+              {t('canvas.title')}
             </Button>
             <ChevronRight size={12} className="flex-shrink-0 text-neutral-600" />
             {isEditing ? (
@@ -242,7 +242,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
                 headerButtonClass,
                 'hover:border-neutral-600/30 flex-shrink-0 disabled:opacity-30'
               )}
-              title={t('mockup.openMediaLibrary') || 'Brand Media Library'}
+              title={t('mockup.openMediaLibrary')}
             >
               <Palette size={16} />
             </Button>
@@ -285,7 +285,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
               variant="ghost"
               onClick={() => onLoadWorkflow?.()}
               className={headerButtonClass}
-              title={t('workflows.loadWorkflow') || 'Load Workflow'}
+              title={t('workflows.loadWorkflow')}
             >
               <FolderOpen size={16} />
             </Button>
@@ -295,7 +295,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
               variant="ghost"
               onClick={() => onSaveWorkflow?.()}
               className={headerButtonClass}
-              title={t('workflows.saveWorkflow') || 'Save as Workflow'}
+              title={t('workflows.saveWorkflow')}
             >
               <Save size={16} />
             </Button>
@@ -303,14 +303,10 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
 
           {/* Download Dropdown */}
           <div className="relative group">
-            <Button
-              variant="ghost"
-              className={headerButtonClass}
-              title={t('canvas.download') || 'Download'}
-            >
+            <Button variant="ghost" className={headerButtonClass} title={t('canvas.download')}>
               <Download size={16} />
             </Button>
-            <div className="absolute right-0 top-full mt-1 w-52 bg-neutral-900 border border-neutral-800/50 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-[color,background-color,border-color,box-shadow,opacity,filter] z-[60] py-1 backdrop-blur-md">
+            <div className="absolute right-0 top-full mt-1 w-52 bg-neutral-900 border border-neutral-800/50 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-opacity z-[60] py-1">
               <Button
                 variant="ghost"
                 onClick={() => onExportImagesRequest?.()}

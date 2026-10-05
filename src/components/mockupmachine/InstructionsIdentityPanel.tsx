@@ -63,7 +63,7 @@ export const InstructionsIdentityPanel: React.FC = () => {
               {t('mockup.instructions')} / {t('mockup.identity')}
             </MicroTitle>
             {!isInstructionsExpanded && (instructions || ctxSelectedBrandingTags.length > 0) && (
-              <span className="text-2xs font-mono truncate max-w-[200px]">
+              <span className="text-2xs truncate max-w-[200px]">
                 {instructions && (
                   <span className="text-foreground">
                     {instructions.substring(0, 30)}
@@ -71,7 +71,7 @@ export const InstructionsIdentityPanel: React.FC = () => {
                   </span>
                 )}
                 {instructions && ctxSelectedBrandingTags.length > 0 && (
-                  <span className="text-neutral-500"> · </span>
+                  <span className="text-neutral-500">, </span>
                 )}
                 {ctxSelectedBrandingTags.length > 0 && (
                   <span className="text-neutral-500">
@@ -103,18 +103,12 @@ export const InstructionsIdentityPanel: React.FC = () => {
                 className={cn(
                   'p-1 rounded-md transition-colors',
                   theme === 'dark'
-                    ? 'hover:bg-white/10 text-neutral-500 hover:text-brand-cyan'
-                    : 'hover:bg-neutral-100 text-neutral-500 hover:text-brand-cyan'
+                    ? 'hover:bg-white/10 text-neutral-500 hover:text-foreground'
+                    : 'hover:bg-neutral-100 text-neutral-500 hover:text-foreground'
                 )}
-                title={
-                  isInstructionsTextareaVisible
-                    ? t('mockup.collapse') || 'Collapse'
-                    : t('mockup.expand') || 'Expand'
-                }
+                title={isInstructionsTextareaVisible ? t('mockup.collapse') : t('mockup.expand')}
                 aria-label={
-                  isInstructionsTextareaVisible
-                    ? t('mockup.collapse') || 'Collapse'
-                    : t('mockup.expand') || 'Expand'
+                  isInstructionsTextareaVisible ? t('mockup.collapse') : t('mockup.expand')
                 }
               >
                 {isInstructionsTextareaVisible ? <X size={12} /> : <Plus size={12} />}
@@ -126,7 +120,7 @@ export const InstructionsIdentityPanel: React.FC = () => {
                 onChange={(e) => setInstructions(e.target.value)}
                 placeholder={t('mockup.instructionsPlaceholder')}
                 className={cn(
-                  'w-full min-h-[80px] p-3 text-sm font-mono rounded-md focus:outline-none resize-none shadow-inner animate-fade-in',
+                  'w-full min-h-[80px] p-3 text-sm rounded-md focus:outline-none resize-none shadow-inner animate-fade-in',
                   theme === 'dark'
                     ? 'bg-black/10 border border-white/10 text-white placeholder:text-neutral-700 focus:border-neutral-600'
                     : 'bg-white border border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-600'
@@ -160,8 +154,8 @@ export const InstructionsIdentityPanel: React.FC = () => {
                 className={cn(
                   'p-1 rounded-md transition-colors',
                   theme === 'dark'
-                    ? 'hover:bg-white/10 text-neutral-500 hover:text-brand-cyan'
-                    : 'hover:bg-neutral-100 text-neutral-500 hover:text-brand-cyan'
+                    ? 'hover:bg-white/10 text-neutral-500 hover:text-foreground'
+                    : 'hover:bg-neutral-100 text-neutral-500 hover:text-foreground'
                 )}
                 title={t('mockup.customTagLabel')}
                 aria-label={t('mockup.customTagLabel')}

@@ -72,12 +72,14 @@ export const BrandCollaboratorAvatars: React.FC = () => {
           );
         })}
         {collaboratorCount > 4 && (
-          <div className="w-6 h-6 rounded-full ring-2 ring-black bg-neutral-700 flex items-center justify-center text-2xs font-mono text-neutral-400 shrink-0">
+          <div className="w-6 h-6 rounded-full ring-2 ring-background bg-muted flex items-center justify-center text-2xs tabular-nums text-muted-foreground shrink-0">
             +{collaboratorCount - 4}
           </div>
         )}
       </div>
-      <span className="text-2xs font-mono text-neutral-600">{collaboratorCount} online</span>
+      <span className="text-2xs tabular-nums text-muted-foreground">
+        {collaboratorCount} online
+      </span>
     </div>
   );
 };

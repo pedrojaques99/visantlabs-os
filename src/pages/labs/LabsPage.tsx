@@ -45,14 +45,12 @@ export function LabsPage() {
           {TOOLS.map((tool) => {
             const isLive = tool.status === 'live';
             const card = (
-              <Card className="h-full transition-[color,background-color,border-color,box-shadow] group-hover:border-[var(--brand-cyan)]/40 group-hover:shadow-lg group-hover:shadow-[var(--brand-cyan)]/5">
+              <Card className="h-full transition-colors group-hover:border-border-hover">
                 <CardHeader>
                   <div className="flex items-center justify-between mb-2">
-                    <div className="p-2 rounded-md bg-neutral-900 text-[var(--brand-cyan)]">
-                      {tool.icon}
-                    </div>
+                    <div className="p-2 rounded-md bg-muted text-foreground">{tool.icon}</div>
                     {!isLive && (
-                      <span className="text-2xs font-mono uppercase text-muted-foreground bg-neutral-800 px-2 py-0.5 rounded">
+                      <span className="text-2xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
                         soon
                       </span>
                     )}

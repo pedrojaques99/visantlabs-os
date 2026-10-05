@@ -31,11 +31,11 @@ export const FAQSection: React.FC<FAQSectionProps> = ({ faq, onChange }) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-neutral-200 font-mono">{t('budget.faq')}</h3>
+        <h3 className="text-lg font-semibold text-neutral-200">{t('budget.faq')}</h3>
         <Button
           variant="brand"
           onClick={addFAQ}
-          className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-foreground font-mono text-sm transition-colors duration-300 flex items-center gap-2"
+          className="px-4 py-2 bg-neutral-800/60 hover:bg-neutral-800 border border-neutral-700 rounded-xl text-foreground text-sm transition-colors duration-300 flex items-center gap-2"
         >
           <Plus size={16} />
           {t('budget.addFAQ')}
@@ -43,7 +43,7 @@ export const FAQSection: React.FC<FAQSectionProps> = ({ faq, onChange }) => {
       </div>
 
       {faq.length === 0 ? (
-        <div className="text-center py-8 text-neutral-500 font-mono text-sm">No FAQs added yet</div>
+        <div className="text-center py-8 text-neutral-500 text-sm">No FAQs added yet</div>
       ) : (
         <div className="space-y-4">
           {faq.map((item, index) => (
@@ -54,7 +54,7 @@ export const FAQSection: React.FC<FAQSectionProps> = ({ faq, onChange }) => {
               <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                 <div className="flex-1 w-full space-y-3">
                   <div>
-                    <label className="block text-xs text-neutral-400 mb-1 font-mono">
+                    <label className="block text-xs text-neutral-400 mb-1">
                       {t('budget.question')}
                     </label>
                     <FormInput
@@ -64,7 +64,7 @@ export const FAQSection: React.FC<FAQSectionProps> = ({ faq, onChange }) => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-neutral-400 mb-1 font-mono">
+                    <label className="block text-xs text-neutral-400 mb-1">
                       {t('budget.answer')}
                     </label>
                     <FormTextarea

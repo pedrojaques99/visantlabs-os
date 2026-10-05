@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Home } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { VHSText } from '../components/ui/VHSText';
 import {
   BreadcrumbWithBack,
@@ -34,13 +33,11 @@ export const NotFoundPage: React.FC = () => {
           <BreadcrumbWithBack to="/">
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink onClick={() => navigate('/')}>
-                  {t('common.home') || 'Home'}
-                </BreadcrumbLink>
+                <BreadcrumbLink onClick={() => navigate('/')}>{t('common.home')}</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>{t('notFound.title') || '404'}</BreadcrumbPage>
+                <BreadcrumbPage>{t('notFound.title')}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </BreadcrumbWithBack>
@@ -54,7 +51,7 @@ export const NotFoundPage: React.FC = () => {
               className="space-y-6"
               style={{ verticalAlign: 'bottom', marginBottom: '16px', height: '193px' }}
             >
-              <VHSText fontSize="text-6xl md:text-7xl lg:text-8xl" color="brand-cyan" theme={theme}>
+              <VHSText fontSize="text-6xl md:text-7xl lg:text-8xl" theme={theme}>
                 404
               </VHSText>
             </div>
@@ -66,29 +63,26 @@ export const NotFoundPage: React.FC = () => {
                   theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
                 }`}
               >
-                {t('notFound.title') || 'Página não encontrada'}
+                {t('notFound.title')}
               </h2>
               <p
                 className={`text-base md:text-lg lg:text-xl max-w-md mx-auto ${
                   theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                 }`}
               >
-                {t('notFound.description') ||
-                  'Ops! A página que você está procurando não existe ou foi movida.'}
+                {t('notFound.description')}
               </p>
             </div>
 
             {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center pt-6">
               <Button
-                variant="ghost"
+                variant="brand"
                 onClick={() => navigate('/')}
-                className={`px-8 py-3.5 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 shadow-lg cursor-pointer ${
-                  theme === 'dark' ? 'shadow-neutral-600/20' : 'shadow-neutral-600/30'
-                }`}
+                className="px-8 py-3.5 font-semibold text-sm flex items-center gap-2"
               >
                 <Home className="h-4 w-4" />
-                {t('notFound.goHome') || 'Ir para a página inicial'}
+                {t('notFound.goHome')}
               </Button>
             </div>
 
@@ -103,26 +97,26 @@ export const NotFoundPage: React.FC = () => {
                   theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
                 }`}
               >
-                {t('notFound.helpfulLinks') || 'Links úteis:'}
+                {t('notFound.helpfulLinks')}
               </p>
               <div className="flex flex-wrap justify-center gap-6">
                 <Button
                   variant="ghost"
                   onClick={() => navigate('/')}
-                  className={`text-sm hover:text-brand-cyan transition-colors cursor-pointer ${
+                  className={`text-sm hover:text-foreground transition-colors cursor-pointer ${
                     theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                   }`}
                 >
-                  {t('notFound.mockupMachine') || 'Mockup Machine'}
+                  {t('notFound.mockupMachine')}
                 </Button>
                 <Button
                   variant="ghost"
                   onClick={() => navigate('/pricing')}
-                  className={`text-sm hover:text-brand-cyan transition-colors cursor-pointer ${
+                  className={`text-sm hover:text-foreground transition-colors cursor-pointer ${
                     theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                   }`}
                 >
-                  {t('notFound.pricing') || 'Preços'}
+                  {t('notFound.pricing')}
                 </Button>
               </div>
             </div>

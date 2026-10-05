@@ -1,7 +1,9 @@
 import React from 'react';
 import type { BudgetData, Deliverable, Signature } from '@/types/types';
 import { InlineEditor } from '../InlineEditor';
+import { ArrowRight } from '@/lib/ui/icons';
 
+import { DEFAULT_DOCUMENT_ACCENT } from './documentColors';
 interface VisantBudgetPageProps {
   data: BudgetData;
   editable?: boolean;
@@ -15,7 +17,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
   onDataChange,
   saveStatus = 'idle',
 }) => {
-  const accentColor = data.brandAccentColor || data.brandColors[0] || 'brand-cyan';
+  const accentColor = data.brandAccentColor || data.brandColors[0] || DEFAULT_DOCUMENT_ACCENT;
   const bgColor = data.brandBackgroundColor || '#ffffff';
   const isDarkBg = bgColor !== '#ffffff' && bgColor !== '#fff' && bgColor !== 'white';
   const textColor = isDarkBg ? '#ffffff' : '#020202';
@@ -187,7 +189,9 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
         >
           {editable ? (
             <InlineEditor
-              value={data.projectName || 'Projeto de Branding Completo - Logo, ID Visual e Extras'}
+              value={
+                data.projectName || 'Projeto de Branding Completo: logo, identidade visual e extras'
+              }
               onChange={(newName) => onDataChange?.({ projectName: String(newName) })}
               editable={editable}
               style={{ fontSize: '16px' }}
@@ -681,15 +685,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                 >
                   TOTAL: R$<span style={{ fontSize: '22px' }}>{formatCurrency(finalTotal)}</span>
                 </p>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white">
-                  <path
-                    d="M5 12h14M12 5l7 7-7 7"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <ArrowRight size={24} className="text-white" />
               </div>
             </div>
           </div>

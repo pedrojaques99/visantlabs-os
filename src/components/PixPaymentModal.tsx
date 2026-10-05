@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { X, Copy, Check, QrCode, Clock, AlertCircle } from '@/lib/ui/icons';
+import { X, Copy, Check, QrCode, Clock, AlertCircle, ExternalLink } from '@/lib/ui/icons';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { abacatepayService } from '../services/abacatepayService';
 import { formatPixCode, copyPixToClipboard, formatExpirationTime } from '@/utils/pixHelpers';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { LinearGradientBackground } from './ui/LinearGradientBackground';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import type { TimerRef } from '@/types/types';
@@ -113,7 +113,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
       setShowTaxIdForm(false);
       setError(null);
     } else {
-      setError(t('pix.invalidTaxId') || 'CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos');
+      setError(t('pix.invalidTaxId'));
     }
   };
 
@@ -138,10 +138,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
         console.error('❌ AbacatePay returned invalid status on createPayment:', statusUpper);
         setStatus('expired');
         setIsLoading(false);
-        setError(
-          t('pix.paymentExpired') ||
-            'O pagamento PIX retornou como expirado ou inválido. Tente novamente ou use outro método de pagamento.'
-        );
+        setError(t('pix.paymentExpired'));
         return;
       }
 
@@ -179,17 +176,11 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
         }
       } else {
         // Qualquer outro status inesperado, mostrar erro genérico
-        setError(
-          t('pix.paymentError') ||
-            'Não foi possível criar um pagamento PIX válido. Por favor, tente novamente mais tarde ou use outro método.'
-        );
+        setError(t('pix.paymentError'));
       }
     } catch (error: any) {
       console.error('❌ AbacatePay payment creation failed:', error);
-      setError(
-        t('pix.paymentError') ||
-          'Não foi possível criar o pagamento PIX. Por favor, tente novamente mais tarde ou use outro método de pagamento.'
-      );
+      setError(t('pix.paymentError'));
       setIsLoading(false);
     }
   };
@@ -311,13 +302,13 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 backdrop-blur-md p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
       <div className="bg-neutral-900 border border-neutral-800/50 rounded-xl p-6 md:p-8 max-w-md w-full mx-4 relative max-h-[90vh] overflow-y-auto">
         <Button
           variant="ghost"
           onClick={onClose}
           className="absolute top-4 right-4 text-neutral-500 hover:text-neutral-300 transition-colors z-10 p-1"
-          aria-label={t('common.close') || 'Fechar'}
+          aria-label={t('common.close')}
         >
           <X size={16} />
         </Button>
@@ -326,26 +317,16 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
           <div className="text-center">
             <div className="flex flex-col items-center justify-center gap-2 mb-4">
               <QrCode size={32} className="text-neutral-500" />
-              <h2 className="text-2xl font-bold tracking-tight text-neutral-100">
-                {t('pix.title') || 'Pagar com PIX'}
-              </h2>
+              <h2 className="text-2xl font-bold text-neutral-100">{t('pix.title')}</h2>
             </div>
             <div className="flex flex-col items-center gap-1">
-              <div className="text-4xl font-black text-neutral-100 font-mono tracking-tighter">
-                {credits}
-              </div>
-              <MicroTitle className="text-neutral-500">{t('pix.credits') || 'CRÉDITOS'}</MicroTitle>
-
-              <div className="mt-4 flex items-center gap-2 text-2xs sm:text-2xs text-neutral-600 uppercase tracking-widest border-t border-neutral-800 pt-4 w-full justify-center">
-                <span>REPASSE_TRANSPARENTE</span>
-                <span className="w-1 h-1 bg-neutral-800 rounded-full" />
-                <span className="text-neutral-500">$0.067 Google + $0.013 Visant</span>
-              </div>
+              <div className="text-4xl font-black text-neutral-100 tabular-nums">{credits}</div>
+              <MicroTitle className="text-neutral-500">{t('pix.credits')}</MicroTitle>
             </div>
           </div>
 
           {error && (
-            <div className="bg-destructive/10 border border-destructive/30 rounded-md p-3 text-sm text-destructive font-mono flex items-start gap-2">
+            <div className="bg-destructive/10 border border-destructive/30 rounded-md p-3 text-sm text-destructive flex items-start gap-2">
               <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
               <span>{error}</span>
             </div>
@@ -353,10 +334,8 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
 
           {isCheckingUserTaxId && (
             <div className="flex flex-col items-center justify-center py-8">
-              <GlitchLoader size={32} color="brand-cyan" className="mb-4" />
-              <p className="text-neutral-400 font-mono text-sm">
-                {t('pix.checking') || 'Verificando dados...'}
-              </p>
+              <GlitchLoader size={32} className="mb-4" />
+              <p className="text-neutral-400 text-sm">{t('pix.checking')}</p>
             </div>
           )}
 
@@ -364,9 +343,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
             <div className="relative rounded-xl overflow-hidden bg-neutral-950/70 border border-neutral-800/50">
               <form onSubmit={handleTaxIdSubmit} className="relative z-10 space-y-4 p-6">
                 <div className="space-y-2">
-                  <label className="text-sm text-neutral-300 font-mono block">
-                    {t('pix.taxId') || 'CPF ou CNPJ *'}
-                  </label>
+                  <label className="text-sm text-neutral-300 block">{t('pix.taxId')}</label>
                   <Input
                     type="text"
                     value={taxId}
@@ -375,21 +352,15 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                       setTaxId(formatted);
                       setError(null);
                     }}
-                    placeholder={t('pix.taxIdPlaceholder') || 'Digite seu CPF ou CNPJ'}
-                    className="w-full bg-neutral-950/70 backdrop-blur-sm border border-neutral-700/50 rounded-md p-3 font-mono text-sm text-neutral-200 focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600 transition-[color,background-color,border-color,filter]"
+                    placeholder={t('pix.taxIdPlaceholder')}
+                    className="w-full bg-neutral-950/70 border border-neutral-700/50 rounded-md p-3 font-mono text-sm text-neutral-200 focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600 transition-[color,background-color,border-color,filter]"
                     maxLength={18}
                     required
                   />
-                  <p className="text-xs text-neutral-400 font-mono">
-                    {t('pix.taxIdRequired') || 'Necessário para processar o pagamento PIX'}
-                  </p>
+                  <p className="text-xs text-neutral-400">{t('pix.taxIdRequired')}</p>
                 </div>
-                <Button
-                  variant="brand"
-                  type="submit"
-                  className="w-full px-4 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-neutral-600/20"
-                >
-                  {t('pix.continue') || 'Continuar'}
+                <Button variant="brand" type="submit" className="w-full font-semibold">
+                  {t('pix.continue')}
                 </Button>
               </form>
             </div>
@@ -397,10 +368,8 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
 
           {isLoading && (
             <div className="flex flex-col items-center justify-center py-8">
-              <GlitchLoader size={32} color="brand-cyan" className="mb-4" />
-              <p className="text-neutral-400 font-mono text-sm">
-                {t('pix.creating') || 'Criando pagamento PIX...'}
-              </p>
+              <GlitchLoader size={32} className="mb-4" />
+              <p className="text-neutral-400 text-sm">{t('pix.creating')}</p>
             </div>
           )}
 
@@ -416,32 +385,20 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                         href={paymentUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 px-6 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-neutral-600/20 flex items-center justify-center gap-2"
+                        className={cn(buttonVariants({ variant: 'brand' }), 'flex-1 font-semibold')}
                       >
-                        {t('pix.openPaymentLink') || 'Abrir link de pagamento'}
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                          />
-                        </svg>
+                        {t('pix.openPaymentLink')}
+                        <ExternalLink size={16} />
                       </a>
 
                       {/* QR Code Icon Button */}
                       {(qrCode || pixCode) && (
                         <Button
-                          variant="ghost"
                           onClick={() => setShowQrCodeModal(true)}
-                          className="p-3 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/30 rounded-md transition-all hover:scale-105 active:scale-95 flex-shrink-0"
-                          title={t('pix.showQrCode') || 'Mostrar QR Code'}
-                          aria-label={t('pix.showQrCode') || 'Mostrar QR Code'}
+                          variant="surface"
+                          className="p-3 flex-shrink-0"
+                          title={t('pix.showQrCode')}
+                          aria-label={t('pix.showQrCode')}
                         >
                           <QrCode size={20} className="text-foreground" />
                         </Button>
@@ -451,13 +408,13 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                     /* If no payment URL but we have QR code, show QR code button directly */
                     (qrCode || pixCode) && (
                       <Button
-                        variant="ghost"
+                        variant="brand"
                         onClick={() => setShowQrCodeModal(true)}
-                        className="w-full px-6 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-neutral-600/20 flex items-center justify-center gap-2"
-                        title={t('pix.showQrCode') || 'Mostrar QR Code'}
+                        className="w-full font-semibold"
+                        title={t('pix.showQrCode')}
                       >
                         <QrCode size={20} />
-                        {t('pix.showQrCode') || 'Mostrar QR Code'}
+                        {t('pix.showQrCode')}
                       </Button>
                     )
                   )}
@@ -469,7 +426,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
           {/* QR Code Modal */}
           {showQrCodeModal && (qrCode || pixCode) && (
             <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/90 backdrop-blur-sm p-4"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
                   setShowQrCodeModal(false);
@@ -481,14 +438,14 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                   variant="ghost"
                   onClick={() => setShowQrCodeModal(false)}
                   className="absolute top-4 right-4 text-neutral-500 hover:text-neutral-300 transition-colors z-10"
-                  aria-label={t('common.close') || 'Fechar'}
+                  aria-label={t('common.close')}
                 >
                   <X size={20} />
                 </Button>
 
                 <div className="flex flex-col items-center space-y-4">
-                  <h3 className="text-lg md:text-xl font-semibold font-mono text-neutral-200 mb-2">
-                    {t('pix.qrCode') || 'QR Code PIX'}
+                  <h3 className="text-lg md:text-xl font-semibold text-neutral-200 mb-2">
+                    {t('pix.qrCode')}
                   </h3>
 
                   {qrCode || pixCode ? (
@@ -501,10 +458,8 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                     </div>
                   ) : (
                     <div className="bg-neutral-900/50 border border-neutral-700/50 rounded-xl p-8 text-center">
-                      <GlitchLoader size={32} color="brand-cyan" className="mx-auto mb-4" />
-                      <p className="text-neutral-400 font-mono text-sm">
-                        {t('pix.generatingQrCode') || 'Gerando QR Code...'}
-                      </p>
+                      <GlitchLoader size={32} className="mx-auto mb-4" />
+                      <p className="text-neutral-400 text-sm">{t('pix.generatingQrCode')}</p>
                     </div>
                   )}
 
@@ -514,23 +469,19 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                       <Button
                         variant="brand"
                         onClick={handleCopyCode}
-                        className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/30 rounded-md transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
-                        title={t('pix.copy') || 'Copiar código PIX'}
-                        aria-label={t('pix.copy') || 'Copiar código PIX'}
+                        className="px-4 py-2"
+                        title={t('pix.copy')}
+                        aria-label={t('pix.copy')}
                       >
                         {copied ? (
                           <>
                             <Check size={18} className="text-success" />
-                            <span className="text-sm text-neutral-300 font-mono">
-                              {t('pix.copied') || 'Copiado!'}
-                            </span>
+                            <span className="text-sm">{t('pix.copied')}</span>
                           </>
                         ) : (
                           <>
                             <Copy size={18} className="text-foreground" />
-                            <span className="text-sm text-neutral-300 font-mono">
-                              {t('pix.copy') || 'Copiar código PIX'}
-                            </span>
+                            <span className="text-sm">{t('pix.copy')}</span>
                           </>
                         )}
                       </Button>
@@ -539,10 +490,10 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
 
                   {/* Expiration Timer */}
                   {expiresAt && (
-                    <div className="flex items-center gap-2 text-sm text-neutral-400 font-mono">
+                    <div className="flex items-center gap-2 text-sm text-neutral-400 tabular-nums">
                       <Clock size={16} />
                       <span>
-                        {t('pix.expiresIn') || 'Expira em'}: {formatExpirationTime(expiresAt)}
+                        {t('pix.expiresIn')}: {formatExpirationTime(expiresAt)}
                       </span>
                     </div>
                   )}
@@ -550,31 +501,21 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                   {/* Status - Only show expired if there's an error */}
                   {status === 'expired' && (
                     <div className="w-full">
-                      <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive font-mono text-center flex items-center justify-center gap-2">
+                      <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive text-center flex items-center justify-center gap-2">
                         <AlertCircle size={18} />
-                        <span>{t('pix.expired') || 'Pagamento expirado'}</span>
+                        <span>{t('pix.expired')}</span>
                       </div>
                     </div>
                   )}
 
                   {/* Instructions */}
-                  <div className="bg-neutral-900/30 border border-neutral-700/50 rounded-md p-4 text-xs md:text-sm text-neutral-400 font-mono space-y-3 w-full">
-                    <p className="font-semibold text-neutral-300 uppercase ">
-                      {t('pix.instructions') || 'Como pagar:'}
-                    </p>
+                  <div className="bg-neutral-900/30 border border-neutral-700/50 rounded-md p-4 text-xs md:text-sm text-neutral-400 space-y-3 w-full">
+                    <p className="font-semibold text-neutral-300">{t('pix.instructions')}</p>
                     <ol className="list-decimal list-inside space-y-2 ml-2">
-                      <li className="leading-relaxed">
-                        {t('pix.step1') || 'Abra o app do seu banco'}
-                      </li>
-                      <li className="leading-relaxed">
-                        {t('pix.step2') || 'Escaneie o QR Code ou copie o código PIX'}
-                      </li>
-                      <li className="leading-relaxed">
-                        {t('pix.step3') || 'Confirme o pagamento no app'}
-                      </li>
-                      <li className="leading-relaxed">
-                        {t('pix.step4') || 'Aguarde a confirmação automática'}
-                      </li>
+                      <li className="leading-relaxed">{t('pix.step1')}</li>
+                      <li className="leading-relaxed">{t('pix.step2')}</li>
+                      <li className="leading-relaxed">{t('pix.step3')}</li>
+                      <li className="leading-relaxed">{t('pix.step4')}</li>
                     </ol>
                   </div>
                 </div>

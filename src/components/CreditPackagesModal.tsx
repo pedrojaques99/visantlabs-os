@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronUp,
+  ArrowRight,
 } from '@/lib/ui/icons';
 import { SegmentedControl } from '@/components/shared/ToolPanel';
 import {
@@ -29,12 +30,13 @@ import {
 import { getCreditYieldRows } from '@/utils/creditCalculator';
 import { trackEvent } from '@/utils/analytics';
 import { useTranslation } from '@/hooks/useTranslation';
-import { LinearGradientBackground } from './ui/LinearGradientBackground';
 import type { SubscriptionStatus } from '../services/subscriptionService';
 import { productService, type Product } from '../services/productService';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { glassSurface } from '@/lib/ui/glass';
+import { cn } from '@/lib/utils';
 
 // Função para tocar som de clique
 const playClickSound = () => {
@@ -107,12 +109,56 @@ interface CreditPackagesModalProps {
 }
 
 const formatDate = (dateString: string | null): string => {
-  if (!dateString) return 'N/A';
+  if (!dateString) return '';
   try {
-    return formatDateShort(dateString, 'en-US');
+    return formatDateShort(dateString);
   } catch {
-    return 'N/A';
+    return '';
   }
+};
+
+/** Tabela "quanto rende": era duplicada nas abas Créditos e Carteira. */
+const CreditYieldTable: React.FC<{ credits: number }> = ({ credits }) => {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border border-border rounded-xl overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+        aria-expanded={open}
+      >
+        <span className="flex items-center gap-2">
+          <Pickaxe size={11} className="text-muted-foreground" />
+          {t('creditsModal.yieldTitle')}
+        </span>
+        {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+      </button>
+
+      {open && (
+        <div className="px-4 pb-4 pt-1 bg-muted/40 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="flex justify-between text-xs font-semibold text-muted-foreground border-b border-border pb-2 mb-2">
+            <span>{t('creditsModal.yieldModel')}</span>
+            <span>{t('creditsModal.yieldImages')}</span>
+          </div>
+          {getCreditYieldRows().map((item, idx) => (
+            <div key={idx} className="flex justify-between text-xs items-center">
+              <span className="text-muted-foreground">{item.label}</span>
+              <span className="text-foreground font-bold tabular-nums">
+                {Math.floor(credits / item.cost)}
+              </span>
+            </div>
+          ))}
+          <div className="flex justify-between text-xs items-center pt-2 border-t border-border mt-1">
+            <span className="text-muted-foreground">Veo 3</span>
+            <span className="text-foreground font-bold tabular-nums">
+              {t('creditsModal.videoCount', { count: Math.floor(credits / 15) })}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
@@ -135,8 +181,6 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
   );
   const [subscriptionPlans, setSubscriptionPlans] = useState<Product[]>([]);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-  const [showPackageCosts, setShowPackageCosts] = useState(false);
-  const [showStatusCosts, setShowStatusCosts] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -272,14 +316,21 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-neutral-950/90 backdrop-blur-sm p-4 sm:p-6 md:p-8 overflow-hidden"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 sm:p-6 md:p-8 overflow-hidden"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-xl md:max-w-2xl bg-card backdrop-blur-3xl border border-border rounded-2xl shadow-[0_30px_100px_rgba(0,0,0,0.8)] relative max-h-full overflow-hidden flex flex-col animate-scale-in">
-        <LinearGradientBackground className="rounded-2xl" fullHeight />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className={cn(
+          glassSurface.panelStrong,
+          'w-full max-w-xl md:max-w-2xl rounded-2xl relative max-h-full overflow-hidden flex flex-col animate-scale-in'
+        )}
+      >
         <Button
           variant="ghost"
           onClick={onClose}
+          aria-label={t('common.close')}
           className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors z-30 p-2 hover:bg-accent rounded-full"
         >
           <X size={20} />
@@ -291,9 +342,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
               <div className="flex items-center gap-2 sm:gap-3 pb-2">
                 <CreditCard size={16} className="text-muted-foreground" />
                 <MicroTitle className="text-muted-foreground">
-                  {activeTab === 'carteira'
-                    ? t('credits.title') || 'CRÉDITOS'
-                    : t('creditsPackages.title') || 'COMPRAR'}
+                  {activeTab === 'carteira' ? t('credits.title') : t('creditsPackages.title')}
                 </MicroTitle>
               </div>
 
@@ -311,9 +360,9 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                   setActiveTab(v as typeof activeTab);
                 }}
                 options={[
-                  { value: 'carteira', label: 'Carteira' },
-                  { value: 'creditos', label: 'Créditos' },
-                  { value: 'assinatura', label: 'Assinatura' },
+                  { value: 'carteira', label: t('creditsModal.tabs.wallet') },
+                  { value: 'creditos', label: t('creditsModal.tabs.credits') },
+                  { value: 'assinatura', label: t('creditsModal.tabs.subscription') },
                 ]}
               />
 
@@ -327,18 +376,13 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                       <div className="bg-muted/40 border border-border rounded-xl p-5 sm:p-6 space-y-5">
                         {/* Selector row */}
                         <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-2xs font-mono uppercase tracking-widest text-muted-foreground mb-1">
-                              {t('creditsPackages.credits') || 'Créditos'}
-                            </p>
-                            <div className="flex items-baseline gap-2">
-                              <span className="text-4xl sm:text-5xl font-black font-mono text-foreground leading-none tabular-nums">
-                                {animatedCredits}
-                              </span>
-                              <span className="text-xs text-muted-foreground uppercase">
-                                créditos
-                              </span>
-                            </div>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-4xl sm:text-5xl font-black text-foreground leading-none tabular-nums">
+                              {animatedCredits}
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                              {t('creditsModal.unit')}
+                            </span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Button
@@ -348,7 +392,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 handlePrevious();
                               }}
                               disabled={selectedIndex === 0}
-                              aria-label="Pacote anterior"
+                              aria-label={t('creditsModal.prevPackage')}
                               className="h-8 w-8 p-0 border-border bg-muted hover:bg-accent hover:border-border-hover disabled:opacity-30 disabled:cursor-not-allowed text-muted-foreground"
                             >
                               <Minus size={14} />
@@ -360,7 +404,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 handleNext();
                               }}
                               disabled={selectedIndex === CREDIT_PACKAGES.length - 1}
-                              aria-label="Próximo pacote"
+                              aria-label={t('creditsModal.nextPackage')}
                               className="h-8 w-8 p-0 border-border bg-muted hover:bg-accent hover:border-border-hover disabled:opacity-30 disabled:cursor-not-allowed text-muted-foreground"
                             >
                               <Plus size={14} />
@@ -377,8 +421,11 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 playClickSound();
                                 setSelectedIndex(index);
                               }}
-                              aria-label={`${CREDIT_PACKAGES[index].credits} créditos`}
-                              className={`h-1.5 rounded-full transition-all duration-300 ${
+                              aria-label={t('creditsModal.unitCount', {
+                                count: CREDIT_PACKAGES[index].credits,
+                              })}
+                              aria-pressed={index === selectedIndex}
+                              className={`h-1.5 rounded-full transition-[width,background-color] duration-300 ${
                                 index === selectedIndex
                                   ? 'bg-brand-cyan w-6'
                                   : 'bg-muted hover:bg-muted-foreground w-1.5'
@@ -391,11 +438,11 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                         {currencyInfo && price > 0 && (
                           <div className="pt-4 border-t border-border flex items-end justify-between">
                             <div>
-                              <p className="text-2xs font-mono uppercase tracking-widest text-muted-foreground mb-1">
-                                {t('pricing.oneTimePayment') || 'Pagamento único'}
+                              <p className="text-xs text-muted-foreground mb-1">
+                                {t('pricing.oneTimePayment')}
                               </p>
                               <div className="flex items-baseline gap-1.5">
-                                <span className="text-3xl sm:text-4xl font-black font-mono text-foreground tabular-nums">
+                                <span className="text-3xl sm:text-4xl font-black text-foreground tabular-nums">
                                   {formatPrice(
                                     animatedPrice,
                                     currencyInfo.currency,
@@ -404,7 +451,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 </span>
                               </div>
                             </div>
-                            <span className="text-2xs font-mono text-muted-foreground uppercase tracking-widest text-right leading-relaxed">
+                            <span className="text-2xs font-mono text-muted-foreground text-right leading-relaxed">
                               $0.067 Google
                               <br />
                               $0.013 Infra
@@ -413,58 +460,20 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                         )}
                       </div>
 
-                      {/* Model cost reference — expandable */}
-                      <div className="border border-border rounded-xl overflow-hidden">
-                        <button
-                          onClick={() => setShowPackageCosts(!showPackageCosts)}
-                          className="w-full flex items-center justify-between px-4 py-3 text-2xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                          aria-expanded={showPackageCosts}
-                        >
-                          <span className="flex items-center gap-2">
-                            <Pickaxe size={11} className="text-muted-foreground" />
-                            Quanto rende por modelo
-                          </span>
-                          {showPackageCosts ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                        </button>
-
-                        {showPackageCosts && (
-                          <div className="px-4 pb-4 pt-1 bg-muted/40 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-                            <div className="flex justify-between text-2xs font-mono font-bold uppercase tracking-tight text-muted-foreground border-b border-border pb-2 mb-2">
-                              <span>Modelo / Resolução</span>
-                              <span>Imagens</span>
-                            </div>
-                            {getCreditYieldRows().map((item, idx) => (
-                              <div
-                                key={idx}
-                                className="flex justify-between text-2xs font-mono items-center"
-                              >
-                                <span className="text-muted-foreground">{item.label}</span>
-                                <span className="text-foreground font-bold tabular-nums">
-                                  {Math.floor(currentPackage.credits / item.cost)}
-                                </span>
-                              </div>
-                            ))}
-                            <div className="flex justify-between text-2xs font-mono items-center pt-2 border-t border-border mt-1">
-                              <span className="text-muted-foreground">Veo 3 (Vídeo)</span>
-                              <span className="text-foreground font-bold tabular-nums">
-                                {Math.floor(currentPackage.credits / 15)} vídeos
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                      <CreditYieldTable credits={currentPackage.credits} />
 
                       {/* Action buttons */}
                       <div className="flex flex-col gap-2 pt-1">
                         <Button
+                          variant="brand"
                           onClick={() => {
                             playClickSound();
                             handleBuyCredits();
                           }}
-                          className="w-full bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-xs sm:text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] shadow-lg"
+                          className="w-full font-semibold"
                         >
                           <CreditCard size={14} />
-                          {t('creditsPackages.buy') || 'Comprar'}
+                          {t('creditsPackages.buy')}
                         </Button>
                         {currencyInfo?.currency === 'BRL' &&
                           ABACATEPAY_LINKS[currentPackage.credits] && (
@@ -473,10 +482,10 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 playClickSound();
                                 handleBuyWithPix();
                               }}
-                              className="w-full bg-[#6fd591]/80 hover:bg-[#6fd591] text-white font-semibold rounded-md text-xs sm:text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99]"
+                              className="w-full bg-success/80 hover:bg-success text-black font-semibold"
                             >
                               <QrCode size={14} />
-                              {t('pix.payWithPix') || 'Pagar com PIX'}
+                              {t('pix.payWithPix')}
                             </Button>
                           )}
                         <button
@@ -484,15 +493,15 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             playClickSound();
                             setActiveTab('assinatura');
                           }}
-                          className="w-full text-muted-foreground hover:text-foreground text-2xs uppercase tracking-widest transition-colors hover:bg-accent rounded-md py-2"
+                          className="w-full inline-flex items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground text-xs transition-colors hover:bg-accent rounded-md py-2"
                         >
-                          {t('pricing.tabs.subscriptions') || 'Ver Assinatura'} →
+                          {t('creditsPackages.viewPlans')}
+                          <ArrowRight size={12} />
                         </button>
                       </div>
 
-                      <p className="text-2xs font-mono text-muted-foreground text-center pt-1">
-                        {t('creditsPackages.note') ||
-                          'Créditos não expiram e podem ser usados a qualquer momento'}
+                      <p className="text-xs text-muted-foreground text-center pt-1">
+                        {t('creditsPackages.note')}
                       </p>
                     </div>
                   </div>
@@ -512,20 +521,18 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 playClickSound();
                                 setBillingCycle(cycle);
                               }}
-                              className={`py-1.5 text-2xs uppercase tracking-wide rounded transition-[color,background-color,border-color,box-shadow] flex items-center justify-center gap-1.5 ${
+                              className={`py-1.5 text-xs rounded transition-[color,background-color,border-color,box-shadow] flex items-center justify-center gap-1.5 ${
                                 billingCycle === cycle
                                   ? 'bg-secondary text-secondary-foreground shadow-sm'
                                   : 'text-muted-foreground hover:text-foreground'
                               }`}
                             >
-                              {cycle === 'monthly'
-                                ? t('pricing.monthly') || 'Mensal'
-                                : t('pricing.yearly') || 'Anual'}
+                              {cycle === 'monthly' ? t('pricing.monthly') : t('pricing.yearly')}
                               {cycle === 'yearly' && (
                                 <span
                                   className={`text-2xs px-1 py-0.5 rounded font-bold ${
                                     billingCycle === 'yearly'
-                                      ? 'bg-brand-cyan/20 text-brand-cyan'
+                                      ? 'bg-success/10 text-success'
                                       : 'bg-muted text-muted-foreground'
                                   }`}
                                 >
@@ -553,29 +560,29 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               <div
                                 key={plan.id}
                                 className={`relative bg-muted/40 border rounded-xl p-4 space-y-4 flex flex-col ${
-                                  isPopular ? 'border-brand-cyan/40' : 'border-border'
+                                  isPopular ? 'border-ring' : 'border-border'
                                 }`}
                               >
                                 {isPopular && (
                                   <div className="absolute -top-px left-1/2 -translate-x-1/2">
-                                    <Badge className="bg-brand-cyan text-black font-bold text-2xs uppercase tracking-widest px-2 py-0.5 rounded-b-md rounded-t-none whitespace-nowrap">
-                                      {t('pricing.popular') || 'Popular'}
+                                    <Badge
+                                      variant="neutral"
+                                      className="text-2xs px-2 py-0.5 rounded-b-md rounded-t-none whitespace-nowrap"
+                                    >
+                                      {t('pricing.popular')}
                                     </Badge>
                                   </div>
                                 )}
 
                                 {/* Name */}
                                 <div className="pt-1">
-                                  <p className="text-2xs font-mono uppercase tracking-widest text-muted-foreground mb-0.5">
-                                    Plano
-                                  </p>
                                   <div className="flex items-center gap-1.5 flex-wrap">
                                     <span className="text-base font-black text-foreground leading-tight">
                                       {plan.name}
                                     </span>
                                     {plan.metadata?.storageMB &&
                                       parseInt(plan.metadata.storageMB) >= 5120 && (
-                                        <Badge className="bg-muted text-muted-foreground border border-border text-2xs px-1">
+                                        <Badge variant="neutral" className="text-2xs px-1">
                                           BYOK
                                         </Badge>
                                       )}
@@ -584,22 +591,24 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                                 {/* Price */}
                                 <div className="border-t border-border pt-3">
-                                  <p className="text-2xs font-mono uppercase tracking-widest text-muted-foreground mb-1">
-                                    {billingCycle === 'yearly'
-                                      ? t('pricing.perYear') || '/ano'
-                                      : t('pricing.perMonth') || '/mês'}
-                                  </p>
-                                  <span className="text-2xl font-black font-mono text-foreground tabular-nums">
-                                    {formatPrice(
-                                      planPrice,
-                                      currencyInfo?.currency || 'BRL',
-                                      currencyInfo?.locale || 'pt-BR'
-                                    )}
-                                  </span>
-                                  <div className="flex items-center gap-1 text-2xs text-muted-foreground uppercase mt-1">
-                                    <Pickaxe size={9} />
+                                  <div className="flex items-baseline gap-1">
+                                    <span className="text-2xl font-black text-foreground tabular-nums">
+                                      {formatPrice(
+                                        planPrice,
+                                        currencyInfo?.currency || 'BRL',
+                                        currencyInfo?.locale || 'pt-BR'
+                                      )}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">
+                                      {billingCycle === 'yearly'
+                                        ? t('pricing.perYear')
+                                        : t('pricing.perMonth')}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                                    <Pickaxe size={10} />
                                     <span>
-                                      {plan.credits} {t('pricing.creditsLabel') || 'créd/mês'}
+                                      {t('creditsModal.unitCount', { count: plan.credits })}
                                     </span>
                                   </div>
                                 </div>
@@ -609,7 +618,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                   {benefits.map((benefit: string, idx: number) => (
                                     <div
                                       key={idx}
-                                      className="flex items-start gap-1.5 text-2xs font-mono text-muted-foreground"
+                                      className="flex items-start gap-1.5 text-xs text-muted-foreground"
                                     >
                                       <CheckCircle2
                                         size={11}
@@ -637,14 +646,11 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                       window.location.href = link;
                                     }
                                   }}
-                                  className={`w-full text-xs font-mono font-semibold rounded-md transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 ${
-                                    isPopular
-                                      ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black shadow-lg'
-                                      : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
-                                  }`}
+                                  variant={isPopular ? 'brand' : 'secondary'}
+                                  className="w-full text-xs font-semibold"
                                 >
                                   <CreditCard size={12} />
-                                  {t('pricing.subscribe') || 'Assinar'}
+                                  {t('pricing.subscribe')}
                                 </Button>
                               </div>
                             );
@@ -652,8 +658,8 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                         </div>
                       </>
                     ) : (
-                      <div className="text-center py-12 text-muted-foreground font-mono text-sm">
-                        {t('pricing.noPlansFound') || 'Nenhum plano disponível no momento.'}
+                      <div className="text-center py-12 text-muted-foreground text-sm">
+                        {t('pricing.noPlansFound')}
                       </div>
                     )}
                   </div>
@@ -688,20 +694,20 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           {/* Balance row */}
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-2xs font-mono uppercase tracking-widest text-muted-foreground mb-1">
-                                {t('credits.available') || 'Disponíveis'}
+                              <p className="text-xs text-muted-foreground mb-1">
+                                {t('credits.available')}
                               </p>
                               <div className="flex items-baseline gap-2">
-                                <span className="text-4xl sm:text-5xl font-black font-mono text-foreground leading-none">
+                                <span className="text-4xl sm:text-5xl font-black text-foreground leading-none tabular-nums">
                                   {totalCreditsAvailable}
                                 </span>
-                                <span className="text-xs text-muted-foreground uppercase">
-                                  créditos
+                                <span className="text-sm text-muted-foreground">
+                                  {t('creditsModal.unit')}
                                 </span>
                               </div>
                             </div>
                             {subscriptionTier && (
-                              <Badge className="bg-muted text-muted-foreground border border-border text-2xs font-mono uppercase tracking-widest px-2.5 py-1">
+                              <Badge variant="neutral" className="px-2.5 py-1">
                                 {subscriptionTier}
                               </Badge>
                             )}
@@ -710,9 +716,9 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           {/* Monthly usage bar */}
                           {monthlyCredits > 0 && (
                             <div className="space-y-1.5">
-                              <div className="flex justify-between text-2xs font-mono uppercase tracking-widest text-muted-foreground">
-                                <span>Uso mensal</span>
-                                <span>
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>{t('credits.monthlyUsage')}</span>
+                                <span className="tabular-nums">
                                   {creditsUsed} / {monthlyCredits}
                                 </span>
                               </div>
@@ -727,7 +733,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                           {/* Reset date */}
                           {creditsResetDate && (
-                            <p className="text-2xs text-muted-foreground uppercase tracking-widest">
+                            <p className="text-xs text-muted-foreground">
                               {hasActiveSubscription
                                 ? t('credits.renews', { date: formatDate(creditsResetDate) })
                                 : t('credits.resets', { date: formatDate(creditsResetDate) })}
@@ -735,58 +741,20 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           )}
                         </div>
 
-                        {/* Model cost reference — expandable */}
-                        <div className="border border-border rounded-xl overflow-hidden">
-                          <button
-                            onClick={() => setShowStatusCosts(!showStatusCosts)}
-                            className="w-full flex items-center justify-between px-4 py-3 text-2xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                            aria-expanded={showStatusCosts}
-                          >
-                            <span className="flex items-center gap-2">
-                              <Pickaxe size={11} className="text-muted-foreground" />
-                              Quanto rende por modelo
-                            </span>
-                            {showStatusCosts ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                          </button>
-
-                          {showStatusCosts && (
-                            <div className="px-4 pb-4 pt-1 bg-muted/40 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-                              <div className="flex justify-between text-2xs font-mono font-bold uppercase tracking-tight text-muted-foreground border-b border-border pb-2 mb-2">
-                                <span>Modelo / Resolução</span>
-                                <span>Imagens</span>
-                              </div>
-                              {getCreditYieldRows().map((item, idx) => (
-                                <div
-                                  key={idx}
-                                  className="flex justify-between text-2xs font-mono items-center"
-                                >
-                                  <span className="text-muted-foreground">{item.label}</span>
-                                  <span className="text-foreground font-bold tabular-nums">
-                                    {Math.floor(totalCreditsAvailable / item.cost)}
-                                  </span>
-                                </div>
-                              ))}
-                              <div className="flex justify-between text-2xs font-mono items-center pt-2 border-t border-border mt-1">
-                                <span className="text-muted-foreground">Veo 3 (Vídeo)</span>
-                                <span className="text-foreground font-bold tabular-nums">
-                                  {Math.floor(totalCreditsAvailable / 15)} vídeos
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                        <CreditYieldTable credits={totalCreditsAvailable} />
 
                         {/* Action buttons */}
                         <div className="flex flex-col gap-2 pt-1">
                           <Button
+                            variant="brand"
                             onClick={() => {
                               playClickSound();
                               setActiveTab('creditos');
                             }}
-                            className="w-full bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-xs sm:text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] shadow-lg"
+                            className="w-full font-semibold"
                           >
                             <CreditCard size={14} />
-                            {t('credits.buyCredits') || 'Comprar Créditos'}
+                            {t('creditsPackages.title')}
                           </Button>
                           <Button
                             variant="outline"
@@ -800,10 +768,10 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                   ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                               }, 300);
                             }}
-                            className="w-full border-border hover:border-border-hover bg-card hover:bg-muted text-muted-foreground font-semibold rounded-md text-xs sm:text-sm font-mono transition-colors duration-200 flex items-center justify-center gap-2"
+                            className="w-full text-muted-foreground font-semibold"
                           >
                             <FileText size={14} />
-                            {t('usageHistory.title') || 'Histórico de Uso'}
+                            {t('usageHistory.title')}
                           </Button>
                         </div>
                       </div>
@@ -813,46 +781,40 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                 {/* Carteira — no subscription */}
                 {activeTab === 'carteira' && !subscriptionStatus && (
                   <div className="flex flex-col items-center justify-center py-8 text-center space-y-4">
-                    <p className="text-muted-foreground font-mono text-sm">
-                      {t('credits.noSubscription') ||
-                        'Faça login para ver seus créditos disponíveis'}
-                    </p>
+                    <p className="text-muted-foreground text-sm">{t('credits.noSubscription')}</p>
                     <button
                       onClick={() => {
                         playClickSound();
                         setActiveTab('creditos');
                       }}
-                      className="text-2xs text-foreground hover:text-brand-cyan/80 font-mono uppercase tracking-widest transition-colors px-3 py-2 hover:bg-accent rounded"
+                      className="inline-flex items-center gap-1.5 text-xs text-foreground transition-colors px-3 py-2 hover:bg-accent rounded"
                     >
-                      {t('creditsPackages.buy') || 'Comprar'} →
+                      {t('creditsPackages.title')}
+                      <ArrowRight size={12} />
                     </button>
                   </div>
                 )}
               </div>
 
-              {/* Modal Community Footer */}
-              <div className="pt-8 mt-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 opacity-50 hover:opacity-100 transition-opacity">
-                <div className="flex items-center gap-4">
-                  <a
-                    href="https://github.com/visantlabs"
-                    target="_blank"
-                    className="flex items-center gap-2 text-2xs font-mono text-muted-foreground hover:text-brand-cyan transition-colors"
-                  >
-                    <Pickaxe size={12} />
-                    <span>OSS CORE</span>
-                  </a>
-                  <a
-                    href="https://discord.gg/visant"
-                    target="_blank"
-                    className="flex items-center gap-2 text-2xs font-mono text-muted-foreground hover:text-brand-cyan transition-colors"
-                  >
-                    <Info size={12} />
-                    <span>LABS COMMUNITY</span>
-                  </a>
-                </div>
-                <div className="text-2xs font-mono text-muted-foreground">
-                  © 2026 VISANT LAB® — BUILDING IN PUBLIC
-                </div>
+              <div className="pt-6 mt-4 border-t border-border flex items-center gap-4">
+                <a
+                  href="https://github.com/visantlabs"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Pickaxe size={12} />
+                  <span>{t('creditsModal.openSource')}</span>
+                </a>
+                <a
+                  href="https://discord.gg/visant"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Info size={12} />
+                  <span>{t('creditsModal.community')}</span>
+                </a>
               </div>
             </div>
           </div>

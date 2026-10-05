@@ -1,25 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Unplug, Trash2, Shield, Clock, Bot } from '@/lib/ui/icons';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
+import { PageShell } from '../components/ui/PageShell';
+import { EmptyState } from '../components/ui/EmptyState';
+import { ErrorState } from '../components/ui/ErrorState';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 import { useLayout } from '@/hooks/useLayout';
+import { useTranslation } from '@/hooks/useTranslation';
 import { authService } from '../services/authService';
 import { toast } from 'sonner';
-import { SEO } from '../components/SEO';
-import {
-  BreadcrumbWithBack,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '../components/ui/BreadcrumbWithBack';
-import { BackButton } from '../components/ui/BackButton';
 import { Button } from '@/components/ui/button';
-const OAUTH_BASE = '';
 import { formatDateShort } from '@/utils/localeUtils';
+
+const OAUTH_BASE = '';
 
 interface ConnectedApp {
   id: string;
@@ -36,32 +32,30 @@ function getAuthHeaders(): Record<string, string> {
   return { Authorization: `Bearer ${token}` };
 }
 
-const SCOPE_LABELS: Record<string, string> = {
-  read: 'Read',
-  write: 'Write',
-  generate: 'Generate',
-};
+const KNOWN_SCOPES = new Set(['read', 'write', 'generate']);
 
 export const ConnectedAppsPage: React.FC = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const { isAuthenticated, isCheckingAuth } = useLayout();
   const [apps, setApps] = useState<ConnectedApp[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<ConnectedApp | null>(null);
-  const [isRevoking, setIsRevoking] = useState(false);
 
   const fetchApps = useCallback(async () => {
     try {
       setIsLoading(true);
-      setError(null);
+      setLoadFailed(false);
       const res = await fetch(`${OAUTH_BASE}/oauth/authorized-apps`, {
         headers: getAuthHeaders(),
       });
-      if (!res.ok) throw new Error('Failed to fetch connected apps');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setApps(data.apps || []);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load connected apps');
+    } catch (err) {
+      console.error('[ConnectedApps] load failed:', err);
+      setLoadFailed(true);
     } finally {
       setIsLoading(false);
     }
@@ -72,165 +66,107 @@ export const ConnectedAppsPage: React.FC = () => {
   }, [isAuthenticated, isCheckingAuth, fetchApps]);
 
   const handleRevoke = async () => {
-    if (!revokeTarget) return;
-    setIsRevoking(true);
+    const target = revokeTarget;
+    if (!target) return;
     try {
-      const res = await fetch(`${OAUTH_BASE}/oauth/authorized-apps/${revokeTarget.id}`, {
+      const res = await fetch(`${OAUTH_BASE}/oauth/authorized-apps/${target.id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });
-      if (!res.ok) throw new Error('Failed to revoke access');
-      toast.success(`Revoked access for ${revokeTarget.clientName}`);
-      setApps((prev) => prev.filter((a) => a.id !== revokeTarget.id));
-      setRevokeTarget(null);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to revoke');
-    } finally {
-      setIsRevoking(false);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      toast.success(t('connectedApps.revoked', { name: target.clientName }));
+      setApps((prev) => prev.filter((a) => a.id !== target.id));
+    } catch (err) {
+      console.error('[ConnectedApps] revoke failed:', err);
+      toast.error(t('connectedApps.revokeFailed'));
     }
   };
 
+  const scopeLabel = (s: string) => (KNOWN_SCOPES.has(s) ? t(`connectedApps.scope.${s}`) : s);
+
   if (isCheckingAuth) return <GlitchLoader />;
 
-  if (!isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="max-w-md w-full">
-          <CardContent className="p-6 text-center">
-            <Shield className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-lg font-semibold mb-2">Sign in required</h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              Sign in to manage your connected applications.
-            </p>
-            <a href="/login">
-              <Button>Sign In</Button>
-            </a>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const title = t('nav.profile.connectedApps');
 
   return (
-    <>
-      <SEO
-        title="Connected Apps — Visant Labs"
-        description="Manage AI agents and applications connected to your Visant Labs account via OAuth."
-      />
-      <GridDotsBackground />
-
-      <div className="max-w-3xl mx-auto px-4 py-8 relative z-10">
-        <BackButton />
-
-        <BreadcrumbWithBack className="mb-6">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/profile">Profile</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Connected Apps</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </BreadcrumbWithBack>
-
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold tracking-tight mb-1">Connected Apps</h1>
-          <p className="text-sm text-muted-foreground">
-            AI agents and applications authorized to access your account via OAuth.
-          </p>
+    <PageShell
+      pageId="connected-apps"
+      seoTitle={title}
+      seoDescription={t('connectedApps.description')}
+      title={title}
+      description={t('connectedApps.description')}
+      breadcrumb={[{ label: t('common.profile'), to: '/profile' }, { label: title }]}
+      width="5xl"
+    >
+      {!isAuthenticated ? (
+        <EmptyState
+          icon={Shield}
+          title={t('connectedApps.signInTitle')}
+          description={t('connectedApps.signInBody')}
+          actionLabel={t('auth.signIn')}
+          onAction={() => navigate('/login')}
+        />
+      ) : isLoading ? (
+        <div className="flex justify-center py-16">
+          <GlitchLoader />
         </div>
-
-        {isLoading ? (
-          <div className="flex justify-center py-16">
-            <GlitchLoader />
-          </div>
-        ) : error ? (
-          <Card>
-            <CardContent className="p-6 text-center text-destructive">{error}</CardContent>
-          </Card>
-        ) : apps.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <Bot className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
-              <h3 className="text-sm font-medium mb-1">No connected apps</h3>
-              <p className="text-xs text-muted-foreground">
-                When an AI agent connects to your account via OAuth, it will appear here.
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {apps.map((app) => (
-              <Card key={app.id}>
-                <CardContent className="p-4 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                      <Unplug className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{app.clientName}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <div className="flex gap-1">
-                          {app.scopes.map((s) => (
-                            <Badge key={s} variant="secondary" className="text-2xs px-1.5 py-0">
-                              {SCOPE_LABELS[s] || s}
-                            </Badge>
-                          ))}
-                        </div>
-                        <span className="text-2xs text-muted-foreground flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {formatDateShort(app.createdAt)}
-                        </span>
+      ) : loadFailed ? (
+        <ErrorState title={t('connectedApps.loadFailed')} onRetry={fetchApps} />
+      ) : apps.length === 0 ? (
+        <EmptyState
+          icon={Bot}
+          title={t('connectedApps.emptyTitle')}
+          description={t('connectedApps.emptyBody')}
+        />
+      ) : (
+        <div className="space-y-3 max-w-3xl">
+          {apps.map((app) => (
+            <Card key={app.id}>
+              <CardContent className="p-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Unplug className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{app.clientName}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <div className="flex gap-1">
+                        {app.scopes.map((s) => (
+                          <Badge key={s} variant="secondary">
+                            {scopeLabel(s)}
+                          </Badge>
+                        ))}
                       </div>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {formatDateShort(app.createdAt)}
+                      </span>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
-                    onClick={() => setRevokeTarget(app)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {revokeTarget && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-            <Card className="max-w-sm w-full mx-4">
-              <CardContent className="p-6">
-                <h3 className="text-sm font-semibold mb-2">Revoke access?</h3>
-                <p className="text-xs text-muted-foreground mb-4">
-                  <strong>{revokeTarget.clientName}</strong> will no longer be able to access your
-                  account. You can re-authorize it later.
-                </p>
-                <div className="flex gap-2 justify-end">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setRevokeTarget(null)}
-                    disabled={isRevoking}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleRevoke}
-                    disabled={isRevoking}
-                  >
-                    {isRevoking ? 'Revoking…' : 'Revoke'}
-                  </Button>
                 </div>
+                <Button
+                  variant="danger"
+                  size="icon-sm"
+                  className="shrink-0"
+                  aria-label={t('connectedApps.revoke')}
+                  title={t('connectedApps.revoke')}
+                  onClick={() => setRevokeTarget(app)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </CardContent>
             </Card>
-          </div>
-        )}
-      </div>
-    </>
+          ))}
+        </div>
+      )}
+
+      <ConfirmationModal
+        isOpen={!!revokeTarget}
+        onClose={() => setRevokeTarget(null)}
+        onConfirm={handleRevoke}
+        title={t('connectedApps.revokeTitle')}
+        message={t('connectedApps.revokeMessage', { name: revokeTarget?.clientName ?? '' })}
+        confirmText={t('connectedApps.revoke')}
+        variant="danger"
+      />
+    </PageShell>
   );
 };

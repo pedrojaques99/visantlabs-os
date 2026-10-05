@@ -2,6 +2,7 @@ import React from 'react';
 import type { BudgetData, TimelineMilestone } from '@/types/types';
 import { InlineEditor } from '../InlineEditor';
 
+import { DEFAULT_DOCUMENT_ACCENT } from './documentColors';
 interface VisantTimelinePageProps {
   data: BudgetData;
   editable?: boolean;
@@ -13,7 +14,7 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
   editable = false,
   onDataChange,
 }) => {
-  const accentColor = data.brandAccentColor || data.brandColors[0] || 'brand-cyan';
+  const accentColor = data.brandAccentColor || data.brandColors[0] || DEFAULT_DOCUMENT_ACCENT;
   const bgColor = '#151515';
   const textColor = '#f3f3f3';
 

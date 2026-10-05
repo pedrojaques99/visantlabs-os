@@ -28,6 +28,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { NODE_LAYOUT } from '@/constants/nodeLayout';
 import { useBaseNode } from '@/hooks/canvas/useBaseNode';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 
 const AutoResizeTextarea = React.forwardRef<
   HTMLTextAreaElement,
@@ -417,7 +418,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
     if (import.meta.env.DEV) {
       const sectionsWithData = sections.filter((s) => hasSectionData(s.type)).map((s) => s.type);
-      logFn('🔄 Generation state', {
+      logFn('Generation state', {
         isGenerating,
         generatingStep: generatingStep || 'none',
         generatingSteps: generatingSteps.length > 0 ? generatingSteps : 'none',
@@ -432,7 +433,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
           .filter((s) => hasSectionData(s.type))
           .map((s) => ({ type: s.type, label: s.label }));
         if (completedSections.length > 0) {
-          logFn('✅ Completed sections', {
+          logFn('Completed sections', {
             count: completedSections.length,
             sections: completedSections,
           });
@@ -478,7 +479,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
       // Prevent generating multiple sections at once
       if (generatingSteps.length > 0) {
-        devLog('❌ Section generation blocked - already generating', {
+        devLog('Section generation blocked - already generating', {
           currentSteps: generatingSteps,
           requestedSection: sectionType,
         });
@@ -487,12 +488,12 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
       }
 
       if (!nodeData.onGenerateSection) {
-        devLog('❌ onGenerateSection callback not available');
+        devLog('onGenerateSection callback not available');
         return;
       }
 
       const sectionLabel = sections.find((s) => s.type === sectionType)?.label || sectionType;
-      devLog('🚀 Starting section generation', {
+      devLog('Starting section generation', {
         sectionType,
         sectionLabel,
         promptLength: prompt.length,
@@ -500,9 +501,9 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
       try {
         await nodeData.onGenerateSection(id, sectionType);
-        devLog('✅ Section generation initiated', { sectionType, sectionLabel });
+        devLog('Section generation initiated', { sectionType, sectionLabel });
       } catch (error: any) {
-        devLog('❌ Section generation failed', {
+        devLog('Section generation failed', {
           sectionType,
           sectionLabel,
           error: error?.message || error,
@@ -524,12 +525,12 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     }
 
     if (!nodeData.onGenerateAll) {
-      devLog('❌ onGenerateAll callback not available');
+      devLog('onGenerateAll callback not available');
       return;
     }
 
     const sectionsToGenerate = sections.filter((s) => !hasSectionData(s.type));
-    devLog('🚀 Starting generation of all sections', {
+    devLog('Starting generation of all sections', {
       totalSections: sections.length,
       sectionsToGenerate: sectionsToGenerate.length,
       sectionsList: sectionsToGenerate.map((s) => s.type),
@@ -538,11 +539,11 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
     try {
       await nodeData.onGenerateAll(id);
-      devLog('✅ All sections generation initiated', {
+      devLog('All sections generation initiated', {
         sectionsCount: sectionsToGenerate.length,
       });
     } catch (error: any) {
-      devLog('❌ All sections generation failed', {
+      devLog('All sections generation failed', {
         error: error?.message || error,
       });
       toast.error(error?.message || t('canvasNodes.strategyNode.failedToGenerateAllSections'), {
@@ -798,7 +799,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     const strategyDataChanged = currentStrategyDataKeys !== newStrategyDataKeys;
 
     if (strategyDataChanged && nodeData.strategyData) {
-      devLog('🔄 Strategy data updated from nodeData', {
+      devLog('Strategy data updated from nodeData', {
         oldKeys: currentStrategyDataKeys,
         newKeys: newStrategyDataKeys,
         newDataKeys: Object.keys(nodeData.strategyData),
@@ -813,7 +814,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     const shouldShowSelector = !hasPrompt && !hasStrategyData;
 
     if (shouldShowSelector !== showProjectSelector) {
-      devLog('🔄 Updating showProjectSelector', {
+      devLog('Updating showProjectSelector', {
         shouldShowSelector,
         current: showProjectSelector,
         hasPrompt,
@@ -827,7 +828,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     // If we have data, hide the selector and create new form
     if (hasStrategyData) {
       if (showProjectSelector) {
-        devLog('✅ Hiding project selector - data available', {
+        devLog('Hiding project selector, data available', {
           hasStrategyData,
           strategyDataKeys: Object.keys(nodeData.strategyData || {}),
           strategyDataCount: Object.keys(nodeData.strategyData || {}).length,
@@ -897,18 +898,18 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
   const handleLoadProject = useCallback(
     async (projectId: string) => {
-      devLog('📂 Loading project', { projectId });
+      devLog('Loading project', { projectId });
       try {
         const { brandingApi } = await import('@/services/brandingApi');
         const project = await brandingApi.getById(projectId);
 
         if (!project || !project.data) {
-          devLog('❌ Invalid project data', { projectId, project });
+          devLog('Invalid project data', { projectId, project });
           toast.error(t('canvas.failedToLoadProject'), { duration: 3000 });
           return;
         }
 
-        devLog('📦 Project loaded from API', {
+        devLog('Project loaded from API', {
           projectId,
           projectName: project.name,
           hasPrompt: !!project.prompt,
@@ -1002,7 +1003,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         });
 
         const convertedKeys = Object.keys(convertedStrategyData);
-        devLog('🔄 Converting project data', {
+        devLog('Converting project data', {
           projectId,
           nodeId: id,
           convertedSections: convertedKeys,
@@ -1018,7 +1019,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
             projectId: project._id || (project as any).id,
           });
 
-          devLog('✅ Data update called', {
+          devLog('Data update called', {
             projectId,
             nodeId: id,
             prompt: project.prompt || '',
@@ -1027,14 +1028,14 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
             strategyDataCount: Object.keys(convertedStrategyData).length,
           });
         } else {
-          devLog('❌ onUpdateData not available', { projectId, nodeId: id });
+          devLog('onUpdateData not available', { projectId, nodeId: id });
         }
 
         setPrompt(project.prompt || '');
         setProjectName(project.name || '');
         setShowProjectSelector(false);
 
-        devLog('✅ Project loaded successfully', {
+        devLog('Project loaded successfully', {
           projectId,
           projectName: project.name,
           sectionsLoaded: convertedKeys.length,
@@ -1044,7 +1045,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
         toast.success(t('canvas.projectLoadedSuccessfully'));
       } catch (error: any) {
-        devLog('❌ Failed to load project', {
+        devLog('Failed to load project', {
           projectId,
           error: error?.message || error,
           stack: error?.stack,
@@ -1099,14 +1100,14 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     if (isDifferentProject || !hasLoadedData) {
       // Prevent multiple simultaneous loads
       if (isLoadingRef.current) {
-        devLog('⏳ Already loading project, skipping', { projectId });
+        devLog('Already loading project, skipping', { projectId });
         return;
       }
 
       isLoadingRef.current = true;
       hasLoadedProjectRef.current = projectId;
 
-      devLog('🔄 Auto-loading project', {
+      devLog('Auto-loading project', {
         projectId,
         isDifferentProject,
         hasLoadedData,
@@ -1127,7 +1128,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
             hasLoadedProjectRef.current = null;
             hasLoadedDataForProjectRef.current.delete(projectId);
           }
-          devLog('❌ Auto-load failed', {
+          devLog('Auto-load failed', {
             projectId,
             error: error?.message || error,
           });
@@ -1233,7 +1234,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     >
       {selected && !dragging && (
         <NodeResizer
-          color="brand-cyan"
+          color="var(--brand-cyan)"
           isVisible={selected}
           minWidth={NODE_LAYOUT.STRATEGY_NODE_WIDTH}
           minHeight={NODE_LAYOUT.STRATEGY_NODE_MIN_HEIGHT}
@@ -1257,11 +1258,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
       <div className="flex flex-col h-full min-h-0">
         {/* Header */}
-        <NodeHeader
-          icon={Target}
-          title={t('canvasNodes.strategyNode.title') || 'Strategy Node'}
-          selected={selected}
-        >
+        <NodeHeader icon={Target} title={t('canvasNodes.strategyNode.title')} selected={selected}>
           {hasData && (
             <NodeButton
               variant="ghost"
@@ -1335,7 +1332,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   }
                 }}
                 variant="default"
-                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md transition-[color,background-color,border-color,box-shadow,filter]"
+                className="w-full px-3 py-2.5 gap-3 shadow-sm hover:shadow-md transition-[color,background-color,border-color,box-shadow,filter]"
               >
                 <FolderOpen size={14} />
                 <span>{t('canvasNodes.strategyNode.selectExistingProject')}</span>
@@ -1350,7 +1347,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   setIsCreatingNew(true);
                 }}
                 variant="primary"
-                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md transition-[color,background-color,border-color,box-shadow,filter]"
+                className="w-full px-3 py-2.5 gap-3 shadow-sm hover:shadow-md transition-[color,background-color,border-color,box-shadow,filter]"
               >
                 <Plus size={14} />
                 <span>{t('canvasNodes.strategyNode.createNewProject')}</span>
@@ -1363,15 +1360,13 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         {isCreatingNew && (
           <div className="mb-5">
             <NodeLabel className="text-neutral-300 font-medium">
-              {t('canvasNodes.strategyNode.projectName') || 'Project Name'}
+              {t('canvasNodes.strategyNode.projectName')}
             </NodeLabel>
             <NodeInput
               type="text"
               value={projectName}
               onChange={handleNameChange}
-              placeholder={
-                t('canvasNodes.strategyNode.projectNamePlaceholder') || 'Enter project name...'
-              }
+              placeholder={t('canvasNodes.strategyNode.projectNamePlaceholder')}
               onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => e.stopPropagation()}
               disabled={isGenerating}
@@ -1389,7 +1384,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
               value={prompt}
               onChange={handlePromptChange}
               placeholder={t('canvasNodes.strategyNode.brandDescriptionPlaceholder')}
-              className="text-xs resize-none nodrag nopan bg-neutral-900/60 border-neutral-700/40 focus:border-neutral-600 focus:ring-1  backdrop-blur-sm"
+              className="text-xs resize-none nodrag nopan bg-neutral-900/60 border-neutral-700/40 focus:border-neutral-600 focus:ring-1 "
               rows={3}
               disabled={isGenerating}
             />
@@ -1407,13 +1402,13 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                     nodeData.onCancelGeneration?.(id);
                   }}
                   variant="default"
-                  className="flex-1 px-3 py-2.5 gap-3 border-destructive/50 text-destructive hover:bg-destructive/20 backdrop-blur-sm shadow-sm hover:shadow-md transition-[color,background-color,border-color,box-shadow,filter] nodrag nopan"
+                  className="flex-1 px-3 py-2.5 gap-3 border-destructive/50 text-destructive hover:bg-destructive/20 shadow-sm hover:shadow-md transition-[color,background-color,border-color,box-shadow,filter] nodrag nopan"
                 >
                   <XCircle size={14} />
                   <span>{t('common.cancel')}</span>
                 </NodeButton>
-                <div className="flex-1 px-3 py-2.5 bg-muted border-node border-neutral-800 rounded-md flex items-center justify-center gap-3 backdrop-blur-sm shadow-sm">
-                  <GlitchLoader size={14} color="brand-cyan" />
+                <div className="flex-1 px-3 py-2.5 bg-muted border-node border-neutral-800 rounded-md flex items-center justify-center gap-3 shadow-sm">
+                  <GlitchLoader size={14} />
                   <span className="text-xs text-foreground font-medium">
                     {t('canvasNodes.strategyNode.analyzing')}
                   </span>
@@ -1430,11 +1425,9 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
                   // Validate prompt before proceeding
                   if (!prompt.trim()) {
-                    toast.error(
-                      t('canvasNodes.strategyNode.pleaseEnterBrandDescription') ||
-                        'Please enter a brand description',
-                      { duration: 3000 }
-                    );
+                    toast.error(t('canvasNodes.strategyNode.pleaseEnterBrandDescription'), {
+                      duration: 3000,
+                    });
                     return;
                   }
 
@@ -1458,7 +1451,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                     nodeData.onUpdateData(id, { prompt });
                   }
 
-                  devLog('🔍 Starting initial analysis', {
+                  devLog('Starting initial analysis', {
                     promptLength: prompt.length,
                     promptPreview: prompt.substring(0, 50),
                     projectName: projectName || 'none',
@@ -1468,9 +1461,9 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   try {
                     // Pass prompt directly to avoid race condition with nodesRef update
                     await nodeData.onInitialAnalysis(id, prompt);
-                    devLog('✅ Initial analysis initiated');
+                    devLog('Initial analysis initiated');
                   } catch (error: any) {
-                    devLog('❌ Initial analysis failed', {
+                    devLog('Initial analysis failed', {
                       error: error?.message || error,
                     });
                     toast.error(error?.message || 'Failed to analyze', { duration: 5000 });
@@ -1478,13 +1471,13 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 }}
                 disabled={!prompt.trim() || isGenerating}
                 variant="primary"
-                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md transition-[color,background-color,border-color,box-shadow,filter]"
+                className="w-full px-3 py-2.5 gap-3 shadow-sm hover:shadow-md transition-[color,background-color,border-color,box-shadow,filter]"
               >
                 <Target size={14} />
                 <span>
                   {promptHasChanged && hasData
-                    ? t('canvasNodes.strategyNode.reAnalyze') || 'Re-analyze'
-                    : t('canvasNodes.strategyNode.analyze') || 'Analyze'}
+                    ? t('canvasNodes.strategyNode.reAnalyze')
+                    : t('canvasNodes.strategyNode.analyze')}
                 </span>
               </NodeButton>
             )}
@@ -1577,15 +1570,14 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
         {/* Single Generation Status - Shows when any section is generating */}
         {isGenerating && (generatingStep || generatingSteps.length > 0) && (
-          <div className="mb-5 px-3 py-2.5 bg-muted border-node border-neutral-800 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
+          <div className="mb-5 px-3 py-2.5 bg-muted border-node border-neutral-800 rounded-md flex items-center justify-between gap-3 shadow-sm">
             <div className="flex items-center gap-3">
-              <GlitchLoader size={12} color="brand-cyan" />
+              <GlitchLoader size={12} />
               <span className="text-xs text-foreground font-medium">
                 {generatingStep === 'all'
-                  ? t('canvasNodes.strategyNode.generatingAllSections') ||
-                    'Generating all sections...'
+                  ? t('canvasNodes.strategyNode.generatingAllSections')
                   : generatingStep === 'marketResearch'
-                    ? t('canvasNodes.strategyNode.analyzing') || 'Analyzing...'
+                    ? t('canvasNodes.strategyNode.analyzing')
                     : generatingSteps.length > 0
                       ? t('canvasNodes.strategyNode.generatingSection', {
                           section:
@@ -1598,7 +1590,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                               sections.find((s) => s.type === generatingStep)?.label ||
                               generatingStep,
                           }) || `Generating ${generatingStep}...`
-                        : t('canvasNodes.strategyNode.generating') || 'Generating...'}
+                        : t('canvasNodes.strategyNode.generating')}
               </span>
             </div>
             {nodeData.onCancelGeneration && (
@@ -1674,7 +1666,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 return (
                   <div
                     key={section.type}
-                    className="border-node border-neutral-700/40 rounded-md overflow-hidden group bg-neutral-900/30 backdrop-blur-sm shadow-sm hover:shadow-md transition-[color,background-color,border-color,box-shadow,filter]"
+                    className="border-node border-neutral-700/40 rounded-md overflow-hidden group bg-neutral-900/30 shadow-sm hover:shadow-md transition-[color,background-color,border-color,box-shadow,filter]"
                   >
                     <NodeButton
                       variant="ghost"
@@ -1689,7 +1681,10 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                         {sectionHasData && !isGeneratingSection && (
                           <div
                             onClick={(e) => handleDeleteSection(section.type, e)}
-                            className="p-1 hover:bg-destructive/20 rounded-md opacity-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity] cursor-pointer"
+                            className={cn(
+                              'p-1 hover:bg-destructive/20 rounded-md cursor-pointer transition-colors',
+                              hoverReveal
+                            )}
                             title={t('canvasNodes.strategyNode.deleteSection', {
                               section: section.label,
                             })}
@@ -1731,7 +1726,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                             onChange={(e) =>
                               handleSectionContentChange(section.type, e.target.value)
                             }
-                            className="text-xs resize-none nodrag nopan w-full bg-neutral-900/60 border-neutral-700/40 focus:border-neutral-600 focus:ring-1  backdrop-blur-sm"
+                            className="text-xs resize-none nodrag nopan w-full bg-neutral-900/60 border-neutral-700/40 focus:border-neutral-600 focus:ring-1 "
                             minHeight={40}
                             maxHeight={400}
                             onWheel={(e) => {

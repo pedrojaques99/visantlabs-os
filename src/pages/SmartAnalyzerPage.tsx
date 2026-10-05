@@ -11,7 +11,6 @@ import {
   X,
   Plus,
   Globe,
-  Cpu,
   RefreshCw,
   Diamond,
 } from '@/lib/ui/icons';
@@ -687,10 +686,6 @@ export const SmartAnalyzerPage: React.FC = () => {
 
   const adminActions = (
     <div className="flex items-center gap-4">
-      <div className="flex flex-col items-end mr-4">
-        <span className="text-2xs text-neutral-500">System Access</span>
-        <span className="text-xs font-mono text-white">ADMINISTRATOR</span>
-      </div>
       {step !== 'idle' && (
         <Button
           onClick={reset}
@@ -707,15 +702,14 @@ export const SmartAnalyzerPage: React.FC = () => {
   return (
     <PageShell
       pageId="smart-analyzer"
-      seoTitle="Smart Analyzer | Admin"
+      seoTitle="Smart Analyzer (admin)"
       seoDescription="AI-powered image analysis and prompt generation"
       title="Image Analyzer"
-      microTitle="Admin // Analysis"
-      description="AI-powered design and prompt engine for professional workflows."
+      description="Extract a reusable prompt from any image."
       breadcrumb={[{ label: 'Systems', to: '/apps' }, { label: 'Smart Analyzer' }]}
       actions={adminActions}
     >
-      <div className="selection:bg-brand-cyan/30 selection:text-brand-cyan">
+      <div>
         <AnimatePresence mode="wait">
           {step === 'idle' && (
             <motion.div
@@ -731,7 +725,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                 className={cn(
                   'group relative border-2 border-dashed transition-colors duration-500 flex flex-col items-center justify-center h-[400px] text-center',
                   isDragging
-                    ? 'border-brand-cyan bg-brand-cyan/5'
+                    ? 'border-ring bg-muted/30'
                     : 'border-neutral-800 hover:border-neutral-700 bg-neutral-900/20'
                 )}
                 onDrop={handleDrop}
@@ -751,21 +745,16 @@ export const SmartAnalyzerPage: React.FC = () => {
                   <div className="w-20 h-20 rounded-full bg-neutral-950 flex items-center justify-center border border-neutral-800 group-hover:border-neutral-700 transition-colors duration-500">
                     <ImageIcon
                       size={32}
-                      className="text-neutral-500 group-hover:text-brand-cyan transition-colors"
+                      className="text-neutral-500 group-hover:text-foreground transition-colors"
                     />
                   </div>
                 </div>
 
                 <div className="mt-8 space-y-2">
-                  <h3 className="text-xl font-medium text-white">Start here</h3>
+                  <h3 className="text-xl font-medium text-white">Analyze an image</h3>
                   <p className="text-sm text-neutral-500 max-w-xs">
-                    Drag an image here, click to browse, or paste with Ctrl+V.
+                    Or paste one with <kbd className="font-mono">Ctrl+V</kbd>.
                   </p>
-                </div>
-
-                <div className="mt-12 flex items-center gap-2 text-2xs font-mono tracking-widest text-neutral-600 uppercase border border-neutral-800 px-4 py-1.5 rounded-full">
-                  <Cpu size={10} />
-                  System Ready
                 </div>
               </GlassPanel>
             </motion.div>
@@ -812,24 +801,24 @@ export const SmartAnalyzerPage: React.FC = () => {
               <div className="grid lg:grid-cols-12 gap-12">
                 <div className="lg:col-span-8 space-y-10">
                   {/* #2: GENERATED RESULT BLOCK (LARGE) - Moved above prompt */}
-                  {/* #2: GENERATED RESULT BLOCK (LARGE) - Moved above prompt */}
                   {(isGenerating ||
                     isGeneratingVariations ||
                     generatedImage ||
                     generatedVariations.length > 0) && (
                     <div className="space-y-6">
                       <div className="flex items-center justify-between pl-1">
-                        <h4 className="text-xs font-medium text-neutral-300 flex items-center gap-3">
-                          <span className="w-2 h-2 rounded-full bg-neutral-600" />
-                          {generatedVariations.length > 0
-                            ? 'Visual Variations Suite'
-                            : 'Generated Visual Synthesis'}
+                        <h4 className="text-xs font-medium text-neutral-300">
+                          {generatedVariations.length > 0 ? 'Variations' : 'Result'}
                         </h4>
-                        <span className="text-2xs font-mono text-neutral-600 uppercase tracking-widest">
-                          {generatedVariations.length > 0
-                            ? `${generatedVariations.length} Scenarios`
-                            : '8K • Photorealistic'}{' '}
-                          • {selectedFont || 'Standard'}
+                        <span className="text-2xs text-neutral-600">
+                          {[
+                            generatedVariations.length > 0
+                              ? `${generatedVariations.length} variations`
+                              : null,
+                            selectedFont || null,
+                          ]
+                            .filter(Boolean)
+                            .join(', ')}
                         </span>
                       </div>
 
@@ -845,10 +834,9 @@ export const SmartAnalyzerPage: React.FC = () => {
                             {generatedVariations.map((v, idx) => (
                               <motion.div
                                 key={`var-${idx}`}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: idx * 0.1 }}
-                                className="relative aspect-video rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800 shadow-2xl"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="relative aspect-video rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800"
                               >
                                 <MockupCard
                                   base64Image={v}
@@ -872,7 +860,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                             key="single-result"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="relative aspect-video rounded-3xl overflow-hidden bg-neutral-900 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-neutral-800"
+                            className="relative aspect-video rounded-3xl overflow-hidden bg-neutral-900 border border-neutral-800"
                           >
                             <MockupCard
                               base64Image={generatedImage}
@@ -909,19 +897,19 @@ export const SmartAnalyzerPage: React.FC = () => {
                         <div className="flex items-center gap-3">
                           <span
                             className={cn(
-                              'text-2xs font-mono uppercase tracking-widest px-3 py-1.5 rounded-lg border',
+                              'text-2xs px-3 py-1.5 rounded-lg border',
                               getCategoryColor(result.category)
                             )}
                           >
                             {result.category}
                           </span>
                           {result.confidence != null && (
-                            <span className="text-2xs font-mono text-neutral-600">
+                            <span className="text-2xs tabular-nums text-neutral-600">
                               {Math.round(result.confidence * 100)}%
                             </span>
                           )}
                           {result.name && (
-                            <span className="text-2xs font-mono text-neutral-600 truncate max-w-[200px]">
+                            <span className="text-2xs text-neutral-600 truncate max-w-[200px]">
                               {result.name}
                             </span>
                           )}
@@ -932,7 +920,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                             onClick={() => setIsEditingPrompt(!isEditingPrompt)}
                             variant="ghost"
                             className={cn(
-                              'h-8 px-3 rounded-lg text-2xs font-mono uppercase tracking-widest transition-colors',
+                              'h-8 px-3 rounded-lg text-xs transition-colors',
                               isEditingPrompt
                                 ? 'bg-brand-cyan text-black'
                                 : 'text-neutral-500 hover:text-white'
@@ -960,7 +948,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                               e.target.style.height = 'auto';
                               e.target.style.height = e.target.scrollHeight + 'px';
                             }}
-                            className="w-full bg-transparent border-0 text-lg leading-relaxed text-neutral-200 focus:ring-0 resize-none font-sans scrollbar-hide selection:bg-brand-cyan/30 p-0 min-h-[120px]"
+                            className="w-full bg-transparent border-0 text-lg leading-relaxed text-neutral-200 focus:ring-0 resize-none font-sans scrollbar-hide p-0 min-h-[120px]"
                             placeholder="Edit your prompt..."
                             autoFocus
                             onFocus={(e) => {
@@ -969,7 +957,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                             }}
                           />
                         ) : (
-                          <pre className="text-lg leading-relaxed text-neutral-200 whitespace-pre-wrap font-sans selection:bg-brand-cyan/30">
+                          <pre className="text-lg leading-relaxed text-neutral-200 whitespace-pre-wrap font-sans">
                             {refinedPrompt}
                           </pre>
                         )}
@@ -980,7 +968,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                         <Button
                           onClick={copyPrompt}
                           className={cn(
-                            'h-12 px-6 rounded-xl font-semibold text-sm transition-all active:scale-[0.98]',
+                            'h-12 px-6 rounded-xl font-semibold text-sm transition-colors',
                             copied
                               ? 'bg-success/20 text-success border border-success/30'
                               : 'bg-white hover:bg-neutral-200 text-black'
@@ -1001,7 +989,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                               disabled={isGenerating || isGeneratingVariations}
                               variant="outline"
                               className={cn(
-                                'h-12 px-5 border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/5 text-neutral-400 hover:text-brand-cyan rounded-xl transition-[color,background-color,border-color,opacity] text-xs font-semibold',
+                                'h-12 px-5 border-white/10 hover:border-neutral-700 hover:bg-white/5 text-neutral-400 hover:text-white rounded-xl transition-[color,background-color,border-color,opacity] text-xs font-semibold',
                                 isGenerating && 'opacity-80'
                               )}
                             >
@@ -1040,9 +1028,9 @@ export const SmartAnalyzerPage: React.FC = () => {
                               key={s}
                               onClick={() => toggleSuggestion(s)}
                               className={cn(
-                                'px-4 py-2.5 rounded-xl text-2xs font-mono uppercase tracking-widest transition-all border outline-none active:scale-95',
+                                'px-4 py-2.5 rounded-xl text-xs transition-colors border outline-none',
                                 activeSuggestions.includes(s)
-                                  ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan shadow-[0_0_20px_rgba(34,211,238,0.1)]'
+                                  ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan'
                                   : 'bg-neutral-900/30 border-neutral-800 text-neutral-500 hover:border-neutral-700 hover:text-neutral-300'
                               )}
                             >
@@ -1056,7 +1044,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                           <div className="relative group/input flex items-center min-w-[200px]">
                             <Input
                               placeholder="Custom..."
-                              className="h-[42px] px-5 pl-10 bg-neutral-950 border-neutral-800/80 rounded-xl text-2xs font-mono uppercase tracking-widest placeholder:text-neutral-700 focus:border-neutral-600 transition-colors"
+                              className="h-[42px] px-5 pl-10 bg-neutral-950 border-neutral-800/80 rounded-xl text-xs placeholder:text-neutral-700 focus:border-neutral-600 transition-colors"
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                   const val = e.currentTarget.value.trim();
@@ -1080,7 +1068,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                                 setActiveSuggestions([]);
                                 setEditedPrompt('');
                               }}
-                              className="h-10 px-4 text-2xs font-mono uppercase tracking-[0.1em] text-neutral-600 hover:text-white"
+                              className="h-10 px-4 text-xs text-neutral-600 hover:text-white"
                             >
                               <RefreshCw size={10} className="mr-2" />
                               Reset
@@ -1109,13 +1097,12 @@ export const SmartAnalyzerPage: React.FC = () => {
                         className="w-full aspect-square object-cover cursor-zoom-in"
                         onClick={() => image?.preview && setShowFullImage(image.preview)}
                       />
+                      {/* Reveal named-group: visível em toque e foco, some só com hover disponível. */}
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover/source:opacity-100 transition-opacity"
+                        className="absolute bottom-2 right-2 text-xs text-white bg-black/70 px-3 py-1.5 rounded-lg border border-white/10 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/source:opacity-100 focus-visible:opacity-100 transition-opacity"
                       >
-                        <span className="text-2xs font-mono uppercase tracking-widest text-white/80 bg-black/40 px-4 py-2 rounded-lg border border-white/10">
-                          Analyze Another
-                        </span>
+                        Analyze another
                       </button>
                     </GlassPanel>
                   </div>
@@ -1130,7 +1117,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                         {result.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="text-2xs font-mono px-3 py-2 rounded-xl bg-neutral-900/50 border border-white/10 text-neutral-500 transition-colors hover:text-white hover:border-neutral-700"
+                            className="text-xs px-3 py-2 rounded-xl bg-neutral-900/50 border border-white/10 text-neutral-500"
                           >
                             {tag}
                           </span>
@@ -1158,9 +1145,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                               <span className="text-xs text-neutral-300 block mb-0.5">
                                 {c.name}
                               </span>
-                              <span className="text-2xs text-neutral-600 font-mono uppercase tracking-tighter">
-                                {c.hex}
-                              </span>
+                              <span className="text-2xs text-neutral-600 font-mono">{c.hex}</span>
                             </div>
                           </div>
                         ))}
@@ -1181,9 +1166,6 @@ export const SmartAnalyzerPage: React.FC = () => {
               <DialogTitle className="text-xl font-semibold tracking-tight">
                 Save to Community
               </DialogTitle>
-              <p className="text-xs text-neutral-500 leading-none">
-                Global resource synchronization
-              </p>
             </div>
             <Globe className="text-neutral-700" size={32} />
           </div>
@@ -1206,7 +1188,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                   {publishTags.map((tag) => (
                     <span
                       key={tag}
-                      className="flex items-center gap-2 bg-neutral-900 text-neutral-300 px-3 py-1.5 rounded-lg text-2xs font-mono border border-neutral-800"
+                      className="flex items-center gap-2 bg-neutral-900 text-neutral-300 px-3 py-1.5 rounded-lg text-xs border border-neutral-800"
                     >
                       {tag}
                       <button
@@ -1271,14 +1253,10 @@ export const SmartAnalyzerPage: React.FC = () => {
             <Button
               variant="ghost"
               onClick={() => setShowFullImage(null)}
-              className="absolute top-4 right-4 text-white/50 hover:text-white bg-black/20 hover:bg-black/40 h-10 w-10 p-0 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all"
+              className="absolute top-4 right-4 text-white/50 hover:text-white bg-black/20 hover:bg-black/40 h-10 w-10 p-0 rounded-full transition-colors"
             >
               <X size={20} />
             </Button>
-
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 text-white/70 text-2xs font-mono uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
-              Presione ESC para sair
-            </div>
           </div>
         </DialogContent>
       </Dialog>

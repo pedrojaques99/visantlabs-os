@@ -88,7 +88,11 @@ export const VHSText: React.FC<VHSTextProps> = ({
       ctx.fillRect(0, 0, width, height);
 
       // Set text style - use a large font size that scales with width
-      ctx.fillStyle = color;
+      // Canvas não entende nome de token ("brand-cyan" virava preto, e o preto
+      // é recortado abaixo: o texto sumia). Nome solto resolve pela var CSS.
+      ctx.fillStyle = /^[a-z][a-z0-9-]*$/.test(color)
+        ? getComputedStyle(document.documentElement).getPropertyValue(`--${color}`).trim() || color
+        : color;
       const fontSize = Math.max(100, Math.floor(width * 0.4));
       ctx.font = `bold ${fontSize}px monospace`;
       ctx.textAlign = 'center';

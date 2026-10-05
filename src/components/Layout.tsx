@@ -375,12 +375,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     if (pollCreditsStatus) clearInterval(pollCreditsStatus);
                     setSubscriptionStatus(status);
                     localStorage.removeItem('credit_purchase_pending');
-                    toast.success(
-                      t('creditsPackages.purchaseSuccess') || 'Credits added successfully!',
-                      {
-                        duration: 5000,
-                      }
-                    );
+                    toast.success(t('creditsPackages.purchaseSuccess'), {
+                      duration: 5000,
+                    });
                     return;
                   }
 
@@ -637,19 +634,19 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         classNames: {
           toast:
             theme === 'dark'
-              ? 'bg-neutral-950/70 border-neutral-800 !text-white/70 !shadow-sm !p-2 !text-2xs !font-mono'
-              : 'bg-white/40 border-neutral-200/10 text-neutral-800/70 !shadow-sm !p-2 !text-2xs !font-mono',
+              ? 'bg-neutral-950/70 border-neutral-800 !text-white/70 !shadow-sm !p-2 !text-2xs'
+              : 'bg-white/40 border-neutral-200/10 text-neutral-800/70 !shadow-sm !p-2 !text-2xs',
           title:
             theme === 'dark'
-              ? '!text-white/70 !font-mono !text-2xs !font-normal !leading-tight'
-              : 'text-neutral-900/70 !font-mono !text-2xs !font-normal !leading-tight',
+              ? '!text-white/70 !text-2xs !font-normal !leading-tight'
+              : 'text-neutral-900/70 !text-2xs !font-normal !leading-tight',
           description:
             theme === 'dark'
-              ? '!text-white/60 !font-mono !text-2xs !leading-tight'
-              : 'text-neutral-600/60 !font-mono !text-2xs !leading-tight',
+              ? '!text-white/60 !text-2xs !leading-tight'
+              : 'text-neutral-600/60 !text-2xs !leading-tight',
           success:
             theme === 'dark'
-              ? 'bg-neutral-950/70 border-brand-cyan/15 text-brand-cyan/70'
+              ? 'bg-neutral-950/70 border-success/15 text-success/70'
               : 'bg-white/40 border-success/15 text-success/70',
           error:
             theme === 'dark'
@@ -776,21 +773,19 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           !location.pathname.startsWith('/verify-email') &&
           !location.pathname.startsWith('/brand/') && (
             <div className="bg-warning/10 border-b border-warning/20 px-4 py-2 flex items-center justify-between">
-              <span className="text-warning text-xs font-mono">
-                Verifique seu email para desbloquear todas as funcionalidades.
-              </span>
+              <span className="text-warning text-xs">{t('auth.verifyEmailBanner')}</span>
               <button
                 onClick={async () => {
                   try {
                     await authService.resendVerification();
-                    toast.success('Email de verificacao reenviado!');
+                    toast.success(t('auth.verifyEmailResent'));
                   } catch {
-                    toast.error('Erro ao reenviar email.');
+                    toast.error(t('auth.verifyEmailResendFailed'));
                   }
                 }}
-                className="text-warning hover:text-warning text-xs font-mono underline underline-offset-2 transition-colors"
+                className="text-warning hover:text-warning text-xs underline underline-offset-2 transition-colors"
               >
-                Reenviar email
+                {t('auth.verifyEmailResend')}
               </button>
             </div>
           )}

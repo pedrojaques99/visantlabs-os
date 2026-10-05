@@ -180,7 +180,7 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
         <Button
           variant="ghost"
           onClick={handleAddCompetitor}
-          className={`flex items-center gap-2 px-4 py-2 border hover:border-neutral-600/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-colors duration-300 ${
+          className={`flex items-center gap-2 px-4 py-2 border hover:border-neutral-600/50 hover:text-foreground rounded-xl text-sm transition-colors duration-300 ${
             theme === 'dark'
               ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
               : 'bg-neutral-100 border-neutral-300 text-neutral-800'
@@ -218,10 +218,10 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
                   href={formatUrl(competitor.url)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`flex items-center gap-1 mt-2 w-full min-w-0 text-xs font-mono transition-colors ${
+                  className={`flex items-center gap-1 mt-2 w-full min-w-0 text-xs transition-colors ${
                     theme === 'dark'
-                      ? 'text-brand-cyan hover:text-brand-cyan/80'
-                      : 'text-blue-600 hover:text-blue-700'
+                      ? 'text-neutral-400 hover:text-neutral-200'
+                      : 'text-neutral-600 hover:text-neutral-900'
                   }`}
                   onClick={(e) => e.stopPropagation()}
                 >

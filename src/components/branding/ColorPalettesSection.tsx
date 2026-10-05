@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, X } from '@/lib/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +24,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
   onContentChange,
 }) => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const [localPalettes, setLocalPalettes] = useState<ColorPalette[]>(palettes);
 
   useEffect(() => {
@@ -174,7 +176,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                             );
                           }
                         }}
-                        className={`w-full aspect-square rounded-md border transition-all duration-300 hover:scale-[1.05] hover:shadow-lg hover:shadow-neutral-600/20 mb-2 ${
+                        className={`w-full aspect-square rounded-md border mb-2 ${
                           theme === 'dark' ? 'border-neutral-800/60' : 'border-neutral-300'
                         }`}
                         style={{ backgroundColor: color }}
@@ -195,7 +197,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                 <Button
                   variant="ghost"
                   onClick={() => handleAddColor(index)}
-                  className={`flex flex-col items-center justify-center aspect-square border-2 border-dashed rounded-md transition-colors hover:border-neutral-600/50 hover:text-brand-cyan ${
+                  className={`flex flex-col items-center justify-center aspect-square border-2 border-dashed rounded-md transition-colors hover:border-neutral-600/50 hover:text-foreground ${
                     theme === 'dark'
                       ? 'border-neutral-700/50 text-neutral-400'
                       : 'border-neutral-400/50 text-neutral-500'
@@ -247,21 +249,21 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
               window.dispatchEvent(new CustomEvent('mockup:openColorPicker'));
             }
           }}
-          className={`mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-full border text-2xs font-mono transition-colors ${
+          className={`mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-full border text-2xs transition-colors ${
             theme === 'dark'
-              ? 'border-neutral-700/60 text-neutral-500 hover:border-brand-cyan/50 hover:text-brand-cyan'
-              : 'border-neutral-400/60 text-neutral-600 hover:border-brand-cyan/60 hover:text-brand-cyan'
+              ? 'border-neutral-700/60 text-neutral-500 hover:border-neutral-600 hover:text-foreground'
+              : 'border-neutral-400/60 text-neutral-600 hover:border-neutral-600 hover:text-foreground'
           }`}
         >
-          <span className="w-2 h-2 rounded-full bg-brand-cyan/60" />
-          <span>Color Picker</span>
+          <span className="w-2 h-2 rounded-full bg-neutral-500" />
+          <span>{t('branding.colorPicker')}</span>
         </Button>
       )}
       {isEditing && onContentChange && (
         <Button
           variant="ghost"
           onClick={handleAddPalette}
-          className={`flex items-center gap-2 px-4 py-2 border hover:border-neutral-600/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-colors duration-300 ${
+          className={`flex items-center gap-2 px-4 py-2 border hover:border-neutral-600/50 hover:text-foreground rounded-xl text-sm transition-colors duration-300 ${
             theme === 'dark'
               ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
               : 'bg-neutral-100 border-neutral-300 text-neutral-800'

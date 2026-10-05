@@ -16,7 +16,7 @@ const Slider: React.FC<{
 }> = ({ label, value, min, max, step = 1, onChange, suffix }) => (
   <div className="flex flex-col gap-1">
     <div className="flex items-center justify-between text-2xs font-mono">
-      <span className="text-neutral-400 uppercase tracking-wider">{label}</span>
+      <span className="text-neutral-400">{label}</span>
       <span className="text-white tabular-nums">
         {value.toFixed(step < 1 ? 2 : 0)}
         {suffix}
@@ -44,7 +44,7 @@ const NumPair: React.FC<{
   labelB: string;
 }> = ({ label, ax, ay, onA, onB, labelA, labelB }) => (
   <div className="flex flex-col gap-1">
-    <span className="text-2xs text-neutral-400 uppercase tracking-wider">{label}</span>
+    <span className="text-2xs text-neutral-400">{label}</span>
     <div className="grid grid-cols-2 gap-1">
       <label className="flex items-center gap-1 text-2xs font-mono">
         <span className="text-neutral-500 w-4">{labelA}</span>
@@ -157,9 +157,7 @@ export const LogoFiltersPopover: React.FC<Props> = ({ layerId, data }) => {
             className="fixed z-[10001] bg-neutral-950/95 backdrop-blur-xl border border-white/10 rounded-lg shadow-2xl p-3 flex flex-col gap-3"
           >
             <div className="flex items-center justify-between">
-              <span className="text-2xs font-bold uppercase tracking-widest text-neutral-300">
-                Ajustes
-              </span>
+              <span className="text-2xs font-bold text-neutral-300">Ajustes</span>
               <button
                 type="button"
                 onClick={reset}
@@ -203,7 +201,7 @@ export const LogoFiltersPopover: React.FC<Props> = ({ layerId, data }) => {
                 onChange={(e) => setFilter({ grayscale: e.target.checked || undefined })}
                 className="accent-brand-cyan"
               />
-              <span className="uppercase tracking-wider">Preto e branco</span>
+              <span>Preto e branco</span>
             </label>
 
             <div className="h-px bg-white/5" />

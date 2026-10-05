@@ -208,7 +208,7 @@ export const BrandCreateShowcase: React.FC<{ brandId: string; className?: string
               onClick={() => setIndex(i)}
               aria-label={`Show ${s.name}`}
               className={cn(
-                'h-1.5 rounded-full transition-all',
+                'h-1.5 rounded-full transition-[width,background-color]',
                 i === index
                   ? 'w-5 bg-[var(--accent)]'
                   : 'w-1.5 bg-[var(--brand-text)]/25 hover:bg-[var(--brand-text)]/45'

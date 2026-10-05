@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { useCreativeStore } from './store/creativeStore';
-import { Diamond, Plus, X } from '@/lib/ui/icons';
+import { Diamond, Plus, X, ArrowLeft } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { mockupApi } from '@/services/mockupApi';
 import { canvasApi } from '@/services/canvasApi';
@@ -220,12 +220,11 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Diamond size={14} className="text-neutral-400" />
-                <span className="text-2xs font-bold uppercase tracking-widest text-white">
-                  Editar Região
-                </span>
+                <span className="text-xs font-semibold text-white">Editar região</span>
               </div>
               <button
                 onClick={handleClose}
+                aria-label="Fechar"
                 className="p-1 rounded text-neutral-500 hover:text-white hover:bg-white/5 transition-colors"
               >
                 <X size={14} />
@@ -237,26 +236,26 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setActionMode('layer')}
-                  className="flex flex-col items-center gap-2 p-3 rounded-lg border border-neutral-800 bg-neutral-800/50 hover:border-neutral-700 hover:bg-brand-cyan/5 transition-colors group"
+                  className="flex flex-col items-center gap-2 p-3 rounded-lg border border-neutral-800 bg-neutral-800/50 hover:border-neutral-700 hover:bg-neutral-800 transition-colors group"
                 >
                   <Plus
                     size={18}
-                    className="text-neutral-400 group-hover:text-brand-cyan transition-colors"
+                    className="text-neutral-400 group-hover:text-white transition-colors"
                   />
-                  <span className="text-2xs font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white">
-                    Nova Layer
+                  <span className="text-xs font-medium text-neutral-300 group-hover:text-white">
+                    Nova camada
                   </span>
                   <span className="text-2xs text-neutral-600 text-center">Cria por cima</span>
                 </button>
                 <button
                   onClick={() => setActionMode('edit')}
-                  className="flex flex-col items-center gap-2 p-3 rounded-lg border border-neutral-800 bg-neutral-800/50 hover:border-neutral-700 hover:bg-brand-cyan/5 transition-colors group"
+                  className="flex flex-col items-center gap-2 p-3 rounded-lg border border-neutral-800 bg-neutral-800/50 hover:border-neutral-700 hover:bg-neutral-800 transition-colors group"
                 >
                   <Diamond
                     size={18}
-                    className="text-neutral-400 group-hover:text-brand-cyan transition-colors"
+                    className="text-neutral-400 group-hover:text-white transition-colors"
                   />
-                  <span className="text-2xs font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white">
+                  <span className="text-xs font-medium text-neutral-300 group-hover:text-white">
                     Editar com IA
                   </span>
                   <span className="text-2xs text-neutral-600 text-center">Altera a área</span>
@@ -270,12 +269,12 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setActionMode(null)}
-                    className="text-2xs font-bold uppercase tracking-widest text-neutral-500 hover:text-white transition-colors"
+                    className="flex items-center gap-1 text-xs text-neutral-500 hover:text-white transition-colors"
                   >
-                    ← Voltar
+                    <ArrowLeft size={12} /> Voltar
                   </button>
-                  <span className="text-2xs font-bold uppercase tracking-widest text-neutral-300">
-                    {actionMode === 'layer' ? 'Nova Layer' : 'Editar Área'}
+                  <span className="text-xs font-medium text-neutral-300">
+                    {actionMode === 'layer' ? 'Nova camada' : 'Editar área'}
                   </span>
                 </div>
                 <textarea
@@ -292,14 +291,14 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                   variant="brand"
                   onClick={handleGenerate}
                   disabled={!aiPrompt.trim() || isGenerating}
-                  className="w-full py-2.5 text-2xs font-bold uppercase tracking-widest flex items-center justify-center gap-2"
+                  className="w-full py-2.5 text-xs font-semibold flex items-center justify-center gap-2"
                 >
                   {isGenerating ? (
                     <GlitchLoader size={14} />
                   ) : (
                     <>
                       <Diamond size={12} />
-                      {actionMode === 'layer' ? 'Gerar Layer' : 'Aplicar Edição'}
+                      {actionMode === 'layer' ? 'Gerar camada' : 'Aplicar edição'}
                     </>
                   )}
                 </Button>

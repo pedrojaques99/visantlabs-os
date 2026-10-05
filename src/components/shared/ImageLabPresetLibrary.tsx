@@ -42,12 +42,7 @@ const PresetSwatch: React.FC<{ preset: ImageLabPreset }> = ({ preset }) => {
     if (settings.blackInk) colors.push(settings.blackInk);
   }
 
-  const bg =
-    mode === 'halftone'
-      ? 'bg-brand-cyan/30'
-      : mode === 'riso'
-        ? 'bg-warning/30'
-        : 'bg-purple-950/30';
+  const bg = 'bg-muted';
 
   return (
     <div
@@ -63,7 +58,7 @@ const PresetSwatch: React.FC<{ preset: ImageLabPreset }> = ({ preset }) => {
           ))}
         </div>
       ) : (
-        <span className="text-2xs font-mono text-neutral-600 uppercase">{mode[0]}</span>
+        <span className="text-2xs font-mono text-neutral-600">{mode[0]}</span>
       )}
     </div>
   );
@@ -182,9 +177,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800/50 shrink-0">
-          <span className="text-2xs uppercase tracking-widest text-neutral-300">
-            Community Presets
-          </span>
+          <span className="text-2xs text-neutral-300">Community Presets</span>
           <button
             onClick={onClose}
             className="text-neutral-600 hover:text-neutral-300 transition-colors p-1"
@@ -201,7 +194,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
                 key={f}
                 onClick={() => setFilter(f)}
                 className={cn(
-                  'px-2.5 py-1.5 rounded-md text-2xs font-mono uppercase tracking-wider transition-colors border',
+                  'px-2.5 py-1.5 rounded-md text-xs capitalize transition-colors border',
                   filter === f
                     ? 'bg-white/10 text-white border-white/20'
                     : 'text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'
@@ -252,10 +245,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
                       <span className="text-2xs text-neutral-300 truncate">{preset.name}</span>
                       <span
                         className={cn(
-                          'text-2xs font-mono uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0',
-                          preset.data?.mode === 'halftone' && 'bg-brand-cyan/10 text-brand-cyan',
-                          preset.data?.mode === 'texture' && 'bg-purple-400/10 text-purple-400',
-                          preset.data?.mode === 'riso' && 'bg-warning/10 text-warning'
+                          'text-2xs font-mono px-1.5 py-0.5 rounded shrink-0 bg-muted text-muted-foreground'
                         )}
                       >
                         {preset.data?.mode}
@@ -263,9 +253,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
                     </div>
                     <PresetDetails preset={preset} />
                     {preset.author && (
-                      <span className="text-2xs text-neutral-600 font-mono">
-                        by {preset.author.name}
-                      </span>
+                      <span className="text-2xs text-neutral-600">by {preset.author.name}</span>
                     )}
                   </div>
                   <button

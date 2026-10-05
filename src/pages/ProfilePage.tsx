@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { X, Trash2, UserCircle } from '@/lib/ui/icons';
+import { EmptyState } from '../components/ui/EmptyState';
+import { ErrorState } from '../components/ui/ErrorState';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { CreditPackagesModal } from '../components/CreditPackagesModal';
 import { TransactionsModal } from '../components/TransactionsModal';
@@ -41,6 +43,10 @@ export const ProfilePage: React.FC = () => {
   // State
   const [user, setUser] = useState<UserType | null>(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
+  // Falha de carga ≠ "sem dados" ≠ "carregando": cada um tem a sua tela.
+  const [subscriptionError, setSubscriptionError] = useState(false);
+  const [referralError, setReferralError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreditPackagesModalOpen, setIsCreditPackagesModalOpen] = useState(false);
@@ -78,7 +84,7 @@ export const ProfilePage: React.FC = () => {
           const currentUser = await authService.verifyToken();
 
           if (!currentUser) {
-            setError(t('common.loadError') || 'Failed to load profile');
+            setError(t('common.loadError'));
             setUser(null);
             return;
           }
@@ -91,7 +97,7 @@ export const ProfilePage: React.FC = () => {
           loadReferralStats();
         } catch (err: any) {
           console.error('Failed to load user data:', err);
-          setError(t('common.loadError') || 'Failed to load profile data');
+          setError(t('common.loadError'));
           setUser(null);
         } finally {
           setIsLoading(false);
@@ -105,20 +111,23 @@ export const ProfilePage: React.FC = () => {
 
     loadUserData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, isCheckingAuth, t]);
+  }, [isAuthenticated, isCheckingAuth, t, reloadKey]);
 
   const loadSubscriptionStatus = async () => {
+    setSubscriptionError(false);
     try {
       const status = await subscriptionService.getSubscriptionStatus();
       setSubscriptionStatus(status);
     } catch (err) {
       console.error('Failed to load subscription status:', err);
+      setSubscriptionError(true);
     }
   };
 
   const loadReferralStats = async () => {
     try {
       setIsLoadingReferral(true);
+      setReferralError(false);
       const stats = await referralService.getReferralStats();
       if (!stats.referralCode) {
         try {
@@ -134,6 +143,7 @@ export const ProfilePage: React.FC = () => {
       }
     } catch (err) {
       console.error('Failed to load referral stats:', err);
+      setReferralError(true);
     } finally {
       setIsLoadingReferral(false);
     }
@@ -156,7 +166,7 @@ export const ProfilePage: React.FC = () => {
       window.open(url, '_blank');
     } catch (error: any) {
       console.error('Failed to create portal session:', error);
-      toast.error(t('subscription.portalError') || 'Failed to open subscription portal');
+      toast.error(t('subscription.portalError'));
     }
   };
 
@@ -165,12 +175,12 @@ export const ProfilePage: React.FC = () => {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error(t('common.selectImageFile') || 'Please select an image file');
+      toast.error(t('common.selectImageFile'));
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error(t('common.imageSizeLimit') || 'Image too large');
+      toast.error(t('common.imageSizeLimit'));
       return;
     }
 
@@ -192,22 +202,21 @@ export const ProfilePage: React.FC = () => {
             body: JSON.stringify({ imageBase64: base64String }),
           });
 
-          if (!response.ok)
-            throw new Error(t('common.pictureUploadError') || 'Failed to upload picture');
+          if (!response.ok) throw new Error(t('common.pictureUploadError'));
 
           const data = await response.json();
           setAvatarUrl(data.picture);
           setUser(data.user);
-          toast.success(t('common.pictureUploadSuccess') || 'Picture updated!');
+          toast.success(t('common.pictureUploadSuccess'));
         } catch (err: any) {
-          toast.error(err.message || t('common.pictureUploadError') || 'Failed to upload picture');
+          toast.error(err.message || t('common.pictureUploadError'));
         } finally {
           setIsUploadingPicture(false);
         }
       };
       reader.readAsDataURL(file);
     } catch (err: any) {
-      toast.error(err.message || t('common.pictureUploadError') || 'Failed to upload picture');
+      toast.error(err.message || t('common.pictureUploadError'));
       setIsUploadingPicture(false);
     }
   };
@@ -216,7 +225,7 @@ export const ProfilePage: React.FC = () => {
     return (
       <div
         className={cn(
-          'bg-neutral-950 text-neutral-300 flex items-center justify-center',
+          'bg-background text-muted-foreground flex items-center justify-center',
           inShell ? 'min-h-full pt-6' : 'min-h-screen pt-12 md:pt-14'
         )}
       >
@@ -226,35 +235,27 @@ export const ProfilePage: React.FC = () => {
   }
 
   if (!user || isAuthenticated === false) {
+    // Logado mas a leitura falhou: é erro com retry, nunca "faça login".
+    const loadFailed = isAuthenticated === true && !!error;
     return (
       <PageShell
         pageId="profile-auth-error"
         width="5xl"
         hideHeader
-        title={t('common.profile') || 'Perfil'}
+        title={t('common.profile')}
         seoTitle={t('common.profile')}
       >
-        <div className="flex flex-col items-center justify-center gap-6 py-24 px-6 text-center animate-in fade-in duration-300">
-          <div className="w-16 h-16 rounded-2xl border border-neutral-800 bg-neutral-900 flex items-center justify-center">
-            <UserCircle size={28} className="text-muted-foreground" />
-          </div>
-          <div className="space-y-2 max-w-sm">
-            <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
-              {t('common.profile') || 'Perfil'}
-            </h1>
-            <p className="text-sm text-neutral-400 leading-relaxed">
-              {t('common.notAuthenticated') || 'Please sign in to view your profile'}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Button variant="brand" size="sm" onClick={() => navigate('/login')}>
-              {t('auth.signIn')}
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
-              {t('common.backToHome')}
-            </Button>
-          </div>
-        </div>
+        {loadFailed ? (
+          <ErrorState title={error ?? undefined} onRetry={() => setReloadKey((k) => k + 1)} />
+        ) : (
+          <EmptyState
+            icon={UserCircle}
+            title={t('common.profile')}
+            description={t('common.notAuthenticated')}
+            actionLabel={t('auth.signIn')}
+            onAction={() => navigate('/login')}
+          />
+        )}
       </PageShell>
     );
   }
@@ -265,18 +266,18 @@ export const ProfilePage: React.FC = () => {
       width="5xl"
       seoTitle={t('common.profile')}
       seoDescription={t('profile.seoDescription')}
-      title={t('common.profile') || 'Perfil'}
+      title={t('common.profile')}
       hideHeader
-      breadcrumb={[{ label: t('apps.home'), to: '/' }, { label: t('common.profile') || 'Profile' }]}
+      breadcrumb={[{ label: t('apps.home'), to: '/' }, { label: t('common.profile') }]}
     >
       <div className="space-y-6">
         {error && (
-          <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive font-mono flex items-center gap-2">
+          <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive flex items-center gap-2">
             <span className="flex-1">{error}</span>
             <button
               type="button"
               onClick={() => setError(null)}
-              aria-label={t('common.dismiss') || 'Dismiss'}
+              aria-label={t('common.dismiss')}
               className="text-destructive/70 hover:text-destructive transition-colors"
             >
               <X size={16} />
@@ -291,8 +292,12 @@ export const ProfilePage: React.FC = () => {
           <ProfileOverview
             user={user}
             subscriptionStatus={subscriptionStatus}
+            subscriptionError={subscriptionError}
+            onRetrySubscription={loadSubscriptionStatus}
             referralStats={referralStats}
             isLoadingReferral={isLoadingReferral}
+            referralError={referralError}
+            onRetryReferral={loadReferralStats}
             onRefreshUserData={handleRefreshUserData}
             onManageSubscription={handleManageSubscription}
             onBuyCredits={() => setIsCreditPackagesModalOpen(true)}
@@ -316,7 +321,7 @@ export const ProfilePage: React.FC = () => {
               <h3 className="text-sm font-semibold text-destructive mb-2 flex items-center gap-2">
                 <Trash2 size={14} /> {t('profile.danger.title')}
               </h3>
-              <p className="text-xs text-neutral-500 font-mono mb-4 max-w-md">
+              <p className="text-xs text-muted-foreground mb-4 max-w-md">
                 {t('profile.danger.description')}
               </p>
               <Button
@@ -343,21 +348,24 @@ export const ProfilePage: React.FC = () => {
       />
       <EditProfileModal
         isOpen={isEditProfileModalOpen}
-        onClose={() => {
-          setIsEditProfileModalOpen(false);
+        onClose={() => setIsEditProfileModalOpen(false)}
+        onSuccess={(u) => {
+          // Só quem salvou muda o usuário: o modal devolve o registro novo, e o
+          // cache do authService cai pra o resto do app (header) reler.
           authService.invalidateCache();
-          window.location.reload();
+          setUser(u);
+          setAvatarUrl(u.picture || '');
         }}
       />
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="bg-neutral-900 border-white/10">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle className="text-destructive">
               {t('profile.deleteDialog.title')}
             </DialogTitle>
-            <DialogDescription className="text-neutral-400 text-sm font-mono">
+            <DialogDescription className="text-muted-foreground text-sm">
               {t('profile.deleteDialog.description')}{' '}
-              <strong className="text-white">{deleteConfirmWord}</strong>{' '}
+              <strong className="text-foreground">{deleteConfirmWord}</strong>{' '}
               {t('profile.deleteDialog.toConfirm')}
             </DialogDescription>
           </DialogHeader>

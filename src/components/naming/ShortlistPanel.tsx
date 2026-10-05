@@ -90,8 +90,8 @@ export const ShortlistPanel: React.FC<ShortlistPanelProps> = ({
 
   return (
     <div className="flex h-full flex-col">
-      <h2 className="mb-4 text-2xs font-mono uppercase tracking-widest text-neutral-500">
-        Shortlist {total > 0 && <span className="text-neutral-600">· {total}</span>}
+      <h2 className="mb-4 text-xs font-medium text-muted-foreground">
+        Shortlist {total > 0 && <span>· {total}</span>}
       </h2>
 
       {total === 0 ? (
@@ -109,7 +109,7 @@ export const ShortlistPanel: React.FC<ShortlistPanelProps> = ({
                 className="mb-2 flex w-full items-center gap-2 rounded-lg border border-brand-cyan/20 bg-brand-cyan/[0.06] px-3 py-2 text-left text-xs text-foreground hover:bg-brand-cyan/10 transition-colors"
               >
                 <Zap size={13} className="shrink-0" />
-                Seu gosto está claro — ver 3 finalistas?
+                Seu gosto está claro. Ver 3 finalistas?
               </motion.button>
             )}
           </AnimatePresence>
@@ -257,9 +257,9 @@ function ShortlistRow({
                       e.stopPropagation();
                       onRetryDefense?.(card);
                     }}
-                    className="flex items-center gap-1.5 text-xs text-neutral-500 transition-colors hover:text-brand-cyan"
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    <RotateCcw size={12} /> defesa indisponível — tentar de novo
+                    <RotateCcw size={12} /> defesa indisponível, tentar de novo
                   </button>
                 ) : (
                   <div className="space-y-2 text-xs text-neutral-400">
@@ -283,9 +283,7 @@ function ShortlistRow({
                 <p className="text-xs leading-relaxed text-neutral-400">{card.rationale}</p>
               )}
 
-              <span className="block text-2xs uppercase tracking-wider text-neutral-600">
-                {formatTag(card.territory)}
-              </span>
+              <span className="block text-2xs text-neutral-600">{formatTag(card.territory)}</span>
 
               {card.availability?.status === 'partial' && (
                 <span
@@ -299,7 +297,7 @@ function ShortlistRow({
 
               {card.availability?.status === 'unknown' && (
                 <span
-                  title="RDAP indisponível — não foi possível verificar o domínio"
+                  title="RDAP indisponível: não foi possível verificar o domínio"
                   className="inline-flex items-center gap-1 text-2xs text-neutral-500"
                 >
                   <Globe size={11} className="shrink-0" />
@@ -370,7 +368,7 @@ function ActionChip({
         'inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-neutral-800 px-2 py-1 text-2xs text-neutral-400 transition-colors',
         destructive
           ? 'hover:border-destructive/40 hover:text-destructive'
-          : 'hover:border-neutral-700 hover:text-brand-cyan'
+          : 'hover:border-ring hover:text-foreground'
       )}
     >
       {icon}

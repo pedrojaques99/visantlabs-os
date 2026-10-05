@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Save, Trash2, ChevronDown, Loader2 } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { Button } from '@/components/ui/button';
 import { API_BASE } from '@/config/api';
 import { authService } from '@/services/authService';
@@ -170,9 +171,7 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
               size={10}
               className={cn('transition-transform', expanded && 'rotate-180')}
             />
-            <span className="uppercase tracking-wider">
-              My presets{!loading && ` (${presets.length})`}
-            </span>
+            <span className="">My presets{!loading && ` (${presets.length})`}</span>
             {loading && <Loader2 size={8} className="animate-spin" />}
           </button>
 
@@ -188,22 +187,17 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
                     className="flex-1 flex items-center gap-1.5 text-left px-1.5 py-1 rounded text-2xs text-neutral-400 hover:bg-white/5 hover:text-white transition-colors min-w-0"
                   >
                     <span className="truncate">{p.name}</span>
-                    <span
-                      className={cn(
-                        'text-2xs uppercase shrink-0',
-                        p.data?.mode === 'halftone' && 'text-brand-cyan',
-                        p.data?.mode === 'texture' && 'text-purple-600',
-                        p.data?.mode === 'riso' && 'text-warning',
-                        p.data?.mode === 'shaders' && 'text-success'
-                      )}
-                    >
+                    <span className={cn('text-2xs font-mono shrink-0 text-muted-foreground')}>
                       {p.data?.mode}
                     </span>
                   </button>
                   <button
                     onClick={() => handleDelete(p.id)}
                     aria-label={`Delete ${p.name}`}
-                    className="opacity-0 group-hover:opacity-100 p-0.5 text-neutral-600 hover:text-destructive transition-[color,background-color,border-color,opacity] shrink-0"
+                    className={cn(
+                      hoverReveal,
+                      'p-0.5 text-neutral-600 hover:text-destructive transition-colors shrink-0'
+                    )}
                   >
                     <Trash2 size={9} />
                   </button>

@@ -14,7 +14,8 @@ import {
 import { branding, getGithubUrl } from '../config/branding';
 import { RepellantText } from '../components/RepellantText';
 import { motion } from 'framer-motion';
-import { ExternalLink, Github, ArrowUpRight } from '@/lib/ui/icons';
+import { ExternalLink, Github, ArrowUpRight, ArrowRight } from '@/lib/ui/icons';
+import { Thumb } from '../components/ui/Thumb';
 
 const TEAM = [
   {
@@ -96,9 +97,9 @@ export const AboutPage: React.FC = () => {
   return (
     <>
       <SEO
-        title={t('about.seo.title') || 'About — Visant Labs'}
-        description={t('about.seo.description') || 'Independent creative lab based in Brazil.'}
-        keywords={t('about.seo.keywords') || 'visant labs, about, design, Brazil'}
+        title={t('about.seo.title')}
+        description={t('about.seo.description')}
+        keywords={t('about.seo.keywords')}
       />
       <OrganizationSchema />
 
@@ -131,7 +132,7 @@ export const AboutPage: React.FC = () => {
                     to="/"
                     className="text-neutral-500 hover:text-neutral-300 text-xs transition-colors"
                   >
-                    {t('common.home') || 'Home'}
+                    {t('common.home')}
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -149,9 +150,9 @@ export const AboutPage: React.FC = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4 }}
-                className="font-mono text-2xs uppercase tracking-widest text-neutral-700 mb-3"
+                className="text-xs text-neutral-500 mb-3"
               >
-                Brasil · São Paulo · {time}
+                São Paulo, Brasil <span className="ml-2 font-mono tabular-nums">{time}</span>
               </motion.p>
               <motion.h1
                 initial={{ opacity: 0, y: 12 }}
@@ -167,7 +168,7 @@ export const AboutPage: React.FC = () => {
                 transition={{ delay: 0.14, duration: 0.4 }}
                 className="text-sm text-neutral-400 leading-relaxed max-w-sm"
               >
-                We build the infrastructure that makes brand guidelines work — turning identity into
+                We build the infrastructure that makes brand guidelines work, turning identity into
                 structured context for every model, tool, and team.
               </motion.p>
             </div>
@@ -191,23 +192,20 @@ export const AboutPage: React.FC = () => {
           </div>
 
           {/* ── Team ─────────────────────────────────────────────────────── */}
-          <Section label={t('about.team') || 'Team'} delay={0}>
+          <Section label={t('about.teamTitle')} delay={0}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {TEAM.map((member, i) => (
-                <motion.div key={member.name} {...inView(i * 0.08)}>
+              {TEAM.map((member) => (
+                <motion.div key={member.name} {...inView()}>
                   <Link
                     to={member.profile}
                     className="group flex items-start gap-4 p-4 rounded-xl border border-neutral-800 bg-white/[0.03] hover:bg-white/5 hover:border-white/[0.1] transition-[color,background-color,border-color,opacity,filter] duration-200"
                     aria-label={member.name}
                   >
                     <div className="relative shrink-0">
-                      <img
+                      <Thumb
                         src={member.avatar}
                         alt={member.name}
-                        className="w-10 h-10 rounded-full object-cover grayscale opacity-60 group-hover:opacity-100 group-hover:grayscale-0 transition-[color,background-color,border-color,opacity,filter] duration-300"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
+                        className="w-10 h-10 rounded-full object-cover grayscale opacity-60 group-hover:opacity-100 group-hover:grayscale-0 transition-[opacity,filter] duration-300"
                       />
                       <span
                         className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-neutral-950 ${
@@ -238,20 +236,18 @@ export const AboutPage: React.FC = () => {
           {/* ── Featured work ─────────────────────────────────────────────── */}
           <Section label="What we build" delay={0}>
             <div className="grid grid-cols-2 gap-3">
-              {FEATURED_TOOLS.map((tool, i) => (
-                <motion.div key={tool.label} {...inView(i * 0.06)}>
+              {FEATURED_TOOLS.map((tool) => (
+                <motion.div key={tool.label} {...inView()}>
                   <Link
                     to={tool.href}
-                    className="group flex flex-col rounded-xl border border-neutral-800 bg-white/[0.03] hover:bg-white/5 hover:border-white/[0.1] overflow-hidden transition-all duration-200"
+                    className="group flex flex-col rounded-xl border border-neutral-800 bg-white/[0.03] hover:bg-white/5 hover:border-white/[0.1] overflow-hidden transition-colors duration-200"
                   >
                     <div className="aspect-video w-full overflow-hidden bg-neutral-900/50">
-                      <img
+                      <Thumb
                         src={tool.image}
                         alt={tool.label}
-                        className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-500"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
+                        aspectRatio="16 / 9"
+                        className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-500"
                       />
                     </div>
                     <div className="p-3">
@@ -269,10 +265,10 @@ export const AboutPage: React.FC = () => {
           </Section>
 
           {/* ── Links ────────────────────────────────────────────────────── */}
-          <Section label={t('about.links.title') || 'Links'} delay={0}>
+          <Section label={t('about.links.title')} delay={0}>
             <div className="flex flex-col gap-0">
-              {LINKS.filter((l) => l.href).map((l, i) => (
-                <motion.div key={l.label} {...inView(i * 0.04)}>
+              {LINKS.filter((l) => l.href).map((l) => (
+                <motion.div key={l.label} {...inView()}>
                   <a
                     href={l.href!}
                     target={l.external ? '_blank' : undefined}
@@ -280,10 +276,7 @@ export const AboutPage: React.FC = () => {
                     className="flex items-center gap-3 py-2.5 border-b border-neutral-800 group transition-colors last:border-0"
                     aria-label={l.label}
                   >
-                    <span className="text-neutral-700 group-hover:text-neutral-400 transition-colors text-sm">
-                      ›
-                    </span>
-                    <span className="font-mono text-2xs text-neutral-500 group-hover:text-neutral-200 transition-colors tracking-wider flex-1">
+                    <span className="text-xs text-neutral-500 group-hover:text-neutral-200 transition-colors flex-1">
                       {l.label}
                     </span>
                     {l.external ? (
@@ -303,9 +296,7 @@ export const AboutPage: React.FC = () => {
             {...inView(0)}
             className="mt-10 pt-6 border-t border-neutral-800 flex items-center justify-between"
           >
-            <span className="text-xs text-neutral-500">
-              {t('about.openSource.description') || 'Open source'}
-            </span>
+            <span className="text-xs text-neutral-500">{t('about.openSource.description')}</span>
             <div className="flex items-center gap-4">
               <a
                 href={getGithubUrl()}
@@ -318,9 +309,10 @@ export const AboutPage: React.FC = () => {
               </a>
               <Link
                 to="/apps"
-                className="font-mono text-2xs text-neutral-500 hover:text-neutral-200 transition-colors"
+                className="flex items-center gap-1 font-mono text-2xs text-neutral-500 hover:text-neutral-200 transition-colors"
               >
-                /apps →
+                /apps
+                <ArrowRight size={10} />
               </Link>
             </div>
           </motion.div>
@@ -357,7 +349,7 @@ const Section: React.FC<{ label: string; delay: number; children: React.ReactNod
     className="mb-12"
     aria-label={label}
   >
-    <p className="font-mono text-2xs uppercase tracking-widest text-neutral-700 mb-4">{label}</p>
+    <p className="text-xs font-medium text-neutral-500 mb-4">{label}</p>
     {children}
   </motion.section>
 );

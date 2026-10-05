@@ -8,7 +8,8 @@ import {
   DialogBody,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Zap, Check, X, ChevronDown, ChevronUp } from '@/lib/ui/icons';
+import { Zap, Check, X, ChevronDown, ChevronUp, ArrowLeft } from '@/lib/ui/icons';
+import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
@@ -117,6 +118,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
   onSuccess,
 }) => {
   const emptySections = useMemo(() => getEmptySections(guideline), [guideline]);
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<Set<string>>(new Set(emptySections));
   const [loading, setLoading] = useState(false);
   const [patch, setPatch] = useState<Record<string, any> | null>(null);
@@ -283,9 +285,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
                   if (available.length === 0) return null;
                   return (
                     <div key={group}>
-                      <p className="text-2xs font-mono uppercase tracking-widest text-neutral-600 mb-2">
-                        {group}
-                      </p>
+                      <p className="text-xs font-medium text-muted-foreground mb-2">{group}</p>
                       <div className="space-y-1">
                         {available.map((key) => (
                           <button
@@ -385,12 +385,15 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
               </div>
 
               <div className="flex items-center justify-between mt-4">
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setPatch(null)}
-                  className="text-2xs uppercase tracking-widest text-neutral-500 hover:text-neutral-300"
+                  className="gap-1.5"
                 >
-                  ← Voltar
-                </button>
+                  <ArrowLeft size={14} />
+                  {t('common.back')}
+                </Button>
                 <div className="flex gap-2">
                   <Button
                     variant="ghost"

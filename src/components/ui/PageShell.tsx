@@ -1,7 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
-import { GridDotsBackground } from './GridDotsBackground';
 import { SEO } from '../SEO';
 import {
   BreadcrumbWithBack,
@@ -34,7 +33,7 @@ export interface PageShellProps {
 
   /** Header */
   title: React.ReactNode;
-  /** Uppercase mono micro-title above the main title (ex: "Module // Assets") */
+  /** Small label above the main title */
   microTitle?: React.ReactNode;
   /** Secondary copy under the title */
   description?: React.ReactNode;
@@ -49,7 +48,7 @@ export interface PageShellProps {
   width?: '5xl' | '7xl' | 'full';
   /** Hide the default title block (if the page renders its own header) */
   hideHeader?: boolean;
-  /** Hide the default background glow/gradient */
+  /** Skip the solid page background layer (page paints its own) */
   noBackground?: boolean;
   /** Extra className for the inner content container */
   contentClassName?: string;
@@ -65,7 +64,7 @@ const WIDTH_MAP: Record<NonNullable<PageShellProps['width']>, string> = {
 
 /**
  * Canonical page shell — see `.agent/memory/DESIGN.md`.
- * Provides: fixed neutral-950 background, centered main, sr-only h1,
+ * Provides: solid `bg-background` layer, centered main, sr-only h1,
  * BreadcrumbWithBack, title block with border-b, and telemetry data attrs.
  *
  * Use this instead of hand-rolling the shell in every page.
@@ -102,9 +101,7 @@ export const PageShell: React.FC<PageShellProps> = ({
 
       {/* Background layer */}
       {!noBackground && (
-        <div className={cn('inset-0 z-0 bg-neutral-950', inShell ? 'absolute' : 'fixed')}>
-          <GridDotsBackground />
-        </div>
+        <div className={cn('inset-0 z-0 bg-background', inShell ? 'absolute' : 'fixed')} />
       )}
 
       <div className={cn('bg-transparent relative z-10', inShell ? 'min-h-full' : 'min-h-screen')}>
@@ -132,21 +129,21 @@ export const PageShell: React.FC<PageShellProps> = ({
                         <React.Fragment key={`${seg.label}-${i}`}>
                           <BreadcrumbItem>
                             {isLast || !seg.to ? (
-                              <BreadcrumbPage className="text-neutral-200 text-2xs sm:text-2xs font-mono tracking-widest uppercase">
+                              <BreadcrumbPage className="text-foreground text-xs">
                                 {seg.label}
                               </BreadcrumbPage>
                             ) : (
                               <BreadcrumbLink asChild>
                                 <Link
                                   to={seg.to}
-                                  className="text-neutral-500 hover:text-neutral-200 transition-colors text-2xs sm:text-2xs font-mono tracking-widest uppercase"
+                                  className="text-muted-foreground hover:text-foreground transition-colors text-xs"
                                 >
                                   {seg.label}
                                 </Link>
                               </BreadcrumbLink>
                             )}
                           </BreadcrumbItem>
-                          {!isLast && <BreadcrumbSeparator className="text-neutral-800" />}
+                          {!isLast && <BreadcrumbSeparator className="text-muted-foreground" />}
                         </React.Fragment>
                       );
                     })}
@@ -160,14 +157,16 @@ export const PageShell: React.FC<PageShellProps> = ({
                 (label da seção): não repetimos título/descrição aqui — só
                 teleportamos as ações pro slot do topbar (fim do header dobrado). */}
             {!hideHeader && !inShell && (
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 border-b border-white/10 pb-6 sm:pb-10 mb-8 sm:mb-12">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 border-b border-border pb-6 sm:pb-10 mb-8 sm:mb-12">
                 <div className="space-y-3">
-                  {microTitle && <MicroTitle className="text-neutral-500">{microTitle}</MicroTitle>}
-                  <h2 className="font-bold text-foreground tracking-tight text-2xl lg:text-3xl text-white">
+                  {microTitle && (
+                    <MicroTitle className="text-muted-foreground">{microTitle}</MicroTitle>
+                  )}
+                  <h2 className="font-bold text-foreground tracking-tight text-2xl lg:text-3xl">
                     {title}
                   </h2>
                   {description && (
-                    <p className="text-muted-foreground leading-relaxed max-w-xl text-sm text-neutral-500">
+                    <p className="text-muted-foreground leading-relaxed max-w-xl text-sm">
                       {description}
                     </p>
                   )}

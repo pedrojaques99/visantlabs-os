@@ -97,20 +97,20 @@ const COPY: Record<'pt' | 'en', ConnectCopy> = {
   pt: {
     loading: 'Carregando convite...',
     errorHint:
-      'Este link de conexão pode ter expirado ou já ter sido usado. Abra o link da sua marca de novo e toque em Conectar para gerar um novo — ou peça pra quem te enviou reenviar.',
+      'Este link de conexão pode ter expirado ou já ter sido usado. Abra o link da sua marca de novo e toque em Conectar para gerar um novo, ou peça pra quem te enviou reenviar.',
     back: 'Voltar ao início',
     invitedBy: (n) => `Enviado por ${n}`,
     inviteDesc: (b) =>
-      `Conecte ${b} ao seu assistente de IA (Claude, ChatGPT…). Ele vai criar, escrever e desenhar no padrão da marca — cores, fontes, logos e tom de voz, automaticamente.`,
+      `Conecte ${b} ao seu assistente de IA (Claude, ChatGPT…). Ele passa a criar, escrever e desenhar com as cores, fontes, logos e tom de voz da marca.`,
     ctaAuthed: 'Aceitar e conectar',
     ctaGuest: 'Criar conta grátis e conectar',
-    freeHint: 'Grátis — entre com o Google em um clique.',
+    freeHint: 'Grátis. Entre com o Google em um clique.',
     accepting: (b) => `Conectando ${b}...`,
     connectedTitle: (b) => `${b} está conectada`,
     connectedSubtext:
-      'Dois passos rápidos e seu assistente de IA vai criar, escrever e desenhar no padrão da marca — automaticamente.',
-    step1: '1 · Conecte seu assistente',
-    step2: '2 · Teste — abra seu assistente e peça',
+      'Dois passos e seu assistente de IA passa a criar, escrever e desenhar no padrão da marca.',
+    step1: '1. Conecte seu assistente',
+    step2: '2. Teste: abra seu assistente e peça',
     dashboard: 'Ir para o painel',
     dev: 'Para desenvolvedores (Cursor, VS Code, Terminal)',
     open: 'Abrir',
@@ -121,7 +121,7 @@ const COPY: Record<'pt' | 'en', ConnectCopy> = {
         tag: 'Recomendado',
         open: 'https://claude.ai/customize/connectors?modal=add-custom-connector',
         steps: [
-          'Abra o Claude → Configurações → Conectores',
+          'No Claude, abra Configurações e depois Conectores',
           'Clique em "Adicionar conector personalizado"',
           'Cole o link abaixo',
           'Faça login com sua conta quando o Claude pedir',
@@ -133,7 +133,7 @@ const COPY: Record<'pt' | 'en', ConnectCopy> = {
         tag: '',
         open: 'https://chatgpt.com/apps#settings/Connectors',
         steps: [
-          'Abra o ChatGPT → Configurações → Conectores',
+          'No ChatGPT, abra Configurações e depois Conectores',
           'Adicione um conector',
           'Cole o link abaixo',
           'Faça login com sua conta quando o ChatGPT pedir',
@@ -149,20 +149,19 @@ const COPY: Record<'pt' | 'en', ConnectCopy> = {
   en: {
     loading: 'Loading invite...',
     errorHint:
-      'This connect link may have expired or already been used. Open your brand link again and tap Connect for a fresh one — or ask the team that shared it to resend.',
+      'This connect link may have expired or already been used. Open your brand link again and tap Connect for a fresh one, or ask the team that shared it to resend.',
     back: 'Back to home',
     invitedBy: (n) => `Invited by ${n}`,
     inviteDesc: (b) =>
-      `Connect ${b} to your AI assistant (Claude, ChatGPT…). It will then design, write and create on-brand — colors, fonts, logos and voice, automatically.`,
+      `Connect ${b} to your AI assistant (Claude, ChatGPT…). It will then design and write with the brand's colors, fonts, logos and voice.`,
     ctaAuthed: 'Accept & Connect',
     ctaGuest: 'Create free account & connect',
-    freeHint: 'Free — sign in with Google in one click.',
+    freeHint: 'Free. Sign in with Google in one click.',
     accepting: (b) => `Connecting ${b}...`,
     connectedTitle: (b) => `${b} is connected`,
-    connectedSubtext:
-      'Two quick steps and your AI assistant will design, write and create on-brand — automatically.',
-    step1: '1 · Connect your assistant',
-    step2: '2 · Try it — open your assistant and ask',
+    connectedSubtext: 'Two steps and your AI assistant will design and write on-brand.',
+    step1: '1. Connect your assistant',
+    step2: '2. Try it: open your assistant and ask',
     dashboard: 'Go to dashboard',
     dev: 'For developers (Cursor, VS Code, Terminal)',
     open: 'Open',
@@ -173,7 +172,7 @@ const COPY: Record<'pt' | 'en', ConnectCopy> = {
         tag: 'Recommended',
         open: 'https://claude.ai/customize/connectors?modal=add-custom-connector',
         steps: [
-          'Open Claude → Settings → Connectors',
+          'In Claude, open Settings, then Connectors',
           'Click "Add custom connector"',
           'Paste the link below',
           'Sign in with your account when Claude asks',
@@ -185,7 +184,7 @@ const COPY: Record<'pt' | 'en', ConnectCopy> = {
         tag: '',
         open: 'https://chatgpt.com/apps#settings/Connectors',
         steps: [
-          'Open ChatGPT → Settings → Connectors',
+          'In ChatGPT, open Settings, then Connectors',
           'Add a connector',
           'Paste the link below',
           'Sign in with your account when ChatGPT asks',
@@ -208,9 +207,8 @@ const fadeVisible = { opacity: 1, y: 0 };
 const fadeOut = { opacity: 0, y: -8 };
 const dur = { duration: 0.35, ease };
 
-const staggerVariants = {
-  animate: { transition: { staggerChildren: 0.06 } },
-};
+// Sem stagger: o bloco entra junto, num fade só.
+const staggerVariants = { initial: {}, animate: {} };
 
 const itemVariants = {
   initial: { opacity: 0, y: 6 },
@@ -303,7 +301,8 @@ export default function ConnectPage() {
     setTimeout(() => setCopied(null), 1800);
   }, []);
 
-  const logo = invite?.brand.logo;
+  const [logoFailed, setLogoFailed] = useState(false);
+  const logo = logoFailed ? null : invite?.brand.logo;
   const colors = invite?.brand.colors || [];
   const creator = invite?.creator?.name;
 
@@ -374,6 +373,7 @@ export default function ConnectPage() {
                     src={logo}
                     alt={brandName}
                     className="w-16 h-16 rounded-2xl object-contain bg-muted/50 ring-1 ring-border"
+                    onError={() => setLogoFailed(true)}
                   />
                 ) : (
                   <div className="w-16 h-16 rounded-2xl bg-muted/50 ring-1 ring-border flex items-center justify-center">
@@ -397,7 +397,7 @@ export default function ConnectPage() {
                   {colors.map((c, i) => (
                     <div
                       key={i}
-                      className="w-6 h-6 rounded-full ring-1 ring-black/5 dark:ring-white/10 transition-transform hover:scale-110"
+                      className="w-6 h-6 rounded-full ring-1 ring-border"
                       style={{ backgroundColor: c.hex }}
                     />
                   ))}
@@ -604,7 +604,7 @@ function CopyBtn({
       className={cn(
         'inline-flex items-center gap-1.5 text-xs font-medium rounded-md px-2.5 py-1',
         'bg-transparent hover:bg-muted/80 text-muted-foreground hover:text-foreground',
-        'transition-all duration-200 active:scale-95',
+        'transition-colors duration-200',
         className
       )}
     >
@@ -761,7 +761,7 @@ function ProviderRow({
             className={cn(
               'inline-flex items-center gap-1.5 text-xs font-medium rounded-lg px-3 py-1.5',
               'bg-foreground text-background hover:bg-foreground/90',
-              'transition-all duration-200 active:scale-95'
+              'transition-colors duration-200'
             )}
           >
             Connect
@@ -781,6 +781,7 @@ function ProviderIcon({ id }: { id: string }) {
   if (id === 'cursor') {
     return (
       <div className={cn(base, 'bg-neutral-900 dark:bg-white/10')}>
+        {/* EXCEÇÃO ao ruido-scan/icone-desenhado-a-mao: logo oficial do Cursor, não ícone genérico */}
         <svg viewBox="0 0 24 24" className="w-4 h-4 text-white" fill="currentColor">
           <path d="M11.503.131 1.891 5.678a.84.84 0 0 0-.42.726v11.188c0 .3.162.575.42.724l9.609 5.55a1 1 0 0 0 .998 0l9.61-5.55a.84.84 0 0 0 .42-.724V6.404a.84.84 0 0 0-.42-.726L12.497.131a1.01 1.01 0 0 0-.996 0M2.657 6.338h18.55c.263 0 .43.287.297.515L12.23 22.918c-.062.107-.229.064-.229-.06V12.335a.59.59 0 0 0-.295-.51l-9.11-5.257c-.109-.063-.064-.23.061-.23" />
         </svg>
@@ -790,6 +791,7 @@ function ProviderIcon({ id }: { id: string }) {
   if (id === 'vscode') {
     return (
       <div className={cn(base, 'bg-[#007ACC]/10')}>
+        {/* EXCEÇÃO ao ruido-scan/icone-desenhado-a-mao: logo oficial do VS Code, não ícone genérico */}
         <svg viewBox="0 0 24 24" className="w-4 h-4 text-[#007ACC]" fill="currentColor">
           <path d="M23.15 2.587L18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.261A1 1 0 0 0 .326 8.74L3.899 12 .326 15.26a1 1 0 0 0 .001 1.479L1.65 17.94a.999.999 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.492 1.492 0 0 0 1.704.29l4.942-2.377A1.5 1.5 0 0 0 24 20.06V3.939a1.5 1.5 0 0 0-.85-1.352zm-5.146 14.861L10.826 12l7.178-5.448v10.896z" />
         </svg>
@@ -806,6 +808,7 @@ function ProviderIcon({ id }: { id: string }) {
   if (id === 'chatgpt') {
     return (
       <div className={cn(base, 'bg-[#10A37F]/10')}>
+        {/* EXCEÇÃO ao ruido-scan/icone-desenhado-a-mao: logo oficial do ChatGPT, não ícone genérico */}
         <svg viewBox="0 0 24 24" className="w-4 h-4 text-[#10A37F]" fill="currentColor">
           <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z" />
         </svg>

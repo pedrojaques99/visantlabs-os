@@ -110,7 +110,7 @@ export function ImageToPrompt() {
 
     const improvement = window.prompt(
       success
-        ? 'O que funcionou bem? (opcional - ajuda a melhorar)'
+        ? 'O que funcionou bem? (opcional, ajuda a melhorar)'
         : 'O que deu errado? (ex: barras empilhadas, cores erradas, faltou X)'
     );
 

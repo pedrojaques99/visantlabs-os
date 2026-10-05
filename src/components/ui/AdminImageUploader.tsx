@@ -122,7 +122,7 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
         onDragOver={handleDragOver}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
-        className={`relative block w-full p-4 bg-neutral-900 border rounded-md cursor-pointer transition-all duration-300 ${
+        className={`relative block w-full p-4 bg-neutral-900 border rounded-md cursor-pointer transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-300 ${
           isDragging
             ? 'border-dashed border-2 border-neutral-600 bg-neutral-800/30 shadow-2xl shadow-black/10'
             : 'border-neutral-800 hover:border-neutral-800/20'
@@ -142,7 +142,6 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
               <GlitchLoader size={24} color="currentColor" />
               <div className="text-left min-w-0">
                 <p className="text-sm font-semibold text-neutral-400">Processando imagem...</p>
-                <p className="text-xs font-mono  text-neutral-500">Aguarde</p>
               </div>
             </>
           )}
@@ -150,8 +149,7 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
             <>
               <UploadCloud size={32} className="text-neutral-400 transition-colors flex-shrink-0" />
               <div className="text-left min-w-0">
-                <p className="text-sm font-semibold text-neutral-300">Solte a imagem aqui</p>
-                <p className="text-xs font-mono  text-neutral-500">Solte para fazer upload</p>
+                <p className="text-sm font-semibold text-neutral-300">Enviar imagem</p>
               </div>
             </>
           )}
@@ -162,8 +160,8 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
                 className="text-neutral-600 group-hover:text-neutral-400 transition-colors flex-shrink-0"
               />
               <div className="text-left min-w-0">
-                <p className="text-sm font-semibold text-neutral-400">Clique para fazer upload</p>
-                <p className="text-xs font-mono  text-neutral-500">
+                <p className="text-sm font-semibold text-neutral-400">Enviar imagem</p>
+                <p className="text-xs text-neutral-500">
                   JPEG, PNG, WebP ou GIF (máx. {MAX_IMAGE_SIZE_MB}MB)
                 </p>
               </div>

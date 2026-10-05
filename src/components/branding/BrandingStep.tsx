@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormButton } from '@/components/ui/form-button';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle2, RefreshCw, Coins } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
@@ -30,7 +30,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
     if (isGenerating) {
       return (
         <div className="flex items-center justify-center py-12">
-          <GlitchLoader size={32} color="brand-cyan" />
+          <GlitchLoader size={32} />
           <span className="ml-3 text-muted-foreground">
             {t('branding.generating')} {title}...
           </span>
@@ -316,7 +316,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
                     {paletteColors.map((color: string, colorIndex: number) => (
                       <div
                         key={colorIndex}
-                        className="w-12 h-12 rounded border border-border transition-all duration-300 hover:scale-[1.03] hover:shadow-lg"
+                        className="w-12 h-12 rounded border border-border"
                         style={{ backgroundColor: String(color) }}
                         title={String(color)}
                       />
@@ -355,7 +355,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
               {paletteColors.map((color: string, colorIndex: number) => (
                 <div
                   key={colorIndex}
-                  className="w-12 h-12 rounded border border-border transition-all duration-300 hover:scale-[1.03] hover:shadow-lg"
+                  className="w-12 h-12 rounded border border-border"
                   style={{ backgroundColor: String(color) }}
                   title={String(color)}
                 />
@@ -397,14 +397,14 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
 
           {!isGenerating && content && (
             <div className="flex gap-3 pt-4 border-t border-border">
-              <FormButton onClick={onRegenerate} variant="outline" className="flex-1">
+              <Button onClick={onRegenerate} variant="outline" className="flex-1">
                 <RefreshCw className="h-4 w-4" />
                 {t('branding.regenerate')}
-              </FormButton>
-              <FormButton onClick={onApprove} variant="primary" className="flex-1">
+              </Button>
+              <Button onClick={onApprove} variant="brand" className="flex-1">
                 <CheckCircle2 className="h-4 w-4" />
                 {t('branding.approveContinue')}
-              </FormButton>
+              </Button>
             </div>
           )}
         </div>

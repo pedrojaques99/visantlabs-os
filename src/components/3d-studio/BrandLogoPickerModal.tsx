@@ -3,6 +3,7 @@ import { Modal } from '@/components/ui/Modal';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { cn } from '@/lib/utils';
+import { Thumb } from '@/components/ui/Thumb';
 import { ChevronLeft, Image as ImageIcon } from '@/lib/ui/icons';
 import type { BrandGuideline } from '@/lib/figma-types';
 
@@ -101,21 +102,21 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
                       )}
                     >
                       <div className="w-full aspect-square flex items-center justify-center bg-white/5 rounded overflow-hidden relative">
-                        <img
+                        <Thumb
                           src={logo.url}
                           alt={logo.label || logo.variant}
                           className="max-w-full max-h-full object-contain p-2"
                         />
                         <span
                           className={cn(
-                            'absolute top-1 right-1 px-1.5 py-0.5 rounded text-3xs font-mono uppercase tracking-wider',
+                            'absolute top-1 right-1 px-1.5 py-0.5 rounded text-3xs font-mono',
                             svg ? 'bg-success/20 text-success' : 'bg-white/10 text-neutral-500'
                           )}
                         >
                           {svg ? 'SVG' : 'IMG'}
                         </span>
                       </div>
-                      <span className="text-2xs uppercase tracking-wider text-neutral-400 group-hover:text-white transition-colors">
+                      <span className="text-2xs text-neutral-400 group-hover:text-white transition-colors">
                         {logo.label || logo.variant}
                       </span>
                     </button>
@@ -147,7 +148,7 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
                 >
                   <div className="w-10 h-10 rounded bg-white/5 flex items-center justify-center shrink-0 overflow-hidden">
                     {primaryLogo ? (
-                      <img
+                      <Thumb
                         src={primaryLogo.url}
                         alt=""
                         className="max-w-full max-h-full object-contain p-1"

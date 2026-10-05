@@ -26,8 +26,7 @@ body {
 
 const COMPONENT_MAP: Record<string, string> = {
   PageShell: 'div className="p-6"',
-  GlassPanel:
-    'div className="bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/50 rounded-xl p-4"',
+  GlassPanel: 'div className="bg-neutral-950 border border-neutral-800/50 rounded-xl p-4"',
   Stack: 'div className="flex flex-col gap-4"',
   Grid: 'div className="grid grid-cols-2 gap-4"',
   Card: 'div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4"',
@@ -38,8 +37,7 @@ const COMPONENT_MAP: Record<string, string> = {
     'button className="px-4 py-2 rounded-lg bg-cyan-500 text-neutral-900 font-medium text-sm hover:bg-cyan-400 transition-colors"',
   Badge: 'span className="px-2 py-0.5 text-[10px] rounded-full bg-neutral-800 text-neutral-300"',
   Separator: 'hr className="border-neutral-800"',
-  Metric:
-    'div className="bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/50 rounded-xl p-4"',
+  Metric: 'div className="bg-neutral-950 border border-neutral-800/50 rounded-xl p-4"',
 };
 
 function propsToString(props: Record<string, unknown>): string {
@@ -69,10 +67,8 @@ function elementToJsx(spec: Spec, key: string, indent: number): string {
   const textContent = getTextContent(props);
 
   if (el.type === 'Metric') {
-    return `${pad}<div className="bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/50 rounded-xl p-4">
-${pad}  <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">${
-      props.label || ''
-    }</span>
+    return `${pad}<div className="bg-neutral-950 border border-neutral-800/50 rounded-xl p-4">
+${pad}  <span className="text-xs font-medium text-neutral-500">${props.label || ''}</span>
 ${pad}  <div className="flex items-baseline gap-2 mt-1">
 ${pad}    <span className="text-2xl font-semibold text-neutral-100">${props.value || ''}</span>
 ${pad}    ${

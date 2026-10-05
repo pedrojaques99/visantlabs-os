@@ -96,7 +96,7 @@ export const Modal: React.FC<ModalProps> = ({
       ref={modalRef}
       tabIndex={-1}
       className={cn(
-        'fixed inset-0 bg-black/70 backdrop-blur-md z-[9999] flex flex-col sm:items-center sm:justify-center overflow-hidden transition-all duration-300',
+        'fixed inset-0 bg-black/70 backdrop-blur-md z-[9999] flex flex-col sm:items-center sm:justify-center overflow-hidden transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-300',
         mobileDrawer ? 'justify-end sm:p-4' : 'justify-center p-4',
         'animate-in fade-in duration-300',
         className
@@ -109,7 +109,7 @@ export const Modal: React.FC<ModalProps> = ({
     >
       <div
         className={cn(
-          'relative w-full overflow-hidden flex flex-col transition-all duration-500',
+          'relative w-full overflow-hidden flex flex-col transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-500',
           'bg-popover backdrop-blur-3xl border-t sm:border border-border shadow-[0_30px_100px_rgba(0,0,0,0.8)]',
           'animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-2 duration-500',
 
@@ -149,7 +149,7 @@ export const Modal: React.FC<ModalProps> = ({
               {description && (
                 <p
                   id={`${id}-description`}
-                  className="text-xs text-muted-foreground font-mono mt-2 opacity-70"
+                  className="text-xs text-muted-foreground mt-2 opacity-70"
                 >
                   {description}
                 </p>
@@ -159,7 +159,7 @@ export const Modal: React.FC<ModalProps> = ({
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="p-2 sm:p-3 -mr-2 sm:-mr-3 text-muted-foreground hover:text-foreground transition-all bg-muted hover:bg-accent rounded-full"
+                className="p-2 sm:p-3 -mr-2 sm:-mr-3 text-muted-foreground hover:text-foreground transition-[color,background-color,border-color,box-shadow,opacity,transform] bg-muted hover:bg-accent rounded-full"
                 title="Close (Esc)"
                 aria-label="Close modal"
               >

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface DrawingTextRendererProps {
   text: string;
@@ -25,10 +26,12 @@ export const DrawingTextRenderer: React.FC<DrawingTextRendererProps> = ({
   onTextChange,
   onEditStart,
   onEditEnd,
-  placeholder = 'Click to edit text...',
+  placeholder: placeholderProp,
   className,
   style,
 }) => {
+  const { t } = useTranslation();
+  const placeholder = placeholderProp ?? t('canvasNodes.drawingNode.typeHere');
   const textStyle: React.CSSProperties = {
     color: textColor,
     fontSize: `${fontSize}px`,

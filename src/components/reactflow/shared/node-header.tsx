@@ -3,6 +3,7 @@ import { LucideIcon, ShieldCheck, LayoutGrid, Palette } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { NodeButton } from './node-button';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export interface NodeHeaderProps {
   icon: LucideIcon;
@@ -29,6 +30,7 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
     },
     ref
   ) => {
+    const { t } = useTranslation();
     return (
       <div ref={ref} className={cn('flex items-center justify-between node-margin-lg', className)}>
         <div className="flex items-center gap-4">
@@ -44,7 +46,7 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
 
         <div className="flex items-center gap-1.5 no-drag nopan">
           {onOpenMediaLibrary && (
-            <Tooltip content="Brand Media Library" position="top">
+            <Tooltip content={t('canvasNodes.shared.brandMediaLibrary')} position="top">
               <NodeButton
                 variant="ghost"
                 size="xs"
@@ -52,6 +54,7 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
                   e.stopPropagation();
                   onOpenMediaLibrary();
                 }}
+                aria-label={t('canvasNodes.shared.brandMediaLibrary')}
                 onMouseDown={(e) => e.stopPropagation()}
                 className="h-7 w-7 p-0 flex items-center justify-center hover:bg-neutral-800/80"
               >
@@ -66,7 +69,11 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
 
           {onToggleBrand !== undefined && (
             <Tooltip
-              content={isBrandActive ? 'Brand Core Active' : 'Brand Core Inactive'}
+              content={
+                isBrandActive
+                  ? t('canvasNodes.shared.brandCoreActive')
+                  : t('canvasNodes.shared.brandCoreInactive')
+              }
               position="top"
             >
               <button
@@ -74,6 +81,8 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
                   e.stopPropagation();
                   onToggleBrand(!isBrandActive);
                 }}
+                aria-label={t('canvasNodes.shared.brandCoreToggle')}
+                aria-pressed={!!isBrandActive}
                 onMouseDown={(e) => e.stopPropagation()}
                 className={cn(
                   'flex items-center justify-center w-8 h-8 rounded-md border-node transition-[color,background-color,border-color,opacity] duration-300',

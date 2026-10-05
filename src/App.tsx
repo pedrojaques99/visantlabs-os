@@ -10,7 +10,7 @@ import { ActiveBrandKitProvider } from './contexts/BrandKitContext';
 import { ActiveBrandProvider } from './contexts/ActiveBrandContext';
 import { DesktopOnlyGate } from './components/shared/DesktopOnlyGate';
 import { PremiumGate } from './components/shared/PremiumGate';
-import { FEATURE_COCKPIT, FEATURE_COPILOT } from './config/featureFlags';
+import { FEATURE_COPILOT } from './config/featureFlags';
 import { useLayout } from './hooks/useLayout';
 import { useActiveBrand } from './contexts/ActiveBrandContext';
 
@@ -282,66 +282,35 @@ const LoadingFallback = () => (
   </div>
 );
 
-// /cockpit route (plano Revenue-Centric, Fase 5): the cockpit no longer
-// hijacks the home — it lives here instead, fed by the same apps roster
-// the TUI launcher uses. Gating is internal (matches the rest of the app):
-// signed-out visitors are bounced back to home instead of seeing a blank
-// cockpit.
 /**
- * Início adaptativo (plano HOME-ADAPTIVE-IA): UMA casa. Com marca ativa → Cockpit
- * da marca; sem marca / "Todas as marcas" (isAllBrands) → grid de marcas. Colapsa
- * os antigos destinos Cockpit + Marcas num só. A flag FEATURE_COCKPIT decide
- * cockpit-vs-grid aqui dentro (a rota /cockpit existe sempre).
+ * Início (`/cockpit` sem id) = o acervo de marcas (BrandGuidelinesPage). O cockpit
+ * de trabalho é de UMA marca e mora em `/cockpit/:brandId`; o card do grid leva pra lá.
+ * Renderiza o grid aqui em vez de redirecionar: a URL do Início precisa ser a do item
+ * do rail, senão destaque e breadcrumb apontam pra outro lugar.
  *
- * Sem marca NENHUMA a rota NÃO faz mais bounce: renderiza o estado de ativação
- * guiado (checklist de primeiros passos + wizard de criação inline). O bounce
- * pra /brand-guidelines mandava o usuário novo — justamente quem o FirstRunGuard
- * empurra pra cá — pra uma lista vazia de arquivos, com a checklist de ativação
- * inalcançável atrás do redirect da HomePage.
+ * Sem marca NENHUMA (nem arquivada) renderiza a ativação guiada (checklist + wizard).
+ * Quem só tem marcas arquivadas cai no grid, que tem a seção de arquivadas onde ele
+ * desarquiva; mandar esse usuário "criar a primeira marca" seria mentira.
  */
 const HomeRoute: React.FC = () => {
   const { isAuthenticated } = useLayout();
-  const { activeBrand, brands, isAllBrands, isLoading, isError, refetchBrands } = useActiveBrand();
+  const { allBrands, isLoading, isError, refetchBrands } = useActiveBrand();
 
   if (isAuthenticated === false) {
     return <Navigate to="/" replace />;
   }
-  // Espera as marcas carregarem antes de decidir (evita flash cockpit↔grid).
   if (isLoading) return null;
 
-  // Zero marcas: ativação, não gerenciamento. Independe de FEATURE_COCKPIT —
-  // com a flag desligada o destino era o mesmo bounce. Assim quem chega em '/'
-  // (via HomePage → /cockpit) e quem chega em '/cockpit' direto veem A MESMA
-  // tela. Criar a marca aqui liga a marca ativa e o próprio HomeRoute troca
-  // pro cockpit no render seguinte, sem navegação.
   // A LISTA falhou ≠ o usuário não tem marca. Sem esta ramificação, um 500 na
-  // rota de marcas mandava quem já tem 12 marcas "criar a primeira" — e o
-  // serviço engolia o erro em `[]`, então nem dava pra saber. Ver ErrorState.
-  if (isError && brands.length === 0) {
+  // rota de marcas mandava quem já tem 12 marcas "criar a primeira".
+  if (isError && allBrands.length === 0) {
     return <ErrorState onRetry={() => refetchBrands()} />;
   }
 
-  if (brands.length === 0) {
+  if (allBrands.length === 0) {
     return <GettingStartedChecklist variant="page" />;
   }
 
-  // Marcas existem mas a ativa ainda não resolveu (o fallback do ActiveBrandContext
-  // roda pós-commit) — espera um tick em vez de bounce pro grid. Sem isso, o usuário
-  // recém-onboardado via '/' → cockpit cairia no grid de marcas por uma corrida.
-  if (FEATURE_COCKPIT && !isAllBrands && !activeBrand?.id && brands.length > 0) {
-    return null;
-  }
-
-  // O cockpit é DE UMA MARCA, e a marca vive na URL. `/cockpit` sem id é só a
-  // porta de entrada: resolve a marca ativa e manda pra `/cockpit/:brandId`.
-  // Assim o link é compartilhável, o histórico do browser volta pra marca certa
-  // e duas abas em marcas diferentes param de brigar pelo mesmo localStorage.
-  // `/cockpit` SEM id é o Início: o acervo de marcas. O cockpit de trabalho é de
-  // UMA marca e mora em `/cockpit/:brandId` — o card do grid leva pra lá.
-  //
-  // Renderiza o grid em vez de redirecionar pra `/brand-guidelines`: a URL do
-  // Início precisa ser a do item do rail, senão o destaque e o breadcrumb
-  // apontam pra um lugar que a barra de endereço desmente.
   return <BrandGuidelinesPage />;
 };
 

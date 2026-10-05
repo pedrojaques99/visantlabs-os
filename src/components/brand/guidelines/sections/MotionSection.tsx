@@ -154,7 +154,7 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
               type="button"
               onClick={() => patch({ respectsReducedMotion: !motion.respectsReducedMotion })}
               className={cn(
-                'w-7 h-3.5 rounded-full border transition-all cursor-pointer relative shrink-0',
+                'w-7 h-3.5 rounded-full border transition-colors cursor-pointer relative shrink-0',
                 motion.respectsReducedMotion
                   ? 'bg-white/10 border-white/20'
                   : 'bg-white/[0.03] border-white/10'
@@ -163,7 +163,7 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
             >
               <div
                 className={cn(
-                  'absolute top-0.5 w-2.5 h-2.5 rounded-full transition-all bg-neutral-500',
+                  'absolute top-0.5 w-2.5 h-2.5 rounded-full transition-[left,background-color] bg-neutral-500',
                   motion.respectsReducedMotion ? 'left-3.5 bg-neutral-300' : 'left-0.5'
                 )}
               />

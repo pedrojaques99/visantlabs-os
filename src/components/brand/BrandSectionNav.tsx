@@ -14,6 +14,7 @@ import { Search, X } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { GlassPanel } from '@/components/ui/GlassPanel';
+import { useTranslation } from '@/hooks/useTranslation';
 import type { PublicTab } from './brand-shared-config';
 
 interface BrandSectionNavProps {
@@ -38,6 +39,7 @@ export const BrandSectionNav: React.FC<BrandSectionNavProps> = ({
   searchPlaceholder,
   sectionsLabel,
 }) => {
+  const { t } = useTranslation();
   const [searchOpen, setSearchOpen] = useState(false);
 
   const tabButton = (tab: PublicTab, variant: 'mobile' | 'desktop') => (
@@ -46,11 +48,11 @@ export const BrandSectionNav: React.FC<BrandSectionNavProps> = ({
       onClick={() => onTabChange(tab.id)}
       aria-current={activeTab === tab.id ? 'true' : undefined}
       className={cn(
-        'rounded-lg text-2xs font-bold uppercase tracking-wider transition-all',
+        'rounded-lg text-xs font-medium transition-colors',
         variant === 'mobile' ? 'px-3 py-1.5 whitespace-nowrap shrink-0' : 'px-4 py-2',
         activeTab === tab.id
           ? 'bg-[var(--accent)] text-[var(--accent-text)]'
-          : 'opacity-40 hover:opacity-100 hover:bg-[var(--brand-text)]/5'
+          : 'text-[var(--brand-text)]/60 hover:text-[var(--brand-text)] hover:bg-[var(--brand-text)]/5'
       )}
     >
       {tab.label}
@@ -62,13 +64,13 @@ export const BrandSectionNav: React.FC<BrandSectionNavProps> = ({
       {/* TOP — search + tabs; fades out when collapsed */}
       <div
         className={cn(
-          'sticky top-6 z-40 mb-16 px-2 transition-all duration-500',
+          'sticky top-6 z-40 mb-16 px-2 transition-[opacity,transform] duration-500',
           collapsed ? '-translate-y-6 opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'
         )}
       >
         <GlassPanel
           padding="sm"
-          className="backdrop-blur-2xl transition-all duration-500 bg-[var(--brand-bg)]/30 border-[var(--brand-text)]/8 shadow-[0_8px_32px_rgba(0,0,0,0.12)] ring-1 ring-[var(--brand-text)]/5"
+          className="backdrop-blur-2xl bg-[var(--brand-bg)]/30 border-[var(--brand-text)]/8 shadow-lg"
         >
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
@@ -101,7 +103,7 @@ export const BrandSectionNav: React.FC<BrandSectionNavProps> = ({
       <nav
         aria-label={sectionsLabel}
         className={cn(
-          'fixed left-8 top-1/2 -translate-y-1/2 z-50 hidden lg:flex flex-col gap-4 transition-all duration-500',
+          'fixed left-8 top-1/2 -translate-y-1/2 z-50 hidden lg:flex flex-col gap-4 transition-[opacity,transform] duration-500',
           collapsed
             ? 'opacity-100 translate-x-0 pointer-events-auto'
             : 'opacity-0 -translate-x-4 pointer-events-none'
@@ -130,7 +132,7 @@ export const BrandSectionNav: React.FC<BrandSectionNavProps> = ({
                   onSearchChange('');
                   setSearchOpen(false);
                 }}
-                aria-label="Close search"
+                aria-label={t('common.clearSearch')}
                 className="absolute right-2 text-[var(--brand-text)] opacity-50 hover:opacity-100"
               >
                 <X size={11} />
@@ -139,7 +141,7 @@ export const BrandSectionNav: React.FC<BrandSectionNavProps> = ({
           ) : (
             <button
               onClick={() => setSearchOpen(true)}
-              aria-label="Search"
+              aria-label={t('common.search')}
               className={cn(
                 'w-6 h-6 rounded-full flex items-center justify-center transition-colors',
                 searchTerm
@@ -158,22 +160,20 @@ export const BrandSectionNav: React.FC<BrandSectionNavProps> = ({
             aria-current={activeTab === tab.id ? 'true' : undefined}
             onClick={() => onTabChange(tab.id)}
             className={cn(
-              'group flex items-center gap-3 transition-all duration-300',
-              activeTab === tab.id ? 'translate-x-2' : 'opacity-60 hover:opacity-100'
+              'group flex items-center gap-3 transition-colors duration-300',
+              activeTab === tab.id
+                ? 'text-[var(--brand-text)]'
+                : 'text-[var(--brand-text)]/60 hover:text-[var(--brand-text)]'
             )}
           >
             <div
               aria-hidden="true"
               className={cn(
-                'w-1 h-1 rounded-full transition-all duration-300',
-                activeTab === tab.id
-                  ? 'h-6 bg-[var(--accent)] shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]'
-                  : 'bg-current opacity-20 group-hover:opacity-60'
+                'w-1 h-1 rounded-full transition-[height,background-color] duration-300',
+                activeTab === tab.id ? 'h-6 bg-[var(--accent)]' : 'bg-current/30'
               )}
             />
-            <span className="text-2xs uppercase font-bold tracking-wider opacity-80 group-hover:opacity-100 transition-opacity">
-              {tab.label}
-            </span>
+            <span className="text-xs font-medium">{tab.label}</span>
           </button>
         ))}
       </nav>

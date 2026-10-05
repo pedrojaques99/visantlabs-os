@@ -74,11 +74,9 @@ export const ActionDetector: React.FC<ActionDetectorProps> = ({
 
   return (
     <div className="mt-4 pt-3 border-t border-neutral-800 space-y-2.5 min-w-0">
-      <MicroTitle className="text-2xs text-brand-cyan/80 flex items-center gap-1.5 mb-2 min-w-0">
+      <MicroTitle className="text-2xs text-muted-foreground flex items-center gap-1.5 mb-2 min-w-0">
         <Diamond size={11} className="text-foreground shrink-0" />
-        <span className="truncate">
-          {t('canvasNodes.chatNode.detectedActions') || 'Ações Sugeridas'}
-        </span>
+        <span className="truncate">{t('canvasNodes.chatNode.detectedActions')}</span>
       </MicroTitle>
       <div className="flex flex-wrap gap-2 min-w-0">
         {actions.map((action, i) => (

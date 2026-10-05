@@ -76,16 +76,13 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
 
   const handleSave = async () => {
     if (!name.trim()) {
-      setError(t('canvasNodes.savePromptModal.errorMandatoryName') || 'Name is mandatory');
+      setError(t('canvasNodes.savePromptModal.errorMandatoryName'));
       return;
     }
 
     const token = authService.getToken();
     if (!token) {
-      toast.error(
-        t('canvasNodes.savePromptModal.errorNotAuthenticated') ||
-          'You need to be authenticated to save a prompt'
-      );
+      toast.error(t('canvasNodes.savePromptModal.errorNotAuthenticated'));
       return;
     }
 
@@ -120,13 +117,11 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
-          errorData.error || t('canvasNodes.savePromptModal.errorSaving') || 'Error saving prompt'
-        );
+        throw new Error(errorData.error || t('canvasNodes.savePromptModal.errorSaving'));
       }
 
       clearCommunityPresetsCache();
-      toast.success(t('canvasNodes.savePromptModal.success') || 'Prompt saved successfully!');
+      toast.success(t('canvasNodes.savePromptModal.success'));
       onClose();
     } catch (err: any) {
       setError(err.message);
@@ -155,7 +150,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800/60">
           <h2 className="text-lg font-semibold text-neutral-100">
-            {t('canvasNodes.savePromptModal.title') || 'Save Prompt'}
+            {t('canvasNodes.savePromptModal.title')}
           </h2>
           <Button
             variant="ghost"
@@ -179,16 +174,13 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
             {/* Name */}
             <div>
               <label className="block text-xs text-neutral-400 mb-1.5">
-                {t('canvasNodes.savePromptModal.name') || 'Prompt Name *'}
+                {t('canvasNodes.savePromptModal.name')}
               </label>
               <Input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={
-                  t('canvasNodes.savePromptModal.namePlaceholder') ||
-                  'Ex: Minimalist Interior Design'
-                }
+                placeholder={t('canvasNodes.savePromptModal.namePlaceholder')}
                 autoFocus
                 className="w-full px-3 py-2.5 bg-neutral-800/50 border-node border-neutral-700/50 rounded-md text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
               />
@@ -197,15 +189,12 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
             {/* Description */}
             <div>
               <label className="block text-xs text-neutral-400 mb-1.5">
-                {t('canvasNodes.savePromptModal.description') || 'Description (optional)'}
+                {t('canvasNodes.savePromptModal.description')}
               </label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder={
-                  t('canvasNodes.savePromptModal.descriptionPlaceholder') ||
-                  'A brief description of what this prompt does...'
-                }
+                placeholder={t('canvasNodes.savePromptModal.descriptionPlaceholder')}
                 rows={2}
                 className="w-full px-3 py-2.5 bg-neutral-800/50 border-node border-neutral-700/50 rounded-md text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors resize-none"
               />
@@ -214,7 +203,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
             {/* Privacy */}
             <div>
               <label className="block text-xs text-neutral-400 mb-2">
-                {t('canvasNodes.savePromptModal.privacy') || 'Privacy'}
+                {t('canvasNodes.savePromptModal.privacy')}
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <Button
@@ -230,11 +219,11 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                   <div className="flex items-center gap-2 mb-1">
                     <Lock size={14} className={!isPublic ? 'text-brand-cyan' : ''} />
                     <span className="text-sm font-medium">
-                      {t('canvasNodes.savePromptModal.private') || 'Private'}
+                      {t('canvasNodes.savePromptModal.private')}
                     </span>
                   </div>
                   <p className="text-2xs opacity-70 leading-relaxed">
-                    {t('canvasNodes.savePromptModal.privateHint') || 'Only you can see and use'}
+                    {t('canvasNodes.savePromptModal.privateHint')}
                   </p>
                 </Button>
 
@@ -251,11 +240,11 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                   <div className="flex items-center gap-2 mb-1">
                     <Globe size={14} className={isPublic ? 'text-brand-cyan' : ''} />
                     <span className="text-sm font-medium">
-                      {t('canvasNodes.savePromptModal.public') || 'Public'}
+                      {t('canvasNodes.savePromptModal.public')}
                     </span>
                   </div>
                   <p className="text-2xs opacity-70 leading-relaxed">
-                    {t('canvasNodes.savePromptModal.publicHint') || 'Share with the community'}
+                    {t('canvasNodes.savePromptModal.publicHint')}
                   </p>
                 </Button>
               </div>
@@ -264,7 +253,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
             {/* Tags */}
             <div>
               <label className="block text-xs text-neutral-400 mb-1.5">
-                {t('canvasNodes.savePromptModal.tags') || 'Tags'}
+                {t('canvasNodes.savePromptModal.tags')}
               </label>
               <div className="flex gap-2">
                 <Input
@@ -277,9 +266,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                       addTag();
                     }
                   }}
-                  placeholder={
-                    t('canvasNodes.savePromptModal.tagsPlaceholder') || 'modern, architecture...'
-                  }
+                  placeholder={t('canvasNodes.savePromptModal.tagsPlaceholder')}
                   className="flex-1 px-3 py-2.5 bg-neutral-800/50 border-node border-neutral-700/50 rounded-md text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
                 />
                 <Button
@@ -287,7 +274,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                   onClick={addTag}
                   className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border-node border-neutral-700 rounded-md text-neutral-300 text-sm transition-colors"
                 >
-                  {t('canvasNodes.savePromptModal.add') || 'Add'}
+                  {t('canvasNodes.savePromptModal.add')}
                 </Button>
               </div>
               {tags.length > 0 && (
@@ -315,7 +302,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
             {/* Prompt Preview */}
             <div className="pt-4 border-t border-neutral-800/50">
               <label className="block text-xs text-neutral-400 mb-1.5">
-                {t('canvasNodes.savePromptModal.promptPreview') || 'Prompt Preview'}
+                {t('canvasNodes.savePromptModal.promptPreview')}
               </label>
               <div className="p-3 bg-neutral-950/50 border-node border-neutral-800/50 rounded-md max-h-28 overflow-y-auto">
                 <p className="text-xs text-neutral-400 whitespace-pre-wrap leading-relaxed">
@@ -333,7 +320,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
             onClick={onClose}
             className="px-4 py-2 bg-transparent hover:bg-neutral-800 border-node border-neutral-700 rounded-md text-neutral-300 text-sm transition-colors"
           >
-            {t('common.cancel') || 'Cancel'}
+            {t('common.cancel')}
           </Button>
           <Button
             variant="brand"
@@ -344,12 +331,12 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
             {isLoading ? (
               <>
                 <GlitchLoader size={14} color="black" />
-                <span>{t('canvasNodes.savePromptModal.saving') || 'Saving...'}</span>
+                <span>{t('canvasNodes.savePromptModal.saving')}</span>
               </>
             ) : (
               <>
                 <Diamond size={14} />
-                <span>{t('canvasNodes.savePromptModal.save') || 'Save Prompt'}</span>
+                <span>{t('canvasNodes.savePromptModal.save')}</span>
               </>
             )}
           </Button>

@@ -2,17 +2,21 @@ import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
+// Badge is a static label (a <div>), so no hover/focus styles: an interactive
+// pill must be a <button> with its own states. Semantic variants exist so callers
+// pass `variant` instead of painting colors by hand.
 const badgeVariants = cva(
-  'inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-ring focus:ring-offset-2',
+  'inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium',
   {
     variants: {
       variant: {
-        default: 'border-transparent bg-primary text-primary-foreground hover:bg-primary/80',
-        secondary:
-          'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        destructive:
-          'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
+        default: 'border-transparent bg-primary text-primary-foreground',
+        secondary: 'border-transparent bg-secondary text-secondary-foreground',
+        destructive: 'border-transparent bg-destructive text-destructive-foreground',
         outline: 'text-foreground',
+        success: 'border-success/30 bg-success/10 text-success',
+        warning: 'border-warning/30 bg-warning/10 text-warning',
+        neutral: 'border-border bg-muted text-muted-foreground',
       },
     },
     defaultVariants: {

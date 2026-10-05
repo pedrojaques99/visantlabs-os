@@ -18,6 +18,9 @@ import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { copyToClipboard } from '@/utils/clipboard';
+import { useTranslation } from '@/hooks/useTranslation';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { Thumb } from '@/components/ui/Thumb';
 import type { BrandGuideline } from '@/lib/figma-types';
 import type { MockTokens } from './mockTokens';
 import { WebsiteHeroMock, InstagramFeedMock } from './BrandMocks';
@@ -42,7 +45,7 @@ const Tile: React.FC<{
   viewLabel?: string;
   className?: string;
   children: React.ReactNode;
-}> = ({ label, onView, viewLabel = 'View full', className, children }) => (
+}> = ({ label, onView, viewLabel, className, children }) => (
   <motion.div variants={tileMotion} className={cn('min-w-0', className)}>
     <GlassPanel
       padding="md"
@@ -54,7 +57,10 @@ const Tile: React.FC<{
           <button
             type="button"
             onClick={onView}
-            className="flex items-center gap-1 text-2xs uppercase tracking-widest text-[var(--brand-text)]/40 hover:text-[var(--accent)] transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none"
+            className={cn(
+              'flex items-center gap-1 text-xs text-[var(--brand-text)]/60 hover:text-[var(--brand-text)] focus:outline-none',
+              hoverReveal
+            )}
           >
             {viewLabel}
             <ArrowRight size={11} />
@@ -73,10 +79,14 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
   tokens,
   onOpenTab,
 }) => {
-  const copyHex = useCallback((hex: string) => {
-    copyToClipboard(hex);
-    toast.success(`Copied ${hex}`);
-  }, []);
+  const { t } = useTranslation();
+  const copyHex = useCallback(
+    (hex: string) => {
+      copyToClipboard(hex);
+      toast.success(t('brandView.copied', { hex }));
+    },
+    [t]
+  );
 
   const statement = tokens.manifestoFirstLine || tokens.description || tokens.tagline || '';
   const palette = tokens.palette.filter((c) => c.hex);
@@ -98,12 +108,16 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
     <motion.div
       initial="hidden"
       animate="visible"
-      transition={{ staggerChildren: 0.06 }}
       className="grid grid-cols-1 md:grid-cols-6 gap-4 md:gap-5 auto-rows-auto items-stretch"
     >
       {/* Manifesto — wide editorial statement */}
       {hasManifesto && (
-        <Tile label="Manifesto" onView={() => onOpenTab('strategy')} className="md:col-span-4">
+        <Tile
+          label={t('brandView.manifesto')}
+          onView={() => onOpenTab('strategy')}
+          viewLabel={t('brandView.viewAll')}
+          className="md:col-span-4"
+        >
           <blockquote
             className="text-2xl md:text-[2rem] font-light leading-[1.25] tracking-tight text-[var(--brand-text)]/85 line-clamp-5"
             style={{ fontFamily: tokens.headingFamily }}
@@ -111,9 +125,7 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
             &ldquo;{statement}&rdquo;
           </blockquote>
           {tokens.tagline && tokens.tagline !== statement && (
-            <p className="mt-5 text-2xs uppercase tracking-widest text-[var(--accent)]/70">
-              {tokens.tagline}
-            </p>
+            <p className="mt-5 text-sm text-[var(--brand-text)]/60">{tokens.tagline}</p>
           )}
         </Tile>
       )}
@@ -121,22 +133,22 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
       {/* Logo — primary lockup */}
       {hasLogo && (
         <Tile
-          label="Logo"
+          label={t('brandView.logo')}
           onView={() => onOpenTab('logos')}
-          viewLabel="Assets"
+          viewLabel={t('brandView.viewAll')}
           className="md:col-span-2"
         >
           <div className="h-full min-h-[140px] rounded-2xl bg-[var(--brand-surface)]/40 border border-[var(--brand-text)]/5 flex items-center justify-center p-6">
             {tokens.primaryLogo?.url ? (
-              <img
+              <Thumb
                 src={tokens.primaryLogo.url}
-                alt={`${tokens.name} logo`}
+                alt={tokens.name}
                 className="max-h-24 max-w-full object-contain"
                 loading="lazy"
               />
             ) : (
               <span
-                className="text-3xl font-black tracking-tight text-[var(--brand-text)]/90 text-center"
+                className="text-3xl font-semibold tracking-tight text-[var(--brand-text)]/90 text-center"
                 style={{ fontFamily: tokens.headingFamily }}
               >
                 {tokens.name}
@@ -148,7 +160,12 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
 
       {/* Colors — palette swatches, click to copy */}
       {hasColors && (
-        <Tile label="Colors" onView={() => onOpenTab('colors')} className="md:col-span-3">
+        <Tile
+          label={t('brandView.colors')}
+          onView={() => onOpenTab('colors')}
+          viewLabel={t('brandView.viewAll')}
+          className="md:col-span-3"
+        >
           <div className="flex flex-wrap gap-2.5">
             {palette.slice(0, 10).map((c, i) => (
               <button
@@ -156,14 +173,17 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
                 type="button"
                 onClick={() => copyHex(c.hex)}
                 title={`${c.name || ''} ${c.hex}`.trim()}
-                aria-label={`Copy ${c.hex}${c.name ? ` — ${c.name}` : ''}`}
+                aria-label={[t('brandView.copyHex', { hex: c.hex }), c.name]
+                  .filter(Boolean)
+                  .join(', ')}
                 className="group/swatch flex flex-col items-center gap-1.5"
               >
                 <span
-                  className="w-11 h-11 rounded-xl border border-[var(--brand-text)]/10 shadow-lg transition-transform group-hover/swatch:scale-110"
+                  className="w-11 h-11 rounded-xl border border-[var(--brand-text)]/10 transition-colors group-hover/swatch:border-[var(--brand-text)]/40"
                   style={{ backgroundColor: c.hex }}
                 />
-                <span className="text-3xs uppercase tracking-wider text-[var(--brand-text)]/40 opacity-0 group-hover/swatch:opacity-100 transition-opacity">
+                {/* EXCEÇÃO ao ruido-scan/mono-uppercase: hex é valor técnico. */}
+                <span className="text-2xs font-mono uppercase text-[var(--brand-text)]/60 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/swatch:opacity-100 group-focus-visible/swatch:opacity-100 transition-opacity">
                   {c.hex.replace('#', '')}
                 </span>
               </button>
@@ -174,10 +194,15 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
 
       {/* Typography — Aa specimen + families */}
       {hasType && (
-        <Tile label="Typography" onView={() => onOpenTab('typography')} className="md:col-span-3">
+        <Tile
+          label={t('brandView.typography')}
+          onView={() => onOpenTab('typography')}
+          viewLabel={t('brandView.viewAll')}
+          className="md:col-span-3"
+        >
           <div className="flex items-center gap-6">
             <span
-              className="text-6xl md:text-7xl font-bold tracking-tighter text-[var(--brand-text)]/90 leading-none shrink-0"
+              className="text-6xl md:text-7xl font-semibold tracking-tighter text-[var(--brand-text)]/90 leading-none shrink-0"
               style={{ fontFamily: tokens.headingFamily }}
             >
               Aa
@@ -186,14 +211,12 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
               {fonts.slice(0, 3).map((f, i) => (
                 <div key={i} className="min-w-0">
                   <p
-                    className="text-base font-semibold text-[var(--brand-text)]/85 truncate"
+                    className="text-base font-medium text-[var(--brand-text)]/90 truncate"
                     style={{ fontFamily: f.family }}
                   >
                     {f.family}
                   </p>
-                  <span className="text-3xs uppercase tracking-widest text-[var(--brand-text)]/40">
-                    {f.role || 'Type'}
-                  </span>
+                  <span className="text-xs text-[var(--brand-text)]/60">{f.role}</span>
                 </div>
               ))}
             </div>
@@ -203,16 +226,16 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
 
       {/* Mockups — live preview teaser → Preview tab */}
       <Tile
-        label="Mockups"
+        label={t('brandView.mockups')}
         onView={() => onOpenTab('preview')}
-        viewLabel="See all"
+        viewLabel={t('brandView.viewAll')}
         className={mockupsSpan}
       >
         <button
           type="button"
           onClick={() => onOpenTab('preview')}
-          aria-label="Open preview gallery"
-          className="block w-full rounded-2xl overflow-hidden border border-[var(--brand-text)]/8 transition-transform hover:scale-[1.01] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/40"
+          aria-label={t('brandView.mockups')}
+          className="block w-full rounded-2xl overflow-hidden border border-[var(--brand-text)]/8 transition-colors hover:border-[var(--brand-text)]/25 focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/40"
         >
           {hasAssets ? (
             <WebsiteHeroMock tokens={tokens} />
@@ -227,9 +250,9 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
       {/* Assets — media mosaic */}
       {hasAssets && (
         <Tile
-          label="Assets"
+          label={t('brandView.media')}
           onView={() => onOpenTab('media')}
-          viewLabel="Library"
+          viewLabel={t('brandView.viewAll')}
           className="md:col-span-2"
         >
           <div className="grid grid-cols-2 gap-2">
@@ -238,9 +261,9 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
                 key={i}
                 className="relative aspect-square rounded-xl overflow-hidden border border-[var(--brand-text)]/5 bg-[var(--brand-surface)]/40"
               >
-                <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                <Thumb src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
                 {i === 3 && mediaImages.length > 4 && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/55 text-white text-sm font-bold">
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/55 text-white text-sm font-medium">
                     +{mediaImages.length - 4}
                   </div>
                 )}

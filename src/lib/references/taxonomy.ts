@@ -205,10 +205,30 @@ const COUNTRY_ISO: Record<string, string> = {
   'new zealand': 'NZ',
 };
 
+/** Country display name (as stored, English) → ISO 3166-1 alpha-2. undefined if unknown. */
+export function countryIso(country?: string | null): string | undefined {
+  if (!country) return undefined;
+  return COUNTRY_ISO[country.trim().toLowerCase()];
+}
+
+/**
+ * Stored (English) country name → name in the viewer's locale via
+ * Intl.DisplayNames. Falls back to the stored name when the country has no ISO
+ * code or the runtime lacks DisplayNames.
+ */
+export function countryName(country: string, locale: string): string {
+  const iso = countryIso(country);
+  if (!iso) return country;
+  try {
+    return new Intl.DisplayNames([locale], { type: 'region' }).of(iso) ?? country;
+  } catch {
+    return country;
+  }
+}
+
 /** Country display name → flag emoji (regional indicator pair). '' if unknown. */
 export function countryFlag(country?: string | null): string {
-  if (!country) return '';
-  const iso = COUNTRY_ISO[country.trim().toLowerCase()];
+  const iso = countryIso(country);
   if (!iso) return '';
   return String.fromCodePoint(...[...iso].map((c) => 0x1f1e6 + (c.charCodeAt(0) - 65)));
 }

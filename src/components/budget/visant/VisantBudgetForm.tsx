@@ -8,6 +8,7 @@ import { SignaturesSection } from '../SignaturesSection';
 import { DateRangePicker } from '../DateRangePicker';
 import type { BudgetData } from '@/types/types';
 
+import { DEFAULT_DOCUMENT_ACCENT } from './documentColors';
 interface VisantBudgetFormProps {
   data: BudgetData;
   onChange: (data: BudgetData) => void;
@@ -25,12 +26,10 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({ data, onChan
     <div className="space-y-6 w-full h-full min-h-full">
       {/* Basic Info */}
       <div className="space-y-4">
-        <h3 className="text-base sm:text-lg font-semibold text-neutral-200 font-mono">
-          Informações Básicas
-        </h3>
+        <h3 className="text-base sm:text-lg font-semibold text-neutral-200">Informações Básicas</h3>
 
         <div className="w-full">
-          <label className="block text-xs sm:text-sm text-neutral-400 mb-2 font-mono">
+          <label className="block text-xs sm:text-sm text-neutral-400 mb-2">
             {t('budget.clientName')} *
           </label>
           <FormInput
@@ -42,7 +41,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({ data, onChan
         </div>
 
         <div className="w-full">
-          <label className="block text-xs sm:text-sm text-neutral-400 mb-2 font-mono">
+          <label className="block text-xs sm:text-sm text-neutral-400 mb-2">
             {t('budget.projectName')} *
           </label>
           <FormInput
@@ -54,7 +53,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({ data, onChan
         </div>
 
         <div className="w-full">
-          <label className="block text-xs sm:text-sm text-neutral-400 mb-2 font-mono">
+          <label className="block text-xs sm:text-sm text-neutral-400 mb-2">
             {t('budget.projectDescription')} *
           </label>
           <FormTextarea
@@ -74,7 +73,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({ data, onChan
         />
 
         <div className="w-full">
-          <label className="block text-xs sm:text-sm text-neutral-400 mb-2 font-mono">
+          <label className="block text-xs sm:text-sm text-neutral-400 mb-2">
             Título do Serviço (Capa)
           </label>
           <FormInput
@@ -86,13 +85,11 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({ data, onChan
 
         {/* Cores - Grid 2x2 */}
         <div className="w-full">
-          <label className="block text-xs sm:text-sm text-neutral-400 mb-3 font-mono">Cores</label>
+          <label className="block text-xs sm:text-sm text-neutral-400 mb-3">Cores</label>
           <div className="grid grid-cols-2 gap-4">
             {/* Cor de Fundo da Capa */}
             <div>
-              <label className="block text-xs text-neutral-500 mb-2 font-mono">
-                Cor de Fundo da Capa
-              </label>
+              <label className="block text-xs text-neutral-500 mb-2">Cor de Fundo da Capa</label>
               <div className="flex gap-2 items-center">
                 <FormInput
                   type="color"
@@ -112,9 +109,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({ data, onChan
 
             {/* Cor do Texto da Capa */}
             <div>
-              <label className="block text-xs text-neutral-500 mb-2 font-mono">
-                Cor do Texto da Capa
-              </label>
+              <label className="block text-xs text-neutral-500 mb-2">Cor do Texto da Capa</label>
               <div className="flex gap-2 items-center">
                 <FormInput
                   type="color"
@@ -134,8 +129,8 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({ data, onChan
 
             {/* Cor de Fundo */}
             <div>
-              <label className="block text-xs text-neutral-500 mb-2 font-mono">
-                {t('budget.brandBackgroundColor') || 'Cor de Fundo'}
+              <label className="block text-xs text-neutral-500 mb-2">
+                {t('budget.brandBackgroundColor')}
               </label>
               <div className="flex gap-2 items-center">
                 <FormInput
@@ -156,13 +151,13 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({ data, onChan
 
             {/* Cor de Destaque */}
             <div>
-              <label className="block text-xs text-neutral-500 mb-2 font-mono">
-                {t('budget.brandAccentColor') || 'Cor de Destaque'}
+              <label className="block text-xs text-neutral-500 mb-2">
+                {t('budget.brandAccentColor')}
               </label>
               <div className="flex gap-2 items-center">
                 <FormInput
                   type="color"
-                  value={data.brandAccentColor || 'brand-cyan'}
+                  value={data.brandAccentColor || DEFAULT_DOCUMENT_ACCENT}
                   onChange={(e) => updateField('brandAccentColor', e.target.value || undefined)}
                   className="w-10 h-10 cursor-pointer flex-shrink-0"
                 />
@@ -196,7 +191,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({ data, onChan
 
       {/* Observations */}
       <div className="w-full">
-        <label className="block text-xs sm:text-sm text-neutral-400 mb-2 font-mono">
+        <label className="block text-xs sm:text-sm text-neutral-400 mb-2">
           {t('budget.observations')}
         </label>
         <FormTextarea

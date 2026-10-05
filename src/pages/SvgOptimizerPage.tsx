@@ -10,6 +10,7 @@ import {
   RefreshCw,
   AlertCircle,
   PenTool,
+  ArrowRight,
 } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -29,7 +30,8 @@ import { useToolInput } from '@/hooks/useToolInput';
 import JSZip from 'jszip';
 import { glassSurface } from '@/lib/ui/glass';
 import { useTranslation } from '@/hooks/useTranslation';
-import { fadeInUp, itemEnter, transitions } from '@/lib/ui/motion';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { fade, transitions } from '@/lib/ui/motion';
 
 /** Local scale-fade — no scale preset in the module; tokens supply ease/duration. */
 const fadeScale = {
@@ -43,15 +45,16 @@ const SvgVectorEditor = lazy(() =>
   import('@/components/svg-optimizer/SvgVectorEditor').then((m) => ({ default: m.SvgVectorEditor }))
 );
 
-const OPTION_LABELS: Record<string, string> = {
-  removeComments: 'Comments',
-  removeMetadata: 'Metadata',
-  removeEditorData: 'Editor data',
-  removeEmptyGroups: 'Empty groups',
-  minifyPaths: 'Minify numbers',
-  removeHiddenElements: 'Hidden elements',
-  prettify: 'Prettify',
-};
+/** Option keys, labelled by `miniTools.svg.opt.<key>`. */
+const OPTION_KEYS = [
+  'removeComments',
+  'removeMetadata',
+  'removeEditorData',
+  'removeEmptyGroups',
+  'minifyPaths',
+  'removeHiddenElements',
+  'prettify',
+] as const;
 
 const ACCEPTED_TYPES =
   '.svg,.png,.jpg,.jpeg,.webp,.bmp,image/svg+xml,image/png,image/jpeg,image/webp,image/bmp';
@@ -70,7 +73,6 @@ function isSvgFile(file: File): boolean {
 
 export const SvgOptimizerPage: React.FC = () => {
   const { t } = useTranslation();
-  const inputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [pasteMode, setPasteMode] = useState(false);
   const [pasteValue, setPasteValue] = useState('');
@@ -109,11 +111,13 @@ export const SvgOptimizerPage: React.FC = () => {
         .then((text) => {
           if (text.includes('<svg')) {
             addSvgFiles([{ name: asset.label || 'pipeline-asset.svg', content: text }]);
+          } else {
+            toast.error(t('miniTools.processFailed'));
           }
         })
-        .catch(() => {});
+        .catch(() => toast.error(t('miniTools.processFailed')));
     }
-  }, [pendingAsset, acceptAsset, addSvgFiles]);
+  }, [pendingAsset, acceptAsset, addSvgFiles, t]);
 
   const hasItems = items.length > 0;
   const selectedItem = items.find((i) => i.id === selectedId) || items[0];
@@ -136,7 +140,7 @@ export const SvgOptimizerPage: React.FC = () => {
               const reader = new FileReader();
               reader.onload = () => resolve({ name: file.name, content: reader.result as string });
               reader.onerror = () => {
-                toast.error(`${file.name}: read failed`);
+                toast.error(t('miniTools.svg.readFailed', { name: file.name }));
                 resolve(null);
               };
               reader.readAsText(file);
@@ -145,7 +149,7 @@ export const SvgOptimizerPage: React.FC = () => {
         } else if (isImageFile(file)) {
           pngFiles.push(file);
         } else {
-          toast.error(`${file.name}: unsupported format`);
+          toast.error(t('miniTools.svg.unsupported', { name: file.name }));
         }
       });
 
@@ -160,7 +164,7 @@ export const SvgOptimizerPage: React.FC = () => {
         });
       }
     },
-    [addSvgFiles, addPngFiles]
+    [addSvgFiles, addPngFiles, t]
   );
 
   const handleInputChange = useCallback(
@@ -189,13 +193,13 @@ export const SvgOptimizerPage: React.FC = () => {
   const handlePasteSubmit = useCallback(() => {
     const trimmed = pasteValue.trim();
     if (!trimmed || !trimmed.includes('<svg')) {
-      toast.error('No valid SVG found in pasted content');
+      toast.error(t('miniTools.svg.invalidPaste'));
       return;
     }
     addSvgFiles([{ name: `pasted-${Date.now()}.svg`, content: trimmed }]);
     setPasteValue('');
     setPasteMode(false);
-  }, [pasteValue, addSvgFiles]);
+  }, [pasteValue, addSvgFiles, t]);
 
   const handleDownloadAll = useCallback(async () => {
     if (!doneItems.length) return;
@@ -204,7 +208,7 @@ export const SvgOptimizerPage: React.FC = () => {
       const item = doneItems[0];
       const blob = new Blob([item.optimizedSvg], { type: 'image/svg+xml' });
       downloadBlob(blob, item.fileName.replace(/\.\w+$/i, '') + '-optimized.svg');
-      toast.success('Downloaded');
+      toast.success(t('miniTools.downloaded'));
       return;
     }
 
@@ -215,15 +219,15 @@ export const SvgOptimizerPage: React.FC = () => {
     }
     const blob = await zip.generateAsync({ type: 'blob' });
     downloadBlob(blob, `svg-optimized-${Date.now()}.zip`);
-    toast.success('ZIP downloaded');
-  }, [doneItems]);
+    toast.success(t('miniTools.zipDownloaded'));
+  }, [doneItems, t]);
 
   const handleCopy = useCallback(async () => {
     if (!selectedItem || selectedItem.status !== 'done') return;
     const ok = await copyToClipboard(selectedItem.optimizedSvg);
-    if (ok) toast.success('SVG copied');
-    else toast.error('Copy failed');
-  }, [selectedItem]);
+    if (ok) toast.success(t('miniTools.svg.copied'));
+    else toast.error(t('miniTools.copyFailed'));
+  }, [selectedItem, t]);
 
   // Local trace slider state for selected PNG item
   const [localTurd, setLocalTurd] = useState(3);
@@ -275,12 +279,18 @@ export const SvgOptimizerPage: React.FC = () => {
   }, [selectedItem, retraceItem, localTurd, localOpt, localThresh, localAlphaMax, localPreset]);
 
   // ── Panel content (queue + controls + actions) ──────────────────────────
+  const tabClass = (selected: boolean) =>
+    cn(
+      'flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors duration-200',
+      selected ? 'bg-brand-cyan/10 text-brand-cyan' : 'text-muted-foreground hover:text-foreground'
+    );
+
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Queue: Add more */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-2xs font-mono uppercase tracking-wider cursor-pointer transition-colors duration-200">
+      <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
         <Upload size={12} />
-        Add files
+        {t('miniTools.addFiles')}
         <input
           type="file"
           accept={ACCEPTED_TYPES}
@@ -291,47 +301,46 @@ export const SvgOptimizerPage: React.FC = () => {
       </label>
 
       {/* Queue: Item list */}
-      <div className="max-h-[32vh] overflow-y-auto space-y-1.5 pr-1 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
-        {items.map((item, i) => (
+      <div className="max-h-[32vh] overflow-y-auto space-y-1.5 pr-1">
+        {items.map((item) => (
           <motion.div
             key={item.id}
             layout
-            {...itemEnter(i)}
+            {...fade}
             onClick={() => setSelectedId(item.id)}
             className={cn(
-              'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors duration-200 group',
-              selectedItem?.id === item.id
-                ? 'bg-neutral-800/60 ring-1 ring-brand-cyan/30'
-                : 'hover:bg-neutral-900/60'
+              'group flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors duration-200',
+              selectedItem?.id === item.id ? 'bg-muted ring-1 ring-border' : 'hover:bg-muted/60'
             )}
           >
             {item.source === 'png' ? (
-              <Image size={14} className="text-warning/60 flex-shrink-0" />
+              <Image size={14} className="text-muted-foreground flex-shrink-0" />
             ) : (
-              <FileCode size={14} className="text-neutral-600 flex-shrink-0" />
+              <FileCode size={14} className="text-muted-foreground flex-shrink-0" />
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-2xs font-mono text-neutral-300 truncate">{item.fileName}</p>
+              <p className="text-2xs font-mono text-foreground truncate">{item.fileName}</p>
               {item.status === 'done' && (
-                <span className="text-2xs font-mono text-neutral-500">
+                <span className="flex items-center gap-1 text-2xs font-mono text-muted-foreground">
                   {item.source === 'png'
                     ? formatBytes(item.originalSize) + ' png'
-                    : formatBytes(item.originalSize)}{' '}
-                  &rarr; {formatBytes(item.optimizedSize)}
+                    : formatBytes(item.originalSize)}
+                  <ArrowRight size={8} />
+                  {formatBytes(item.optimizedSize)}
                 </span>
               )}
               {item.status === 'tracing' && (
-                <span className="text-2xs font-mono text-warning">tracing...</span>
+                <span className="text-2xs text-muted-foreground">{t('miniTools.svg.tracing')}</span>
               )}
               {item.status === 'error' && (
-                <span className="text-2xs font-mono text-destructive">error</span>
+                <span className="text-2xs text-destructive">{t('common.error')}</span>
               )}
             </div>
             {item.status === 'done' && (
               <span
                 className={cn(
                   'text-2xs font-mono flex-shrink-0',
-                  item.savings > 0 ? 'text-success' : 'text-neutral-600'
+                  item.savings > 0 ? 'text-success' : 'text-muted-foreground'
                 )}
               >
                 {item.savings > 0 ? `-${item.savings}%` : '0%'}
@@ -339,11 +348,16 @@ export const SvgOptimizerPage: React.FC = () => {
             )}
             {item.status === 'tracing' && <GlitchLoader size={10} />}
             <button
+              type="button"
+              aria-label={t('miniTools.remove')}
               onClick={(e) => {
                 e.stopPropagation();
                 removeItem(item.id);
               }}
-              className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-neutral-300 transition-[color,background-color,border-color,opacity] duration-200 flex-shrink-0"
+              className={cn(
+                hoverReveal,
+                'text-muted-foreground hover:text-foreground flex-shrink-0'
+              )}
             >
               <X size={12} />
             </button>
@@ -351,24 +365,28 @@ export const SvgOptimizerPage: React.FC = () => {
         ))}
       </div>
 
-      <div className="h-px bg-neutral-800" />
+      <div className="h-px bg-border" />
 
       {/* Controls: Optimization options */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Settings2 size={12} className="text-neutral-500" />
-          <span className="text-xs font-medium text-neutral-500">Options</span>
+          <Settings2 size={12} className="text-muted-foreground" />
+          <span className="text-xs font-medium text-muted-foreground">
+            {t('miniTools.svg.options')}
+          </span>
         </div>
         <div className="space-y-1.5">
-          {(Object.keys(OPTION_LABELS) as (keyof typeof OPTION_LABELS)[]).map((key) => (
+          {OPTION_KEYS.map((key) => (
             <label key={key} className="flex items-center gap-1.5 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={options[key as keyof typeof options]}
                 onChange={(e) => setOption(key as keyof typeof options, e.target.checked)}
-                className="w-3 h-3 rounded border-neutral-700 bg-neutral-900 text-foreground accent-brand-cyan"
+                className="w-3 h-3 rounded accent-brand-cyan"
               />
-              <span className="text-xs font-medium text-neutral-500">{OPTION_LABELS[key]}</span>
+              <span className="text-xs font-medium text-muted-foreground">
+                {t(`miniTools.svg.opt.${key}`)}
+              </span>
             </label>
           ))}
         </div>
@@ -377,34 +395,33 @@ export const SvgOptimizerPage: React.FC = () => {
       {/* Controls: PNG trace (only for selected PNG item) */}
       {selectedItem && selectedItem.source === 'png' && selectedItem.status !== 'tracing' && (
         <>
-          <div className="h-px bg-neutral-800" />
-          <motion.div {...fadeInUp} className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-warning">Trace preset</span>
-            </div>
+          <div className="h-px bg-border" />
+          <motion.div {...fade} className="space-y-2">
+            <span className="text-xs font-medium text-muted-foreground">
+              {t('miniTools.svg.tracePreset')}
+            </span>
             <div className="flex flex-wrap gap-1">
               {(['logo', 'lettering', 'lineArt', 'stamp', 'custom'] as const).map((p) => (
-                <motion.button
+                <button
                   key={p}
-                  whileHover={{ scale: 1.04, transition: transitions.fast }}
-                  whileTap={{ scale: 0.96, transition: transitions.press }}
+                  type="button"
                   onClick={() => handlePresetChange(p)}
                   className={cn(
-                    'px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider transition-colors duration-200',
+                    'px-2 py-0.5 rounded border text-xs transition-colors duration-200',
                     localPreset === p
-                      ? 'bg-brand-cyan/20 text-brand-cyan ring-1 ring-brand-cyan/30'
-                      : 'bg-neutral-900 text-neutral-500 hover:text-neutral-300'
+                      ? 'border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan'
+                      : 'border-border bg-muted/40 text-muted-foreground hover:text-foreground'
                   )}
                 >
-                  {p === 'lineArt' ? 'Line Art' : p.charAt(0).toUpperCase() + p.slice(1)}
-                </motion.button>
+                  {t(`miniTools.svg.preset.${p}`)}
+                </button>
               ))}
             </div>
             {localPreset === 'custom' && (
               <div className="space-y-1.5">
                 <div className="grid grid-cols-2 gap-1.5">
                   <ScrubInput
-                    label="Noise"
+                    label={t('miniTools.svg.noise')}
                     value={localTurd}
                     min={0}
                     max={20}
@@ -412,7 +429,7 @@ export const SvgOptimizerPage: React.FC = () => {
                     onChange={setLocalTurd}
                   />
                   <ScrubInput
-                    label="Simplify"
+                    label={t('miniTools.svg.simplify')}
                     value={localOpt}
                     min={0}
                     max={2}
@@ -422,7 +439,7 @@ export const SvgOptimizerPage: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   <ScrubInput
-                    label="Threshold"
+                    label={t('miniTools.svg.threshold')}
                     value={typeof localThresh === 'number' ? localThresh : 128}
                     min={0}
                     max={255}
@@ -430,7 +447,7 @@ export const SvgOptimizerPage: React.FC = () => {
                     onChange={setLocalThresh}
                   />
                   <ScrubInput
-                    label="Corners"
+                    label={t('miniTools.svg.corners')}
                     value={localAlphaMax}
                     min={0}
                     max={1.334}
@@ -442,16 +459,16 @@ export const SvgOptimizerPage: React.FC = () => {
             )}
             <Button
               variant="outline"
-              className="w-full text-xs font-medium h-8 border-neutral-700"
+              className="w-full text-xs font-medium h-8"
               onClick={handleRetrace}
             >
-              <RefreshCw size={12} className="mr-1.5" /> Re-trace
+              <RefreshCw size={12} className="mr-1.5" /> {t('miniTools.svg.retrace')}
             </Button>
           </motion.div>
         </>
       )}
 
-      <div className="h-px bg-neutral-800" />
+      <div className="h-px bg-border" />
 
       {/* Actions */}
       <div className="space-y-2">
@@ -461,11 +478,11 @@ export const SvgOptimizerPage: React.FC = () => {
               <QuickActions
                 toolId="svg-optimizer"
                 outputMime="image/svg+xml"
-                summary={`${doneItems.length} file${
-                  doneItems.length !== 1 ? 's' : ''
-                } optimized · saved ${formatBytes(
-                  totalOriginal - totalOptimized
-                )} (${totalSavings}%)`}
+                summary={t('miniTools.svg.summary', {
+                  count: doneItems.length,
+                  saved: formatBytes(totalOriginal - totalOptimized),
+                  percent: totalSavings,
+                })}
                 onDownloadAll={handleDownloadAll}
                 onCopy={handleCopy}
                 assetData={
@@ -487,14 +504,14 @@ export const SvgOptimizerPage: React.FC = () => {
 
   // ── Status bar ───────────────────────────────────────────────────────────
   const statusBarContent = hasItems ? (
-    <div className="flex items-center gap-3 text-2xs font-mono uppercase tracking-widest tabular-nums">
-      <span className="text-neutral-400">
+    <div className="flex items-center gap-3 text-2xs tabular-nums text-muted-foreground">
+      <span>
         {doneItems.length}/{items.length}
       </span>
       {doneItems.length > 0 && totalSavings > 0 && (
         <>
-          <span className="text-neutral-700">·</span>
-          <span className="text-success">-{totalSavings}% saved</span>
+          <span>·</span>
+          <span className="text-success">{t('miniTools.smaller', { percent: totalSavings })}</span>
         </>
       )}
     </div>
@@ -508,7 +525,7 @@ export const SvgOptimizerPage: React.FC = () => {
       documentTitle={t('apps.svgOptimizer.name')}
       onReset={hasItems ? reset : undefined}
       panel={panelContent}
-      panelLabel="Queue & controls"
+      panelLabel={t('miniTools.panelLabel')}
       statusBar={statusBarContent}
       dragDrop={{
         onDrop: handleDrop,
@@ -520,66 +537,49 @@ export const SvgOptimizerPage: React.FC = () => {
       <AnimatePresence mode="wait">
         {!hasItems ? (
           /* ── Empty / Upload state ── */
-          <motion.div key="upload" {...fadeInUp} className="flex flex-col items-center gap-6 py-8">
-            <div className="flex flex-col items-center gap-2">
-              <FileCode size={28} className="text-neutral-500" />
-              <h2 className="text-sm font-medium text-neutral-300">Optimize & trace SVG files</h2>
-              <p className="text-2xs text-neutral-600">
-                Drop SVG or PNG — PNG auto-traced to vector
-              </p>
-            </div>
-
-            <motion.label
-              whileHover={{ scale: 1.01, transition: transitions.fast }}
-              whileTap={{ scale: 0.98, transition: transitions.press }}
-              className={cn(
-                'flex flex-col items-center justify-center gap-3 w-full max-w-md h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-colors duration-200',
-                isDragOver
-                  ? 'border-brand-cyan bg-brand-cyan/5'
-                  : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40'
-              )}
-            >
-              <Upload size={24} className="text-neutral-500" />
-              <span className="text-xs font-medium text-neutral-500 text-center px-4">
-                Drop PNG or SVG files — batch supported
-              </span>
-              <span className="text-2xs text-neutral-600">
-                PNG will be traced to vector automatically
-              </span>
+          <motion.div
+            key="upload"
+            {...fade}
+            className="flex w-full flex-col items-center gap-4 py-8"
+          >
+            <label className="flex h-48 w-full max-w-md cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border px-4 text-center text-sm text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
+              <Upload size={20} />
+              {t('miniTools.svg.drop')}
+              <span className="text-xs">{t('miniTools.svg.pngHint')}</span>
               <input
-                ref={inputRef}
                 type="file"
                 accept={ACCEPTED_TYPES}
                 multiple
                 className="hidden"
                 onChange={handleInputChange}
               />
-            </motion.label>
+            </label>
 
             <AnimatePresence mode="wait">
               {!pasteMode ? (
                 <motion.button
                   key="paste-toggle"
-                  {...fadeInUp}
+                  type="button"
+                  {...fade}
                   onClick={() => setPasteMode(true)}
-                  className="w-full max-w-md text-center text-2xs font-medium text-neutral-600 hover:text-neutral-400 transition-colors duration-200"
+                  className="w-full max-w-md text-center text-xs text-muted-foreground hover:text-foreground transition-colors duration-200"
                 >
-                  or paste SVG code
+                  {t('miniTools.svg.pasteCode')}
                 </motion.button>
               ) : (
-                <motion.div key="paste-area" {...fadeInUp} className="w-full max-w-md space-y-2">
+                <motion.div key="paste-area" {...fade} className="w-full max-w-md space-y-2">
                   <textarea
                     value={pasteValue}
                     onChange={(e) => setPasteValue(e.target.value)}
                     placeholder="<svg ...>...</svg>"
-                    className="w-full h-32 bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs font-mono text-neutral-300 resize-none focus:outline-none focus:border-neutral-600"
+                    className="w-full h-32 bg-background border border-border rounded-lg p-3 text-xs font-mono text-foreground resize-none focus:outline-none focus:border-ring"
                   />
                   <div className="flex gap-2">
                     <Button
                       onClick={handlePasteSubmit}
                       className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
                     >
-                      Optimize
+                      {t('miniTools.svg.optimize')}
                     </Button>
                     <Button
                       onClick={() => {
@@ -587,9 +587,9 @@ export const SvgOptimizerPage: React.FC = () => {
                         setPasteValue('');
                       }}
                       variant="outline"
-                      className="text-xs font-medium border-neutral-700"
+                      className="text-xs font-medium"
                     >
-                      Cancel
+                      {t('common.cancel')}
                     </Button>
                   </div>
                 </motion.div>
@@ -603,86 +603,65 @@ export const SvgOptimizerPage: React.FC = () => {
             {...fadeScale}
             className={cn(
               'relative w-full max-w-3xl rounded-2xl overflow-hidden min-h-[300px] flex flex-col',
-              glassSurface.panel
+              glassSurface.surface
             )}
           >
             {/* View mode toggle */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={transitions.base}
-              className="flex items-center gap-1 p-2 border-b border-neutral-800"
-            >
+            <div className="flex items-center gap-1 p-2 border-b border-border">
               <button
+                type="button"
                 onClick={() => setViewMode('preview')}
-                className={cn(
-                  'flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider transition-colors duration-200',
-                  viewMode === 'preview'
-                    ? 'bg-brand-cyan/20 text-brand-cyan'
-                    : 'text-neutral-500 hover:text-neutral-300'
-                )}
+                className={tabClass(viewMode === 'preview')}
               >
-                <Eye size={10} /> Preview
+                <Eye size={10} /> {t('miniTools.svg.preview')}
               </button>
               <button
+                type="button"
                 onClick={() => setViewMode('edit')}
-                className={cn(
-                  'flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider transition-colors duration-200',
-                  viewMode === 'edit'
-                    ? 'bg-warning/20 text-warning'
-                    : 'text-neutral-500 hover:text-neutral-300'
-                )}
+                className={tabClass(viewMode === 'edit')}
               >
-                <PenTool size={10} /> Edit
+                <PenTool size={10} /> {t('common.edit')}
               </button>
               <button
+                type="button"
                 onClick={() => setViewMode('code')}
-                className={cn(
-                  'flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider transition-colors duration-200',
-                  viewMode === 'code'
-                    ? 'bg-brand-cyan/20 text-brand-cyan'
-                    : 'text-neutral-500 hover:text-neutral-300'
-                )}
+                className={tabClass(viewMode === 'code')}
               >
-                <Code size={10} /> Code
+                <Code size={10} /> {t('miniTools.svg.code')}
               </button>
-            </motion.div>
+            </div>
 
             {/* Content area */}
             <AnimatePresence mode="wait">
               {selectedItem && selectedItem.status === 'tracing' && (
                 <motion.div
                   key="tracing"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={transitions.base}
+                  {...fade}
                   className="flex-1 flex items-center justify-center p-4"
                 >
-                  <FlyingPaperLoader label={`Tracing ${selectedItem.fileName}...`} />
+                  <FlyingPaperLoader
+                    label={t('miniTools.svg.tracingFile', { name: selectedItem.fileName })}
+                  />
                 </motion.div>
               )}
 
               {selectedItem && selectedItem.status === 'error' && (
                 <motion.div
                   key="error"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={transitions.base}
+                  {...fade}
                   className="flex-1 flex flex-col items-center justify-center gap-3 p-4"
                 >
                   <AlertCircle size={24} className="text-destructive" />
-                  <span className="text-2xs font-medium text-destructive text-center">
-                    {selectedItem.error || 'Trace failed'}
+                  <span className="text-xs font-medium text-destructive text-center">
+                    {selectedItem.error || t('miniTools.svg.traceFailed')}
                   </span>
                   {selectedItem.source === 'png' && (
                     <Button
                       onClick={() => retraceItem(selectedItem.id)}
                       variant="outline"
-                      className="text-xs font-medium border-neutral-700 mt-1"
+                      className="text-xs font-medium mt-1"
                     >
-                      <RefreshCw size={12} className="mr-1.5" /> Retry
+                      <RefreshCw size={12} className="mr-1.5" /> {t('common.retry')}
                     </Button>
                   )}
                 </motion.div>
@@ -691,10 +670,7 @@ export const SvgOptimizerPage: React.FC = () => {
               {selectedItem && selectedItem.status === 'done' && viewMode === 'preview' && (
                 <motion.div
                   key="preview"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={transitions.base}
+                  {...fade}
                   className="flex-1 flex items-center justify-center p-4 overflow-hidden pointer-events-none"
                   style={{ maxHeight: '60vh' }}
                   dangerouslySetInnerHTML={{
@@ -704,14 +680,7 @@ export const SvgOptimizerPage: React.FC = () => {
               )}
 
               {selectedItem && selectedItem.status === 'done' && viewMode === 'edit' && (
-                <motion.div
-                  key="edit"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={transitions.base}
-                  className="flex-1 flex flex-col"
-                >
+                <motion.div key="edit" {...fade} className="flex-1 flex flex-col">
                   <Suspense
                     fallback={
                       <div className="flex-1 flex items-center justify-center">
@@ -723,7 +692,7 @@ export const SvgOptimizerPage: React.FC = () => {
                       svgString={selectedItem.optimizedSvg}
                       onSvgChange={(newSvg) => {
                         updateItemSvg(selectedItem.id, newSvg);
-                        toast.success('SVG updated');
+                        toast.success(t('miniTools.svg.updated'));
                       }}
                       className="flex-1"
                     />
@@ -734,11 +703,8 @@ export const SvgOptimizerPage: React.FC = () => {
               {selectedItem && selectedItem.status === 'done' && viewMode === 'code' && (
                 <motion.pre
                   key="code"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={transitions.base}
-                  className="flex-1 p-4 text-xs font-mono text-neutral-400 overflow-auto whitespace-pre-wrap break-all"
+                  {...fade}
+                  className="flex-1 p-4 text-xs font-mono text-muted-foreground overflow-auto whitespace-pre-wrap break-all"
                   style={{ maxHeight: '60vh' }}
                 >
                   {selectedItem.optimizedSvg}
@@ -747,13 +713,13 @@ export const SvgOptimizerPage: React.FC = () => {
             </AnimatePresence>
 
             {selectedItem && selectedItem.status === 'done' && (
-              <div className="absolute top-2 right-2 flex items-center gap-1">
+              <div className="absolute top-2 right-2 flex items-center gap-1 text-2xs">
                 {selectedItem.source === 'png' && (
-                  <span className="text-2xs font-mono uppercase tracking-wider bg-warning/10 text-warning px-2 py-0.5 rounded">
-                    traced
+                  <span className="rounded bg-muted px-2 py-0.5 text-muted-foreground">
+                    {t('miniTools.svg.traced')}
                   </span>
                 )}
-                <span className="text-2xs font-mono uppercase tracking-wider bg-neutral-800 text-neutral-200 px-2 py-0.5 rounded">
+                <span className="rounded bg-muted px-2 py-0.5 font-mono tabular-nums text-foreground">
                   {selectedItem.savings > 0 ? `-${selectedItem.savings}%` : '0%'}
                 </span>
               </div>

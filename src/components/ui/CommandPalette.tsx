@@ -200,9 +200,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                   'border border-border bg-popover/90 shadow-2xl backdrop-blur-xl'
                 )}
               >
-                <Dialog.Title className="sr-only">
-                  {t('command.title') || 'Command palette'}
-                </Dialog.Title>
+                <Dialog.Title className="sr-only">{t('command.title')}</Dialog.Title>
 
                 <Command
                   loop
@@ -241,11 +239,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       ref={inputRef}
                       value={search}
                       onValueChange={setSearch}
-                      placeholder={
-                        placeholder ||
-                        t('designSystem.commandPalette.placeholder') ||
-                        'Search components, colors, typography...'
-                      }
+                      placeholder={placeholder || t('designSystem.commandPalette.placeholder')}
                       className="flex-1 bg-transparent py-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                     />
                     <kbd className="hidden select-none items-center gap-0.5 rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-2xs text-muted-foreground sm:flex">
@@ -263,7 +257,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                         <FallbackRow fb={fallback(search.trim())} onRun={runFallback} />
                       ) : (
                         <div className="py-4 text-center text-sm text-muted-foreground">
-                          {t('designSystem.commandPalette.noResults') || 'No results found'}
+                          {t('designSystem.commandPalette.noResults')}
                         </div>
                       )}
                     </Command.Empty>
@@ -282,8 +276,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                           className={cn(
                             'mb-1 last:mb-0',
                             '[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-2',
-                            '[&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:text-2xs',
-                            '[&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:uppercase',
+                            '[&_[cmdk-group-heading]]:text-2xs',
+                            '[&_[cmdk-group-heading]]:font-medium',
                             '[&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-muted-foreground'
                           )}
                         >
@@ -292,7 +286,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                               key={item.id}
                               item={item}
                               onSelect={() => handleSelect(item)}
-                              selectHint={t('command.hintSelect') || 'Selecionar'}
+                              selectHint={t('command.hintSelect')}
                               animateIn={!isSearching && i >= SECTION_LIMIT}
                             />
                           ))}
@@ -311,7 +305,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                                 <ChevronDown className="h-3.5 w-3.5" />
                               </span>
                               <span>
-                                {t('command.showMore') || 'Mostrar mais'} ({hidden})
+                                {t('command.showMore')} ({hidden})
                               </span>
                             </Command.Item>
                           )}
@@ -329,20 +323,20 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       <KbdIcon>
                         <ArrowDown className="h-3 w-3" />
                       </KbdIcon>
-                      {t('command.hintNavigate') || 'Navegar'}
+                      {t('command.hintNavigate')}
                     </span>
                     <span className="flex items-center gap-1.5">
                       <KbdIcon>
                         <CornerDownLeft className="h-3 w-3" />
                       </KbdIcon>
-                      {t('command.hintSelect') || 'Selecionar'}
+                      {t('command.hintSelect')}
                     </span>
                     {pages.length > 0 && (
                       <span className="ml-auto hidden items-center gap-1.5 sm:flex">
                         <KbdIcon>
                           <ChevronLeft className="h-3 w-3" />
                         </KbdIcon>
-                        {t('command.hintBack') || 'Voltar'}
+                        {t('command.hintBack')}
                       </span>
                     )}
                   </div>

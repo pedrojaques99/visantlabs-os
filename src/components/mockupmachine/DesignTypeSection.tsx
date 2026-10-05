@@ -30,7 +30,7 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
         </h2>
       </div>
       {!isComplete && (
-        <p className="text-xs text-neutral-500 mb-3 font-mono">{t('mockup.designTypeComment')}</p>
+        <p className="text-xs text-neutral-500 mb-3">{t('mockup.designTypeComment')}</p>
       )}
       <div className="space-y-2">
         <div className="grid grid-cols-2 gap-2">
@@ -41,13 +41,12 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
             }}
             variant="outline"
             className={cn(
-              'w-full h-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono transition-[color,background-color,border-color,box-shadow]',
+              'w-full h-full flex flex-col items-center justify-center gap-1 p-4 text-xs transition-colors',
               designType === 'logo'
-                ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-sm'
+                ? 'bg-brand-cyan/10 text-foreground border-brand-cyan/40'
                 : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50 hover:bg-neutral-800/40'
             )}
           >
-            <span className="text-sm">🖼️</span>
             <span className="font-semibold text-sm">{t('mockup.itsALogo')}</span>
           </Button>
           <Button
@@ -57,13 +56,12 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
             }}
             variant="outline"
             className={cn(
-              'w-full h-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono transition-[color,background-color,border-color,box-shadow]',
+              'w-full h-full flex flex-col items-center justify-center gap-1 p-4 text-xs transition-colors',
               designType === 'layout'
-                ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-sm'
+                ? 'bg-brand-cyan/10 text-foreground border-brand-cyan/40'
                 : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50 hover:bg-neutral-800/40'
             )}
           >
-            <span className="text-sm">🎨</span>
             <span className="font-semibold text-sm">{t('mockup.itsALayout')}</span>
           </Button>
         </div>

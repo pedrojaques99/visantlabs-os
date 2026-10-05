@@ -5,9 +5,10 @@ import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { authService } from '../services/authService';
 import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+
+const CARD = 'bg-card border border-border rounded-md p-8 w-full max-w-md';
 
 export const ForgotPasswordPage: React.FC = () => {
   const { t } = useTranslation();
@@ -22,11 +23,7 @@ export const ForgotPasswordPage: React.FC = () => {
   const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
-    if (!token) {
-      setError(
-        t('auth.invalidResetLink') || 'Invalid reset link. Please request a new password reset.'
-      );
-    }
+    if (!token) setError(t('auth.invalidResetLink'));
   }, [token, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,17 +31,17 @@ export const ForgotPasswordPage: React.FC = () => {
     setError(null);
 
     if (!token) {
-      setError(t('auth.invalidResetLink') || 'Invalid reset link.');
+      setError(t('auth.invalidResetLink'));
       return;
     }
 
     if (password.length < 6) {
-      setError(t('auth.passwordMinLength') || 'Password must be at least 6 characters');
+      setError(t('auth.passwordMinLength'));
       return;
     }
 
     if (password !== confirmPassword) {
-      setError(t('auth.passwordsDoNotMatch') || 'Passwords do not match');
+      setError(t('auth.passwordsDoNotMatch'));
       return;
     }
 
@@ -53,14 +50,8 @@ export const ForgotPasswordPage: React.FC = () => {
     try {
       await authService.resetPassword(token, password);
       setIsSuccess(true);
-      toast.success(t('auth.passwordResetSuccess') || 'Password reset successfully!', {
-        duration: 3000,
-      });
-
-      // Redirect to home after 2 seconds
-      setTimeout(() => {
-        navigate('/');
-      }, 2000);
+      toast.success(t('auth.passwordResetSuccess'), { duration: 3000 });
+      setTimeout(() => navigate('/'), 2000);
     } catch (error: any) {
       console.error('Reset password error:', error);
       const errorMessage = error.message || String(error);
@@ -70,16 +61,12 @@ export const ForgotPasswordPage: React.FC = () => {
         errorMessage.includes('NetworkError') ||
         error.name === 'TypeError'
       ) {
-        setError(
-          'Backend não está rodando! Por favor, inicie o servidor com: npm run dev:server ou npm run dev:all'
-        );
+        // Antes mostrava "inicie o servidor com npm run dev:server" pro usuário final.
+        setError(t('auth.networkError'));
       } else if (errorMessage.includes('expired') || errorMessage.includes('Invalid')) {
-        setError(
-          t('auth.invalidOrExpiredToken') ||
-            'Invalid or expired token. Please request a new password reset.'
-        );
+        setError(t('auth.invalidOrExpiredToken'));
       } else {
-        setError(error.message || 'Failed to reset password. Please try again.');
+        setError(error.message || t('auth.resetFailed'));
       }
     } finally {
       setIsLoading(false);
@@ -88,18 +75,16 @@ export const ForgotPasswordPage: React.FC = () => {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
-        <div className="bg-neutral-900 border border-white/10 rounded-md p-8 w-full max-w-md relative z-10">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className={CARD}>
           <div className="flex flex-col items-center text-center space-y-4">
             <div className="flex items-center justify-center w-16 h-16 rounded-md bg-success/20 mb-4">
               <CheckCircle2 className="w-8 h-8 text-success" />
             </div>
-            <h1 className="text-2xl font-semibold font-mono text-neutral-200">
-              {t('auth.passwordResetSuccess') || 'Password Reset Successful!'}
+            <h1 className="text-2xl font-semibold text-foreground">
+              {t('auth.passwordResetSuccess')}
             </h1>
-            <p className="text-sm text-neutral-400 font-mono">
-              {t('auth.redirectingToLogin') || 'Redirecting to login...'}
-            </p>
+            <p className="text-sm text-muted-foreground">{t('auth.redirectingToLogin')}</p>
           </div>
         </div>
       </div>
@@ -108,25 +93,18 @@ export const ForgotPasswordPage: React.FC = () => {
 
   if (!token) {
     return (
-      <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
-        <div className="bg-neutral-900 border border-white/10 rounded-md p-8 w-full max-w-md relative z-10">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className={CARD}>
           <div className="flex flex-col items-center text-center space-y-4">
             <div className="flex items-center justify-center w-16 h-16 rounded-md bg-destructive/20 mb-4">
               <XCircle className="w-8 h-8 text-destructive" />
             </div>
-            <h1 className="text-2xl font-semibold font-mono text-neutral-200">
-              {t('auth.invalidResetLink') || 'Invalid Reset Link'}
-            </h1>
-            <p className="text-sm text-neutral-400 font-mono mb-4">
-              {t('auth.invalidResetLinkMessage') ||
-                'This password reset link is invalid or has expired. Please request a new password reset.'}
+            <h1 className="text-2xl font-semibold text-foreground">{t('auth.invalidResetLink')}</h1>
+            <p className="text-sm text-muted-foreground mb-4">
+              {t('auth.invalidResetLinkMessage')}
             </p>
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/')}
-              className="px-4 py-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 text-black font-semibold rounded-md transition-colors duration-200 text-sm font-mono"
-            >
-              {t('auth.backToHome') || 'Back to Home'}
+            <Button variant="brand" onClick={() => navigate('/')}>
+              {t('auth.backToHome')}
             </Button>
           </div>
         </div>
@@ -135,56 +113,56 @@ export const ForgotPasswordPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
-      <div className="bg-neutral-900 border border-white/10 rounded-md p-8 w-full max-w-md relative z-10">
-        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-6 rounded-md bg-neutral-800">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className={CARD}>
+        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-6 rounded-md bg-muted">
           <Lock className="w-8 h-8 text-neutral-300" />
         </div>
 
-        <h1 className="text-2xl font-semibold font-mono text-neutral-200 text-center mb-2">
-          {t('auth.resetPassword') || 'Reset Password'}
+        <h1 className="text-2xl font-semibold text-foreground text-center mb-6">
+          {t('auth.resetPassword')}
         </h1>
-        <p className="text-sm text-neutral-400 font-mono text-center mb-6">
-          {t('auth.enterNewPassword') || 'Enter your new password below'}
-        </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-mono text-neutral-400 mb-1">
-              {t('auth.newPassword') || 'New Password'}
+            <label htmlFor="reset-password" className="block text-sm text-muted-foreground mb-1">
+              {t('auth.newPassword')}
             </label>
             <Input
+              id="reset-password"
               type="password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono"
-              placeholder={t('auth.passwordPlaceholder') || 'Enter new password'}
+              className="w-full"
             />
-            <p className="text-xs text-neutral-500 mt-1 font-mono">
-              {t('auth.minimumCharacters') || 'Minimum 6 characters'}
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">{t('auth.minimumCharacters')}</p>
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-neutral-400 mb-1">
-              {t('auth.confirmPassword') || 'Confirm Password'}
+            <label
+              htmlFor="reset-password-confirm"
+              className="block text-sm text-muted-foreground mb-1"
+            >
+              {t('auth.confirmPassword')}
             </label>
             <Input
+              id="reset-password-confirm"
               type="password"
+              autoComplete="new-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono"
-              placeholder={t('auth.confirmPasswordPlaceholder') || 'Confirm new password'}
+              className="w-full"
             />
           </div>
 
           {error && (
             <div className="p-2 bg-destructive/10 border border-destructive/20 rounded-md">
-              <p className="text-xs text-destructive font-mono">{error}</p>
+              <p className="text-xs text-destructive">{error}</p>
             </div>
           )}
 
@@ -192,15 +170,15 @@ export const ForgotPasswordPage: React.FC = () => {
             variant="brand"
             type="submit"
             disabled={isLoading || !password || !confirmPassword}
-            className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-colors duration-200 text-sm font-mono"
+            className="w-full"
           >
             {isLoading ? (
               <>
                 <GlitchLoader size={16} />
-                {t('auth.resetting') || 'Resetting...'}
+                {t('auth.resetting')}
               </>
             ) : (
-              t('auth.resetPassword') || 'Reset Password'
+              t('auth.resetPassword')
             )}
           </Button>
         </form>

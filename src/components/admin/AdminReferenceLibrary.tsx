@@ -653,8 +653,9 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
             </div>
 
             {/* Metadata */}
-            <div className="text-2xs text-neutral-600 font-mono">
-              ID: {ref_.id} · {new Date(ref_.createdAt).toLocaleDateString('pt-BR')}
+            <div className="flex flex-wrap gap-x-3 text-2xs text-neutral-600 font-mono">
+              <span>ID: {ref_.id}</span>
+              <span>{new Date(ref_.createdAt).toLocaleDateString('pt-BR')}</span>
             </div>
           </div>
         </div>

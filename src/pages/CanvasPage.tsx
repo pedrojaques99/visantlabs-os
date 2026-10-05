@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useNodesState, useEdgesState, type Node, type Edge } from '@xyflow/react';
 import { useLayout } from '@/hooks/useLayout';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { getImageUrl } from '@/utils/imageUtils';
 import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 import { ImageNode } from '../components/reactflow/ImageNode';
@@ -236,7 +235,7 @@ export const CanvasPage: React.FC = () => {
         };
 
         setNodes((nds) => nds.concat(newNode));
-        toast.success(t('common.nodeCreated') || 'Node created from preset');
+        toast.success(t('common.nodeCreated'));
 
         // Clear query params without reloading
         navigate(window.location.pathname, { replace: true });
@@ -557,7 +556,7 @@ export const CanvasPage: React.FC = () => {
       setSavePromptModalState({
         isOpen: true,
         prompt,
-        initialData: { name: t('canvasNodes.promptNode.savedPromptName') || 'New Prompt' },
+        initialData: { name: t('canvasNodes.promptNode.savedPromptName') },
       });
     },
     [t]
@@ -900,7 +899,7 @@ export const CanvasPage: React.FC = () => {
             toast.success(t('canvas.projectNameUpdated'), { duration: 1200 });
           } catch (error) {
             console.error('Failed to save project name:', error);
-            toast.error(t('canvas.failedToUpdateProjectName') || 'Failed to update project name', {
+            toast.error(t('canvas.failedToUpdateProjectName'), {
               duration: 3000,
             });
             // Revert to previous name on error
@@ -974,7 +973,7 @@ export const CanvasPage: React.FC = () => {
     });
 
     if (imagesToExport.length === 0) {
-      toast.error(t('canvas.noImagesToExport') || 'No output images found to export');
+      toast.error(t('canvas.noImagesToExport'));
       return;
     }
 
@@ -983,9 +982,7 @@ export const CanvasPage: React.FC = () => {
       try {
         const dirHandle = await (window as any).showDirectoryPicker();
 
-        toast.info(
-          (t('canvas.exportingImages') || 'Exporting images...') + ` (${imagesToExport.length})`
-        );
+        toast.info(t('canvas.exportingImages') + ` (${imagesToExport.length})`);
 
         let savedCount = 0;
         let errorCount = 0;
@@ -1025,9 +1022,7 @@ export const CanvasPage: React.FC = () => {
         }
 
         if (savedCount > 0) {
-          toast.success(
-            (t('canvas.exportComplete') || 'Export complete!') + ` ${savedCount} saved.`
-          );
+          toast.success(t('canvas.exportComplete') + ` ${savedCount} saved.`);
         }
         if (errorCount > 0) {
           toast.warning(`${errorCount} images failed to save.`);
@@ -1036,14 +1031,12 @@ export const CanvasPage: React.FC = () => {
         // User cancelled or API error
         if (err.name !== 'AbortError') {
           console.error('Directory selection failed:', err);
-          toast.error(t('canvas.exportFailed') || 'Failed to access folder');
+          toast.error(t('canvas.exportFailed'));
         }
       }
     } else {
       // Fallback to serial download for unsupported browsers
-      toast.info(
-        (t('canvas.exportingImages') || 'Exporting images...') + ` (${imagesToExport.length})`
-      );
+      toast.info(t('canvas.exportingImages') + ` (${imagesToExport.length})`);
 
       for (let i = 0; i < imagesToExport.length; i++) {
         const img = imagesToExport[i];
@@ -1051,7 +1044,7 @@ export const CanvasPage: React.FC = () => {
           try {
             await exportImageWithScale(img.url, 'png', 1.5, img.name);
             if (i === imagesToExport.length - 1) {
-              toast.success(t('canvas.exportComplete') || 'Export complete!');
+              toast.success(t('canvas.exportComplete'));
             }
           } catch (err) {
             console.error(`Failed to export ${img.name}:`, err);
@@ -1503,9 +1496,7 @@ export const CanvasPage: React.FC = () => {
       const updated = applyPresetDataToNodes(nodesRef.current as any, preset, updateNodeData);
 
       if (updated) {
-        toast.success(
-          t('communityPresets.messages.presetApplied') || `Preset applied to selected node(s)`
-        );
+        toast.success(t('communityPresets.messages.presetApplied'));
         return;
       }
 
@@ -1534,7 +1525,7 @@ export const CanvasPage: React.FC = () => {
       }
 
       if (nodeId) {
-        toast.success(t('communityPresets.messages.presetImported') || `Imported: ${preset.name}`);
+        toast.success(t('communityPresets.messages.presetImported'));
         // Select the new node
         setNodes((nds) => nds.map((n) => ({ ...n, selected: n.id === nodeId })));
       }
@@ -1760,12 +1751,10 @@ export const CanvasPage: React.FC = () => {
           drawings: drawing.drawings,
         });
 
-        toast.success(t('workflows.messages.saved') || 'Workflow saved successfully!');
+        toast.success(t('workflows.messages.saved'));
       } catch (error: any) {
         console.error('Error saving workflow:', error);
-        toast.error(
-          error.message || t('workflows.errors.failedToSave') || 'Failed to save workflow'
-        );
+        toast.error(error.message || t('workflows.errors.failedToSave'));
         throw error;
       }
     },
@@ -1802,7 +1791,7 @@ export const CanvasPage: React.FC = () => {
       // Increment usage count
       workflowApi.incrementUsage(workflow._id);
 
-      toast.success(t('workflows.messages.loaded') || `Loaded workflow: ${workflow.name}`);
+      toast.success(t('workflows.messages.loaded', { name: workflow.name }));
     },
     [nodes, edges, drawing, setNodes, setEdges, addToHistory, t]
   );
@@ -1862,7 +1851,11 @@ export const CanvasPage: React.FC = () => {
         );
 
         toast.success(
-          `Importado "${raw.name}" — ${raw.meta.nodeCount} nodes, ${raw.meta.edgeCount} edges`,
+          t('canvas.imported', {
+            name: raw.name,
+            nodes: raw.meta.nodeCount,
+            edges: raw.meta.edgeCount,
+          }),
           { duration: 4000 }
         );
         navigate(`/canvas/${newProject._id}`);
@@ -1998,12 +1991,12 @@ export const CanvasPage: React.FC = () => {
 
           // Use addTextNode
           addTextNode({ x, y }, text);
-          toast.success(t('canvas.textPasted') || 'Text pasted');
+          toast.success(t('canvas.textPasted'));
         }
       }
     } catch (err) {
       console.error('Paste failed:', err);
-      toast.error(t('canvas.pasteFailed') || 'Failed to paste');
+      toast.error(t('canvas.pasteFailed'));
     }
   }, [handleDropImage, addTextNode, reactFlowInstance, t]);
 
@@ -4539,7 +4532,7 @@ export const CanvasPage: React.FC = () => {
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <GlitchLoader size={24} className="mx-auto mb-4" />
-              <p className="text-neutral-400 font-mono text-sm">{t('canvas.loadingProject')}</p>
+              <p className="text-neutral-400 text-sm">{t('canvas.loadingProject')}</p>
             </div>
           </div>
         </div>
@@ -4575,11 +4568,11 @@ export const CanvasPage: React.FC = () => {
   return (
     <PageShell
       pageId="canvas-editor"
-      title={canvasHeader.projectName || 'Canvas Editor'}
+      title={canvasHeader.projectName || t('canvas.seoTitle')}
       width="full"
       noBackground
-      seoTitle={`${canvasHeader.projectName || 'Canvas'} | Visant Canvas`}
-      seoDescription="Powerful node-based workflow editor for creative generation and image processing."
+      seoTitle={canvasHeader.projectName || t('canvas.seoTitle')}
+      seoDescription={t('canvas.seoDescription')}
       hideHeader
       contentClassName="p-0 sm:p-0 lg:p-0"
     >
@@ -4981,13 +4974,10 @@ export const CanvasPage: React.FC = () => {
             setShowDeleteChatNodeModal(false);
             setChatNodeToDelete(null);
           }}
-          title={t('canvas.deleteChatNode') || 'Delete Chat Node'}
-          message={
-            t('canvas.deleteChatNodeMessage') ||
-            'This will delete the chat node and clear all conversation history. This action cannot be undone.'
-          }
-          confirmText={t('canvas.delete') || 'Delete'}
-          cancelText={t('canvas.cancel') || 'Cancel'}
+          title={t('canvas.deleteChatNode')}
+          message={t('canvas.deleteChatNodeMessage')}
+          confirmText={t('canvas.delete')}
+          cancelText={t('canvas.cancel')}
           variant="danger"
         />
 

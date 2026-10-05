@@ -2,6 +2,7 @@ import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { Thumb } from '@/components/ui/Thumb';
 import { ScrubInput } from '@/components/ui/ScrubInput';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -218,7 +219,7 @@ export const SceneTab: React.FC = React.memo(() => {
           store.setSvgData(svg, file.name);
           toast.success(t('studio3d.input.converted', { fileName: file.name }));
         } catch (err) {
-          console.error('PNG→SVG conversion failed:', err);
+          console.error('PNG to SVG conversion failed:', err);
           toast.error(t('studio3d.input.processFailed'));
         } finally {
           store.setIsLoading(false);
@@ -377,7 +378,7 @@ export const SceneTab: React.FC = React.memo(() => {
             )}
           >
             <Upload size={20} className="text-neutral-500" />
-            <span className="text-2xs uppercase tracking-wider text-neutral-500 text-center">
+            <span className="text-2xs text-neutral-500 text-center">
               {store.fileName || (isMobile ? t('mobile.tapToUpload') : 'Drop GLB / GLTF')}
             </span>
             <input
@@ -397,10 +398,8 @@ export const SceneTab: React.FC = React.memo(() => {
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
             className={cn(
-              'flex flex-col items-center gap-2 p-4 border border-dashed rounded-lg cursor-pointer transition-all',
-              isDragging
-                ? 'border-white/30 bg-white/5 scale-[1.02]'
-                : 'border-white/10 hover:border-white/20'
+              'flex flex-col items-center gap-2 p-4 border border-dashed rounded-lg cursor-pointer transition-colors',
+              isDragging ? 'border-white/30 bg-white/5' : 'border-white/10 hover:border-white/20'
             )}
           >
             <Upload
@@ -409,7 +408,7 @@ export const SceneTab: React.FC = React.memo(() => {
             />
             <span
               className={cn(
-                'text-2xs uppercase tracking-wider transition-colors text-center',
+                'text-2xs transition-colors text-center',
                 isDragging ? 'text-white' : 'text-neutral-500'
               )}
             >
@@ -513,7 +512,7 @@ export const SceneTab: React.FC = React.memo(() => {
                     className="flex-1 flex items-center gap-2 text-left px-2 py-1 rounded text-2xs text-neutral-400 hover:bg-white/5 hover:text-white transition-colors"
                   >
                     {scene.thumbnail ? (
-                      <img
+                      <Thumb
                         src={scene.thumbnail}
                         alt=""
                         className="w-6 h-6 rounded border border-white/10 object-cover shrink-0"
@@ -651,9 +650,7 @@ export const SceneTab: React.FC = React.memo(() => {
         icon={<Link size={13} />}
         badge={
           store.showChain ? (
-            <span className="text-3xs font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
-              on
-            </span>
+            <span className="text-3xs text-success bg-success/10 px-1.5 py-0.5 rounded">on</span>
           ) : undefined
         }
       >
@@ -750,7 +747,7 @@ export const SceneTab: React.FC = React.memo(() => {
             <Button
               variant="outline"
               size="sm"
-              className="w-full text-2xs uppercase tracking-wider h-8"
+              className="w-full text-2xs h-8"
               disabled={isRetracing}
               onClick={handleRetrace}
             >
@@ -975,7 +972,7 @@ const CommunityGallery: React.FC = React.memo(() => {
       {!loaded ? (
         <button
           onClick={load}
-          className="w-full px-2 py-2 rounded text-2xs uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
+          className="w-full px-2 py-2 rounded text-2xs bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
         >
           {loading ? <GlitchLoader size={12} /> : 'Browse public scenes'}
         </button>
@@ -991,7 +988,7 @@ const CommunityGallery: React.FC = React.memo(() => {
                 className="flex-1 flex items-center gap-2 text-left px-2 py-1.5 rounded text-2xs text-neutral-400 hover:bg-white/5 hover:text-white transition-colors disabled:opacity-50"
               >
                 {scene.thumbnailUrl ? (
-                  <img
+                  <Thumb
                     src={scene.thumbnailUrl}
                     alt=""
                     className="w-7 h-7 rounded border border-white/10 object-cover shrink-0"

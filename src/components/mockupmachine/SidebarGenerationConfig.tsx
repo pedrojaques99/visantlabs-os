@@ -273,10 +273,10 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={onSwitchToEssential}
-          className="flex items-center gap-1 group text-2xs text-neutral-600 hover:text-brand-cyan transition-colors uppercase tracking-widest"
+          className="flex items-center gap-1 group text-2xs text-neutral-600 hover:text-foreground transition-colors "
         >
           <ChevronLeft size={10} className="group-hover:-translate-x-0.5 transition-transform" />
-          {t('mockup.switchToEssential') || 'ESSENTIAL'}
+          {t('mockup.switchToEssential')}
         </button>
 
         <BrandGuidelineSelector variant="minimal" />
@@ -284,7 +284,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
 
       {/* Design Type + Color swatches - moved above card */}
       <div className="flex items-center justify-between mt-4">
-        <div className="flex -space-x-1.5 transition-all duration-300">
+        <div className="flex -space-x-1.5 transition-[color,background-color,border-color,opacity,transform,filter] duration-300">
           {selectedColors.map((color, i) => (
             <div
               key={i}
@@ -295,26 +295,23 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
           ))}
         </div>
 
-        <div
-          role="button"
-          onClick={() => setDesignType(designType === 'logo' ? 'layout' : 'logo')}
+        <label
           className={cn(
-            'px-2 h-7 rounded-md transition-all flex items-center gap-1.5 border cursor-pointer select-none',
+            'px-2 h-7 rounded-md transition-colors flex items-center gap-1.5 border cursor-pointer select-none',
             designType === 'logo'
-              ? 'bg-brand-cyan/10 border-brand-cyan/20 text-brand-cyan'
+              ? 'bg-white/10 border-white/20 text-foreground'
               : 'bg-white/5 border-white/10 text-neutral-500 hover:text-neutral-400 hover:bg-white/10'
           )}
-          title={t('mockup.transparentBackground') || 'Isolar Logotipo'}
         >
           <Switch
             checked={designType === 'logo'}
             onCheckedChange={() => setDesignType(designType === 'logo' ? 'layout' : 'logo')}
-            className="scale-[0.5] origin-left pointer-events-none"
+            className="scale-[0.5] origin-left"
           />
-          <span className="font-bold text-2xs uppercase tracking-tighter whitespace-nowrap opacity-80">
-            {t('mockup.transparentBackground') || 'ISOLAR LOGO'}
+          <span className="font-medium text-2xs whitespace-nowrap">
+            {t('mockup.transparentBackground')}
           </span>
-        </div>
+        </label>
       </div>
 
       <div className="flex flex-col gap-2 mt-4">
@@ -512,7 +509,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
           return shouldShowAlert ? (
             <div className="mt-4 flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3">
               <Lock size={16} className="text-destructive mt-0.5" />
-              <p className="text-xs font-mono text-destructive">{authenticationRequiredMessage}</p>
+              <p className="text-xs text-destructive">{authenticationRequiredMessage}</p>
             </div>
           ) : null;
         })()}

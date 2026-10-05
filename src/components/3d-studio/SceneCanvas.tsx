@@ -748,7 +748,7 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(
               gl.domElement.addEventListener('webglcontextlost', (e) => {
                 e.preventDefault();
                 import('sonner').then(({ toast }) =>
-                  toast.error('WebGL context lost — attempting recovery...', {
+                  toast.error('WebGL context lost. Trying to recover...', {
                     id: 'webgl-context',
                   })
                 );

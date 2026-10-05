@@ -169,7 +169,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         data-tutorial-target="upload-image"
-        className={`relative block w-full p-4 bg-neutral-950/95 backdrop-blur-xl border rounded-md cursor-pointer transition-all duration-300 group ${
+        className={`relative block w-full p-4 bg-neutral-950/95 border rounded-md cursor-pointer transition-colors duration-300 group ${
           isDragging
             ? 'border-dashed border-2 border-neutral-600 bg-neutral-800/30 shadow-2xl shadow-black/10'
             : 'border-neutral-800 hover:border-neutral-800/20 hover:text-neutral-300'
@@ -192,7 +192,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                 <p className="text-md font-semibold text-neutral-400">
                   {t('upload.processingImage')}
                 </p>
-                <p className="text-xs font-mono  text-neutral-500">{t('upload.pleaseWait')}</p>
+                <p className="text-xs text-neutral-500">{t('upload.pleaseWait')}</p>
               </div>
             </>
           )}
@@ -203,7 +203,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                 <p className="text-md font-semibold text-neutral-300">
                   {t('upload.dropImageHere')}
                 </p>
-                <p className="text-xs font-mono  text-neutral-500">{t('upload.releaseToUpload')}</p>
+                <p className="text-xs text-neutral-500">{t('upload.releaseToUpload')}</p>
               </div>
             </>
           )}
@@ -217,9 +217,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                 <p className="text-md font-semibold text-neutral-400">
                   {t('upload.clickToUpload')}
                 </p>
-                <p className="text-xs font-mono  text-neutral-500">
-                  {t('upload.supportedFormats')}
-                </p>
+                <p className="text-xs text-neutral-500">{t('upload.supportedFormats')}</p>
               </div>
             </>
           )}

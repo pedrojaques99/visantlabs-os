@@ -31,6 +31,8 @@ import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { NodeButton } from './shared/node-button';
 import { Input } from '@/components/ui/input';
 
+import { Thumb } from '@/components/ui/Thumb';
+
 export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>>> = memo(
   ({ data, selected, id, dragging }) => {
     const { t } = useTranslation();
@@ -130,7 +132,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
 
         toast.success(t('canvasNodes.outputNode.imageSavedToFavorites'), { duration: 3000 });
       } catch (error: any) {
-        toast.error(error?.message || 'Failed to save image', { duration: 3000 });
+        toast.error(error?.message || t('common.failedToSaveImage'), { duration: 3000 });
         console.error('Failed to save:', error);
       } finally {
         setIsSaving(false);
@@ -196,7 +198,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
         }
       } catch (error: any) {
         console.error('Failed to describe image:', error);
-        toast.error(error?.message || 'Failed to generate description', { duration: 3000 });
+        toast.error(error?.message || t('canvas.failedToGenerateDescription'), { duration: 3000 });
         setIsDescribing(false);
         if (data.onUpdateData) {
           data.onUpdateData(id, { isDescribing: false });
@@ -263,7 +265,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             toast.success(t('canvasNodes.shared.imageDownloaded'), { duration: 2000 });
           } catch (error) {
             console.error('Error downloading video:', error);
-            toast.error('Failed to download video');
+            toast.error(t('canvasNodes.shared.downloadFailed'));
           }
           return;
         }
@@ -302,7 +304,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
           toast.success(t('canvasNodes.shared.imageDownloaded'), { duration: 2000 });
         } catch (error) {
           console.error('Error downloading image:', error);
-          toast.error('Failed to download image');
+          toast.error(t('canvasNodes.shared.downloadFailed'));
         }
       },
       [
@@ -338,10 +340,10 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             data.onUpdateData(id, { connectedImage: dataUrl });
           }
 
-          toast.success('Image uploaded successfully!');
+          toast.success(t('common.imageUploadedSuccess'));
         } catch (error) {
           console.error('Error uploading image:', error);
-          toast.error('Failed to upload image');
+          toast.error(t('common.uploadFailed'));
         }
 
         // Reset input to allow uploading the same file again
@@ -446,7 +448,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
       >
         {selected && !dragging && (
           <NodeResizer
-            color="brand-cyan"
+            color="var(--brand-cyan)"
             isVisible={selected}
             minWidth={320}
             minHeight={200}
@@ -459,12 +461,8 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
         <NodeHandles />
 
         {/* Header */}
-        <NodeHeader
-          icon={Maximize2}
-          title={t('canvasNodes.upscaleNode.title') || 'Upscale'}
-          selected={selected}
-        >
-          <span className="text-2xs text-neutral-500 font-mono uppercase bg-neutral-900/40 px-2 py-0.5 rounded-md border-node border-neutral-800">
+        <NodeHeader icon={Maximize2} title={t('canvasNodes.upscaleNode.title')} selected={selected}>
+          <span className="text-2xs text-neutral-500 font-mono bg-neutral-900/40 px-2 py-0.5 rounded-md border-node border-neutral-800">
             {scaleFactor}x
           </span>
         </NodeHeader>
@@ -475,7 +473,9 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <Diamond size={12} className="text-foreground" />
-                <span className="text-2xs text-neutral-400 uppercase ">Sharpening</span>
+                <span className="text-2xs text-neutral-400">
+                  {t('canvasNodes.upscaleBicubicNode.sharpening')}
+                </span>
               </div>
               <span className="text-2xs font-mono text-neutral-500">
                 {Math.round(localSharpening * 100)}%
@@ -496,30 +496,30 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
 
           {/* Status/Info */}
           {!isLoading && hasConnectedImage && !hasResult ? (
-            <div className="w-full px-2 py-3 bg-neutral-900/40 border-node border-neutral-700/30 rounded-md text-2xs font-mono text-neutral-400 flex items-center justify-center gap-3 uppercase  backdrop-blur-sm">
+            <div className="w-full px-2 py-3 bg-neutral-900/40 border-node border-neutral-700/30 rounded-md text-2xs text-neutral-400 flex items-center justify-center gap-3">
               <Maximize2 size={14} />
-              Ready to upscale
+              {t('canvasNodes.upscaleBicubicNode.ready')}
             </div>
           ) : null}
 
           {/* Floating Processing Indicator */}
           {isLoading && !hasResult && hasConnectedImage && (
-            <div className="relative mt-2 min-h-[200px] flex items-center justify-center bg-neutral-950/20 rounded-md border-node border-neutral-700/30 backdrop-blur-sm">
-              <div className="p-3 rounded-md bg-neutral-950/40 backdrop-blur-md border-node border-neutral-800 shadow-xl">
-                <GlitchLoader size={16} color="brand-cyan" />
+            <div className="relative mt-2 min-h-[200px] flex items-center justify-center bg-neutral-950/20 rounded-md border-node border-neutral-700/30">
+              <div className="p-3 rounded-md bg-neutral-950/80 border-node border-neutral-800 shadow-xl">
+                <GlitchLoader size={16} />
               </div>
             </div>
           )}
 
           {!hasConnectedImage ? (
             <div className="w-full space-y-3">
-              <div className="w-full px-2 py-3 bg-neutral-900/40 border-node border-neutral-700/30 rounded-md text-2xs font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-70 uppercase  backdrop-blur-sm">
+              <div className="w-full px-2 py-3 bg-neutral-900/40 border-node border-neutral-700/30 rounded-md text-2xs text-neutral-500 flex items-center justify-center gap-3 opacity-70">
                 <Maximize2 size={14} />
-                Connect an image or video
+                {t('canvasNodes.upscaleBicubicNode.connect')}
               </div>
-              <label className="w-full px-4 py-2.5 bg-brand-cyan/5 hover:bg-brand-cyan/10 border-node border-neutral-800 hover:border-neutral-700 rounded-md text-2xs font-mono font-bold text-foreground flex items-center justify-center gap-2 cursor-pointer transition-[color,background-color,border-color,box-shadow,opacity,filter] uppercase tracking-widest nodrag shadow-sm backdrop-blur-sm">
+              <label className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-800 border-node border-neutral-800 hover:border-neutral-700 rounded-md text-2xs font-semibold text-foreground flex items-center justify-center gap-2 cursor-pointer transition-colors nodrag">
                 <Upload size={14} />
-                Upload Image
+                {t('canvasNodes.upscaleBicubicNode.upload')}
                 <Input
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/gif"
@@ -557,9 +557,9 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
                 </div>
               ) : resultImageUrl ? (
                 <div className="relative w-full h-full bg-neutral-950/20 rounded-md overflow-hidden border-node border-neutral-700/50 flex items-center justify-center flex-1 min-h-0">
-                  <img
+                  <Thumb
                     src={isSafeUrl(resultImageUrl) ? resultImageUrl : ''}
-                    alt="Upscaled result"
+                    alt={t('canvasNodes.upscaleNode.title')}
                     className="w-full h-full object-contain rounded"
                     style={{
                       display: 'block',
@@ -599,7 +599,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
                   e.stopPropagation();
                   handleView();
                 }}
-                className="bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 transition-colors backdrop-blur-sm border-node border-neutral-700/30 hover:border-neutral-600/50"
+                className="bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 transition-colors border-node border-neutral-700/30 hover:border-neutral-600/50"
                 title={t('canvasNodes.imageNode.viewFullScreen')}
                 onMouseDown={(e) => e.stopPropagation()}
               >
@@ -610,7 +610,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               variant="ghost"
               size="xs"
               onClick={handleDownload}
-              className="bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 transition-colors backdrop-blur-sm border-node border-neutral-700/30 hover:border-neutral-600/50"
+              className="bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 transition-colors border-node border-neutral-700/30 hover:border-neutral-600/50"
               title={t('canvasNodes.imageNode.downloadImage')}
               onMouseDown={(e) => e.stopPropagation()}
             >
@@ -625,7 +625,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               }}
               disabled={isSaving}
               className={cn(
-                'transition-colors backdrop-blur-sm border',
+                'transition-colors border',
                 isSaving
                   ? 'bg-neutral-950/70 text-neutral-500 cursor-wait border-node border-neutral-700/30'
                   : isLiked
@@ -653,7 +653,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
                   e.stopPropagation();
                   setShowDeleteModal(true);
                 }}
-                className="bg-destructive/20 hover:bg-destructive/30 text-destructive transition-colors backdrop-blur-sm border-node border-destructive/30"
+                className="bg-destructive/20 hover:bg-destructive/30 text-destructive transition-colors border-node border-destructive/30"
                 title={t('common.delete')}
                 onMouseDown={(e) => e.stopPropagation()}
               >
@@ -668,7 +668,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
                   e.stopPropagation();
                   setShowBrandKitModal(true);
                 }}
-                className="bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 transition-colors backdrop-blur-sm border-node border-neutral-700/30 hover:border-neutral-600/50"
+                className="bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 transition-colors border-node border-neutral-700/30 hover:border-neutral-600/50"
                 title={t('canvasNodes.imageNode.brandKit')}
                 onMouseDown={(e) => e.stopPropagation()}
               >
@@ -684,7 +684,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               }}
               disabled={isDescribing || !resultImageUrl}
               className={cn(
-                'transition-colors backdrop-blur-sm border',
+                'transition-colors border',
                 isDescribing || !resultImageUrl
                   ? 'bg-neutral-700/20 text-neutral-500 cursor-not-allowed border-neutral-700/20'
                   : 'bg-neutral-950/70 hover:bg-neutral-950/60 border-node border-neutral-700/30 hover:border-neutral-600/50'

@@ -10,13 +10,13 @@ import {
   ChevronRight,
   ZoomIn,
   ZoomOut,
-  MapPin,
   RefreshCw,
   Pencil,
   Heart,
   ThumbsUp,
   ThumbsDown,
   Download,
+  Trash2,
 } from '@/lib/ui/icons';
 import type { Mockup } from '../services/mockupApi';
 import { getImageUrl, isSafeUrl } from '@/utils/imageUtils';
@@ -301,7 +301,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
-    return formatDateShort(dateString, 'en-US');
+    return formatDateShort(dateString);
   };
 
   useEffect(() => {
@@ -329,14 +329,15 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
       onClick={onClose}
     >
       <div
-        className="relative max-w-[90vw] md:max-w-[85vw] lg:max-w-[80vw] w-full max-h-[90vh] bg-neutral-900 border border-neutral-800/50 rounded-md shadow-2xl p-6 flex flex-col gap-4"
+        className="relative max-w-[90vw] md:max-w-[85vw] lg:max-w-[80vw] w-full max-h-[90vh] bg-card border border-border rounded-md shadow-2xl p-6 flex flex-col gap-4"
         onClick={(e) => e.stopPropagation()}
       >
         <Button
           variant="ghost"
           onClick={onClose}
-          className="absolute top-2 right-2 p-1.5 rounded-md text-neutral-400/40 hover:text-neutral-300/80 hover:bg-neutral-950/20 transition-[color,background-color,border-color,box-shadow,filter] z-20"
-          title="Close (Esc)"
+          className="absolute top-2 right-2 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors z-20"
+          title={t('fullScreenViewer.close')}
+          aria-label={t('fullScreenViewer.close')}
         >
           <X size={16} />
         </Button>
@@ -349,8 +350,9 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
               e.stopPropagation();
               onNavigatePrevious();
             }}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 text-neutral-400/30 hover:text-neutral-300/70 hover:bg-neutral-950/10 rounded-md transition-all"
-            title="Previous (←)"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
+            title={t('fullScreenViewer.previous')}
+            aria-label={t('fullScreenViewer.previous')}
           >
             <ChevronLeft size={18} />
           </Button>
@@ -362,8 +364,9 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
               e.stopPropagation();
               onNavigateNext();
             }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 text-neutral-400/30 hover:text-neutral-300/70 hover:bg-neutral-950/10 rounded-md transition-all"
-            title="Next (→)"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
+            title={t('fullScreenViewer.next')}
+            aria-label={t('fullScreenViewer.next')}
           >
             <ChevronRight size={18} />
           </Button>
@@ -371,7 +374,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
 
         <div className="flex-grow flex gap-4 min-h-0 relative">
           {/* Image Container */}
-          <div className="flex-1 relative bg-neutral-950/20 rounded-md flex items-center justify-center overflow-hidden p-4 transition-all duration-300">
+          <div className="flex-1 relative bg-muted/40 rounded-md flex items-center justify-center overflow-hidden p-4">
             {isLoading && (
               <div className="absolute inset-0">
                 <SkeletonLoader
@@ -381,7 +384,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   variant="rectangular"
                 />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="inline-flex items-center justify-center rounded-md bg-neutral-950/30 px-3 py-2 border border-neutral-800">
+                  <div className="inline-flex items-center justify-center rounded-md bg-background/60 px-3 py-2 border border-border">
                     <Pickaxe size={20} className="text-muted-foreground pickaxe-swing" />
                   </div>
                 </div>
@@ -390,21 +393,44 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
             {hasImage && !isLoading && (
               <img
                 src={safeImageUrl}
-                alt="Full-size mockup"
+                alt={mockup?.prompt || t('fullScreenViewer.imageAlt')}
                 className="max-w-full max-h-full w-auto h-auto object-contain rounded-md"
               />
             )}
 
             {/* Like + Feedback buttons - top right corner */}
             <div className="absolute top-4 right-4 flex items-center gap-2 z-30">
+              {/* Delete: the prop existed but nothing rendered it, so callers
+                  that moved delete here (My Mockups) had no way to delete. */}
+              {onDelete && isAuthenticated && !isLoading && (
+                <Button
+                  variant="ghost"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
+                  disabled={isDeleting}
+                  className="p-2 rounded-md bg-background/80 text-muted-foreground hover:text-destructive hover:bg-background transition-colors border border-border disabled:opacity-50"
+                  title={t('common.delete')}
+                  aria-label={t('common.delete')}
+                >
+                  {isDeleting ? (
+                    <RefreshCw size={18} className="animate-spin" />
+                  ) : (
+                    <Trash2 size={18} />
+                  )}
+                </Button>
+              )}
+
               {/* Download Button */}
               {hasImage && !isLoading && (
                 <Button
                   variant="ghost"
                   onClick={handleDownload}
                   disabled={isDownloading}
-                  className="p-2 rounded-md bg-neutral-950/70 text-neutral-400 hover:text-white hover:bg-neutral-950/60 transition-[color,background-color,border-color,filter] backdrop-blur-sm border border-neutral-800"
-                  title={t('common.download') || 'Download'}
+                  className="p-2 rounded-md bg-background/80 text-muted-foreground hover:text-foreground hover:bg-background transition-colors border border-border"
+                  title={t('common.download')}
+                  aria-label={t('common.download')}
                 >
                   {isDownloading ? (
                     <RefreshCw size={18} className="animate-spin" />
@@ -416,14 +442,14 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
 
               {/* RAG Feedback (thumbs up/down) */}
               {generationId && (
-                <div className="flex items-center gap-1 rounded-lg bg-neutral-950/70 backdrop-blur-sm border border-neutral-800 p-1">
+                <div className="flex items-center gap-1 rounded-lg bg-background/80 border border-border p-1">
                   <Button
                     variant="ghost"
                     size="icon"
                     aria-label={
                       feedback.rating === 'up'
-                        ? 'Remover feedback positivo'
-                        : 'Feedback positivo — melhora o modelo'
+                        ? t('fullScreenViewer.removePositiveFeedback')
+                        : t('fullScreenViewer.positiveFeedback')
                     }
                     onClick={(e) => {
                       e.stopPropagation();
@@ -433,7 +459,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                       'w-8 h-8 rounded-md transition-colors',
                       feedback.rating === 'up'
                         ? 'text-success bg-success/10 hover:bg-success/20'
-                        : 'text-neutral-400 hover:text-white hover:bg-white/10'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                     )}
                     disabled={feedback.isLoading}
                   >
@@ -448,8 +474,8 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                     size="icon"
                     aria-label={
                       feedback.rating === 'down'
-                        ? 'Remover feedback negativo'
-                        : 'Feedback negativo — reportar problema'
+                        ? t('fullScreenViewer.removeNegativeFeedback')
+                        : t('fullScreenViewer.negativeFeedback')
                     }
                     onClick={(e) => {
                       e.stopPropagation();
@@ -459,7 +485,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                       'w-8 h-8 rounded-md transition-colors',
                       feedback.rating === 'down'
                         ? 'text-destructive bg-destructive/10 hover:bg-destructive/20'
-                        : 'text-neutral-400 hover:text-white hover:bg-white/10'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                     )}
                     disabled={feedback.isLoading}
                   >
@@ -479,17 +505,22 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                     e.stopPropagation();
                     handleToggleLike();
                   }}
-                  className={`p-2 rounded-md transition-[color,background-color,border-color,filter] backdrop-blur-sm ${
+                  className={cn(
+                    'p-2 rounded-md transition-colors',
                     localIsLiked
                       ? 'bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30'
-                      : 'bg-neutral-950/70 text-neutral-400 hover:bg-neutral-950/60 hover:text-neutral-200'
-                  }`}
+                      : 'bg-background/80 text-muted-foreground hover:bg-background hover:text-foreground'
+                  )}
                   title={
                     localIsLiked
                       ? t('canvasNodes.outputNode.removeFromFavorites')
                       : t('canvasNodes.outputNode.saveToCollection')
                   }
-                  aria-label={localIsLiked ? 'Unlike' : 'Like'}
+                  aria-label={
+                    localIsLiked
+                      ? t('canvasNodes.outputNode.removeFromFavorites')
+                      : t('canvasNodes.outputNode.saveToCollection')
+                  }
                 >
                   <Heart
                     size={18}
@@ -504,7 +535,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
 
         {/* Edit Buttons Panel (only shown when props are provided from MockupMachinePage) */}
         {!isLoading && hasImage && showEditButtons && (
-          <div className="flex-shrink-0 flex flex-wrap items-center gap-2 p-3 bg-neutral-950/20 rounded-md border border-neutral-800">
+          <div className="flex-shrink-0 flex flex-wrap items-center gap-2 p-3 bg-muted/40 rounded-md border border-border">
             {onNewAngle && availableAngles && availableAngles.length > 0 && (
               <div onClick={(e) => e.stopPropagation()}>
                 <AngleSelector
@@ -561,15 +592,15 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   onZoomIn();
                 }}
                 disabled={editButtonsDisabled || isLoading}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-neutral-800 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-[color,background-color,border-color,opacity,filter] duration-200 ${
-                  editButtonsDisabled || isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-                title="Zoom In (Move camera closer)"
+                className="flex items-center gap-2 px-3 py-1.5 text-muted-foreground border border-border hover:border-ring hover:bg-muted hover:text-foreground rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title={t('fullScreenViewer.zoomInHint')}
               >
                 <ZoomIn size={14} />
-                <span className="text-xs font-medium whitespace-nowrap">Zoom In</span>
+                <span className="text-xs font-medium whitespace-nowrap">
+                  {t('fullScreenViewer.zoomIn')}
+                </span>
                 {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                  <span className="text-2xs font-mono text-neutral-500 font-semibold">
+                  <span className="text-2xs font-mono text-muted-foreground font-semibold">
                     {creditsPerOperation}
                   </span>
                 )}
@@ -583,15 +614,15 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   onZoomOut();
                 }}
                 disabled={editButtonsDisabled || isLoading}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-neutral-800 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-[color,background-color,border-color,opacity,filter] duration-200 ${
-                  editButtonsDisabled || isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-                title="Zoom Out (Move camera further)"
+                className="flex items-center gap-2 px-3 py-1.5 text-muted-foreground border border-border hover:border-ring hover:bg-muted hover:text-foreground rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title={t('fullScreenViewer.zoomOutHint')}
               >
                 <ZoomOut size={14} />
-                <span className="text-xs font-medium whitespace-nowrap">Zoom Out</span>
+                <span className="text-xs font-medium whitespace-nowrap">
+                  {t('fullScreenViewer.zoomOut')}
+                </span>
                 {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                  <span className="text-2xs font-mono text-neutral-500 font-semibold">
+                  <span className="text-2xs font-mono text-muted-foreground font-semibold">
                     {creditsPerOperation}
                   </span>
                 )}
@@ -605,15 +636,15 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   setShowReImaginePanel(true);
                 }}
                 disabled={editButtonsDisabled || isLoading}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-foreground border border-brand-cyan/20 hover:border-brand-cyan/40 hover:bg-brand-cyan/10 rounded-md transition-[color,background-color,border-color,opacity,filter] duration-200 ${
-                  editButtonsDisabled || isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-                title="Re-imagine with AI"
+                className="flex items-center gap-2 px-3 py-1.5 text-muted-foreground border border-border hover:border-ring hover:bg-muted hover:text-foreground rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title={t('fullScreenViewer.reImagineHint')}
               >
                 <Pencil size={14} />
-                <span className="text-xs font-medium whitespace-nowrap">Re-imagine</span>
+                <span className="text-xs font-medium whitespace-nowrap">
+                  {t('fullScreenViewer.reImagine')}
+                </span>
                 {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                  <span className="text-2xs font-mono text-neutral-500 font-semibold">
+                  <span className="text-2xs font-mono text-muted-foreground font-semibold">
                     {creditsPerOperation}
                   </span>
                 )}
@@ -629,20 +660,21 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
               variant="ghost"
               onClick={handleOpenInEditor}
               disabled={isConvertingImage}
-              className={`flex flex-nowrap items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-neutral-800 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-[color,background-color,border-color,opacity,filter] duration-200 ${
-                isConvertingImage ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-              title="Open in Editor"
+              className="flex flex-nowrap items-center gap-2 px-3 py-1.5 text-muted-foreground border border-border hover:border-ring hover:bg-muted hover:text-foreground rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isConvertingImage ? (
                 <>
                   <RefreshCw size={14} className="animate-spin" />
-                  <span className="text-xs font-medium whitespace-nowrap">Loading...</span>
+                  <span className="text-xs font-medium whitespace-nowrap">
+                    {t('common.loading')}
+                  </span>
                 </>
               ) : (
                 <>
                   <Edit size={14} />
-                  <span className="text-xs font-medium whitespace-nowrap">Open in Editor</span>
+                  <span className="text-xs font-medium whitespace-nowrap">
+                    {t('fullScreenViewer.openInEditor')}
+                  </span>
                 </>
               )}
             </Button>
@@ -651,13 +683,13 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
 
         {/* Mockup Information */}
         {mockup && !isLoading && (
-          <div className="flex-shrink-0 space-y-3 border-t border-neutral-800/50 pt-4">
+          <div className="flex-shrink-0 space-y-3 border-t border-border pt-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-neutral-400 uppercase tracking-wider">
-                  {mockup.designType}
+                <span className="text-xs text-muted-foreground">{mockup.designType}</span>
+                <span className="text-xs font-mono text-muted-foreground">
+                  {mockup.aspectRatio}
                 </span>
-                <span className="text-xs font-mono text-neutral-500">{mockup.aspectRatio}</span>
               </div>
 
               {mockup.prompt && (
@@ -665,14 +697,18 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   <Button
                     variant="ghost"
                     onClick={() => setShowPrompt(!showPrompt)}
-                    className="flex items-center gap-2 text-xs text-neutral-400 hover:text-neutral-200 transition-colors mb-2"
+                    className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors mb-2"
                   >
                     <FileText size={14} />
-                    <span>{showPrompt ? 'Hide' : 'Show'} Prompt</span>
+                    <span>
+                      {showPrompt
+                        ? t('fullScreenViewer.hidePrompt')
+                        : t('fullScreenViewer.showPrompt')}
+                    </span>
                     {showPrompt ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                   </Button>
                   {showPrompt && (
-                    <p className="text-sm font-mono text-neutral-300 bg-neutral-950/20 p-3 rounded-md border border-neutral-700/30">
+                    <p className="text-sm text-foreground bg-muted/40 p-3 rounded-md border border-border">
                       {mockup.prompt}
                     </p>
                   )}
@@ -688,7 +724,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   ].map((tag, idx) => (
                     <span
                       key={idx}
-                      className="px-2 py-1 bg-transparent border border-neutral-700/30 text-xs font-mono text-neutral-400 rounded"
+                      className="px-2 py-1 border border-border text-xs text-muted-foreground rounded"
                     >
                       {translateTag(String(tag))}
                     </span>
@@ -697,7 +733,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
               )}
 
               {mockup.createdAt && (
-                <p className="text-xs font-mono text-neutral-500">{formatDate(mockup.createdAt)}</p>
+                <p className="text-xs text-muted-foreground">{formatDate(mockup.createdAt)}</p>
               )}
             </div>
           </div>

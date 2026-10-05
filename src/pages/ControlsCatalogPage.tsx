@@ -66,7 +66,7 @@ export function ControlsCatalogPage() {
       pageId="controls-catalog"
       microTitle="Design System // Controls"
       title="Creative Controls"
-      description="Pro tool controls built on the design system — adapted from Toolcraft (MIT), no runtime vendored."
+      description="Pro tool controls built on the design system, adapted from Toolcraft (MIT), no runtime vendored."
       breadcrumb={[{ label: 'Design System', to: '/design-system' }, { label: 'Controls' }]}
       width="7xl"
     >
@@ -74,7 +74,7 @@ export function ControlsCatalogPage() {
         <Demo
           title="Curves Editor"
           code="<CurvesEditor />"
-          note={`Tone curve with monotone/smooth cubic interpolation. LUT[64] sample: ${lut[64]} · LUT[192]: ${lut[192]}. buildLut() feeds image pipelines.`}
+          note={`Tone curve with monotone/smooth cubic interpolation. LUT[64] sample: ${lut[64]}, LUT[192]: ${lut[192]}. buildLut() feeds image pipelines.`}
         >
           <CurvesEditor points={curve} onChange={setCurve} interpolation={interp} size={200} />
           <div className="space-y-3 min-w-[140px]">
@@ -112,7 +112,7 @@ export function ControlsCatalogPage() {
         <Demo
           title="Improved Color Picker"
           code="<ExpandableColorPicker eyedropper showRgb recentColors />"
-          note="The existing SSoT picker, now with native eyedropper (Chromium), R/G/B fields and a recent row — all opt-in, hex contract unchanged."
+          note="The existing SSoT picker, now with native eyedropper (Chromium), R/G/B fields and a recent row. All opt-in, hex contract unchanged."
         >
           <div className="w-full max-w-xs">
             <ExpandableColorPicker
@@ -139,7 +139,7 @@ export function ControlsCatalogPage() {
 
         <Demo
           title="Vector Pad + Anchor Grid"
-          code="<VectorPad /> · <AnchorGrid />"
+          code="<VectorPad />, <AnchorGrid />"
           note="XY pad for light direction / offsets, and a 9-point origin picker with ANCHOR_ORIGIN helpers."
         >
           <VectorPad value={vec} onChange={setVec} label="Light dir" />

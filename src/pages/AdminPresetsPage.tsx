@@ -24,7 +24,6 @@ import { DataTable } from '../components/ui/data-table';
 import { DataTableEditableCell } from '../components/ui/data-table-editable-cell';
 import { ColumnDef } from '@tanstack/react-table';
 import { CATEGORY_CONFIG } from '@/components/PresetCard';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { AdminImageUploader } from '../components/ui/AdminImageUploader';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -1515,13 +1514,13 @@ export const AdminPresetsPage: React.FC = () => {
                     <BreadcrumbList>
                       <BreadcrumbItem>
                         <BreadcrumbLink asChild>
-                          <Link to="/">{t('apps.home') || 'Home'}</Link>
+                          <Link to="/">{t('apps.home')}</Link>
                         </BreadcrumbLink>
                       </BreadcrumbItem>
                       <BreadcrumbSeparator />
                       <BreadcrumbItem>
                         <BreadcrumbLink asChild>
-                          <Link to="/admin">{t('admin.title') || 'Admin'}</Link>
+                          <Link to="/admin">{t('admin.title')}</Link>
                         </BreadcrumbLink>
                       </BreadcrumbItem>
                       <BreadcrumbSeparator />
@@ -1536,10 +1535,10 @@ export const AdminPresetsPage: React.FC = () => {
                     <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-foreground" />
                     <div>
                       <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-neutral-300">
-                        {t('adminPresets.title') || 'Administração de Presets'}
+                        {t('adminPresets.title')}
                       </h1>
                       <p className="text-neutral-500 font-mono text-xs md:text-sm">
-                        {t('adminPresets.subtitle') || 'Gerencie presets de mockup e gerações'}
+                        {t('adminPresets.subtitle')}
                       </p>
                     </div>
                   </div>
@@ -1577,7 +1576,7 @@ export const AdminPresetsPage: React.FC = () => {
                 className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-neutral-700 disabled:text-neutral-500 h-9"
               >
                 <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                {t('admin.refresh') || 'Atualizar'}
+                {t('admin.refresh')}
               </Button>
 
               {!isEditing && (
@@ -1622,7 +1621,7 @@ export const AdminPresetsPage: React.FC = () => {
                   className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-foreground border border-brand-cyan/30 h-9"
                 >
                   <Layers className="h-4 w-4 mr-2" />
-                  {t('adminPresets.populateDefaults') || 'Popular Padrões'}
+                  {t('adminPresets.populateDefaults')}
                 </Button>
               )}
 
@@ -1778,7 +1777,7 @@ export const AdminPresetsPage: React.FC = () => {
                           }}
                           rows={12}
                           className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-neutral-600/50 resize-none"
-                          placeholder={`[\n  {\n    "id": "preset-id-1",\n    "name": "Nome do Preset 1",\n    "description": "Descrição do preset 1",\n    "prompt": "Prompt completo...",\n    "referenceImageUrl": "",\n    "aspectRatio": "16:9",\n    "model": GEMINI_MODELS.FLASH\n  }\n]`}
+                          placeholder={`[\n  {\n    "id": "preset-id-1",\n    "name": "Nome do Preset 1",\n    "description": "Descrição do preset 1",\n    "prompt": "Prompt completo...",\n    "referenceImageUrl": "",\n    "aspectRatio": "16:9",\n    "model": "${GEMINI_MODELS.FLASH}"\n  }\n]`}
                         />
                       </div>
 

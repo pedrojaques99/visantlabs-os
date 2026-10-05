@@ -298,7 +298,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                       }}
                     >
                       <div
-                        className="w-10 h-10 rounded-lg border border-white/10 group-hover:scale-110 transition-transform shadow"
+                        className="w-10 h-10 rounded-lg border border-white/10 shadow"
                         style={{ backgroundColor: color.hex }}
                       />
                       <span className="text-3xs font-mono text-neutral-600">{color.hex}</span>
@@ -313,7 +313,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                             e.stopPropagation();
                             handleApplyToTheme(color.hex!, 'background');
                           }}
-                          className="p-0.5 rounded bg-black/60 text-white hover:text-brand-cyan"
+                          className="p-0.5 rounded bg-black/60 text-white hover:text-white/70"
                           title="Apply as BG"
                         >
                           <Paintbrush size={8} />
@@ -323,7 +323,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                             e.stopPropagation();
                             handleApplyToTheme(color.hex!, 'primary');
                           }}
-                          className="p-0.5 rounded bg-black/60 text-white hover:text-brand-cyan"
+                          className="p-0.5 rounded bg-black/60 text-white hover:text-white/70"
                           title="Set as Primary"
                         >
                           <Zap size={8} />
@@ -344,7 +344,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                   {refSearch.activeFilterCount > 0 && (
                     <button
                       onClick={refSearch.clearFilters}
-                      className="text-3xs text-brand-cyan/60 hover:text-brand-cyan flex items-center gap-0.5"
+                      className="text-3xs text-muted-foreground hover:text-foreground flex items-center gap-0.5"
                     >
                       <X size={8} /> Clear
                     </button>
@@ -361,7 +361,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                         <button
                           onClick={() => setExpandedDim(isExp ? null : key)}
                           className={cn(
-                            'px-2 py-0.5 rounded-full text-3xs font-mono uppercase tracking-wider border transition-[color,background-color,border-color,box-shadow]',
+                            'px-2 py-0.5 rounded-full text-3xs border transition-[color,background-color,border-color,box-shadow]',
                             activeValue
                               ? 'bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan'
                               : 'bg-neutral-900/60 border-neutral-800 text-neutral-500 hover:text-white'
@@ -442,7 +442,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                             className={cn(
                               'flex items-center gap-3 p-2 rounded-md bg-neutral-900/30 border transition-colors group cursor-pointer',
                               isRecommended
-                                ? 'border-brand-cyan/20'
+                                ? 'border-neutral-600'
                                 : 'border-white/5 hover:border-neutral-700'
                             )}
                           >
@@ -475,9 +475,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                             {isRecommended && (
                               <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-neutral-800 text-neutral-200">
                                 <Zap size={7} />
-                                <span className="text-3xs font-bold uppercase tracking-wider">
-                                  Match
-                                </span>
+                                <span className="text-3xs font-bold">Match</span>
                               </div>
                             )}
                             {!ref.sanitized && (
@@ -491,7 +489,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                                   'p-1 rounded bg-warning/10 text-warning hover:bg-warning/20 disabled:opacity-50',
                                   hoverReveal
                                 )}
-                                title="Sanitizar — remover branding do studio"
+                                title="Sanitizar: remover branding do estúdio"
                               >
                                 {sanitizingIds.has(ref.id) ? (
                                   <GlitchLoader size={10} />
@@ -521,9 +519,9 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                             toast.success('Reference added');
                           }}
                           className={cn(
-                            'group relative aspect-square rounded-lg overflow-hidden bg-neutral-900 border transition-all cursor-pointer',
+                            'group relative aspect-square rounded-lg overflow-hidden bg-neutral-900 border transition-colors cursor-pointer',
                             isRecommended
-                              ? 'border-brand-cyan/20 shadow-[0_0_8px_rgba(var(--brand-cyan-rgb),0.08)]'
+                              ? 'border-neutral-600'
                               : 'border-white/5 hover:border-neutral-700'
                           )}
                         >
@@ -531,14 +529,12 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                             src={getProxiedUrl(ref.referenceImageUrl)}
                             alt={ref.name}
                             loading="lazy"
-                            className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
+                            className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                           />
                           {isRecommended && (
                             <div className="absolute top-1 left-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-neutral-800 text-neutral-200">
                               <Zap size={7} />
-                              <span className="text-3xs font-bold uppercase tracking-wider">
-                                Match
-                              </span>
+                              <span className="text-3xs font-bold">Match</span>
                             </div>
                           )}
                           <div
@@ -568,7 +564,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                               hoverReveal
                             )}
                           >
-                            <div className="w-4 h-4 rounded-full bg-brand-cyan/80 flex items-center justify-center">
+                            <div className="w-4 h-4 rounded-full bg-neutral-100 flex items-center justify-center">
                               <Plus size={8} className="text-black" />
                             </div>
                             {!ref.sanitized && (
@@ -579,7 +575,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                                 }}
                                 disabled={sanitizingIds.has(ref.id)}
                                 className="w-4 h-4 rounded-full bg-warning/80 flex items-center justify-center hover:bg-warning transition-colors disabled:opacity-50"
-                                title="Sanitizar — remover branding do studio"
+                                title="Sanitizar: remover branding do estúdio"
                               >
                                 {sanitizingIds.has(ref.id) ? (
                                   <GlitchLoader size={6} />
@@ -598,7 +594,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                   <button
                     onClick={() => refSearch.loadMore()}
                     disabled={refSearch.isLoading}
-                    className="w-full mt-2 py-2 rounded-md border border-neutral-700/30 bg-neutral-900/40 text-2xs text-neutral-400 hover:text-brand-cyan hover:border-brand-cyan/30 transition-[color,background-color,border-color,opacity] disabled:opacity-50"
+                    className="w-full mt-2 py-2 rounded-md border border-neutral-700/30 bg-neutral-900/40 text-2xs text-neutral-400 hover:text-foreground hover:border-border transition-[color,background-color,border-color,opacity] disabled:opacity-50"
                   >
                     {refSearch.isLoading ? (
                       <GlitchLoader size={10} className="mx-auto" />
@@ -669,10 +665,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
               e.stopPropagation();
               onAdd();
             }}
-            className={cn(
-              'p-1 rounded bg-brand-cyan/10 text-foreground hover:bg-brand-cyan/20',
-              hoverReveal
-            )}
+            className={cn('p-1 rounded bg-muted/60 text-foreground hover:bg-muted', hoverReveal)}
           >
             <Plus size={10} />
           </button>
@@ -694,11 +687,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
           needsLightBg ? 'bg-white' : 'bg-neutral-950'
         )}
       >
-        <Thumb
-          src={url}
-          alt={label}
-          className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-300"
-        />
+        <Thumb src={url} alt={label} className="max-w-full max-h-full object-contain" />
         {onAdd && (
           <button
             onClick={(e) => {
@@ -706,7 +695,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
               onAdd();
             }}
             className={cn(
-              'absolute top-1 right-1 p-1 rounded bg-brand-cyan/90 text-black',
+              'absolute top-1 right-1 p-1 rounded bg-neutral-100 text-black',
               hoverReveal
             )}
           >

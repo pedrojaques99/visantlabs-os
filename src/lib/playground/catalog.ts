@@ -482,7 +482,7 @@ export const visantCatalog = schema.createCatalog({
       }),
       slots: [],
       description:
-        "Text element. 'label' = 10px mono uppercase. 'caption' = 11px muted. Use style prop with $bindState for dynamic fontSize/fontWeight/lineHeight.",
+        "Text element. 'label' = 12px medium muted. 'caption' = 11px muted. Use style prop with $bindState for dynamic fontSize/fontWeight/lineHeight.",
     },
     MicroTitle: {
       props: z.object({

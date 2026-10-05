@@ -4,11 +4,9 @@ import { useImageEditorStore, type InpaintMode } from '@/stores/imageEditorStore
 import { useImageEditorActions } from '@/hooks/image-editor/useImageEditorActions';
 import { IMAGE_EDITOR } from '@/constants/imageEditorTokens';
 import { cn } from '@/lib/utils';
-const MODES: { id: InpaintMode; label: string; desc: string }[] = [
-  { id: 'replace', label: 'Replace', desc: 'Fill with new content' },
-  { id: 'remove', label: 'Remove', desc: 'Erase and fill background' },
-  { id: 'retouch', label: 'Retouch', desc: 'Subtle improvements' },
-];
+import { useTranslation } from '@/hooks/useTranslation';
+// label/desc em imageEditor.modes.<id>.*
+const MODES: InpaintMode[] = ['replace', 'remove', 'retouch'];
 
 interface Props {
   imageUrl: string;
@@ -17,6 +15,7 @@ interface Props {
 }
 
 export const ImageEditorActionPanel: React.FC<Props> = ({ imageUrl, imageWidth, imageHeight }) => {
+  const { t } = useTranslation();
   const activeAction = useImageEditorStore((s) => s.activeAction);
   const activeMode = useImageEditorStore((s) => s.activeMode);
   const prompt = useImageEditorStore((s) => s.prompt);
@@ -55,23 +54,22 @@ export const ImageEditorActionPanel: React.FC<Props> = ({ imageUrl, imageWidth, 
           <div className="flex items-center gap-1">
             {MODES.map((mode) => (
               <button
-                key={mode.id}
-                onClick={() => setActiveMode(mode.id)}
+                key={mode}
+                onClick={() => setActiveMode(mode)}
                 disabled={isGenerating}
                 className={cn(
-                  'px-2.5 py-1 rounded-lg text-xs font-mono uppercase tracking-wider transition-colors',
-                  activeMode === mode.id
+                  'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
+                  activeMode === mode
                     ? IMAGE_EDITOR.toolbar.activeTool
                     : IMAGE_EDITOR.toolbar.inactiveTool
                 )}
-                title={mode.desc}
               >
-                {mode.label}
+                {t(`imageEditor.modes.${mode}.label`)}
               </button>
             ))}
           </div>
           <span className="text-2xs text-neutral-500 pl-0.5">
-            {MODES.find((m) => m.id === activeMode)?.desc}
+            {t(`imageEditor.modes.${activeMode}.desc`)}
           </span>
         </div>
       )}
@@ -90,9 +88,9 @@ export const ImageEditorActionPanel: React.FC<Props> = ({ imageUrl, imageWidth, 
           placeholder={
             activeAction === 'inpaint'
               ? activeMode === 'replace'
-                ? 'Describe what to generate...'
-                : 'Optional context...'
-              : 'Optional: describe what to generate in expanded area...'
+                ? t('imageEditor.promptReplace')
+                : t('imageEditor.promptOptional')
+              : t('imageEditor.promptExpand')
           }
           disabled={isGenerating}
           className={cn(
@@ -106,9 +104,7 @@ export const ImageEditorActionPanel: React.FC<Props> = ({ imageUrl, imageWidth, 
 
       {/* Remove BG info */}
       {activeAction === 'remove-bg' && (
-        <span className="flex-1 text-xs text-neutral-400 font-mono">
-          One-click AI background removal (rembg U2-Net)
-        </span>
+        <span className="flex-1 text-xs text-neutral-400">{t('imageEditor.removeBgInfo')}</span>
       )}
 
       {/* Generate button */}
@@ -117,14 +113,14 @@ export const ImageEditorActionPanel: React.FC<Props> = ({ imageUrl, imageWidth, 
         disabled={!canGenerate || isGenerating}
         className={cn(
           'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-[color,background-color,border-color,opacity]',
-          'bg-brand-cyan/20 text-foreground border border-brand-cyan/30',
-          'hover:bg-brand-cyan/30 hover:border-neutral-700',
+          'bg-brand-cyan text-black border border-brand-cyan',
+          'hover:bg-brand-cyan/90',
           'disabled:opacity-30 disabled:cursor-not-allowed',
           isGenerating && 'animate-pulse'
         )}
       >
         <Zap size={14} />
-        {isGenerating ? 'Generating...' : 'Generate'}
+        {isGenerating ? t('imageEditor.generating') : t('imageEditor.generate')}
       </button>
     </div>
   );

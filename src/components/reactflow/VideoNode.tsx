@@ -82,7 +82,7 @@ const ALL_MODE_OPTIONS = [
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const VideoNode = memo(
   ({ data, selected, id, dragging }: NodeProps<any>) => {
-    const { t } = useTranslation();
+    const { t, tOr } = useTranslation();
     const nodes = useNodes();
     const { setNodes } = useReactFlow();
     const nodeData = data as VideoNodeData;
@@ -233,11 +233,11 @@ export const VideoNode = memo(
 
       // Validate required inputs based on mode
       if (mode === GenerationMode.FRAMES_TO_VIDEO && !nodeData.connectedImage1) {
-        toast.error(t('canvasNodes.videoNode.startFrameRequired') || 'Start frame is required');
+        toast.error(t('canvasNodes.videoNode.startFrameRequired'));
         return;
       }
       if (mode === GenerationMode.EXTEND_VIDEO && !nodeData.connectedVideo) {
-        toast.error(t('canvasNodes.videoNode.inputVideoRequired') || 'Input video is required');
+        toast.error(t('canvasNodes.videoNode.inputVideoRequired'));
         return;
       }
 
@@ -394,10 +394,7 @@ export const VideoNode = memo(
         if (slotFound) {
           updateData(updates);
         } else {
-          toast.warning(
-            t('canvasNodes.videoNode.allSlotsFull') ||
-              'All reference slots are full. Added to board instead.'
-          );
+          toast.warning(t('canvasNodes.videoNode.allSlotsFull'));
           handleAddToBoard(url, type);
         }
       },
@@ -408,16 +405,16 @@ export const VideoNode = memo(
     const getInputLabel = useCallback(
       (index: number): string => {
         if (mode === GenerationMode.FRAMES_TO_VIDEO) {
-          if (index === 1) return t('canvasNodes.videoNode.startFrame') || 'Start Frame';
-          if (index === 2) return t('canvasNodes.videoNode.endFrame') || 'End Frame';
+          if (index === 1) return t('canvasNodes.videoNode.startFrame');
+          if (index === 2) return t('canvasNodes.videoNode.endFrame');
         }
         if (mode === GenerationMode.EXTEND_VIDEO) {
-          if (index === 1) return t('canvasNodes.videoNode.inputVideo') || 'Input Video';
+          if (index === 1) return t('canvasNodes.videoNode.inputVideo');
         }
         if (mode === GenerationMode.REFERENCES) {
-          return `${t('common.reference') || 'Reference'} ${index}`;
+          return `${t('common.reference')} ${index}`;
         }
-        return `${t('canvasNodes.videoNode.input') || 'Input'} ${index}`;
+        return `${t('canvasNodes.videoNode.input')} ${index}`;
       },
       [mode, t]
     );
@@ -437,7 +434,7 @@ export const VideoNode = memo(
         {/* Resizer */}
         {selected && !dragging && (
           <NodeResizer
-            color="brand-cyan"
+            color="var(--brand-cyan)"
             isVisible={selected}
             minWidth={320}
             minHeight={300}
@@ -451,7 +448,7 @@ export const VideoNode = memo(
           type="target"
           position={Position.Left}
           id="text-input"
-          label={t('canvasNodes.videoNode.prompt') || 'Prompt'}
+          label={t('canvasNodes.videoNode.prompt')}
           handleType="text"
           style={{ top: '60px' }}
         />
@@ -516,7 +513,7 @@ export const VideoNode = memo(
 
         {/* Mode Selector */}
         <div className="node-margin">
-          <NodeLabel>{t('canvasNodes.videoNode.generationMode') || 'Generation Mode'}</NodeLabel>
+          <NodeLabel>{t('canvasNodes.videoNode.generationMode')}</NodeLabel>
           <Select
             value={mode}
             onChange={(v) => {
@@ -526,7 +523,7 @@ export const VideoNode = memo(
             }}
             options={modeOptions.map((opt) => ({
               value: opt.value,
-              label: t(`canvasNodes.videoNode.mode.${opt.value}`) || opt.label,
+              label: tOr(`canvasNodes.videoNode.mode.${opt.value}`, opt.label),
             }))}
             variant="node"
             disabled={isLoading}
@@ -535,14 +532,11 @@ export const VideoNode = memo(
 
         {/* Prompt Input */}
         <div className="node-margin">
-          <NodeLabel>{t('canvasNodes.videoNode.prompt') || 'Prompt'}</NodeLabel>
+          <NodeLabel>{t('canvasNodes.videoNode.prompt')}</NodeLabel>
 
           {hasTextConnection && (
-            <div className="mb-1.5 text-2xs font-mono text-brand-cyan/70 flex items-center gap-1">
-              <span>*</span>
-              <span>
-                {t('canvasNodes.videoNode.connectedToTextNode') || 'Connected to TextNode'}
-              </span>
+            <div className="mb-1.5 text-2xs text-neutral-400 flex items-center gap-1">
+              <span>{t('canvasNodes.videoNode.connectedToTextNode')}</span>
             </div>
           )}
 
@@ -550,7 +544,7 @@ export const VideoNode = memo(
             value={prompt}
             onChange={handlePromptChange}
             onSubmit={handleGenerate}
-            placeholder={t('canvasNodes.videoNode.describeVideo') || 'Describe your video...'}
+            placeholder={t('canvasNodes.videoNode.describeVideo')}
             disabled={isLoading || hasTextConnection}
             textareaRef={textareaRef}
             className="min-h-[80px]"
@@ -561,7 +555,7 @@ export const VideoNode = memo(
         {connectedImages.length > 0 && (
           <ConnectedImagesDisplay
             images={connectedImages}
-            label={t('canvasNodes.videoNode.connectedInputs') || 'Connected Inputs'}
+            label={t('canvasNodes.videoNode.connectedInputs')}
             showLabel
           />
         )}
@@ -570,7 +564,7 @@ export const VideoNode = memo(
           <div className="node-margin bg-neutral-900/50 border-node border-neutral-800 rounded p-2 flex items-center gap-2">
             <VideoIcon size={14} className="text-foreground" />
             <span className="text-xs text-neutral-400">
-              {t('canvasNodes.videoNode.videoInputConnected') || 'Video Input Connected'}
+              {t('canvasNodes.videoNode.videoInputConnected')}
             </span>
           </div>
         )}
@@ -584,7 +578,7 @@ export const VideoNode = memo(
             className="text-xs font-mono text-neutral-400 hover:text-neutral-200 w-full p-2 hover:bg-neutral-800/50"
           >
             <Settings size={12} />
-            <span>{t('canvasNodes.videoNode.advancedSettings') || 'Advanced Settings'}</span>
+            <span>{t('canvasNodes.videoNode.advancedSettings')}</span>
             <ChevronRight
               size={12}
               className={cn('transition-transform ml-auto', isAdvancedOpen && 'rotate-90')}
@@ -596,7 +590,7 @@ export const VideoNode = memo(
           <div className="node-margin p-3 space-y-3 border-node border-neutral-800 rounded-md bg-neutral-900/50">
             {/* Model */}
             <div>
-              <NodeLabel>{t('canvasNodes.videoNode.model') || 'Model'}</NodeLabel>
+              <NodeLabel>{t('canvasNodes.videoNode.model')}</NodeLabel>
               <Select
                 value={model}
                 onChange={(v) => {
@@ -664,7 +658,7 @@ export const VideoNode = memo(
             {/* Aspect Ratio & Duration Grid */}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <NodeLabel>{t('canvasNodes.videoNode.aspectRatio') || 'Aspect Ratio'}</NodeLabel>
+                <NodeLabel>{t('canvasNodes.videoNode.aspectRatio')}</NodeLabel>
                 <AspectRatioSelector
                   value={aspectRatio}
                   onChange={(r) => {
@@ -677,7 +671,7 @@ export const VideoNode = memo(
                 />
               </div>
               <div>
-                <NodeLabel>{t('canvasNodes.videoNode.duration') || 'Duration'}</NodeLabel>
+                <NodeLabel>{t('canvasNodes.videoNode.duration')}</NodeLabel>
                 <Select
                   value={duration}
                   onChange={(v) => {
@@ -694,7 +688,7 @@ export const VideoNode = memo(
             {/* Resolution — only for Veo (Kling resolution is derived from klingMode) */}
             {isVeo && (
               <div>
-                <NodeLabel>{t('canvasNodes.videoNode.resolution') || 'Resolution'}</NodeLabel>
+                <NodeLabel>{t('canvasNodes.videoNode.resolution')}</NodeLabel>
                 <ResolutionSelector
                   value={resolution}
                   onChange={(r) => {
@@ -713,9 +707,7 @@ export const VideoNode = memo(
             {/* Loop Toggle — only Veo supports looping */}
             {modelCaps?.supportsLoop && (
               <div className="flex items-center justify-between py-1">
-                <NodeLabel className="mb-0">
-                  {t('canvasNodes.videoNode.loopVideo') || 'Loop Video'}
-                </NodeLabel>
+                <NodeLabel className="mb-0">{t('canvasNodes.videoNode.loopVideo')}</NodeLabel>
                 <Switch
                   checked={isLooping}
                   onCheckedChange={(c) => {
@@ -777,12 +769,10 @@ export const VideoNode = memo(
             {/* Negative Prompt — models that support it */}
             {modelCaps?.supportsNegativePrompt && (
               <div>
-                <NodeLabel>
-                  {t('canvasNodes.videoNode.negativePrompt') || 'Negative Prompt'}
-                </NodeLabel>
+                <NodeLabel>{t('canvasNodes.videoNode.negativePrompt')}</NodeLabel>
                 <Input
                   className="w-full bg-neutral-900 border-node border-neutral-700 rounded p-2 text-xs font-mono text-neutral-300 focus:border-neutral-600 outline-none placeholder:text-neutral-600"
-                  placeholder={t('canvasNodes.videoNode.whatToAvoid') || 'What to avoid...'}
+                  placeholder={t('canvasNodes.videoNode.whatToAvoid')}
                   value={negativePrompt}
                   onChange={(e) => {
                     setNegativePrompt(e.target.value);
@@ -808,9 +798,9 @@ export const VideoNode = memo(
 
         {/* Generate Button */}
         <Tooltip
-          content={`${
-            t('canvasNodes.promptNode.creditsRequired') || 'Costs'
-          } ${creditsRequired} ${t('canvasNodes.promptNode.credits')}`}
+          content={`${t(
+            'canvasNodes.promptNode.creditsRequired'
+          )} ${creditsRequired} ${t('canvasNodes.promptNode.credits')}`}
           delay={500}
         >
           <NodeButton
@@ -826,14 +816,14 @@ export const VideoNode = memo(
           >
             {isLoading ? (
               <div className="flex items-center justify-center gap-2">
-                <GlitchLoader size={14} color="brand-cyan" />
-                <span>{t('canvasNodes.videoNode.generating') || 'Generating...'}</span>
+                <GlitchLoader size={14} />
+                <span>{t('canvasNodes.videoNode.generating')}</span>
               </div>
             ) : (
               <div className="flex items-center justify-center gap-2">
                 <VideoIcon size={14} className="group-hover/gen:rotate-12 transition-transform" />
                 <span className="font-semibold tracking-tight">
-                  {t('canvasNodes.videoNode.generateVideo') || 'Generate Video'}
+                  {t('canvasNodes.videoNode.generateVideo')}
                 </span>
                 <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-2xs text-foreground/80">
                   <Diamond size={10} className="opacity-50 fill-current" />
@@ -873,7 +863,7 @@ export const VideoNode = memo(
         <LabeledHandle
           type="source"
           position={Position.Right}
-          label={t('canvasNodes.videoNode.video') || 'Video'}
+          label={t('canvasNodes.videoNode.video')}
           handleType="video"
           style={{ top: '50%' }}
         />

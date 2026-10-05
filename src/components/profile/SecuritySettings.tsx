@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { Shield, Monitor, Trash2, Copy, QrCode } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Badge } from '@/components/ui/badge';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { sessionService, type SessionRecord } from '@/services/sessionService';
 import { totpService } from '@/services/totpService';
+import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
 import { formatDateTime } from '@/utils/localeUtils';
 import { copyToClipboard } from '@/utils/clipboard';
@@ -18,9 +21,13 @@ interface SecuritySettingsProps {
 export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
   totpEnabled: initialTotpEnabled = false,
 }) => {
+  const { t } = useTranslation();
+
   // Sessions
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
+  // Falha de carga ≠ "nenhuma sessão registrada".
+  const [sessionsFailed, setSessionsFailed] = useState(false);
 
   // 2FA
   const [totpEnabled, setTotpEnabled] = useState(initialTotpEnabled);
@@ -30,29 +37,31 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
   const [backupCodes, setBackupCodes] = useState<string[] | null>(null);
   const [isSettingUp, setIsSettingUp] = useState(false);
 
-  useEffect(() => {
-    loadSessions();
-  }, []);
-
-  const loadSessions = async () => {
+  const loadSessions = useCallback(async () => {
     setIsLoadingSessions(true);
+    setSessionsFailed(false);
     try {
       const data = await sessionService.listSessions();
       setSessions(data);
-    } catch {
-      // Sessions may not be available yet
+    } catch (err) {
+      console.error('[SecuritySettings] sessions load failed:', err);
+      setSessionsFailed(true);
     } finally {
       setIsLoadingSessions(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadSessions();
+  }, [loadSessions]);
 
   const handleRevokeSession = async (sessionId: string) => {
     try {
       await sessionService.revokeSession(sessionId);
       setSessions((prev) => prev.filter((s) => s.id !== sessionId));
-      toast.success('Sessao revogada');
+      toast.success(t('profile.security.sessionRevoked'));
     } catch {
-      toast.error('Erro ao revogar sessao');
+      toast.error(t('profile.security.sessionRevokeFailed'));
     }
   };
 
@@ -76,7 +85,7 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
       setSetupData(null);
       setVerifyCode('');
       setBackupCodes(data.backupCodes);
-      toast.success('2FA ativado com sucesso!');
+      toast.success(t('profile.security.enabledToast'));
     } catch (err: any) {
       toast.error(err.message);
     }
@@ -88,42 +97,44 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
       await totpService.disable(disableCode);
       setTotpEnabled(false);
       setDisableCode('');
-      toast.success('2FA desativado');
+      toast.success(t('profile.security.disabledToast'));
     } catch (err: any) {
       toast.error(err.message);
     }
   };
 
   const parseUserAgent = (ua?: string) => {
-    if (!ua) return 'Desconhecido';
+    if (!ua) return t('profile.security.unknownDevice');
+    if (ua.includes('Edg')) return 'Edge';
     if (ua.includes('Chrome')) return 'Chrome';
     if (ua.includes('Firefox')) return 'Firefox';
     if (ua.includes('Safari')) return 'Safari';
-    if (ua.includes('Edge')) return 'Edge';
     return ua.substring(0, 40);
   };
 
   return (
     <div className="space-y-8">
-      {/* 2FA Section */}
+      {/* 2FA */}
       <div>
         <MicroTitle className="mb-4 flex items-center gap-2">
-          <Shield size={14} /> Autenticacao em duas etapas (2FA)
+          <Shield size={14} /> {t('profile.security.twoFactorTitle')}
         </MicroTitle>
 
         {totpEnabled && !backupCodes ? (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-success border-success/30">
-                Ativo
-              </Badge>
-              <span className="text-xs text-neutral-500 font-mono">TOTP habilitado</span>
+              <Badge variant="success">{t('profile.security.active')}</Badge>
+              <span className="text-xs text-muted-foreground">
+                {t('profile.security.totpEnabled')}
+              </span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <Input
                 value={disableCode}
                 onChange={(e) => setDisableCode(e.target.value)}
-                placeholder="Codigo para desativar"
+                placeholder={t('profile.security.disableCodePlaceholder')}
+                inputMode="numeric"
+                autoComplete="one-time-code"
                 className="max-w-[200px] font-mono"
               />
               <Button
@@ -132,18 +143,16 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
                 onClick={handleDisable2FA}
                 disabled={!disableCode}
               >
-                Desativar 2FA
+                {t('profile.security.disable')}
               </Button>
             </div>
           </div>
         ) : backupCodes ? (
           <div className="space-y-3">
-            <p className="text-xs text-neutral-400 font-mono">
-              Guarde estes codigos de backup em local seguro. Cada codigo so pode ser usado uma vez.
-            </p>
-            <div className="grid grid-cols-2 gap-2 p-3 bg-neutral-950/50 rounded-lg border border-neutral-800/50">
+            <p className="text-xs text-muted-foreground">{t('profile.security.backupCodesHint')}</p>
+            <div className="grid grid-cols-2 gap-2 p-3 bg-muted rounded-lg border border-border">
               {backupCodes.map((code) => (
-                <span key={code} className="text-xs font-mono text-neutral-300">
+                <span key={code} className="text-xs font-mono text-foreground">
                   {code}
                 </span>
               ))}
@@ -153,39 +162,35 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
               size="sm"
               onClick={() => {
                 copyToClipboard(backupCodes.join('\n'));
-                toast.success('Codigos copiados');
+                toast.success(t('profile.security.codesCopied'));
               }}
               className="gap-1"
             >
-              <Copy size={12} /> Copiar codigos
+              <Copy size={12} /> {t('profile.security.copyCodes')}
             </Button>
             <Button variant="outline" size="sm" onClick={() => setBackupCodes(null)}>
-              Fechar
+              {t('common.close')}
             </Button>
           </div>
         ) : setupData ? (
           <div className="space-y-3">
-            <p className="text-xs text-neutral-400 font-mono">
-              Escaneie o QR code com seu app autenticador (Google Authenticator, Authy, etc.)
-            </p>
+            <p className="text-xs text-muted-foreground">{t('profile.security.scanQr')}</p>
+            {/* QR gerado localmente: o otpauth carrega o SEGREDO do TOTP e não pode
+                sair do navegador (antes ia na query de um serviço externo de QR). */}
             <div className="p-3 bg-white rounded-lg inline-block">
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-                  setupData.otpauthUrl
-                )}`}
-                alt="QR Code 2FA"
-                className="w-[200px] h-[200px]"
-              />
+              <QRCodeSVG value={setupData.otpauthUrl} size={200} />
             </div>
-            <p className="text-2xs text-neutral-600 font-mono break-all">
-              Chave manual: {setupData.secret}
+            <p className="text-2xs text-muted-foreground font-mono break-all">
+              {t('profile.security.manualKey', { secret: setupData.secret })}
             </p>
             <div className="flex flex-wrap items-center gap-2">
               <Input
                 value={verifyCode}
                 onChange={(e) => setVerifyCode(e.target.value)}
-                placeholder="Codigo de 6 digitos"
+                placeholder={t('profile.security.codePlaceholder')}
                 maxLength={6}
+                inputMode="numeric"
+                autoComplete="one-time-code"
                 className="max-w-[180px] font-mono"
               />
               <Button
@@ -194,18 +199,16 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
                 onClick={handleEnable2FA}
                 disabled={verifyCode.length < 6}
               >
-                Verificar e ativar
+                {t('profile.security.verifyEnable')}
               </Button>
             </div>
             <Button variant="ghost" size="sm" onClick={() => setSetupData(null)}>
-              Cancelar
+              {t('common.cancel')}
             </Button>
           </div>
         ) : (
           <div>
-            <p className="text-xs text-neutral-500 font-mono mb-3">
-              Adicione uma camada extra de seguranca usando um app autenticador.
-            </p>
+            <p className="text-xs text-muted-foreground mb-3">{t('profile.security.setupHint')}</p>
             <Button
               variant="outline"
               size="sm"
@@ -213,44 +216,53 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
               disabled={isSettingUp}
               className="gap-1"
             >
-              <QrCode size={14} /> {isSettingUp ? 'Configurando...' : 'Configurar 2FA'}
+              <QrCode size={14} />{' '}
+              {isSettingUp ? t('profile.security.settingUp') : t('profile.security.setup')}
             </Button>
           </div>
         )}
       </div>
 
-      {/* Sessions Section */}
+      {/* Sessions */}
       <div>
         <MicroTitle className="mb-4 flex items-center gap-2">
-          <Monitor size={14} /> Sessoes ativas
+          <Monitor size={14} /> {t('profile.security.sessionsTitle')}
         </MicroTitle>
 
         {isLoadingSessions ? (
           <div className="flex justify-center py-4">
             <GlitchLoader size={16} />
           </div>
+        ) : sessionsFailed ? (
+          <ErrorState
+            title={t('profile.security.sessionsLoadFailed')}
+            onRetry={loadSessions}
+            className="py-8"
+          />
         ) : sessions.length === 0 ? (
-          <p className="text-xs text-neutral-500 font-mono">Nenhuma sessao registrada.</p>
+          <p className="text-xs text-muted-foreground">{t('profile.security.noSessions')}</p>
         ) : (
           <div className="space-y-2">
             {sessions.map((session) => (
               <div
                 key={session.id}
-                className="flex items-center justify-between gap-3 p-3 bg-neutral-900/50 rounded-lg border border-neutral-800/50"
+                className="flex items-center justify-between gap-3 p-3 bg-card rounded-lg border border-border"
               >
                 <div className="space-y-0.5 min-w-0">
-                  <p className="text-xs font-mono text-neutral-300 truncate">
+                  <p className="text-xs text-foreground truncate">
                     {parseUserAgent(session.userAgent)}
                   </p>
-                  <p className="text-2xs text-neutral-600 font-mono truncate">
-                    {session.ip || '—'} · {formatDateTime(session.lastUsed)}
+                  <p className="flex gap-2 text-2xs text-muted-foreground truncate">
+                    {session.ip && <span className="font-mono">{session.ip}</span>}
+                    <span>{formatDateTime(session.lastUsed)}</span>
                   </p>
                 </div>
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant="danger"
+                  size="icon-sm"
                   onClick={() => handleRevokeSession(session.id)}
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  aria-label={t('profile.security.revokeSession')}
+                  title={t('profile.security.revokeSession')}
                 >
                   <Trash2 size={12} />
                 </Button>

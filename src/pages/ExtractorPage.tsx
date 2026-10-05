@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { glassSurface } from '@/lib/ui/glass';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 type ExtractionMode = 'google' | 'url' | 'instagram' | 'document';
 
 /**
@@ -128,24 +129,24 @@ const ImageCard = memo<ImageCardProps>(
           {/* Technical Badges */}
           <div className="absolute top-3 left-3 z-10 flex gap-1.5">
             {isHD && (
-              <div className="bg-white/90 text-2xs font-bold px-1.5 py-0.5 rounded text-black uppercase tracking-tighter">
-                ULTRA HD
+              <div className="bg-white/90 text-2xs font-bold px-1.5 py-0.5 rounded text-black">
+                HD
               </div>
             )}
-            <div className="bg-black/40 backdrop-blur-sm text-white/50 text-2xs font-medium px-1.5 py-0.5 rounded border border-neutral-800 uppercase">
+            <div className="bg-black/60 text-white/60 text-2xs font-mono tabular-nums px-1.5 py-0.5 rounded border border-neutral-800">
               {img.width}×{img.height}
             </div>
           </div>
 
           {/* Selection Checkbox */}
           {batchSelecting && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[1px]">
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
               <div
                 className={`
-            w-8 h-8 rounded-full border flex items-center justify-center transition-all
+            w-8 h-8 rounded-full border flex items-center justify-center transition-colors
             ${
               isSelected
-                ? 'bg-white border-white text-black scale-110'
+                ? 'bg-white border-white text-black'
                 : 'bg-transparent border-white/30 text-transparent'
             }
           `}
@@ -160,9 +161,14 @@ const ImageCard = memo<ImageCardProps>(
 
           {/* Subtle Hover Overlay */}
           {!batchSelecting && (
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity] duration-300 flex flex-col justify-end p-4">
-              <h4 className="text-white font-medium text-2xs line-clamp-1 mb-3 opacity-90 uppercase tracking-tight">
-                {img.title || 'asset_stream'}
+            <div
+              className={cn(
+                'absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-4',
+                hoverReveal
+              )}
+            >
+              <h4 className="text-white font-medium text-xs line-clamp-1 mb-3 opacity-90">
+                {img.title || t('extractor.untitledImage')}
               </h4>
               <div className="flex gap-1.5">
                 <a
@@ -171,20 +177,21 @@ const ImageCard = memo<ImageCardProps>(
                   onClick={(e) => e.stopPropagation()}
                   className="w-9 h-9 border border-white/10 bg-white text-black rounded-lg flex items-center justify-center hover:bg-neutral-200 transition-colors"
                   title={t('extractor.download_original')}
+                  aria-label={t('extractor.download_original')}
                 >
                   <Download size={14} />
                 </a>
                 <button
                   onClick={(e) => onCopy(e, img)}
-                  className="w-9 h-9 border border-white/10 bg-white/5 backdrop-blur-md text-white rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
-                  title={t('extractor.copy_as_png')}
+                  className="w-9 h-9 border border-white/10 bg-black/50 text-white rounded-lg flex items-center justify-center hover:bg-black/70 transition-colors"
+                  title={t('common.copyAsPng')}
                 >
                   <Copy size={14} />
                 </button>
                 <button
                   onClick={(e) => onUpscale(e, img)}
                   disabled={isUpscaling}
-                  className="w-9 h-9 border border-white/10 bg-white/5 backdrop-blur-md text-white rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
+                  className="w-9 h-9 border border-white/10 bg-black/50 text-white rounded-lg flex items-center justify-center hover:bg-black/70 transition-colors"
                   title={t('extractor.upscale_to_ultra_hd')}
                 >
                   {isUpscaling ? <GlitchLoader size={14} /> : <Zap size={14} />}
@@ -197,7 +204,7 @@ const ImageCard = memo<ImageCardProps>(
                       '_blank'
                     );
                   }}
-                  className="w-9 h-9 border border-white/10 bg-white/5 backdrop-blur-md text-white rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
+                  className="w-9 h-9 border border-white/10 bg-black/50 text-white rounded-lg flex items-center justify-center hover:bg-black/70 transition-colors"
                   title={t('extractor.search_with_google_lens')}
                 >
                   <Search size={14} />
@@ -207,8 +214,8 @@ const ImageCard = memo<ImageCardProps>(
                     e.stopPropagation();
                     window.open(img.url, '_blank');
                   }}
-                  className="w-9 h-9 border border-white/10 bg-white/5 backdrop-blur-md text-white rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
-                  title={t('extractor.view_original')}
+                  className="w-9 h-9 border border-white/10 bg-black/50 text-white rounded-lg flex items-center justify-center hover:bg-black/70 transition-colors"
+                  title={t('extractor.viewOriginal')}
                 >
                   <Maximize2 size={14} />
                 </button>
@@ -362,13 +369,13 @@ export default function ExtractorPage() {
         setHasMore(result.images.length >= currentLimit);
 
         if (result.images.length === 0) {
-          setError('Nenhuma imagem encontrada.');
+          setError(t('extractor.noImagesFound'));
         } else if (isLoadMore) {
-          toast.success(t('extractor.mais_resultimageslength_imageslength_str'));
+          toast.success(t('extractor.moreFound', { count: result.images.length - images.length }));
         }
       }
     } catch (err: any) {
-      setError(err.message || 'Erro ao buscar imagens');
+      setError(err.message || t('extractor.searchFailed'));
       toast.error(t('extractor.falha_na_extrao'));
     } finally {
       setLoading(false);
@@ -399,7 +406,7 @@ export default function ExtractorPage() {
     const folder = zip.folder('extracted_images');
 
     try {
-      toast.info(t('extractor.iniciando_download_de_imagestodownloadle'));
+      toast.info(t('extractor.downloadingCount', { count: imagesToDownload.length }));
 
       const downloadPromises = imagesToDownload.map(async (img, index) => {
         try {
@@ -632,20 +639,16 @@ export default function ExtractorPage() {
   return (
     <PageShell
       pageId="extractor"
-      title="Universal Extractor"
+      title={t('extractor.title')}
       description={t('extractor.extrator_de_imagens_inteligente_de_mltip')}
     >
       <div
-        className={`w-full px-6 flex flex-col transition-all duration-700 ${
+        className={`w-full px-6 flex flex-col ${
           images.length === 0 ? 'min-h-[60vh] justify-center' : 'pt-2 space-y-8 pb-20'
         }`}
       >
         {/* Minimalist Central Input */}
-        <section
-          className={`transition-all duration-700 ${
-            images.length === 0 ? 'w-full max-w-xl mx-auto' : 'w-full'
-          }`}
-        >
+        <section className={`${images.length === 0 ? 'w-full max-w-xl mx-auto' : 'w-full'}`}>
           <div className="flex flex-col gap-4">
             <form onSubmit={handleSearch} className="relative group">
               <input
@@ -663,11 +666,13 @@ export default function ExtractorPage() {
                 <button
                   type="button"
                   onClick={() => setShowFilters(!showFilters)}
+                  aria-label={t('extractor.filters')}
+                  aria-pressed={showFilters}
                   className={`
                     aspect-square rounded-xl flex items-center justify-center transition-colors
                     ${
                       showFilters
-                        ? 'bg-brand-cyan/20 text-brand-cyan'
+                        ? 'bg-white/10 text-white'
                         : 'bg-white/[0.03] text-neutral-500 hover:bg-white/5 hover:text-neutral-300'
                     }
                   `}
@@ -677,6 +682,8 @@ export default function ExtractorPage() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
+                  aria-label={t('extractor.fromPdf')}
+                  title={t('extractor.fromPdf')}
                   className="
                     aspect-square bg-white/[0.03] text-neutral-500 rounded-xl
                     flex items-center justify-center hover:bg-white/5 hover:text-neutral-300 transition-[color,background-color,border-color,opacity]
@@ -687,6 +694,7 @@ export default function ExtractorPage() {
                 <button
                   type="submit"
                   disabled={loading || !query.trim()}
+                  aria-label={t('extractor.search')}
                   className="
                     aspect-square bg-white/10 text-white rounded-xl
                     flex items-center justify-center hover:bg-white/20 transition-[color,background-color,border-color,opacity] disabled:opacity-20
@@ -716,8 +724,8 @@ export default function ExtractorPage() {
                   )}
                 >
                   <div className="space-y-2">
-                    <label className="text-2xs font-bold text-neutral-500 uppercase tracking-widest pl-1">
-                      Grid Zoom ({columns})
+                    <label className="text-xs font-medium text-neutral-500 pl-1">
+                      {t('extractor.columns', { count: columns })}
                     </label>
                     <div className="px-1 pt-2 pb-1">
                       <input
@@ -733,79 +741,75 @@ export default function ExtractorPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-2xs font-bold text-neutral-500 uppercase tracking-widest pl-1">
-                      Resolution
+                    <label className="text-xs font-medium text-neutral-500 pl-1">
+                      {t('extractor.resolution')}
                     </label>
                     <div className="flex gap-1">
                       {(['all', 'large'] as const).map((s) => (
                         <button
                           key={s}
                           onClick={() => setDesignerParams({ ...designerParams, size: s })}
-                          className={`flex-1 py-2 rounded-lg text-2xs font-bold uppercase tracking-wider transition-colors border ${
+                          className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors border ${
                             designerParams.size === s
                               ? 'bg-white/10 border-white/20 text-white'
                               : 'bg-transparent border-neutral-800 text-neutral-600'
                           }`}
                         >
-                          {s === 'large' ? 'HD+' : 'ANY'}
+                          {s === 'large' ? 'HD+' : t('extractor.any')}
                         </button>
                       ))}
                     </div>
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-2xs font-bold text-neutral-500 uppercase tracking-widest pl-1">
-                      {t('extractor.content_type')}
+                    <label className="text-xs font-medium text-neutral-500 pl-1">
+                      {t('extractor.contentTypeLabel')}
                     </label>
                     <div className="flex gap-1 flex-wrap">
                       {(
                         [
-                          { value: 'all', label: 'Todos', hint: 'Qualquer tipo' },
-                          { value: 'photo', label: 'Imagens', hint: 'Fotos sem texto' },
-                          { value: 'logo', label: 'Logotipo', hint: 'Logos e marcas' },
-                          {
-                            value: 'illustration',
-                            label: 'Ilustração',
-                            hint: 'Artes e ilustrações',
-                          },
-                          { value: 'vector', label: 'Vector / SVG', hint: 'Vetores e lineart' },
-                          { value: 'creative', label: 'Criativos', hint: 'Banners com texto' },
-                        ] as { value: ContentMode; label: string; hint: string }[]
-                      ).map(({ value, label, hint }) => (
+                          'all',
+                          'photo',
+                          'logo',
+                          'illustration',
+                          'vector',
+                          'creative',
+                        ] as ContentMode[]
+                      ).map((value) => (
                         <button
                           key={value}
-                          title={hint}
+                          title={t(`extractor.contentModes.${value}.hint`)}
                           onClick={() =>
                             setDesignerParams({ ...designerParams, contentMode: value })
                           }
-                          className={`flex-none px-3 py-2 rounded-lg text-2xs font-bold uppercase tracking-wider transition-colors border ${
+                          className={`flex-none px-3 py-2 rounded-lg text-xs font-medium transition-colors border ${
                             designerParams.contentMode === value
-                              ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan'
+                              ? 'bg-white/10 border-white/20 text-white'
                               : 'bg-transparent border-neutral-800 text-neutral-600 hover:text-neutral-400'
                           }`}
                         >
-                          {label}
+                          {t(`extractor.contentModes.${value}.label`)}
                         </button>
                       ))}
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-2xs font-bold text-neutral-500 uppercase tracking-widest pl-1">
-                      {t('extractor.format')}
+                    <label className="text-xs font-medium text-neutral-500 pl-1">
+                      {t('extractor.formatLabel')}
                     </label>
                     <div className="flex gap-1">
                       {(['all', 'square', 'wide', 'tall'] as const).map((a) => (
                         <button
                           key={a}
                           onClick={() => setDesignerParams({ ...designerParams, aspect: a })}
-                          className={`flex-1 py-2 rounded-lg text-2xs font-bold uppercase tracking-wider transition-colors border ${
+                          className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors border ${
                             designerParams.aspect === a
                               ? 'bg-white/10 border-white/20 text-white'
                               : 'bg-transparent border-neutral-800 text-neutral-600'
                           }`}
                         >
-                          {a}
+                          {t(`extractor.aspects.${a}`)}
                         </button>
                       ))}
                     </div>
@@ -823,7 +827,7 @@ export default function ExtractorPage() {
                   className="flex items-center gap-2 text-destructive/80 bg-destructive/5 px-4 py-2 rounded-xl self-start border border-destructive/10"
                 >
                   <AlertCircle size={14} />
-                  <span className="text-2xs font-medium uppercase tracking-wider">{error}</span>
+                  <span className="text-xs font-medium">{error}</span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -836,12 +840,9 @@ export default function ExtractorPage() {
             {/* Minimal Toolbar */}
             <div className="flex items-center justify-between px-2">
               <div className="flex items-center gap-3">
-                <h2 className="text-xs font-medium tracking-tight text-neutral-400 uppercase">
-                  {images.length} assets identified
+                <h2 className="text-xs font-medium text-neutral-400">
+                  {t('extractor.foundCount', { count: images.length })}
                 </h2>
-                <div className="text-2xs text-neutral-600 uppercase tracking-widest border-l border-neutral-800 pl-3">
-                  HD_SORT_ACTIVE
-                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -850,7 +851,7 @@ export default function ExtractorPage() {
                     setSelectedImages(new Set());
                   }}
                   className={`
-                    px-4 py-1.5 rounded-lg text-2xs font-medium uppercase tracking-wider transition-colors border
+                    px-4 py-1.5 rounded-lg text-xs font-medium transition-colors border
                     ${
                       batchSelecting
                         ? 'bg-white/10 border-white/20 text-white'
@@ -858,17 +859,17 @@ export default function ExtractorPage() {
                     }
                   `}
                 >
-                  {batchSelecting ? 'CANCEL' : 'BATCH'}
+                  {batchSelecting ? t('common.cancel') : t('extractor.select')}
                 </button>
                 <button
                   onClick={handleDownloadAll}
                   className="
-                    px-4 py-1.5 bg-white text-black text-2xs font-bold uppercase tracking-wider rounded-lg 
+                    px-4 py-1.5 bg-white text-black text-xs font-semibold rounded-lg 
                     hover:bg-neutral-200 transition-colors flex items-center gap-1.5
                   "
                 >
                   <CloudDownload size={12} />
-                  SAVE ALL
+                  {batchSelecting ? t('extractor.downloadSelected') : t('extractor.downloadAll')}
                 </button>
               </div>
             </div>

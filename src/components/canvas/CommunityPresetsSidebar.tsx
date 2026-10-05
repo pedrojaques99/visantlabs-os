@@ -116,7 +116,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
       setAllPresets(result);
     } catch (err: any) {
       console.error('Failed to load all presets:', err);
-      setError(t('communityPresets.errors.failedToLoad') || 'Failed to load presets');
+      setError(t('communityPresets.errors.failedToLoad'));
     } finally {
       setIsLoading(false);
     }
@@ -409,7 +409,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t('communityPresets.searchPlaceholder') || 'Search presets...'}
+            placeholder={t('communityPresets.searchPlaceholder')}
             className="w-full pl-9 pr-4 py-2 bg-neutral-900/50 border border-neutral-700/50 rounded-md text-xs text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500/50"
           />
         </div>
@@ -445,7 +445,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
       <div className="flex-1 overflow-y-auto min-h-0 p-4 pt-0">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <GlitchLoader size={24} color="brand-cyan" />
+            <GlitchLoader size={24} />
           </div>
         ) : error ? (
           <div className="p-4 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-xs text-center">

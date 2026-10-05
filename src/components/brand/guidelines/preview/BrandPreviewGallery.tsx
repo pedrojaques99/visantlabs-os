@@ -6,6 +6,7 @@
  * mixed aspect ratios (story 9:16, banner 16:9, square…) and is the same component the
  * reference library uses (`src/components/ui/Masonry`). Tiles: `PreviewTile`.
  */
+import { useTranslation } from '@/hooks/useTranslation';
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -72,8 +73,8 @@ const BUILTIN: TileItem[] = [
   { id: 'scatter', label: 'Card showcase', Component: CardScatterMock },
   { id: 'hero', label: 'Editorial hero', Component: EditorialHeroMock },
   { id: 'pattern', label: 'Brand pattern', Component: BrandPatternMock },
-  { id: 'scatter-sync', label: 'Card scatter · Figma', Component: SyncedCardScatterMock },
-  { id: 'ed-layout', label: 'Editorial layout · auto-tokenized', Component: RawEditorialMock },
+  { id: 'scatter-sync', label: 'Card scatter (Figma)', Component: SyncedCardScatterMock },
+  { id: 'ed-layout', label: 'Editorial layout (auto-tokenized)', Component: RawEditorialMock },
 ];
 
 export const BrandPreviewGallery: React.FC<{
@@ -81,6 +82,7 @@ export const BrandPreviewGallery: React.FC<{
   brandName: string;
   brandId?: string;
 }> = ({ tokens, brandName, brandId }) => {
+  const { t } = useTranslation();
   // Load the brand's real fonts so tiles render in-brand, not a system fallback.
   useBrandFonts(tokens.headingFamily, tokens.bodyFamily);
 
@@ -91,12 +93,12 @@ export const BrandPreviewGallery: React.FC<{
     // RAW Design-Library frames (auto-tokenized to the brand).
     const libItems: TileItem[] = (designLibrarySchemas as unknown as TemplateSchema[]).map((s) => ({
       id: `lib-${s.id}`,
-      label: `${s.name} · Design Library`,
+      label: `${s.name} (Design Library)`,
       Component: (props) => <TemplateRenderer schema={s} autoTokenize {...props} />,
     }));
     const syncedItems: TileItem[] = (synced.data ?? []).map((s, i) => ({
       id: `synced-${s.id || i}`,
-      label: `${s.name.replace(/^\[Template\]\s*/, '')} · Figma`,
+      label: `${s.name.replace(/^\[Template\]\s*/, '')} (Figma)`,
       Component: (props) => <TemplateRenderer schema={s} {...props} />,
     }));
     return [...BUILTIN, ...libItems, ...syncedItems];
@@ -110,9 +112,9 @@ export const BrandPreviewGallery: React.FC<{
       className="space-y-8"
     >
       <div className="flex items-baseline justify-between px-1">
-        <MicroTitle className="text-[var(--accent)] font-bold opacity-70">Brand Preview</MicroTitle>
-        <span className="text-2xs uppercase tracking-widest text-[var(--brand-text)]/30">
-          {items.length} designs · clique pra editar
+        <MicroTitle className="text-[var(--brand-text)]">{t('brandPreview.title')}</MicroTitle>
+        <span className="text-xs tabular-nums text-[var(--brand-text)]/60">
+          {t('brandPreview.count', { count: items.length })}
         </span>
       </div>
 

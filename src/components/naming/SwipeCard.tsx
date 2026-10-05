@@ -138,7 +138,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
             {active && (
               <>
                 {/* Território — pill suave (não mono cru) */}
-                <span className="mb-6 inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-2xs font-mono uppercase tracking-widest text-neutral-400">
+                <span className="mb-6 inline-flex items-center rounded-full border border-border bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
                   {formatTag(card.territory)}
                 </span>
 
@@ -175,7 +175,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                   como livre (o servidor mantém 'unknown' de propósito) */}
                 {card.availability?.status === 'unknown' && (
                   <span
-                    title="RDAP indisponível — não foi possível verificar o domínio"
+                    title="RDAP indisponível: não foi possível verificar o domínio"
                     className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-2xs font-mono text-neutral-500"
                   >
                     <Globe size={11} />

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useMemo, Suspense } from 'react';
 import { defineRegistry, useBoundProp } from '@json-render/react';
 import { visantCatalog } from './catalog';
 import { toast } from 'sonner';
-import { Zap } from '@/lib/ui/icons';
+import { Zap, Play } from '@/lib/ui/icons';
 
 // Layout
 import { PageShell } from '@/components/ui/PageShell';
@@ -167,9 +167,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
       const current = value ?? props.value;
       return (
         <div className="flex items-center gap-2">
-          <span className="text-2xs font-mono uppercase tracking-widest text-neutral-500">
-            {props.label}
-          </span>
+          <span className="text-xs font-medium text-neutral-500">{props.label}</span>
           <input
             type="color"
             value={current}
@@ -255,9 +253,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
     ),
     Metric: ({ props }) => (
       <GlassPanel className="p-4">
-        <span className="text-2xs font-mono uppercase tracking-widest text-neutral-500">
-          {props.label}
-        </span>
+        <span className="text-xs font-medium text-neutral-500">{props.label}</span>
         <div className="flex items-baseline gap-2 mt-1">
           <span className="text-2xl font-semibold text-neutral-100">{props.value}</span>
           {props.change && (
@@ -430,7 +426,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
             className="rounded-lg bg-neutral-900 flex items-center justify-center"
             style={{ width: w, height: h }}
           >
-            <span className="text-2xs font-mono uppercase tracking-widest text-neutral-500">
+            <span className="text-xs font-medium text-neutral-500">
               Upload an image to apply shader
             </span>
           </div>
@@ -498,10 +494,8 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
             style={{ width: w, height: h }}
           >
             <div className="text-center">
-              <div className="text-neutral-600 text-3xl mb-2">▶</div>
-              <span className="text-2xs font-mono uppercase tracking-widest text-neutral-500">
-                No video loaded
-              </span>
+              <Play size={28} className="mx-auto mb-2 text-neutral-600" />
+              <span className="text-xs font-medium text-neutral-500">No video loaded</span>
             </div>
           </div>
         );
@@ -694,7 +688,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
             className="rounded-lg bg-neutral-900 flex items-center justify-center"
             style={{ width: w, height: h }}
           >
-            <span className="text-2xs font-mono uppercase tracking-widest text-neutral-500">
+            <span className="text-xs font-medium text-neutral-500">
               Upload an image for halftone
             </span>
           </div>
@@ -773,7 +767,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
             className="rounded-lg bg-neutral-900 flex items-center justify-center"
             style={{ width: w, height: h }}
           >
-            <span className="text-2xs font-mono uppercase tracking-widest text-neutral-500">
+            <span className="text-xs font-medium text-neutral-500">
               Upload an image for riso effect
             </span>
           </div>
@@ -899,7 +893,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
     Text: ({ props }) => {
       const styles: Record<string, string> = {
         body: 'text-sm text-neutral-300',
-        label: 'text-2xs font-mono uppercase tracking-widest text-neutral-500',
+        label: 'text-xs font-medium text-neutral-500',
         caption: 'text-2xs text-neutral-400',
         mono: 'text-xs font-mono text-neutral-300',
       };

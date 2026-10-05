@@ -2,6 +2,7 @@ import React, { useEffect, useCallback, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Check } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useImageEditorStore, type EditorAction } from '@/stores/imageEditorStore';
 import { IMAGE_EDITOR } from '@/constants/imageEditorTokens';
 import { ImageEditorCanvas } from './ImageEditorCanvas';
@@ -35,6 +36,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
   onClose,
   className,
 }) => {
+  const { t } = useTranslation();
   const reset = useImageEditorStore((s) => s.reset);
   const setActiveAction = useImageEditorStore((s) => s.setActiveAction);
   const isGenerating = useImageEditorStore((s) => s.isGenerating);
@@ -92,13 +94,15 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
         <div className="flex items-center gap-2">
-          <span className="text-xs uppercase tracking-widest text-neutral-400">Image Editor</span>
-          <span className="text-xs text-neutral-600">
+          <span className="text-xs font-medium text-neutral-300">{t('imageEditor.title')}</span>
+          <span className="text-xs text-neutral-600 tabular-nums">
             {imageWidth}×{imageHeight}
           </span>
           {editHistory.length > 0 && (
-            <span className="text-xs text-brand-cyan/60 font-mono">
-              {editHistory.length} edit{editHistory.length > 1 ? 's' : ''} applied
+            <span className="text-xs text-neutral-500 tabular-nums">
+              {t(editHistory.length > 1 ? 'imageEditor.editsApplied' : 'imageEditor.editApplied', {
+                count: editHistory.length,
+              })}
             </span>
           )}
         </div>
@@ -117,12 +121,13 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-foreground bg-brand-cyan/20 border border-brand-cyan/30 hover:bg-brand-cyan/30 transition-colors disabled:opacity-30"
             >
               <Check size={14} />
-              Done
+              {t('common.done')}
             </button>
           )}
           <button
             onClick={onClose}
             disabled={isGenerating}
+            aria-label={t('common.close')}
             className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800/50 transition-colors disabled:opacity-30"
           >
             <X size={16} />

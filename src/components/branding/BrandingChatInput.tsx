@@ -88,7 +88,7 @@ export const BrandingChatInput: React.FC<BrandingChatInputProps> = ({
                   <Button
                     variant="ghost"
                     onClick={() => onSuggestionClick?.(suggestion)}
-                    className="w-full text-left text-xs h-auto py-2 font-normal justify-start hover:text-brand-cyan transition-colors"
+                    className="w-full text-left text-xs h-auto py-2 font-normal justify-start hover:text-foreground transition-colors"
                   >
                     {suggestion}
                   </Button>

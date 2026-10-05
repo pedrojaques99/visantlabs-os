@@ -17,6 +17,7 @@ import { VisantPageRenderer } from './visant/VisantPageRenderer';
 import { useVisantTemplate } from '@/hooks/useVisantTemplate';
 import { formatDate, formatCurrency } from '@/utils/localeUtils';
 
+import { DEFAULT_DOCUMENT_ACCENT } from './visant/documentColors';
 interface BudgetPreviewProps {
   data: BudgetData;
   currentPage?: number;
@@ -326,17 +327,11 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
       >
         <div className="text-center p-8">
           <p
-            className={`text-lg font-mono mb-2 ${
-              theme === 'dark' ? 'text-neutral-300' : 'text-neutral-600'
-            }`}
+            className={`text-lg mb-2 ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-600'}`}
           >
             Layout Custom
           </p>
-          <p
-            className={`text-sm font-mono ${
-              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
-            }`}
-          >
+          <p className={`text-sm ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}`}>
             Faça upload de um PDF customizado no formulário para ver o preview aqui
           </p>
         </div>
@@ -366,7 +361,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
     return data.deliverables.reduce((sum, d) => sum + calculateTotal(d), 0);
   };
 
-  const primaryColor = data.brandColors[0] || 'brand-cyan';
+  const primaryColor = data.brandColors[0] || DEFAULT_DOCUMENT_ACCENT;
   const secondaryColor = data.brandColors[1] || '#34d399';
 
   return (
@@ -406,13 +401,11 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
       {/* Client Info */}
       <div className="mb-8 grid grid-cols-2 gap-6">
         <div>
-          <h3 className="text-sm font-semibold text-neutral-500 mb-1 uppercase">
-            {t('budget.clientName')}
-          </h3>
+          <h3 className="text-sm font-semibold text-neutral-500 mb-1">{t('budget.clientName')}</h3>
           <p className="text-base">{data.clientName}</p>
         </div>
         <div>
-          <h3 className="text-sm font-semibold text-neutral-500 mb-1 uppercase flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-neutral-500 mb-1 flex items-center gap-2">
             <Calendar size={14} />
             {t('budget.startDate')} - {t('budget.endDate')}
           </h3>

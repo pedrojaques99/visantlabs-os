@@ -377,12 +377,12 @@ export const ContextMenu: React.FC<ContextMenuProps> = (props) => {
         'transition-colors duration-100',
         'aria-selected:bg-white/5 aria-selected:text-white',
         item.highlight
-          ? 'text-brand-cyan'
+          ? 'text-foreground hover:bg-white/5'
           : 'text-neutral-400 hover:bg-white/5 hover:text-neutral-200'
       )}
     >
       <span className="flex-shrink-0">{item.icon}</span>
-      <span className="text-2xs font-medium tracking-wide">{item.label}</span>
+      <span className="text-2xs font-medium">{item.label}</span>
     </Command.Item>
   );
 
@@ -399,9 +399,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = (props) => {
       <Command shouldFilter loop>
         <div className="sticky top-0 bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-800/30 z-10 rounded-t-lg">
           <div className="px-3 py-2 flex items-center justify-between">
-            <span className="text-2xs font-semibold text-neutral-400 uppercase tracking-widest">
-              Add Node
-            </span>
+            <span className="text-2xs font-semibold text-neutral-400">Add Node</span>
             <button
               onClick={onClose}
               className="p-0.5 text-neutral-500 hover:text-neutral-200 transition-colors"
@@ -435,9 +433,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = (props) => {
           {grouped.map(({ group, items }, gi) => (
             <Command.Group key={group}>
               <div className="px-2 pt-1.5 pb-0.5">
-                <span className="text-2xs font-semibold text-neutral-500 uppercase tracking-widest">
-                  {group}
-                </span>
+                <span className="text-2xs font-semibold text-neutral-500">{group}</span>
               </div>
               {items.map(renderItem)}
               {gi < grouped.length - 1 && <div className="h-px bg-neutral-800/30 my-1" />}

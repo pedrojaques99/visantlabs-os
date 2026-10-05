@@ -199,7 +199,7 @@ export const DesignSystemPage: React.FC = () => {
   const navigationItems: NavigationItem[] = [
     {
       id: 'home',
-      label: t('designSystem.tabs.home') || 'Home',
+      label: t('designSystem.tabs.home'),
       icon: Home,
     },
     {
@@ -227,7 +227,7 @@ export const DesignSystemPage: React.FC = () => {
       sections: [
         { id: 'buttons', label: t('designSystem.components.buttons.title') },
         { id: 'inputs', label: t('designSystem.components.inputs.title') },
-        { id: 'searchbar', label: t('designSystem.components.searchbar.title') || 'Search Bar' },
+        { id: 'searchbar', label: t('designSystem.components.searchbar.title') },
         { id: 'textarea', label: t('designSystem.components.textarea.title') },
         { id: 'select', label: t('designSystem.components.select.title') },
         { id: 'switch', label: t('designSystem.components.switch.title') },
@@ -235,61 +235,57 @@ export const DesignSystemPage: React.FC = () => {
         { id: 'card', label: t('designSystem.components.card.title') },
         {
           id: 'preset-card',
-          label: t('designSystem.components.presetCard.title') || 'Preset Card',
+          label: t('designSystem.components.presetCard.title'),
         },
         {
           id: 'navigation-sidebar',
-          label: t('designSystem.components.navigationSidebar.title') || 'Navigation Sidebar',
+          label: t('designSystem.components.navigationSidebar.title'),
         },
-        { id: 'modal', label: t('designSystem.components.modal.title') || 'Modal' },
-        { id: 'table', label: t('designSystem.components.table.title') || 'Table' },
-        { id: 'data-table', label: t('designSystem.components.dataTable.title') || 'Data Table' },
-        { id: 'charts', label: t('designSystem.components.charts.title') || 'Charts' },
-        { id: 'breadcrumb', label: t('designSystem.components.breadcrumb.title') || 'Breadcrumb' },
+        { id: 'modal', label: t('designSystem.components.modal.title') },
+        { id: 'table', label: t('designSystem.components.table.title') },
+        { id: 'data-table', label: t('designSystem.components.dataTable.title') },
+        { id: 'charts', label: t('designSystem.components.charts.title') },
+        { id: 'breadcrumb', label: t('designSystem.components.breadcrumb.title') },
         {
           id: 'skeleton-loader',
-          label: t('designSystem.components.skeletonLoader.title') || 'Skeleton Loader',
+          label: t('designSystem.components.skeletonLoader.title'),
         },
-        {
-          id: 'grid-dots-background',
-          label: t('designSystem.components.gridDotsBackground.title') || 'Grid Dots Background',
-        },
-        { id: 'tabs', label: t('designSystem.components.tabs.title') || 'Tabs' },
-        { id: 'tags', label: t('designSystem.components.tags.title') || 'Tags' },
+        { id: 'tabs', label: t('designSystem.components.tabs.title') },
+        { id: 'tags', label: t('designSystem.components.tags.title') },
         {
           id: 'canvas-toolbar',
-          label: t('designSystem.components.canvasToolbar.title') || 'Canvas Toolbar',
+          label: t('designSystem.components.canvasToolbar.title'),
         },
         {
           id: 'canvas-header',
-          label: t('designSystem.components.canvasHeader.title') || 'Canvas Header',
+          label: t('designSystem.components.canvasHeader.title'),
         },
         {
           id: 'canvas-flow',
-          label: t('designSystem.components.canvasFlow.title') || 'Canvas Flow',
+          label: t('designSystem.components.canvasFlow.title'),
         },
         {
           id: 'premium-button',
-          label: t('designSystem.components.premiumButton.title') || 'Premium Button',
+          label: t('designSystem.components.premiumButton.title'),
         },
         {
           id: 'glass-panel',
-          label: t('designSystem.components.glassPanel.title') || 'Glass Panel',
+          label: t('designSystem.components.glassPanel.title'),
         },
         {
           id: 'micro-title',
-          label: t('designSystem.components.microTitle.title') || 'Micro Title',
+          label: t('designSystem.components.microTitle.title'),
         },
       ],
     },
     {
       id: 'patterns',
-      label: t('designSystem.tabs.patterns') || 'Patterns',
+      label: t('designSystem.tabs.patterns'),
       icon: LayoutGrid,
       sections: [
         {
           id: 'setup-container',
-          label: t('designSystem.patterns.setupContainer.title') || 'Setup Container',
+          label: t('designSystem.patterns.setupContainer.title'),
         },
       ],
     },
@@ -438,8 +434,8 @@ export const DesignSystemPage: React.FC = () => {
   // Build search items for CommandPalette
   const searchItems = useMemo(() => {
     const items: Array<{ id: string; label: string; category: string; onClick: () => void }> = [];
-    const tabLabel = t('designSystem.commandPalette.tab') || 'Tab';
-    const sectionLabel = t('designSystem.commandPalette.section') || 'Section';
+    const tabLabel = t('designSystem.commandPalette.tab');
+    const sectionLabel = t('designSystem.commandPalette.section');
 
     // Add tabs
     navigationItems.forEach((item) => {
@@ -480,7 +476,7 @@ export const DesignSystemPage: React.FC = () => {
               className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-colors border border-neutral-800/50 hover:border-white/10"
             >
               <ChevronLeft className="w-4 h-4" />
-              <span>{t('designSystem.navigation.previous') || 'Previous'}</span>
+              <span>{t('designSystem.navigation.previous')}</span>
               <span className="text-neutral-500">•</span>
               <span className="text-neutral-500">{getTabLabel(previousTab)}</span>
             </Button>
@@ -495,7 +491,7 @@ export const DesignSystemPage: React.FC = () => {
             >
               <span className="text-neutral-500">{getTabLabel(nextTab)}</span>
               <span className="text-neutral-500">•</span>
-              <span>{t('designSystem.navigation.next') || 'Next'}</span>
+              <span>{t('designSystem.navigation.next')}</span>
               <ChevronRight className="w-4 h-4" />
             </Button>
           )}
@@ -507,13 +503,9 @@ export const DesignSystemPage: React.FC = () => {
   return (
     <>
       <SEO
-        title={t('designSystem.seo.title') || 'Design System - Visant Labs'}
-        description={
-          t('designSystem.seo.description') || 'Design system documentation for Visant Labs'
-        }
-        keywords={
-          t('designSystem.seo.keywords') || 'design system, UI components, colors, typography'
-        }
+        title={t('designSystem.seo.title')}
+        description={t('designSystem.seo.description')}
+        keywords={t('designSystem.seo.keywords')}
       />
       <div className="bg-background text-neutral-300 relative min-h-screen">
         <div className="fixed inset-0 z-0"></div>
@@ -525,7 +517,7 @@ export const DesignSystemPage: React.FC = () => {
             activeItemId={activeTab}
             activeSectionId={activeSectionId}
             onItemClick={handleNavigationClick}
-            title={t('designSystem.navigation.title') || 'Navigation'}
+            title={t('designSystem.navigation.title')}
             isOpen={sidebarOpen}
             onToggleOpen={setSidebarOpen}
             width={sidebarWidth}
@@ -590,10 +582,10 @@ export const DesignSystemPage: React.FC = () => {
                         document.dispatchEvent(event);
                       }}
                       className="hidden md:flex items-center gap-2 px-4 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-400 hover:text-neutral-300 hover:border-white/10 transition-colors text-sm font-mono"
-                      title={t('designSystem.commandPalette.searchShortcut') || 'Search (Ctrl+K)'}
+                      title={t('designSystem.commandPalette.searchShortcut')}
                     >
                       <Search className="w-4 h-4" />
-                      <span>{t('common.search') || 'Search'}</span>
+                      <span>{t('common.search')}</span>
                       <div className="flex items-center gap-1 px-1.5 py-0.5 bg-neutral-900/50 rounded border border-neutral-800/50">
                         <Command className="w-3 h-3" />
                         <kbd className="text-xs">K</kbd>
@@ -610,12 +602,9 @@ export const DesignSystemPage: React.FC = () => {
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <Diamond className="w-5 h-5 text-neutral-500" />
-                          {t('designSystem.home.welcome') || 'Welcome to the Design System'}
+                          {t('designSystem.home.welcome')}
                         </CardTitle>
-                        <CardDescription>
-                          {t('designSystem.home.description') ||
-                            'A comprehensive guide to our design tokens, components, and patterns'}
-                        </CardDescription>
+                        <CardDescription>{t('designSystem.home.description')}</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -631,8 +620,7 @@ export const DesignSystemPage: React.FC = () => {
                             </CardHeader>
                             <CardContent>
                               <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
-                                {t('designSystem.home.colorsDescription') ||
-                                  'Color palette and tokens'}
+                                {t('designSystem.home.colorsDescription')}
                               </p>
                             </CardContent>
                           </Card>
@@ -648,8 +636,7 @@ export const DesignSystemPage: React.FC = () => {
                             </CardHeader>
                             <CardContent>
                               <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
-                                {t('designSystem.home.typographyDescription') ||
-                                  'Fonts and text styles'}
+                                {t('designSystem.home.typographyDescription')}
                               </p>
                             </CardContent>
                           </Card>
@@ -665,8 +652,7 @@ export const DesignSystemPage: React.FC = () => {
                             </CardHeader>
                             <CardContent>
                               <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
-                                {t('designSystem.home.componentsDescription') ||
-                                  'Reusable UI components'}
+                                {t('designSystem.home.componentsDescription')}
                               </p>
                             </CardContent>
                           </Card>
@@ -682,8 +668,7 @@ export const DesignSystemPage: React.FC = () => {
                             </CardHeader>
                             <CardContent>
                               <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
-                                {t('designSystem.home.spacingDescription') ||
-                                  'Spacing scale and system'}
+                                {t('designSystem.home.spacingDescription')}
                               </p>
                             </CardContent>
                           </Card>
@@ -723,45 +708,33 @@ export const DesignSystemPage: React.FC = () => {
                           <Card>
                             <CardHeader>
                               <CardTitle className="text-lg">
-                                {t('designSystem.home.quickStart') || 'Quick Start'}
+                                {t('designSystem.home.quickStart')}
                               </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-2">
                               <p className="text-sm text-neutral-400 font-mono">
-                                {t('designSystem.home.quickStartDescription') ||
-                                  'Get started with our design system by exploring the color palette, typography, and components.'}
+                                {t('designSystem.home.quickStartDescription')}
                               </p>
                               <ul className="text-sm text-neutral-400 font-mono list-disc list-inside space-y-1">
-                                <li>
-                                  {t('designSystem.home.quickStart1') ||
-                                    'Browse components and their variants'}
-                                </li>
-                                <li>
-                                  {t('designSystem.home.quickStart2') ||
-                                    'Copy CSS variables and class names'}
-                                </li>
-                                <li>
-                                  {t('designSystem.home.quickStart3') ||
-                                    'Understand spacing and layout patterns'}
-                                </li>
+                                <li>{t('designSystem.home.quickStart1')}</li>
+                                <li>{t('designSystem.home.quickStart2')}</li>
+                                <li>{t('designSystem.home.quickStart3')}</li>
                               </ul>
                             </CardContent>
                           </Card>
                           <Card>
                             <CardHeader>
                               <CardTitle className="text-lg">
-                                {t('designSystem.home.usage') || 'Usage'}
+                                {t('designSystem.home.usage')}
                               </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-2">
                               <p className="text-sm text-neutral-400 font-mono">
-                                {t('designSystem.home.usageDescription') ||
-                                  'All components follow consistent patterns and can be customized using CSS variables.'}
+                                {t('designSystem.home.usageDescription')}
                               </p>
                               <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
                                 <code className="text-xs font-mono text-neutral-300">
-                                  {t('designSystem.home.usageExample') ||
-                                    '<Button variant="default">Click me</Button>'}
+                                  {t('designSystem.home.usageExample')}
                                 </code>
                               </div>
                             </CardContent>
@@ -914,12 +887,10 @@ export const DesignSystemPage: React.FC = () => {
                           <h5 className="text-lg font-semibold font-manrope">Heading 5</h5>
                           <h6 className="text-base font-semibold font-manrope">Heading 6</h6>
                           <p className="text-base font-manrope">
-                            Body text - Regular paragraph text
+                            Body text, regular paragraph text
                           </p>
-                          <p className="text-sm font-manrope">
-                            Small text - For captions and labels
-                          </p>
-                          <p className="text-xs font-manrope">Extra small text - For fine print</p>
+                          <p className="text-sm font-manrope">Small text for captions and labels</p>
+                          <p className="text-xs font-manrope">Extra small text for fine print</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -971,7 +942,7 @@ export const DesignSystemPage: React.FC = () => {
                             </Button>
                           </div>
                           <p className="text-xs font-mono text-neutral-500">
-                            action + danger — hover-reveal icon buttons
+                            action + danger, hover-reveal icon buttons
                           </p>
                         </div>
                         <Separator />
@@ -1007,7 +978,7 @@ export const DesignSystemPage: React.FC = () => {
                             {
                               variant: 'surface' as const,
                               label: 'surface',
-                              note: 'Bordered muted — toolbars, auth gates',
+                              note: 'Bordered muted, for toolbars and auth gates',
                             },
                             {
                               variant: 'toolbar' as const,
@@ -1053,12 +1024,9 @@ export const DesignSystemPage: React.FC = () => {
                     {/* SearchBar */}
                     <Card id="searchbar">
                       <CardHeader>
-                        <CardTitle>
-                          {t('designSystem.components.searchbar.title') || 'Search Bar'}
-                        </CardTitle>
+                        <CardTitle>{t('designSystem.components.searchbar.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.searchbar.description') ||
-                            'Reusable search input component with icon and clear button'}
+                          {t('designSystem.components.searchbar.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -1203,12 +1171,9 @@ export const DesignSystemPage: React.FC = () => {
                     {/* PresetCard */}
                     <Card id="preset-card">
                       <CardHeader>
-                        <CardTitle>
-                          {t('designSystem.components.presetCard.title') || 'Preset Card'}
-                        </CardTitle>
+                        <CardTitle>{t('designSystem.components.presetCard.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.presetCard.description') ||
-                            'Card component for displaying community presets with image, metadata, and actions'}
+                          {t('designSystem.components.presetCard.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
@@ -1324,12 +1289,9 @@ export const DesignSystemPage: React.FC = () => {
                     </Card>
                     <Card id="preset-card">
                       <CardHeader>
-                        <CardTitle>
-                          {t('designSystem.components.presetCard.title') || 'Preset Card'}
-                        </CardTitle>
+                        <CardTitle>{t('designSystem.components.presetCard.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.presetCard.description') ||
-                            'Card component for displaying presets with selection and interaction states'}
+                          {t('designSystem.components.presetCard.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -1397,12 +1359,10 @@ export const DesignSystemPage: React.FC = () => {
                     <Card id="navigation-sidebar">
                       <CardHeader>
                         <CardTitle>
-                          {t('designSystem.components.navigationSidebar.title') ||
-                            'Navigation Sidebar'}
+                          {t('designSystem.components.navigationSidebar.title')}
                         </CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.navigationSidebar.description') ||
-                            'Reusable navigation sidebar component with collapsible sections and mobile support'}
+                          {t('designSystem.components.navigationSidebar.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -1423,10 +1383,9 @@ export const DesignSystemPage: React.FC = () => {
                     {/* Modal */}
                     <Card id="modal">
                       <CardHeader>
-                        <CardTitle>{t('designSystem.components.modal.title') || 'Modal'}</CardTitle>
+                        <CardTitle>{t('designSystem.components.modal.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.modal.description') ||
-                            'Shared modal base component and specialized modals'}
+                          {t('designSystem.components.modal.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-6">
@@ -1471,7 +1430,7 @@ export const DesignSystemPage: React.FC = () => {
                                 <Badge variant="outline">Info</Badge>
                               </div>
                               <Button variant="ghost" onClick={() => setShowModal(true)} size="sm">
-                                {t('designSystem.modal.exampleTitle') || 'Open Confirmation Modal'}
+                                {t('designSystem.modal.exampleTitle')}
                               </Button>
                             </div>
                           </div>
@@ -1546,14 +1505,11 @@ export const DesignSystemPage: React.FC = () => {
                           isOpen={showModal}
                           onClose={() => setShowModal(false)}
                           onConfirm={() => {
-                            toast.success(t('designSystem.modal.confirmed') || 'Confirmed!');
+                            toast.success(t('designSystem.modal.confirmed'));
                             setShowModal(false);
                           }}
-                          title={t('designSystem.modal.exampleTitle') || 'Example Modal'}
-                          message={
-                            t('designSystem.modal.exampleMessage') ||
-                            'This is an example of the ConfirmationModal component.'
-                          }
+                          title={t('designSystem.modal.exampleTitle')}
+                          message={t('designSystem.modal.exampleMessage')}
                           variant="info"
                         />
                       </CardContent>
@@ -1562,10 +1518,9 @@ export const DesignSystemPage: React.FC = () => {
                     {/* Table */}
                     <Card id="table">
                       <CardHeader>
-                        <CardTitle>{t('designSystem.components.table.title') || 'Table'}</CardTitle>
+                        <CardTitle>{t('designSystem.components.table.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.table.description') ||
-                            'Basic table component for displaying structured data'}
+                          {t('designSystem.components.table.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -1602,12 +1557,9 @@ export const DesignSystemPage: React.FC = () => {
                     {/* DataTable */}
                     <Card id="data-table">
                       <CardHeader>
-                        <CardTitle>
-                          {t('designSystem.components.dataTable.title') || 'Data Table'}
-                        </CardTitle>
+                        <CardTitle>{t('designSystem.components.dataTable.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.dataTable.description') ||
-                            'Advanced data table with sorting, filtering, and search capabilities'}
+                          {t('designSystem.components.dataTable.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -1628,12 +1580,9 @@ export const DesignSystemPage: React.FC = () => {
                     {/* Charts */}
                     <Card id="charts">
                       <CardHeader>
-                        <CardTitle>
-                          {t('designSystem.components.charts.title') || 'Charts'}
-                        </CardTitle>
+                        <CardTitle>{t('designSystem.components.charts.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.charts.description') ||
-                            'Chart components built with Recharts for data visualization'}
+                          {t('designSystem.components.charts.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -1654,12 +1603,9 @@ export const DesignSystemPage: React.FC = () => {
                     {/* Breadcrumb */}
                     <Card id="breadcrumb">
                       <CardHeader>
-                        <CardTitle>
-                          {t('designSystem.components.breadcrumb.title') || 'Breadcrumb'}
-                        </CardTitle>
+                        <CardTitle>{t('designSystem.components.breadcrumb.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.breadcrumb.description') ||
-                            'Navigation breadcrumb component with back button support'}
+                          {t('designSystem.components.breadcrumb.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -1684,12 +1630,9 @@ export const DesignSystemPage: React.FC = () => {
                     {/* SkeletonLoader */}
                     <Card id="skeleton-loader">
                       <CardHeader>
-                        <CardTitle>
-                          {t('designSystem.components.skeletonLoader.title') || 'Skeleton Loader'}
-                        </CardTitle>
+                        <CardTitle>{t('designSystem.components.skeletonLoader.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.skeletonLoader.description') ||
-                            'Loading placeholder component for better UX during data fetching'}
+                          {t('designSystem.components.skeletonLoader.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -1712,47 +1655,12 @@ export const DesignSystemPage: React.FC = () => {
                       </CardContent>
                     </Card>
 
-                    {/* GridDotsBackground */}
-                    <Card id="grid-dots-background">
-                      <CardHeader>
-                        <CardTitle>
-                          {t('designSystem.components.gridDotsBackground.title') ||
-                            'Grid Dots Background'}
-                        </CardTitle>
-                        <CardDescription>
-                          {t('designSystem.components.gridDotsBackground.description') ||
-                            'Decorative background pattern with configurable dots'}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="relative h-32 border border-neutral-800/50 rounded-md overflow-hidden">
-                          <div className="relative z-10 flex items-center justify-center h-full">
-                            <p className="text-sm font-mono text-neutral-400">
-                              Grid Dots Background Example
-                            </p>
-                          </div>
-                        </div>
-                        <div className="p-6 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                          <p className="text-sm text-neutral-400 mb-4">
-                            Decorative background pattern with configurable dots, spacing, and
-                            opacity.
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            <Badge variant="outline">Theme-aware</Badge>
-                            <Badge variant="outline">Configurable</Badge>
-                            <Badge variant="outline">Overlay</Badge>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
                     {/* Tabs */}
                     <Card id="tabs">
                       <CardHeader>
-                        <CardTitle>{t('designSystem.components.tabs.title') || 'Tabs'}</CardTitle>
+                        <CardTitle>{t('designSystem.components.tabs.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.tabs.description') ||
-                            'Tabbed interface component for organizing content into sections'}
+                          {t('designSystem.components.tabs.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -1778,10 +1686,9 @@ export const DesignSystemPage: React.FC = () => {
                     {/* Tags */}
                     <Card id="tags">
                       <CardHeader>
-                        <CardTitle>{t('designSystem.components.tags.title') || 'Tags'}</CardTitle>
+                        <CardTitle>{t('designSystem.components.tags.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.tags.description') ||
-                            'Tag components for categorization, filtering, and metadata display'}
+                          {t('designSystem.components.tags.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-6">
@@ -1830,12 +1737,9 @@ export const DesignSystemPage: React.FC = () => {
                     {/* Canvas Components */}
                     <Card id="canvas-toolbar">
                       <CardHeader>
-                        <CardTitle>
-                          {t('designSystem.components.canvasToolbar.title') || 'Canvas Toolbar'}
-                        </CardTitle>
+                        <CardTitle>{t('designSystem.components.canvasToolbar.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.canvasToolbar.description') ||
-                            'Collapsible toolbar for creating and managing canvas nodes with drag-and-drop support'}
+                          {t('designSystem.components.canvasToolbar.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
@@ -1892,12 +1796,9 @@ export const DesignSystemPage: React.FC = () => {
 
                     <Card id="canvas-header">
                       <CardHeader>
-                        <CardTitle>
-                          {t('designSystem.components.canvasHeader.title') || 'Canvas Header'}
-                        </CardTitle>
+                        <CardTitle>{t('designSystem.components.canvasHeader.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.canvasHeader.description') ||
-                            'Header component for canvas pages with project name editing, settings, and collaboration features'}
+                          {t('designSystem.components.canvasHeader.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
@@ -1949,12 +1850,9 @@ export const DesignSystemPage: React.FC = () => {
 
                     <Card id="canvas-flow">
                       <CardHeader>
-                        <CardTitle>
-                          {t('designSystem.components.canvasFlow.title') || 'Canvas Flow'}
-                        </CardTitle>
+                        <CardTitle>{t('designSystem.components.canvasFlow.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.canvasFlow.description') ||
-                            'Main React Flow canvas component with drag-and-drop, node management, and image handling'}
+                          {t('designSystem.components.canvasFlow.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
@@ -2019,12 +1917,9 @@ export const DesignSystemPage: React.FC = () => {
                     {/* Essentialist Components */}
                     <Card id="premium-button">
                       <CardHeader>
-                        <CardTitle>
-                          {t('designSystem.components.premiumButton.title') || 'Premium Button'}
-                        </CardTitle>
+                        <CardTitle>{t('designSystem.components.premiumButton.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.premiumButton.description') ||
-                            'A highly animated, glitch-capable action button with shimmer effects'}
+                          {t('designSystem.components.premiumButton.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -2047,7 +1942,7 @@ export const DesignSystemPage: React.FC = () => {
                         />
                         <div className="flex flex-col max-w-sm gap-4">
                           <PremiumButton>Continue</PremiumButton>
-                          <PremiumButton isLoading loadingText="ANALYZING...">
+                          <PremiumButton isLoading loadingText={t('common.loading')}>
                             Continue
                           </PremiumButton>
                           <PremiumButton disabled>Disabled Action</PremiumButton>
@@ -2057,12 +1952,9 @@ export const DesignSystemPage: React.FC = () => {
 
                     <Card id="glass-panel">
                       <CardHeader>
-                        <CardTitle>
-                          {t('designSystem.components.glassPanel.title') || 'Glass Panel'}
-                        </CardTitle>
+                        <CardTitle>{t('designSystem.components.glassPanel.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.glassPanel.description') ||
-                            'Essentialist translucent layout container to establish visual hierarchy'}
+                          {t('designSystem.components.glassPanel.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -2094,12 +1986,9 @@ export const DesignSystemPage: React.FC = () => {
 
                     <Card id="micro-title">
                       <CardHeader>
-                        <CardTitle>
-                          {t('designSystem.components.microTitle.title') || 'Micro Title'}
-                        </CardTitle>
+                        <CardTitle>{t('designSystem.components.microTitle.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.microTitle.description') ||
-                            'Heavily spaced uppercase mono typography for precise labeling'}
+                          {t('designSystem.components.microTitle.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -2134,12 +2023,9 @@ export const DesignSystemPage: React.FC = () => {
                   <TabsContent value="patterns" className="space-y-6">
                     <Card id="setup-container">
                       <CardHeader>
-                        <CardTitle>
-                          {t('designSystem.patterns.setupContainer.title') || 'Setup Container'}
-                        </CardTitle>
+                        <CardTitle>{t('designSystem.patterns.setupContainer.title')}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.patterns.setupContainer.description') ||
-                            'A standardized layout for configuration sidebars combining MicroTitle, GlassPanel, and PremiumButton.'}
+                          {t('designSystem.patterns.setupContainer.description')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-8">

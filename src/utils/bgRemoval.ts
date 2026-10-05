@@ -5,7 +5,7 @@ export interface BgRemovalOptions {
 
 export type BgRemovalMode = 'simple' | 'ai';
 
-export type ProgressCallback = (phase: string, progress: number) => void;
+export type ProgressCallback = (progress: number) => void;
 
 const DEFAULTS: BgRemovalOptions = {
   threshold: 30,
@@ -49,14 +49,14 @@ export async function removeBackgroundSimple(
   const maxDist = (opts.threshold / 100) * 441.67;
   const featherRange = opts.feather * 8;
 
-  onProgress?.('Loading image', 0.1);
+  onProgress?.(0.1);
 
   return new Promise<string>((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
       try {
-        onProgress?.('Processing pixels', 0.3);
+        onProgress?.(0.3);
 
         const canvas = document.createElement('canvas');
         canvas.width = img.width;
@@ -78,7 +78,7 @@ export async function removeBackgroundSimple(
         const bgG = corners.reduce((a, c) => a + c.g, 0) / 4;
         const bgB = corners.reduce((a, c) => a + c.b, 0) / 4;
 
-        onProgress?.('Removing background', 0.5);
+        onProgress?.(0.5);
 
         for (let i = 0; i < data.length; i += 4) {
           const dist = colorDistance(data[i], data[i + 1], data[i + 2], bgR, bgG, bgB);
@@ -91,7 +91,7 @@ export async function removeBackgroundSimple(
         }
 
         ctx.putImageData(imageData, 0, 0);
-        onProgress?.('Done', 1);
+        onProgress?.(1);
         resolve(canvas.toDataURL('image/png'));
       } catch (err) {
         reject(err);
@@ -138,11 +138,11 @@ export async function removeBackgroundAI(
   onProgress?: ProgressCallback,
   focusRegion?: FocusRegion | null
 ): Promise<string> {
-  onProgress?.('Loading AI model', 0.05);
+  onProgress?.(0.05);
 
   const { removeBackground: imglyRemove } = await import('@imgly/background-removal');
 
-  onProgress?.('Preparing image', 0.1);
+  onProgress?.(0.1);
 
   let sourceBlob: Blob;
 
@@ -158,24 +158,24 @@ export async function removeBackgroundAI(
     sourceBlob = await new Promise<Blob>((res, rej) =>
       cropped.toBlob((b) => (b ? res(b) : rej(new Error('Canvas toBlob failed'))), 'image/png')
     );
-    onProgress?.('Focus region cropped', 0.15);
+    onProgress?.(0.15);
   } else {
     const resp = await fetch(imageUrl);
     sourceBlob = await resp.blob();
   }
 
-  onProgress?.('Running AI removal', 0.2);
+  onProgress?.(0.2);
 
   const resultBlob = await imglyRemove(sourceBlob, {
-    progress: (key: string, current: number, total: number) => {
+    progress: (_key: string, current: number, total: number) => {
       const ratio = total > 0 ? current / total : 0;
       const mapped = 0.2 + ratio * 0.75;
-      onProgress?.(key === 'compute:inference' ? 'AI processing' : 'Loading model', mapped);
+      onProgress?.(mapped);
     },
     output: { format: 'image/png', quality: 1 },
   });
 
-  onProgress?.('Finalizing', 0.98);
+  onProgress?.(0.98);
 
   const resultUrl = URL.createObjectURL(resultBlob);
 
@@ -187,7 +187,7 @@ export async function removeBackgroundAI(
   outCtx.drawImage(resultImg, 0, 0);
   URL.revokeObjectURL(resultUrl);
 
-  onProgress?.('Done', 1);
+  onProgress?.(1);
   return out.toDataURL('image/png');
 }
 

@@ -108,7 +108,7 @@ export const VideoInputNode = memo(
       >
         {selected && !dragging && (
           <NodeResizer
-            color="brand-cyan"
+            color="var(--brand-cyan)"
             isVisible={selected}
             minWidth={320}
             minHeight={200}
@@ -118,15 +118,11 @@ export const VideoInputNode = memo(
             onResize={handleResize}
           />
         )}
-        <Handle
-          type="source"
-          position={Position.Right}
-          className="w-2 h-2 bg-brand-cyan border-2 border-black node-handle"
-        />
+        <Handle type="source" position={Position.Right} className="node-handle handle-video" />
 
         <NodeHeader
           icon={Video}
-          title={t('canvasNodes.videoInputNode.title') || 'Video Input'}
+          title={t('canvasNodes.videoInputNode.title')}
           selected={selected}
         />
 
@@ -145,15 +141,13 @@ export const VideoInputNode = memo(
             className="w-full"
           >
             <Upload size={14} />
-            {t('canvasNodes.videoInputNode.uploadVideo') || 'Upload Video'}
+            {t('canvasNodes.videoInputNode.uploadVideo')}
           </NodeButton>
         </div>
 
         {hasUploadedVideo && (
           <div className="mb-4">
-            <NodeLabel>
-              {t('canvasNodes.videoInputNode.uploadedVideo') || 'Uploaded Video'}
-            </NodeLabel>
+            <NodeLabel>{t('canvasNodes.videoInputNode.uploadedVideo')}</NodeLabel>
             <div className="relative">
               <video
                 src={getVideoDisplayUrl(uploadedVideo)}
@@ -192,8 +186,8 @@ export const VideoInputNode = memo(
                 handleVideoRemove();
               }}
               onMouseDown={(e) => e.stopPropagation()}
-              className="bg-destructive/20 hover:bg-destructive/30 text-destructive backdrop-blur-sm border-node border-destructive/20 hover:border-destructive/30"
-              title={t('canvasNodes.videoInputNode.removeVideo') || 'Remove Video'}
+              className="bg-destructive/20 hover:bg-destructive/30 text-destructive border-node border-destructive/20 hover:border-destructive/30"
+              title={t('canvasNodes.videoInputNode.removeVideo')}
             >
               <X size={12} strokeWidth={2} />
             </NodeButton>

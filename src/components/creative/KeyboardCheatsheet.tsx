@@ -58,9 +58,7 @@ export const KeyboardCheatsheet: React.FC<Props> = ({ open, onOpenChange }) => {
             if (!items.length) return null;
             return (
               <div key={g}>
-                <h3 className="text-2xs font-bold uppercase tracking-widest text-foreground mb-1.5">
-                  {g}
-                </h3>
+                <h3 className="text-2xs font-bold text-foreground mb-1.5">{g}</h3>
                 <div className="divide-y divide-white/5">
                   {items.map((s, i) => (
                     <Row key={i} s={s} />

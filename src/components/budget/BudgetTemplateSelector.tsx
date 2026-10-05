@@ -64,7 +64,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
     } catch (error: any) {
       console.error('Error loading presets:', error);
       if (error?.status !== 401) {
-        toast.error(t('budget.errors.failedToLoadPresets') || 'Failed to load presets');
+        toast.error(t('budget.errors.failedToLoadPresets'));
       }
     } finally {
       setIsLoadingPresets(false);
@@ -79,7 +79,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
     } catch (error: any) {
       console.error('Error loading budgets:', error);
       if (error?.status !== 401) {
-        toast.error(t('budget.errors.failedToLoad') || 'Failed to load budgets');
+        toast.error(t('budget.errors.failedToLoad'));
       }
     } finally {
       setIsLoadingBudgets(false);
@@ -113,10 +113,10 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
     try {
       await budgetApi.deletePdfPreset(presetToDelete);
       setPresets((prev) => prev.filter((p) => (p._id || p.id) !== presetToDelete));
-      toast.success(t('budget.presetDeleted') || 'Preset deleted successfully');
+      toast.success(t('budget.presetDeleted'));
     } catch (error: any) {
       console.error('Error deleting preset:', error);
-      toast.error(t('budget.errors.failedToDeletePreset') || 'Failed to delete preset');
+      toast.error(t('budget.errors.failedToDeletePreset'));
     } finally {
       setDeletingPresetId(null);
       setPresetToDelete(null);
@@ -131,10 +131,10 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
     try {
       await budgetApi.delete(budgetToDelete);
       setBudgets((prev) => prev.filter((b) => b._id !== budgetToDelete));
-      toast.success(t('budget.deleted') || 'Budget deleted successfully');
+      toast.success(t('budget.deleted'));
     } catch (error: any) {
       console.error('Error deleting budget:', error);
-      toast.error(t('budget.errors.failedToDelete') || 'Failed to delete budget');
+      toast.error(t('budget.errors.failedToDelete'));
     } finally {
       setDeletingBudgetId(null);
       setBudgetToDelete(null);
@@ -185,14 +185,14 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-8 space-y-8">
-      <h2 className="text-2xl font-bold text-neutral-200 mb-6 text-center font-mono">
+      <h2 className="text-2xl font-bold text-neutral-200 mb-6 text-center">
         {t('budget.selectTemplate')}
       </h2>
 
       {/* Templates Padrão */}
       <div>
-        <h3 className="text-lg font-semibold text-neutral-300 mb-4 font-mono">
-          {t('budget.defaultTemplates') || 'Templates Padrão'}
+        <h3 className="text-lg font-semibold text-neutral-300 mb-4">
+          {t('budget.defaultTemplates')}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {BUDGET_TEMPLATES.filter((template) => template.id !== 'custom').map((template) => (
@@ -217,19 +217,19 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                   defaultValue={getTemplateDisplayName(template.id, template.name)}
                   onBlur={(e) => handleTemplateNameChange(template.id, e.target.value)}
                   onKeyDown={(e) => handleTemplateNameKeyDown(template.id, e)}
-                  className="text-xl font-semibold text-neutral-200 mb-2 font-mono bg-transparent border-b-2 border-neutral-600 outline-none w-full"
+                  className="text-xl font-semibold text-neutral-200 mb-2 bg-transparent border-b-2 border-neutral-600 outline-none w-full"
                   autoFocus
                   onClick={(e) => e.stopPropagation()}
                 />
               ) : (
                 <h3
-                  className="text-xl font-semibold text-neutral-200 mb-2 font-mono cursor-text"
+                  className="text-xl font-semibold text-neutral-200 mb-2 cursor-text"
                   onDoubleClick={(e) => handleTemplateNameDoubleClick(template.id, e)}
                 >
                   {getTemplateDisplayName(template.id, template.name)}
                 </h3>
               )}
-              <p className="text-sm text-neutral-400 font-mono">{template.description}</p>
+              <p className="text-sm text-neutral-400">{template.description}</p>
             </Button>
           ))}
         </div>
@@ -238,17 +238,15 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
       {/* Meus Templates PDF */}
       {isAuthenticated === true && (
         <div>
-          <h3 className="text-lg font-semibold text-neutral-300 mb-4 font-mono">
-            {t('budget.myPdfTemplates') || 'Meus Templates PDF'}
+          <h3 className="text-lg font-semibold text-neutral-300 mb-4">
+            {t('budget.myPdfTemplates')}
           </h3>
           {isLoadingPresets ? (
             <div className="flex items-center justify-center py-8">
-              <GlitchLoader size={24} color="brand-cyan" />
+              <GlitchLoader size={24} />
             </div>
           ) : presets.length === 0 ? (
-            <p className="text-sm text-neutral-500 font-mono text-center py-4">
-              {t('budget.noPresets') || 'Nenhum template PDF salvo ainda'}
-            </p>
+            <p className="text-sm text-neutral-500 text-center py-4">{t('budget.noPresets')}</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {presets.map((preset) => {
@@ -262,10 +260,10 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                       <Upload size={20} className="text-neutral-500" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-neutral-200 mb-2 font-mono line-clamp-2">
+                      <h3 className="text-xl font-semibold text-neutral-200 mb-2 line-clamp-2">
                         {truncateText(preset.name, 50)}
                       </h3>
-                      <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono mb-4">
+                      <div className="flex items-center gap-2 text-xs text-neutral-400 mb-4">
                         <Calendar size={14} />
                         <span>{formatDate(preset.createdAt)}</span>
                       </div>
@@ -274,7 +272,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                       <Button
                         variant="ghost"
                         onClick={() => handleEditPreset(presetId)}
-                        className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-neutral-600/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-neutral-600/50 hover:text-foreground rounded-xl text-sm text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                       >
                         <Edit size={14} />
                         {t('common.edit')}
@@ -283,7 +281,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                         variant="ghost"
                         onClick={(e) => handleDeletePresetClick(presetId, e)}
                         disabled={deletingPresetId === presetId}
-                        className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-destructive/50 hover:text-destructive rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                        className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-destructive/50 hover:text-destructive rounded-xl text-sm text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                       >
                         {deletingPresetId === presetId ? (
                           <GlitchLoader size={14} />
@@ -303,17 +301,13 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
       {/* Meus Budgets */}
       {isAuthenticated === true && (
         <div>
-          <h3 className="text-lg font-semibold text-neutral-300 mb-4 font-mono">
-            {t('budget.myBudgets') || 'Meus Budgets'}
-          </h3>
+          <h3 className="text-lg font-semibold text-neutral-300 mb-4">{t('budget.myBudgets')}</h3>
           {isLoadingBudgets ? (
             <div className="flex items-center justify-center py-8">
-              <GlitchLoader size={24} color="brand-cyan" />
+              <GlitchLoader size={24} />
             </div>
           ) : budgets.length === 0 ? (
-            <p className="text-sm text-neutral-500 font-mono text-center py-4">
-              {t('budget.noBudgets') || 'Nenhum orçamento ainda'}
-            </p>
+            <p className="text-sm text-neutral-500 text-center py-4">{t('budget.noBudgets')}</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {budgets.map((budget) => (
@@ -325,14 +319,14 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                     <FileText size={20} className="text-neutral-500" />
                   </div>
                   <div className="pr-12">
-                    <h3 className="text-xl font-semibold text-neutral-200 mb-2 font-mono line-clamp-2">
+                    <h3 className="text-xl font-semibold text-neutral-200 mb-2 line-clamp-2">
                       {truncateText(budget.name || budget.projectDescription, 50)}
                     </h3>
-                    <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono mb-4">
+                    <div className="flex items-center gap-2 text-xs text-neutral-400 mb-4">
                       <Calendar size={14} />
                       <span>{formatDate(budget.createdAt)}</span>
                     </div>
-                    <p className="text-sm text-neutral-400 font-mono mb-4 line-clamp-2">
+                    <p className="text-sm text-neutral-400 mb-4 line-clamp-2">
                       {truncateText(budget.clientName, 80)}
                     </p>
                   </div>
@@ -340,7 +334,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                     <Button
                       variant="ghost"
                       onClick={() => handleEditBudget(budget._id)}
-                      className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-neutral-600/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+                      className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-neutral-600/50 hover:text-foreground rounded-xl text-sm text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                     >
                       <Edit size={14} />
                       {t('common.edit')}
@@ -349,7 +343,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                       variant="ghost"
                       onClick={(e) => handleDeleteBudgetClick(budget._id, e)}
                       disabled={deletingBudgetId === budget._id}
-                      className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-destructive/50 hover:text-destructive rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-destructive/50 hover:text-destructive rounded-xl text-sm text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                       {deletingBudgetId === budget._id ? (
                         <GlitchLoader size={14} />
@@ -373,13 +367,10 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
           setPresetToDelete(null);
         }}
         onConfirm={handleDeletePresetConfirm}
-        title={t('budget.confirmDeletePresetTitle') || 'Excluir Template'}
-        message={
-          t('budget.confirmDeletePreset') ||
-          'Tem certeza que deseja excluir este template? Esta ação não pode ser desfeita.'
-        }
-        confirmText={t('common.delete') || 'Excluir'}
-        cancelText={t('common.cancel') || 'Cancelar'}
+        title={t('budget.confirmDeletePresetTitle')}
+        message={t('budget.confirmDeletePreset')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
         variant="danger"
       />
 
@@ -391,13 +382,10 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
           setBudgetToDelete(null);
         }}
         onConfirm={handleDeleteBudgetConfirm}
-        title={t('budget.confirmDeleteTitle') || 'Excluir Orçamento'}
-        message={
-          t('budget.confirmDelete') ||
-          'Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.'
-        }
-        confirmText={t('common.delete') || 'Excluir'}
-        cancelText={t('common.cancel') || 'Cancelar'}
+        title={t('budget.confirmDeleteTitle')}
+        message={t('budget.confirmDelete')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
         variant="danger"
       />
     </div>

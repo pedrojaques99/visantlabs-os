@@ -129,7 +129,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
                 onClick={() =>
                   store.applyConfig(scene.config as Parameters<typeof store.applyConfig>[0])
                 }
-                className="shrink-0 flex flex-col items-center gap-1 group transition-all duration-150"
+                className="shrink-0 flex flex-col items-center gap-1 group transition-colors duration-150"
                 title={scene.label}
               >
                 <div
@@ -137,7 +137,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
                   style={{ background: scene.swatches[0] }}
                 >
                   <div
-                    className="w-7 h-7 rounded-full transition-transform group-hover:scale-110"
+                    className="w-7 h-7 rounded-full"
                     style={{
                       background: scene.swatches[1],
                       boxShadow: `0 0 0 2px ${scene.swatches[2]}`,

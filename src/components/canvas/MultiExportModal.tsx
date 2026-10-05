@@ -17,6 +17,8 @@ import type { FlowNode } from '@/types/reactFlow';
 import { getImageUrl } from '@/utils/imageUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Thumb } from '@/components/ui/Thumb';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface MultiExportModalProps {
   isOpen: boolean;
@@ -42,6 +44,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
   projectName,
 }) => {
   useScrollLock(isOpen);
+  const { t } = useTranslation();
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
   const [exportFormat, setExportFormat] = useState<ExportFormat>('PNG');
   const [searchQuery, setSearchQuery] = useState('');
@@ -155,16 +158,16 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
               await writable.close();
             } catch (err) {
               console.error(`Failed to save ${img.name}:`, err);
-              toast.error(`Failed to save ${img.name}`);
+              toast.error(t('canvasExport.saveFailed', { name: img.name }));
             }
           }
-          toast.success(`${selectedImages.size} image(s) exported successfully!`);
+          toast.success(t('canvasExport.exported', { count: selectedImages.size }));
           onClose();
           return;
         } catch (err: any) {
           if (err.name !== 'AbortError') {
             console.error('Directory selection failed:', err);
-            toast.error('Failed to access folder, falling back to individual downloads');
+            toast.error(t('canvasExport.folderFailed'));
           } else {
             // User cancelled
             setIsExporting(false);
@@ -194,11 +197,11 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
       });
 
       await Promise.all(promises);
-      toast.success(`${selectedImages.size} image(s) exported successfully!`);
+      toast.success(t('canvasExport.exported', { count: selectedImages.size }));
       onClose();
     } catch (error) {
       console.error('Multi-export error:', error);
-      toast.error('Failed to export some images');
+      toast.error(t('canvasExport.someFailed'));
     } finally {
       setIsExporting(false);
     }
@@ -212,17 +215,15 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800/50">
           <div>
-            <h2 className="text-lg font-semibold text-neutral-100 font-mono flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-neutral-100 flex items-center gap-2">
               <Download size={20} className="text-neutral-400" />
-              Export Images
+              {t('canvasExport.title')}
             </h2>
-            <p className="text-xs text-neutral-500 font-mono mt-1">
-              Select images to download from your project
-            </p>
           </div>
           <Button
             variant="ghost"
             onClick={onClose}
+            aria-label={t('common.close')}
             className="p-2 text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-colors"
           >
             <X size={20} />
@@ -239,17 +240,17 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
               />
               <Input
                 type="text"
-                placeholder="Search images..."
+                placeholder={t('canvasExport.search')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-xs text-neutral-300 font-mono focus:outline-none focus:ring-1 focus:ring-neutral-600/50 transition-all"
+                className="w-full pl-9 pr-4 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-xs text-neutral-300 focus:outline-none focus:ring-1 focus:ring-neutral-600/50 transition-colors"
               />
             </div>
 
             <Button
               variant="ghost"
               onClick={selectAll}
-              className="flex items-center gap-2 px-3 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-xs text-neutral-300 font-mono hover:bg-neutral-700/50 transition-colors whitespace-nowrap"
+              className="flex items-center gap-2 px-3 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-xs text-neutral-300 hover:bg-neutral-700/50 transition-colors whitespace-nowrap"
             >
               {selectedImages.size === filteredImages.length && filteredImages.length > 0 ? (
                 <CheckSquare size={14} className="text-neutral-400" />
@@ -257,8 +258,8 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                 <Square size={14} />
               )}
               {selectedImages.size === filteredImages.length && filteredImages.length > 0
-                ? 'Deselect All'
-                : 'Select All'}
+                ? t('canvasExport.deselectAll')
+                : t('canvasExport.selectAll')}
             </Button>
           </div>
 
@@ -270,7 +271,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                   key={format}
                   onClick={() => setExportFormat(format)}
                   className={cn(
-                    'px-3 py-1 text-2xs font-mono rounded transition-colors',
+                    'px-3 py-1 text-2xs rounded transition-colors',
                     exportFormat === format
                       ? 'bg-neutral-700/20 text-neutral-400 border border-neutral-600/30'
                       : 'text-neutral-500 hover:text-neutral-300'
@@ -292,20 +293,13 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                   key={img.id}
                   onClick={() => toggleImage(img.id)}
                   className={cn(
-                    'group relative aspect-square rounded-xl border transition-all cursor-pointer overflow-hidden',
+                    'group relative aspect-square rounded-xl border transition-colors cursor-pointer overflow-hidden',
                     selectedImages.has(img.id)
                       ? 'border-neutral-600 ring-1 ring-neutral-600/20'
                       : 'border-neutral-800 hover:border-neutral-700 bg-neutral-900/50'
                   )}
                 >
-                  <img
-                    src={img.url}
-                    alt={img.name}
-                    className={cn(
-                      'w-full h-full object-cover transition-transform duration-300',
-                      selectedImages.has(img.id) ? 'scale-105' : 'group-hover:scale-105'
-                    )}
-                  />
+                  <Thumb src={img.url} alt={img.name} className="w-full h-full object-cover" />
 
                   {/* Overlay */}
                   <div
@@ -319,7 +313,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                     <div className="flex justify-end">
                       <div
                         className={cn(
-                          'w-5 h-5 rounded-full flex items-center justify-center border transition-all',
+                          'w-5 h-5 rounded-full flex items-center justify-center border transition-colors',
                           selectedImages.has(img.id)
                             ? 'bg-neutral-700 border-neutral-600 text-black'
                             : 'bg-neutral-950/70 border-white/20 text-transparent'
@@ -329,11 +323,11 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                       </div>
                     </div>
 
-                    <div className="bg-neutral-950/60 backdrop-blur-md rounded-md p-2 translate-y-1 group-hover:translate-y-0 transition-transform">
+                    <div className="bg-neutral-950/80 rounded-md p-2">
                       <p className="text-2xs text-neutral-200 font-mono truncate" title={img.name}>
                         {img.name}
                       </p>
-                      <p className="text-2xs text-neutral-400 uppercase mt-0.5">{img.type}</p>
+                      <p className="text-2xs text-neutral-400 mt-0.5">{img.type}</p>
                     </div>
                   </div>
                 </div>
@@ -344,10 +338,8 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
               <div className="w-16 h-16 rounded-full bg-neutral-900/50 border border-neutral-800 flex items-center justify-center">
                 <ImageIcon size={32} opacity={0.2} />
               </div>
-              <p className="text-sm font-mono">
-                {searchQuery
-                  ? 'No images match your search'
-                  : 'No exportable images found on the canvas'}
+              <p className="text-sm">
+                {searchQuery ? t('canvasExport.noMatch') : t('canvasExport.noImages')}
               </p>
             </div>
           )}
@@ -355,36 +347,39 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-neutral-800/50 bg-neutral-900/30 flex items-center justify-between">
-          <div className="text-xs font-mono text-neutral-500">
-            {selectedImages.size} of {exportableImages.length} images selected
+          <div className="text-xs text-neutral-500">
+            {t('canvasExport.selectedCount', {
+              count: selectedImages.size,
+              total: exportableImages.length,
+            })}
           </div>
 
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors"
+              className="px-4 py-2 text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               variant="ghost"
               onClick={handleExport}
               disabled={selectedImages.size === 0 || isExporting}
               className={cn(
-                'px-6 py-2 bg-neutral-700 hover:bg-[#45c3d1] disabled:bg-neutral-800 disabled:text-neutral-500 text-black font-semibold rounded-md text-xs font-mono transition-[color,background-color,border-color,box-shadow] flex items-center gap-2 shadow-lg shadow-neutral-600/10',
+                'px-6 py-2 bg-brand-cyan hover:bg-brand-cyan/90 disabled:bg-neutral-800 disabled:text-neutral-500 text-black font-semibold rounded-md text-xs transition-colors flex items-center gap-2',
                 isExporting && 'animate-pulse'
               )}
             >
               {isExporting ? (
                 <>
                   <div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                  Exporting...
+                  {t('common.exporting')}
                 </>
               ) : (
                 <>
                   <Download size={14} />
-                  Export Selected
+                  {t('canvasExport.exportSelected')}
                 </>
               )}
             </Button>

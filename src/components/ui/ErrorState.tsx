@@ -3,6 +3,7 @@ import { AlertTriangle, RefreshCw, type LucideIcon } from '@/lib/ui/icons';
 import { MicroTitle } from './MicroTitle';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ErrorStateProps {
   /** Headline — what failed. Defaults to a generic load-failure title. */
@@ -23,24 +24,27 @@ interface ErrorStateProps {
  * correct three-way branch: `error ? <ErrorState/> : empty ? <EmptyState/> : list`.
  */
 export const ErrorState: React.FC<ErrorStateProps> = ({
-  title = 'Something went wrong',
-  description = 'Your work is safe. Try loading again.',
+  title,
+  description,
   onRetry,
-  retryLabel = 'Try again',
+  retryLabel,
   icon: Icon = AlertTriangle,
   className,
 }) => {
+  const { t } = useTranslation();
+  const heading = title ?? t('common.errorState.title');
+  const body = description ?? t('common.errorState.description');
   return (
     <div
       className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}
     >
       <Icon className="w-10 h-10 text-destructive/70 mb-4" strokeWidth={1.5} />
-      <MicroTitle className="mb-2 text-foreground">{title}</MicroTitle>
-      {description && <p className="text-sm text-muted-foreground max-w-sm mb-6">{description}</p>}
+      <MicroTitle className="mb-2 text-foreground">{heading}</MicroTitle>
+      {body && <p className="text-sm text-muted-foreground max-w-sm mb-6">{body}</p>}
       {onRetry && (
         <Button onClick={onRetry} variant="outline" size="sm" className="gap-1.5">
           <RefreshCw className="w-3.5 h-3.5" />
-          {retryLabel}
+          {retryLabel ?? t('common.retry')}
         </Button>
       )}
     </div>

@@ -34,23 +34,19 @@ export const GiftOptionsSection: React.FC<GiftOptionsSectionProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-neutral-200 font-mono">
-          {t('budget.giftOptions') || 'Opções de Brinde'}
-        </h3>
+        <h3 className="text-lg font-semibold text-neutral-200">{t('budget.giftOptions')}</h3>
         <Button
           variant="brand"
           onClick={addGiftOption}
-          className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-foreground font-mono text-sm transition-colors duration-300 flex items-center gap-2"
+          className="px-4 py-2 bg-neutral-800/60 hover:bg-neutral-800 border border-neutral-700 rounded-xl text-foreground text-sm transition-colors duration-300 flex items-center gap-2"
         >
           <Plus size={16} />
-          {t('budget.addGiftOption') || 'Adicionar Brinde'}
+          {t('budget.addGiftOption')}
         </Button>
       </div>
 
       {giftOptions.length === 0 ? (
-        <div className="text-center py-8 text-neutral-500 font-mono text-sm">
-          {t('budget.noGiftOptions') || 'Nenhuma opção de brinde adicionada ainda'}
-        </div>
+        <div className="text-center py-8 text-neutral-500 text-sm">{t('budget.noGiftOptions')}</div>
       ) : (
         <div className="space-y-4">
           {giftOptions.map((gift, index) => (
@@ -61,36 +57,34 @@ export const GiftOptionsSection: React.FC<GiftOptionsSectionProps> = ({
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 space-y-3">
                   <div>
-                    <label className="block text-xs text-neutral-400 mb-1 font-mono">
-                      {t('budget.giftTitle') || 'Título'}
+                    <label className="block text-xs text-neutral-400 mb-1">
+                      {t('budget.giftTitle')}
                     </label>
                     <FormInput
                       value={gift.title}
                       onChange={(e) => updateGiftOption(index, 'title', e.target.value)}
-                      placeholder={t('budget.placeholders.giftTitle') || 'Título do brinde'}
+                      placeholder={t('budget.placeholders.giftTitle')}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-neutral-400 mb-1 font-mono">
-                      {t('budget.giftDescription') || 'Descrição'}
+                    <label className="block text-xs text-neutral-400 mb-1">
+                      {t('budget.giftDescription')}
                     </label>
                     <FormTextarea
                       value={gift.description}
                       onChange={(e) => updateGiftOption(index, 'description', e.target.value)}
-                      placeholder={
-                        t('budget.placeholders.giftDescription') || 'Descrição do brinde'
-                      }
+                      placeholder={t('budget.placeholders.giftDescription')}
                       rows={3}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-neutral-400 mb-1 font-mono">
-                      {t('budget.giftImageUrl') || 'URL da Imagem (opcional)'}
+                    <label className="block text-xs text-neutral-400 mb-1">
+                      {t('budget.giftImageUrl')}
                     </label>
                     <FormInput
                       value={gift.imageUrl || ''}
                       onChange={(e) => updateGiftOption(index, 'imageUrl', e.target.value)}
-                      placeholder={t('budget.placeholders.giftImageUrl') || 'https://...'}
+                      placeholder={t('budget.placeholders.giftImageUrl')}
                     />
                   </div>
                 </div>
@@ -98,7 +92,7 @@ export const GiftOptionsSection: React.FC<GiftOptionsSectionProps> = ({
                   variant="ghost"
                   onClick={() => removeGiftOption(index)}
                   className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-                  title={t('budget.removeGiftOption') || 'Remover brinde'}
+                  title={t('budget.removeGiftOption')}
                 >
                   <Trash2 size={18} />
                 </Button>

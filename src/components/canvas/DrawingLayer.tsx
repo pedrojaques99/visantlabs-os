@@ -315,7 +315,6 @@ export const DrawingLayer: React.FC<DrawingLayerProps> = ({
                       onEditEnd={() => {
                         onStopEditingText?.();
                       }}
-                      placeholder="Click to edit text..."
                       className={cn(
                         'transition-opacity',
                         isSelected ? 'opacity-80' : 'opacity-100'

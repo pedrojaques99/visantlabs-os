@@ -1,13 +1,14 @@
 import React, { memo, useCallback } from 'react';
-import { Handle, Position, type NodeProps, useReactFlow } from '@xyflow/react';
+import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { Plus, Trash2, Braces } from '@/lib/ui/icons';
 import type { VariablesNodeData } from '@/types/reactFlow';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeButton } from './shared/node-button';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
-  const { setNodes } = useReactFlow();
+  const { t } = useTranslation();
   const nodeData = data as VariablesNodeData;
   const variables = nodeData.variables ?? [];
 
@@ -52,8 +53,8 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/10">
         <Braces size={13} className="text-foreground" />
-        <span className="text-2xs font-semibold uppercase tracking-widest text-white/70">
-          Variables
+        <span className="text-xs font-semibold text-white/70">
+          {t('canvasNodes.variablesNode.title')}
         </span>
       </div>
 
@@ -61,7 +62,7 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
       <div className="flex flex-col gap-1 px-3 py-2">
         {variables.length === 0 && (
           <p className="text-2xs text-white/30 text-center py-2">
-            No variables yet — click + to add
+            {t('canvasNodes.variablesNode.empty')}
           </p>
         )}
         {variables.map((v, idx) => (
@@ -71,7 +72,8 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
                 'flex-1 min-w-0 bg-white/5 border-node border-white/10 rounded px-2 py-1',
                 'text-2xs text-white placeholder:text-white/30 focus:outline-none focus:border-neutral-600'
               )}
-              placeholder="name"
+              placeholder={t('canvasNodes.variablesNode.name')}
+              aria-label={t('canvasNodes.variablesNode.name')}
               value={v.key}
               onChange={(e) => handleKeyChange(idx, e.target.value)}
             />
@@ -81,12 +83,14 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
                 'flex-[2] min-w-0 bg-white/5 border-node border-white/10 rounded px-2 py-1',
                 'text-2xs text-white placeholder:text-white/30 focus:outline-none focus:border-neutral-600'
               )}
-              placeholder="value"
+              placeholder={t('canvasNodes.variablesNode.value')}
+              aria-label={t('canvasNodes.variablesNode.value')}
               value={v.value}
               onChange={(e) => handleValueChange(idx, e.target.value)}
             />
             <button
               onClick={() => handleRemove(idx)}
+              aria-label={t('canvasNodes.variablesNode.remove')}
               className="shrink-0 text-white/30 hover:text-destructive transition-colors"
             >
               <Trash2 size={12} />
@@ -99,15 +103,15 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
       <div className="px-3 pb-2">
         <NodeButton onClick={handleAdd} className="w-full gap-1 text-2xs">
           <Plus size={11} />
-          Add variable
+          {t('canvasNodes.variablesNode.add')}
         </NodeButton>
       </div>
 
       {/* Hint */}
       <div className="px-3 pb-2">
         <p className="text-2xs text-white/25 leading-tight">
-          Use <span className="text-brand-cyan/60 font-mono">{`{{name}}`}</span> in any prompt to
-          insert a value
+          {t('canvasNodes.variablesNode.hint')}{' '}
+          <span className="text-white/40 font-mono">{`{{name}}`}</span>
         </p>
       </div>
 
@@ -121,7 +125,7 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
           right: -6,
           width: 10,
           height: 10,
-          background: 'var(--brand-cyan)',
+          background: 'var(--color-neutral-400)',
           border: '2px solid var(--color-neutral-950)',
         }}
       />

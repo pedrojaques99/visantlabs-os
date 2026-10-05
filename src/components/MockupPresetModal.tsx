@@ -45,7 +45,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
   maxSelections = 5,
   initialCategory,
 }) => {
-  const { t } = useTranslation();
+  const { t, tOr } = useTranslation();
   const [officialPresets, setOfficialPresets] = React.useState<MockupPreset[]>([]);
   const [communityPresets, setCommunityPresets] = React.useState<any[]>([]);
   const [isLoadingPresets, setIsLoadingPresets] = React.useState(false);
@@ -357,8 +357,9 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
           <Button
             variant="ghost"
             onClick={onClose}
-            className="p-2 text-neutral-500 hover:text-white transition-colors hover:bg-neutral-800/50 rounded-full"
-            title="Close (Esc)"
+            className="p-2 text-neutral-500 hover:text-foreground transition-colors hover:bg-neutral-800/50 rounded-full"
+            title={t('common.close')}
+            aria-label={t('common.close')}
           >
             <X size={20} />
           </Button>
@@ -380,14 +381,14 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                   key={type}
                   onClick={() => setActiveFilter(type)}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-2xs font-mono uppercase transition-[color,background-color,border-color,opacity] whitespace-nowrap border',
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-2xs transition-[color,background-color,border-color,opacity] whitespace-nowrap border',
                     activeFilter === type
-                      ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
+                      ? 'bg-brand-cyan/10 text-foreground border-brand-cyan/30'
                       : 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700'
                   )}
                 >
                   <Icon size={12} />
-                  <span>{t(`communityPresets.tabs.${type}`) || type}</span>
+                  <span>{tOr(`communityPresets.tabs.${type}`, type)}</span>
                   <span className="ml-1 text-2xs opacity-60">({count})</span>
                 </Button>
               );
@@ -400,7 +401,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                 e.stopPropagation();
                 window.location.href = '/canvas';
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 ml-auto bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/30 rounded-full text-2xs font-mono text-foreground transition-all hover:scale-105 whitespace-nowrap"
+              className="flex items-center gap-1.5 px-3 py-1.5 ml-auto bg-neutral-900/50 hover:bg-neutral-800 border border-neutral-700 rounded-full text-2xs text-foreground transition-colors whitespace-nowrap"
             >
               <Plus size={12} />
               <span>{t('canvasNodes.promptNode.presetModal.createNew')}</span>
@@ -414,8 +415,8 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t('common.search') || 'Search presets...'}
-                className="pl-9 h-9 bg-neutral-900/50 border-neutral-800/50 focus:border-neutral-600 focus:ring-1 focus:ring-brand-cyan/30 font-mono text-xs w-full"
+                placeholder={t('common.search')}
+                className="pl-9 h-9 bg-neutral-900/50 border-neutral-800/50 focus:border-neutral-600 focus:ring-1 focus:ring-brand-cyan/30 text-xs w-full"
               />
             </div>
 
@@ -425,43 +426,43 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                 variant="ghost"
                 onClick={() => setPresetSource('all')}
                 className={cn(
-                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-2xs font-mono uppercase transition-[color,background-color,border-color,box-shadow]',
+                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-2xs transition-[color,background-color,border-color,box-shadow]',
                   presetSource === 'all'
                     ? 'bg-neutral-800 text-white shadow-sm'
                     : 'text-neutral-500 hover:text-neutral-300'
                 )}
-                title={t('communityPresets.filters.all') || 'All'}
+                title={t('communityPresets.filters.all')}
               >
                 <LayoutGrid size={14} />
-                <span className="hidden sm:inline">Todos</span>
+                <span className="hidden sm:inline">{t('communityPresets.filters.all')}</span>
               </Button>
               <Button
                 variant="ghost"
                 onClick={() => setPresetSource('official')}
                 className={cn(
-                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-2xs font-mono uppercase transition-[color,background-color,border-color,box-shadow]',
+                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-2xs transition-[color,background-color,border-color,box-shadow]',
                   presetSource === 'official'
                     ? 'bg-warning/10 text-warning shadow-sm'
                     : 'text-neutral-500 hover:text-warning/70'
                 )}
-                title={t('communityPresets.filters.official') || 'Official'}
+                title={t('communityPresets.filters.official')}
               >
                 <Crown size={14} />
-                <span className="hidden sm:inline">Oficial</span>
+                <span className="hidden sm:inline">{t('communityPresets.filters.official')}</span>
               </Button>
               <Button
                 variant="ghost"
                 onClick={() => setPresetSource('community')}
                 className={cn(
-                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-2xs font-mono uppercase transition-[color,background-color,border-color,box-shadow]',
+                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-2xs transition-[color,background-color,border-color,box-shadow]',
                   presetSource === 'community'
-                    ? 'bg-brand-cyan/10 text-brand-cyan shadow-sm'
+                    ? 'bg-brand-cyan/10 text-foreground'
                     : 'text-neutral-500 hover:text-neutral-200'
                 )}
-                title={t('communityPresets.filters.community') || 'Community'}
+                title={t('communityPresets.filters.community')}
               >
                 <Globe size={14} />
-                <span className="hidden sm:inline">Comunidade</span>
+                <span className="hidden sm:inline">{t('communityPresets.filters.community')}</span>
               </Button>
             </div>
           </div>
@@ -475,11 +476,11 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
           {isLoadingPresets ? (
             <div className="flex flex-col items-center justify-center py-20 text-neutral-500 gap-2">
               <div className="w-6 h-6 border-2 border-muted border-t-foreground rounded-full animate-spin"></div>
-              <p className="text-xs font-mono">{t('canvasNodes.promptNode.presetModal.loading')}</p>
+              <p className="text-xs">{t('canvasNodes.promptNode.presetModal.loading')}</p>
             </div>
           ) : filteredPresets.length === 0 ? (
             <div className="flex items-center justify-center py-20">
-              <p className="text-sm font-mono text-neutral-500">
+              <p className="text-sm text-neutral-500">
                 {t('canvasNodes.promptNode.presetModal.noCommunity')}
               </p>
             </div>
@@ -493,9 +494,9 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
               {filteredPresets.map((preset) => (
                 <div key={`${preset.presetType || 'default'}-${preset.id}`} className="relative">
                   {preset.isOfficial && (
-                    <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-1.5 py-0.5 bg-warning/20 border border-warning/40 rounded text-2xs font-mono text-warning uppercase backdrop-blur-sm">
+                    <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-1.5 py-0.5 bg-warning/20 border border-warning/40 rounded text-2xs text-warning">
                       <Crown size={8} />
-                      <span>{t('canvasNodes.promptNode.presetModal.official') || 'Official'}</span>
+                      <span>{t('canvasNodes.promptNode.presetModal.official')}</span>
                     </div>
                   )}
                   <PresetCard
@@ -515,8 +516,8 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
 
         {/* Footer with Select Mockups button (multi-select mode only) */}
         {multiSelect && (
-          <div className="border-t border-neutral-800/50 p-4 flex items-center justify-between bg-neutral-900/50 backdrop-blur-md">
-            <div className="text-xs font-mono text-neutral-400">
+          <div className="border-t border-neutral-800/50 p-4 flex items-center justify-between bg-neutral-900/50">
+            <div className="text-xs text-neutral-400">
               {selectedPresetIds.size === 0
                 ? t('canvasNodes.promptNode.presetModal.multiSelectMessageEmpty').replace(
                     '{max}',
@@ -531,8 +532,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
               onClick={handleSelectMockups}
               disabled={selectedPresetIds.size === 0 || isLoading}
               className={cn(
-                'px-6 py-2.5 bg-brand-cyan text-black font-semibold rounded-md text-xs font-mono transition-all hover:bg-brand-cyan/90 hover:shadow-lg hover:shadow-brand-cyan/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed',
-                selectedPresetIds.size > 0 && 'animate-pulse-subtle'
+                'px-6 py-2.5 bg-brand-cyan text-black font-semibold rounded-md text-xs transition-[color,background-color,border-color,opacity,transform,filter] hover:bg-brand-cyan/90 disabled:opacity-50 disabled:cursor-not-allowed'
               )}
             >
               {t('canvasNodes.promptNode.presetModal.confirmSelection')}

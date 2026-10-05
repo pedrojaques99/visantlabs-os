@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Palette, Upload, Lock, Unlock, Copy, X, Plus, RefreshCw, Shuffle } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { useColorPaletteStore, type PaletteColor } from '@/stores/colorPaletteStore';
 import { extractColors } from '@/utils/colorExtraction';
 import { fileToBase64, validateFile } from '@/utils/fileUtils';
@@ -210,14 +211,12 @@ export const ColorPalettePage: React.FC = () => {
             className={cn(
               'flex flex-col items-center justify-center gap-3 w-full h-48 rounded-xl border-2 border-dashed cursor-pointer transition-colors',
               isDragOver
-                ? 'border-brand-cyan bg-brand-cyan/5'
+                ? 'border-ring bg-muted/30'
                 : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40'
             )}
           >
             <Upload size={24} className="text-neutral-500" />
-            <span className="text-xs font-medium text-neutral-500">
-              Drop an image or click to upload
-            </span>
+            <span className="text-xs font-medium text-neutral-500">JPG, PNG or WebP</span>
             <input
               ref={inputRef}
               type="file"
@@ -246,17 +245,17 @@ export const ColorPalettePage: React.FC = () => {
               <div className="flex-1 min-w-0">
                 {isExtracting ? (
                   <div className="flex items-center justify-center h-32">
-                    <GlitchLoader size={20} color="brand-cyan" />
+                    <GlitchLoader size={20} />
                   </div>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {colors.map((color, i) => (
                       <div key={i} className="group relative flex flex-col items-center gap-1">
                         <div
-                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border border-neutral-700 cursor-pointer transition-all hover:scale-105 relative"
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border border-neutral-700 cursor-pointer relative"
                           style={{ backgroundColor: color.hex }}
                           onClick={() => handleCopySwatch(color.hex)}
-                          title={`Click to copy ${color.hex}`}
+                          title={`Copy ${color.hex}`}
                         >
                           {/* Lock toggle */}
                           <button
@@ -264,7 +263,11 @@ export const ColorPalettePage: React.FC = () => {
                               e.stopPropagation();
                               toggleLock(i);
                             }}
-                            className="absolute top-0.5 left-0.5 p-0.5 rounded bg-black/40 text-white/70 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                            aria-label={color.locked ? 'Unlock color' : 'Lock color'}
+                            className={cn(
+                              hoverReveal,
+                              'absolute top-0.5 left-0.5 p-0.5 rounded bg-black/40 text-white/70 hover:text-white'
+                            )}
                           >
                             {color.locked ? <Lock size={10} /> : <Unlock size={10} />}
                           </button>
@@ -274,7 +277,11 @@ export const ColorPalettePage: React.FC = () => {
                               e.stopPropagation();
                               removeColor(i);
                             }}
-                            className="absolute top-0.5 right-0.5 p-0.5 rounded bg-black/40 text-white/70 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                            aria-label="Remove color"
+                            className={cn(
+                              hoverReveal,
+                              'absolute top-0.5 right-0.5 p-0.5 rounded bg-black/40 text-white/70 hover:text-white'
+                            )}
                           >
                             <X size={10} />
                           </button>
@@ -286,8 +293,8 @@ export const ColorPalettePage: React.FC = () => {
                             />
                           )}
                         </div>
-                        <span className="text-2xs font-mono text-neutral-400 uppercase">
-                          {color.hex}
+                        <span className="text-2xs font-mono text-neutral-400">
+                          {color.hex.toUpperCase()}
                         </span>
                       </div>
                     ))}
@@ -352,7 +359,8 @@ export const ColorPalettePage: React.FC = () => {
                 <Button
                   onClick={() => runExtraction(false)}
                   disabled={isExtracting}
-                  className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
+                  variant="outline"
+                  className="text-xs font-medium"
                 >
                   <RefreshCw size={14} />
                   <span className="ml-2">Re-extract</span>
@@ -360,7 +368,8 @@ export const ColorPalettePage: React.FC = () => {
                 <Button
                   onClick={() => runExtraction(true)}
                   disabled={isExtracting}
-                  className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
+                  variant="outline"
+                  className="text-xs font-medium"
                 >
                   <Shuffle size={14} />
                   <span className="ml-2">Randomize</span>

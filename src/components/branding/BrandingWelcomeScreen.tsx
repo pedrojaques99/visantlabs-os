@@ -4,8 +4,6 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { useTheme } from '@/hooks/useTheme';
 import { getTotalBrandingCredits } from '@/utils/creditCalculator';
-import { InteractiveASCIICopy } from '@/components/ui/InteractiveASCIICopy';
-import { GridDotsBackground } from '@/components/ui/GridDotsBackground';
 import { toast } from 'sonner';
 import { AuthModal } from '../AuthModal';
 import { GlassPanel } from '@/components/ui/GlassPanel';
@@ -58,15 +56,7 @@ export const BrandingWelcomeScreen: React.FC<BrandingWelcomeScreenProps> = ({
 
   return (
     <>
-      <div
-        className={`relative min-h-screen flex items-center justify-center p-6 overflow-hidden pt-16 md:pt-20 transition-colors duration-300 ${
-          theme === 'dark'
-        }`}
-      >
-        <div className="absolute inset-0 z-0">
-          <GridDotsBackground opacity={theme === 'dark' ? 0.02 : 0.05} />
-          <InteractiveASCIICopy isDarkMode={true} fullHeight={true} color="#52ddeb" />
-        </div>
+      <div className="relative min-h-screen flex items-center justify-center p-6 overflow-hidden pt-16 md:pt-20">
         <div className="relative z-10 max-w-2xl w-full text-center space-y-8 animate-fade-in">
           <div className="space-y-4">
             <h1

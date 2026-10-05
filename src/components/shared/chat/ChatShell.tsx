@@ -35,6 +35,7 @@ import {
 } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { fileToBase64 } from '@/utils/fileUtils';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
@@ -58,6 +59,7 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';
 import { BrandGuidelineWizardModal } from '@/components/mockupmachine/BrandGuidelineWizardModal';
 import { glassSurface } from '@/lib/ui/glass';
+import { Thumb } from '@/components/ui/Thumb';
 
 /** Copy that differs between chat surfaces (Admin Chat vs Brand Copilot). */
 export interface ChatShellStrings {
@@ -716,7 +718,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
               {/* Sidebar */}
               <aside
                 className={cn(
-                  'flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-200 ease-in-out',
+                  'flex flex-col bg-sidebar border-r border-sidebar-border transition-[width,transform] duration-200 ease-in-out',
                   // Mobile: overlay drawer
                   !isDesktop && 'fixed inset-y-0 left-0 z-40 w-72',
                   !isDesktop && !sidebarOpen && '-translate-x-full',
@@ -743,7 +745,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
 
                 {/* Sessions section */}
                 <div className="flex-1 overflow-y-auto px-3 pb-3">
-                  <div className="px-3 py-2 text-2xs font-mono uppercase tracking-wider text-sidebar-foreground/50">
+                  <div className="px-3 py-2 text-xs font-medium text-sidebar-foreground/50">
                     {t('chatShell.sessions')}
                   </div>
                   {loadingSessions ? (
@@ -786,7 +788,10 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                               <button
                                 onClick={(e) => deleteSession(session._id, e)}
                                 disabled={deletingSessionId === session._id}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-destructive/10 rounded shrink-0"
+                                className={cn(
+                                  hoverReveal,
+                                  'p-1 hover:bg-destructive/10 rounded shrink-0'
+                                )}
                                 aria-label={t('chatShell.deleteSession')}
                               >
                                 <Trash2
@@ -807,7 +812,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                   <div className="p-3 border-t border-border">
                     <div className="flex items-center gap-3 px-2 py-1.5 rounded-lg">
                       {user.picture ? (
-                        <img
+                        <Thumb
                           src={user.picture}
                           alt={user.name || user.email}
                           className="w-8 h-8 rounded-full object-cover shrink-0"
@@ -954,7 +959,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                               glassSurface.tile
                             )}
                           >
-                            <Sparkles size={12} className="text-brand-cyan/70 shrink-0" />
+                            <Sparkles size={12} className="text-muted-foreground shrink-0" />
                             <span>{s}</span>
                           </button>
                         ))}
@@ -1029,7 +1034,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
 
                           {activePlan.proposals?.length > 0 && (
                             <div className="space-y-1.5">
-                              <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-widest">
+                              <p className="text-2xs font-semibold text-muted-foreground">
                                 {t('chatShell.proposedVariations')}
                               </p>
                               {activePlan.proposals.map((p, i) => (
@@ -1055,7 +1060,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
 
                           {activePlan.questions && activePlan.questions.length > 0 && (
                             <div className="space-y-2.5">
-                              <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-widest">
+                              <p className="text-2xs font-semibold text-muted-foreground">
                                 {t('chatShell.questions')}
                               </p>
                               {activePlan.questions.map((q, i) => (
@@ -1161,7 +1166,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                 </div>
 
                 {/* Footer / Input */}
-                <div className="border-t border-border bg-card/60 backdrop-blur-md py-8 px-10">
+                <div className="border-t border-border bg-card py-8 px-10">
                   <div className="max-w-5xl mx-auto w-full">
                     {/* File Attachments */}
                     {attachedFiles.length > 0 && (
@@ -1301,7 +1306,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           <button
                             onClick={() => brandImportInputRef.current?.click()}
                             disabled={brandImport.isPending}
-                            className="p-1.5 rounded-md text-muted-foreground hover:text-brand-cyan hover:bg-brand-cyan/10 transition-colors disabled:opacity-50"
+                            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-50"
                             aria-label={t('chatShell.importPdfImages')}
                             title={t('chatShell.importPdfImagesTooltip')}
                           >

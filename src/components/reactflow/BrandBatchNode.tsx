@@ -22,8 +22,11 @@ import { ModelSelector, getPreferredImageModel } from '../shared/ModelSelector';
 import { DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
 import type { GeminiModel, SeedreamModel, AspectRatio, Resolution } from '@/types/types';
 import { getCreditsRequired } from '@/utils/creditCalculator';
+import { Thumb } from '@/components/ui/Thumb';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
+  const { t } = useTranslation();
   const nodeData = data as BrandBatchNodeData;
   const { status = 'idle', items = [], connectedImages = [], prompt = '' } = nodeData;
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -128,8 +131,8 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/10">
         <Layers size={12} className="text-neutral-400 shrink-0" />
-        <span className="text-2xs font-semibold uppercase tracking-widest text-white/70">
-          Brand Batch
+        <span className="text-xs font-semibold text-white/70">
+          {t('canvasNodes.brandBatchNode.title')}
         </span>
         <div className="ml-auto">
           <span
@@ -141,7 +144,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
               status === 'cancelled' && 'text-neutral-400 bg-white/5'
             )}
           >
-            {status}
+            {t(`canvasNodes.batchRunnerNode.status.${status}`)}
           </span>
         </div>
       </div>
@@ -153,7 +156,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
             'flex items-center gap-2 px-2 py-1.5 rounded text-2xs transition-colors',
             hasBrand
               ? 'bg-white/5 text-white/60'
-              : 'bg-white/[0.03] text-white/30 border border-dashed border-white/10'
+              : 'bg-white/[0.03] text-white/30 border-node border-dashed border-white/10'
           )}
         >
           <span
@@ -162,7 +165,9 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
               hasBrand ? 'bg-white/50' : 'bg-white/20'
             )}
           />
-          {hasBrand ? 'Brand Guidelines connected' : 'Connect Brand Guidelines'}
+          {hasBrand
+            ? t('canvasNodes.brandBatchNode.brandConnected')
+            : t('canvasNodes.brandBatchNode.connectBrand')}
         </div>
         <p className="text-2xs text-white/30 flex items-center gap-1.5">
           <span
@@ -173,10 +178,15 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
           />
           {imageCount > 0 ? (
             <span className="text-white/50">
-              {imageCount} image{imageCount > 1 ? 's' : ''} connected
+              {t(
+                imageCount > 1
+                  ? 'canvasNodes.brandBatchNode.imagesConnected'
+                  : 'canvasNodes.brandBatchNode.imageConnected',
+                { count: imageCount }
+              )}
             </span>
           ) : (
-            'Connect images (up to 8)'
+            t('canvasNodes.brandBatchNode.connectImages')
           )}
         </p>
       </div>
@@ -187,10 +197,10 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
           {!showSuggestions ? (
             <button
               onClick={() => setShowSuggestions(true)}
-              className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded text-2xs font-medium bg-white/5 hover:bg-white/10 text-white/40 transition-colors border border-white/10"
+              className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded text-2xs font-medium bg-white/5 hover:bg-white/10 text-white/40 transition-colors border-node border-white/10"
             >
               <Flame size={10} />
-              Suggest References
+              {t('canvasNodes.brandBatchNode.suggestRefs')}
             </button>
           ) : refSearch.isLoading ? (
             <div className="flex items-center justify-center py-2">
@@ -202,16 +212,17 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
                 <button
                   key={ref.id}
                   onClick={() => handleAddRef(ref)}
-                  className="group relative flex-1 aspect-square rounded overflow-hidden bg-neutral-900 border border-white/10 hover:border-white/20 transition-[color,background-color,border-color,opacity]"
+                  className="group relative flex-1 aspect-square rounded overflow-hidden bg-neutral-900 border-node border-white/10 hover:border-white/20 transition-[color,background-color,border-color,opacity]"
                   title={ref.name}
                 >
-                  <img
+                  <Thumb
                     src={ref.referenceImageUrl}
                     alt={ref.name}
                     loading="lazy"
-                    className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity"
+                    className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity"
+                    fallbackClassName="[&>svg]:w-3 [&>svg]:h-3"
                   />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity bg-black/30">
                     <Plus size={12} className="text-white" />
                   </div>
                   {ref.relevanceScore >= 0.7 && (
@@ -223,7 +234,9 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
               ))}
             </div>
           ) : (
-            <p className="text-2xs text-white/20 text-center py-1">No references available</p>
+            <p className="text-2xs text-white/20 text-center py-1">
+              {t('canvasNodes.brandBatchNode.noRefs')}
+            </p>
           )}
         </div>
       )}
@@ -233,7 +246,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
         <Textarea
           value={prompt}
           onChange={handlePromptChange}
-          placeholder="Scene prompt — applied to each image with branding..."
+          placeholder={t('canvasNodes.brandBatchNode.promptPlaceholder')}
           className="min-h-[48px] max-h-[80px] text-2xs bg-white/5 border-white/10 resize-none"
           disabled={isRunning}
         />
@@ -245,7 +258,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
         className="flex items-center gap-1 px-3 py-1 text-2xs text-white/30 hover:text-white/50 transition-colors w-full"
       >
         {isSettingsOpen ? <ChevronUp size={8} /> : <ChevronDown size={8} />}
-        Model & Settings
+        {t('canvasNodes.brandBatchNode.settings')}
       </button>
 
       {isSettingsOpen && (
@@ -262,7 +275,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
       {/* Credits estimate */}
       {imageCount > 0 && credits > 0 && status === 'idle' && (
         <div className="px-3 py-1 text-2xs text-white/25">
-          ~{credits} credits for {imageCount} generation{imageCount > 1 ? 's' : ''}
+          {t('canvasNodes.brandBatchNode.creditsEstimate', { credits, count: imageCount })}
         </div>
       )}
 
@@ -271,13 +284,17 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
         <div className="px-3 pt-1 pb-1">
           <div className="flex justify-between text-2xs text-white/40 mb-1">
             <span>
-              {done} done · {failed} failed · {total - done - failed} left
+              {t('canvasNodes.batchRunnerNode.progress', {
+                done,
+                failed,
+                left: total - (done + failed),
+              })}
             </span>
             <span>{progress}%</span>
           </div>
           <div className="h-1 bg-white/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-white/40 transition-colors duration-300 rounded-full"
+              className="h-full bg-white/40 transition-[width] duration-300 rounded-full"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -299,7 +316,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
             )}
           >
             <Play size={10} />
-            Generate All ({imageCount})
+            {t('canvasNodes.brandBatchNode.generateAll', { count: imageCount })}
           </button>
         )}
         {isRunning && (
@@ -308,7 +325,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
             className="flex-1 flex items-center justify-center gap-1.5 rounded py-1.5 bg-destructive/10 hover:bg-destructive/20 text-destructive text-2xs font-medium transition-colors"
           >
             <Square size={10} />
-            Cancel
+            {t('common.cancel')}
           </button>
         )}
         {isDone && (
@@ -318,14 +335,14 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
               className="flex-1 flex items-center justify-center gap-1.5 rounded py-1.5 bg-white/5 hover:bg-white/10 text-white/50 text-2xs transition-colors"
             >
               <RotateCcw size={10} />
-              Reset
+              {t('common.reset')}
             </button>
             <button
               onClick={handleRun}
               className="flex-1 flex items-center justify-center gap-1.5 rounded py-1.5 bg-white/10 hover:bg-white/15 text-white/70 text-2xs transition-colors"
             >
               <Play size={10} />
-              Re-run
+              {t('canvasNodes.batchRunnerNode.rerun')}
             </button>
           </>
         )}

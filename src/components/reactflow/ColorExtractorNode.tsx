@@ -19,6 +19,8 @@ import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { Input } from '@/components/ui/input';
 import { copyToClipboard } from '@/utils/clipboard';
 
+import { Thumb } from '@/components/ui/Thumb';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const ColorExtractorNode = memo(
   ({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -188,7 +190,7 @@ export const ColorExtractorNode = memo(
       >
         {selected && !dragging && (
           <NodeResizer
-            color="brand-cyan"
+            color="var(--brand-cyan)"
             isVisible={selected}
             minWidth={280}
             minHeight={200}
@@ -211,7 +213,7 @@ export const ColorExtractorNode = memo(
 
         <NodeHeader
           icon={Palette}
-          title={t('canvasNodes.colorExtractorNode.title') || 'Color Extractor'}
+          title={t('canvasNodes.colorExtractorNode.title')}
           selected={selected}
         />
 
@@ -225,12 +227,9 @@ export const ColorExtractorNode = memo(
           {imageUrl ? (
             <div className="relative">
               <div className="relative w-full h-auto min-h-[1210px] bg-neutral-900/50 rounded border-node border-neutral-700/30 overflow-hidden">
-                <img
+                <Thumb
                   src={imageUrl}
-                  alt={
-                    t('canvasNodes.colorExtractorNode.imageToExtractFrom') ||
-                    'Image to extract colors from'
-                  }
+                  alt={t('canvasNodes.colorExtractorNode.imageToExtractFrom')}
                   className="w-full h-full object-contain p-2"
                   onLoad={(e) => {
                     const img = e.target as HTMLImageElement;
@@ -264,7 +263,7 @@ export const ColorExtractorNode = memo(
         </div>
 
         <Tooltip
-          content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} 1 ${t(
+          content={`${t('canvasNodes.promptNode.creditsRequired')} 1 ${t(
             'canvasNodes.promptNode.credits'
           )}`}
           delay={500}
@@ -278,7 +277,7 @@ export const ColorExtractorNode = memo(
           >
             {isExtracting ? (
               <div className="flex items-center justify-center gap-2">
-                <GlitchLoader size={14} color="brand-cyan" />
+                <GlitchLoader size={14} />
                 <span>
                   {t('canvasNodes.colorExtractorNode.extracting')} {glitchText}
                 </span>
@@ -321,9 +320,7 @@ export const ColorExtractorNode = memo(
                   key={`${color}-${index}`}
                   className="flex items-center gap-2 p-2 bg-neutral-900/50 rounded border-node border-neutral-700/30 hover:border-neutral-700 transition-colors group/color cursor-pointer hover:bg-neutral-800/50 relative"
                   onClick={() => handleCopyColor(color)}
-                  title={
-                    t('canvasNodes.colorExtractorNode.clickToCopy') || 'Click to copy hex code'
-                  }
+                  title={t('canvasNodes.colorExtractorNode.copyHex')}
                 >
                   <div
                     className="w-8 h-8 rounded border-node border-neutral-700/50 flex-shrink-0"
@@ -339,8 +336,8 @@ export const ColorExtractorNode = memo(
                   >
                     <button
                       type="button"
-                      aria-label="Regenerar cor"
-                      className="p-1 rounded hover:bg-neutral-700/50 opacity-0 group-hover/color:opacity-100 transition-opacity"
+                      aria-label={t('canvasNodes.colorExtractorNode.regenerateOne')}
+                      className="p-1 rounded hover:bg-neutral-700/50 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/color:opacity-100 group-focus-within/color:opacity-100 transition-opacity"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRegenerateOne(index);
@@ -349,10 +346,10 @@ export const ColorExtractorNode = memo(
                       <RefreshCw
                         size={10}
                         aria-hidden="true"
-                        className="text-neutral-400 hover:text-brand-cyan"
+                        className="text-neutral-400 hover:text-foreground"
                       />
                     </button>
-                    <div className="relative w-5 h-5 flex items-center justify-center opacity-0 group-hover/color:opacity-100 transition-opacity">
+                    <div className="relative w-5 h-5 flex items-center justify-center opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/color:opacity-100 group-focus-within/color:opacity-100 transition-opacity">
                       <input
                         type="color"
                         value={color}
@@ -377,7 +374,7 @@ export const ColorExtractorNode = memo(
                 e.stopPropagation();
                 handleRemoveImage();
               }}
-              className="bg-destructive/20 hover:bg-destructive/30 text-destructive backdrop-blur-sm border-node border-destructive/20 hover:border-destructive/30"
+              className="bg-destructive/20 hover:bg-destructive/30 text-destructive border-node border-destructive/20 hover:border-destructive/30"
               title={t('canvasNodes.imageNode.removeImage')}
               onMouseDown={(e) => e.stopPropagation()}
             >

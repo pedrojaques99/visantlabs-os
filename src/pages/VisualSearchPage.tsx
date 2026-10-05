@@ -27,6 +27,8 @@ import {
 } from '@/services/visualSearchApi';
 import { useNeedsLightBg } from '@/hooks/useNeedsLightBg';
 import { glassSurface } from '@/lib/ui/glass';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { Thumb } from '@/components/ui/Thumb';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -258,7 +260,7 @@ export const VisualSearchPage: React.FC = () => {
               setUserPickedTab(true);
             }}
             className={cn(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-2xs font-mono uppercase tracking-wider border transition-colors',
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border transition-colors',
               isActive
                 ? 'bg-white/5 border-white/10 text-neutral-200'
                 : 'border-transparent text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]'
@@ -271,7 +273,7 @@ export const VisualSearchPage: React.FC = () => {
       })}
 
       {hasSearched && !isLoading && filteredResults.length > 0 && (
-        <span className="ml-auto text-2xs font-mono text-neutral-700">
+        <span className="ml-auto text-2xs tabular-nums text-neutral-500">
           {filteredResults.length} results
         </span>
       )}
@@ -281,7 +283,7 @@ export const VisualSearchPage: React.FC = () => {
   return (
     <PageShell
       pageId="visual-search"
-      seoTitle="Visual Search — Visant Labs"
+      seoTitle="Visual Search"
       seoDescription="Search for design inspiration, typography, logos, and layouts"
       title="Visual Search"
       width="full"
@@ -308,7 +310,7 @@ export const VisualSearchPage: React.FC = () => {
           {/* Sticky search bar + tabs — below the fixed h-10/md:h-14 header */}
           <div
             className={cn(
-              'sticky z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-2 pb-3 bg-neutral-950/90 backdrop-blur-md border-b border-neutral-800',
+              'sticky z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-2 pb-3 bg-neutral-950 border-b border-neutral-800',
               inShell ? 'top-0' : 'top-10 md:top-14'
             )}
           >
@@ -327,8 +329,8 @@ export const VisualSearchPage: React.FC = () => {
           {/* Letter Crops */}
           {letterCrops.length > 0 && !isLoading && (
             <div className="mt-4 mb-6">
-              <p className="text-2xs font-mono text-neutral-600 uppercase tracking-wider mb-3">
-                Isolated · {letterCrops.length} crops
+              <p className="text-xs text-neutral-500 mb-3">
+                Isolated letters <span className="tabular-nums">({letterCrops.length})</span>
               </p>
               <div
                 className="grid gap-3"
@@ -457,15 +459,15 @@ const CropCard: React.FC<{ crop: LetterCrop }> = ({ crop }) => {
           needsLightBg ? 'bg-white' : 'bg-neutral-900/50'
         )}
       >
-        <img
+        <Thumb
           src={crop.thumbnailUrl}
-          alt={`${crop.letter} — ${crop.style || 'letter'}`}
-          className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
+          alt={`${crop.letter}, ${crop.style || 'letter'}`}
+          className="max-w-full max-h-full object-contain"
           loading="lazy"
         />
       </div>
       {crop.style && (
-        <div className="absolute bottom-0 inset-x-0 bg-neutral-950/80 px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className={cn(hoverReveal, 'absolute bottom-0 inset-x-0 bg-neutral-950/80 px-2 py-1')}>
           <span className="text-2xs text-neutral-300">{crop.style}</span>
         </div>
       )}
@@ -493,20 +495,19 @@ const ResultCard: React.FC<{
           isVector && needsLightBg ? 'bg-white' : 'bg-neutral-900/50'
         )}
       >
-        <img
+        <Thumb
           src={result.thumbnailUrl}
           alt={result.title}
-          className={cn(
-            'w-full h-full group-hover:scale-105 transition-transform duration-300',
-            isVector ? 'object-contain p-3' : 'object-cover'
-          )}
+          className={cn('w-full h-full', isVector ? 'object-contain p-3' : 'object-cover')}
           loading="lazy"
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = 'none';
-          }}
         />
 
-        <div className="absolute inset-0 bg-neutral-950/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-3">
+        <div
+          className={cn(
+            hoverReveal,
+            'absolute inset-x-0 bottom-0 bg-neutral-950/70 flex flex-col justify-end p-3'
+          )}
+        >
           <p className="text-2xs text-neutral-200 line-clamp-2 leading-relaxed">{result.title}</p>
         </div>
       </div>
@@ -591,8 +592,8 @@ const ResultModal: React.FC<{
                 ) : (
                   <span className="text-neutral-400">{result.attribution.author}</span>
                 )}
-                {' · '}
-                <span className="text-neutral-700">{SOURCE_LABELS[result.source]}</span>
+                {' via '}
+                <span className="text-neutral-500">{SOURCE_LABELS[result.source]}</span>
               </p>
             )}
 

@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { type AssetSource } from '@/services/pipelineApi';
 import { SendToButton } from '@/components/shared/SendToButton';
 import { formatBytes } from '@/utils/formatUtils';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface QuickActionsProps {
   toolId: AssetSource;
@@ -36,6 +37,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
   assetData,
   className,
 }) => {
+  const { t } = useTranslation();
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -48,10 +50,10 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
     >
       {/* Summary line */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs font-mono text-neutral-300">{summary}</span>
+        <span className="text-xs text-neutral-300">{summary}</span>
         {savedBytes != null && savedBytes > 0 && (
-          <span className="text-2xs font-mono text-success bg-success/10 px-1.5 py-0.5 rounded tabular-nums">
-            saved {formatBytes(savedBytes)}
+          <span className="text-2xs text-success bg-success/10 px-1.5 py-0.5 rounded tabular-nums">
+            {t('quickActions.saved', { size: formatBytes(savedBytes) })}
             {savedPercent != null && ` (${savedPercent}%)`}
           </span>
         )}
@@ -62,20 +64,20 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         {/* Download */}
         <button
           onClick={onDownloadAll}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/20 text-2xs font-mono uppercase tracking-wider transition-colors duration-200"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/20 text-xs transition-colors duration-200"
         >
           <Download size={12} />
-          Download
+          {t('common.download')}
         </button>
 
         {/* Copy */}
         {onCopy && (
           <button
             onClick={onCopy}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-neutral-800/60 hover:bg-neutral-700/60 text-neutral-400 hover:text-neutral-200 border border-neutral-700/30 text-2xs font-mono uppercase tracking-wider transition-colors duration-200"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-neutral-800/60 hover:bg-neutral-700/60 text-neutral-400 hover:text-neutral-200 border border-neutral-700/30 text-xs transition-colors duration-200"
           >
             <Copy size={12} />
-            Copy
+            {t('common.copy')}
           </button>
         )}
 

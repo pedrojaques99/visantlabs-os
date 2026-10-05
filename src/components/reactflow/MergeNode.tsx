@@ -29,6 +29,8 @@ import { resolveProvider, resolveGenerationContext } from '@/utils/canvas/genera
 import { useNodeDataUpdater } from '@/hooks/canvas/useNodeDataUpdater';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 
+import { Thumb } from '@/components/ui/Thumb';
+
 export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(
   ({ data, selected, id, dragging }) => {
     const { t } = useTranslation();
@@ -145,7 +147,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(
       >
         {selected && !dragging && (
           <NodeResizer
-            color="brand-cyan"
+            color="var(--brand-cyan)"
             isVisible={selected}
             minWidth={280}
             minHeight={200}
@@ -162,11 +164,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(
         <Handle type="target" position={Position.Left} id="input-3" className="node-handle" />
 
         {/* Header */}
-        <NodeHeader
-          icon={Wrench}
-          title={t('canvasNodes.mergeNode.title') || 'Merge Node'}
-          selected={selected}
-        />
+        <NodeHeader icon={Wrench} title={t('canvasNodes.mergeNode.title')} selected={selected} />
 
         <div className="p-4 flex flex-col gap-[var(--node-gap)]">
           {/* Connected Images Thumbnails - unified component */}
@@ -194,7 +192,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(
                 {isGeneratingPrompt ? (
                   <div className="flex items-center justify-center gap-2">
                     <GlitchLoader size={14} color="currentColor" />
-                    <span>{t('canvasNodes.mergeNode.generatingPrompt') || 'Generating...'}</span>
+                    <span>{t('canvasNodes.mergeNode.generatingPrompt')}</span>
                   </div>
                 ) : (
                   <div className="flex items-center justify-center gap-2">
@@ -203,7 +201,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(
                       className="group-hover/prompt:rotate-12 transition-transform"
                     />
                     <span className="font-semibold tracking-tight">
-                      {t('canvasNodes.mergeNode.generatePrompt') || 'Generate Prompt'}
+                      {t('canvasNodes.mergeNode.generatePrompt')}
                     </span>
                   </div>
                 )}
@@ -226,7 +224,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(
               e.stopPropagation();
             }}
             placeholder={t('canvasNodes.mergeNode.promptPlaceholder')}
-            className="text-xs nodrag nopan bg-neutral-900/40 border-neutral-700/40 focus:border-neutral-600 focus:ring-1  backdrop-blur-sm"
+            className="text-xs nodrag nopan bg-neutral-900/40 border-neutral-700/40 focus:border-neutral-600 focus:ring-1 "
             rows={3}
             disabled={isLoading || isGeneratingPrompt}
           />
@@ -251,9 +249,9 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(
 
           {/* Generate Image Button */}
           <Tooltip
-            content={`${
-              t('canvasNodes.promptNode.creditsRequired') || 'Costs'
-            } ${creditsRequired} ${t('canvasNodes.promptNode.credits')}`}
+            content={`${t(
+              'canvasNodes.promptNode.creditsRequired'
+            )} ${creditsRequired} ${t('canvasNodes.promptNode.credits')}`}
             delay={500}
           >
             <NodeButton
@@ -269,14 +267,14 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(
             >
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2">
-                  <GlitchLoader size={14} color="brand-cyan" />
-                  <span>{t('canvasNodes.mergeNode.generatingImage') || 'Generating Image...'}</span>
+                  <GlitchLoader size={14} />
+                  <span>{t('canvasNodes.mergeNode.generatingImage')}</span>
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">
                   <Wrench size={14} className="group-hover/gen:rotate-12 transition-transform" />
                   <span className="font-semibold tracking-tight">
-                    {t('canvasNodes.mergeNode.generateImage') || 'Generate Image'}
+                    {t('canvasNodes.mergeNode.generateImage')}
                   </span>
                   <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-2xs text-foreground/80">
                     <Diamond size={10} className="opacity-50 fill-current" />
@@ -290,7 +288,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(
           {/* Result Preview */}
           {hasResult && (data.resultImageUrl || data.resultImageBase64) && (
             <div className="pt-2">
-              <img
+              <Thumb
                 src={
                   data.resultImageUrl ||
                   (data.resultImageBase64 ? `data:image/png;base64,${data.resultImageBase64}` : '')
@@ -317,10 +315,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(
         <Handle
           type="source"
           position={Position.Right}
-          className={cn(
-            'w-2 h-2 bg-brand-cyan border-2 border-black node-handle',
-            !hasResult && 'opacity-50'
-          )}
+          className={cn('node-handle handle-image', !hasResult && 'opacity-50')}
         />
       </NodeContainer>
     );

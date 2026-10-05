@@ -122,7 +122,7 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({
         variant="ghost"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'w-full flex items-center justify-between px-3 py-2 bg-neutral-900/50 border border-neutral-800 rounded-md text-xs font-mono transition-all',
+          'w-full flex items-center justify-between px-3 py-2 bg-neutral-900/50 border border-neutral-800 rounded-md text-xs transition-[color,background-color,border-color,box-shadow,opacity,transform]',
           isOpen ? 'border-neutral-600/50 bg-neutral-900/80' : 'hover:border-white/10'
         )}
         style={{ fontFamily: value }}
@@ -157,7 +157,7 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({
           <div className="max-h-60 overflow-y-auto p-1 py-1 scrollbar-thin scrollbar-thumb-white/10">
             {filteredBrandFonts.length > 0 && (
               <>
-                <div className="px-3 pt-2 pb-1 text-2xs uppercase tracking-widest text-neutral-500 font-mono">
+                <div className="px-3 pt-2 pb-1 text-xs font-medium text-neutral-500">
                   Brand Fonts
                 </div>
                 {filteredBrandFonts.map((font) => (
@@ -197,7 +197,7 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({
                 </button>
               ))
             ) : filteredBrandFonts.length === 0 ? (
-              <div className="p-4 text-center text-neutral-600 text-2xs uppercase tracking-widest">
+              <div className="p-4 text-center text-neutral-600 text-2xs">
                 {isLoadingFonts ? 'Loading fonts...' : 'No fonts found'}
               </div>
             ) : null}

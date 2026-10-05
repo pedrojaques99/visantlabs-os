@@ -150,9 +150,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
       className={cn(
         colSpan,
         'p-6 md:p-8 transition-[color,background-color,border-color,box-shadow,opacity] duration-200 group relative animate-fade-in-down',
-        isEditing
-          ? 'border-brand-cyan/50 shadow-[0_0_0_1px_rgba(82,221,235,0.1)]'
-          : 'border-white/5',
+        isEditing ? 'border-ring' : 'border-white/5',
         isDragging ? 'opacity-50' : '',
         isResizing ? 'cursor-ns-resize' : ''
       )}
@@ -184,7 +182,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
                     ? 'text-neutral-500 hover:text-neutral-400'
                     : 'text-neutral-400 hover:text-neutral-500'
                 }`}
-                title={t('branding.dragToReorder') || 'Drag to reorder'}
+                title={t('branding.dragToReorder')}
               >
                 <GripVertical className="h-4 w-4" />
               </div>
@@ -234,7 +232,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
               className={`p-1 rounded transition-colors cursor-pointer ${
                 theme === 'dark' ? 'hover:bg-neutral-950/70' : 'hover:bg-neutral-200'
               }`}
-              title={t('branding.collapse') || 'Collapse to compact'}
+              title={t('branding.collapse')}
             >
               <X
                 className={`h-4 w-4 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}`}
@@ -267,7 +265,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
           className={`absolute bottom-0 right-0 w-8 h-8 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-tl-lg ${
             theme === 'dark' ? 'hover:bg-neutral-950/20' : 'hover:bg-neutral-200'
           }`}
-          title={t('branding.resize') || 'Resize'}
+          title={t('branding.resize')}
         >
           <Minus
             className={`h-4 w-4 rotate-90 ${

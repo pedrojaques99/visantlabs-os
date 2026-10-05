@@ -206,10 +206,10 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
               <MicroTitle as="span">{title}</MicroTitle>
             </SkeletonText>
             {!isExpanded && (hasSelection || poolTagsList.length > 0) && (
-              <span className="text-2xs font-mono truncate max-w-[200px]">
+              <span className="text-2xs truncate max-w-[200px]">
                 {hasSelection && <span className="text-foreground">{selectionSummary}</span>}
                 {hasSelection && poolTagsList.length > 0 && (
-                  <span className="text-neutral-500"> · </span>
+                  <span className="text-neutral-500">, </span>
                 )}
                 {poolTagsList.length > 0 && (
                   <span className="text-neutral-500">
@@ -231,9 +231,9 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                 // Clear all selected tags for this section
                 selectedTags.forEach((tag) => onTagToggle(tag));
               }}
-              className="text-2xs font-mono px-1.5 py-0.5 rounded-md text-neutral-500 hover:text-neutral-300 hover:bg-neutral-700/40"
+              className="text-2xs px-1.5 py-0.5 rounded-md text-neutral-500 hover:text-neutral-300 hover:bg-neutral-700/40"
             >
-              {t('mockup.clearAll') || 'Clear all'}
+              {t('mockup.clearAll')}
             </Button>
           )}
 
@@ -242,12 +242,12 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
               e.stopPropagation();
               handleCustomTagClick();
             }}
-            className="p-1 rounded-md hover:bg-neutral-500/20 text-neutral-500 hover:text-brand-cyan transition-colors"
+            className="p-1 rounded-md hover:bg-neutral-500/20 text-neutral-500 hover:text-foreground transition-colors"
             title={t('mockup.addCustomTag')}
           >
             <Plus size={14} />
           </div>
-          {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />}
+          {isSurpriseMeMode && <Dices size={12} className="text-neutral-500" />}
           {isExpanded ? (
             <ChevronUp size={16} className="text-neutral-500" />
           ) : (
@@ -278,10 +278,8 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                 onKeyDown={handleKeyDown}
                 onBlur={handleBlur}
                 placeholder={isGenerating ? '' : t('mockup.customCategoryPlaceholder')}
-                className={`px-3 py-1.5 text-2xs font-medium rounded-md transition-colors duration-200 border border-neutral-600/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${
-                  theme === 'dark'
-                    ? 'bg-brand-cyan/10 text-brand-cyan'
-                    : 'bg-brand-cyan/5 text-neutral-800'
+                className={`px-3 py-1.5 text-2xs font-medium rounded-md transition-colors duration-200 border border-neutral-600/30 focus:outline-none focus:ring-0 min-w-[120px] ${
+                  theme === 'dark' ? 'bg-neutral-900 text-foreground' : 'bg-white text-neutral-800'
                 }`}
                 autoFocus
               />
@@ -538,7 +536,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                   <MicroTitle as="span">{t('mockup.negativePrompt')}</MicroTitle>
                 </SkeletonText>
                 {!isNegativeExpanded && negativePrompt && (
-                  <span className="text-2xs text-neutral-500 font-mono truncate max-w-[200px]">
+                  <span className="text-2xs text-neutral-500 truncate max-w-[200px]">
                     {negativePrompt}
                   </span>
                 )}
@@ -559,7 +557,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                 value={negativePrompt}
                 onChange={onNegativePromptChange}
                 rows={2}
-                className={`w-full p-2.5 mt-2 rounded-md border focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y h-[80px] ${
+                className={`w-full p-2.5 mt-2 rounded-md border focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-xs whitespace-pre-wrap transition-colors duration-200 resize-y h-[80px] ${
                   theme === 'dark'
                     ? 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400'
                     : 'bg-neutral-50 border-neutral-300 text-neutral-700'
@@ -588,7 +586,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                   <MicroTitle as="span">{t('mockup.additionalPrompt')}</MicroTitle>
                 </SkeletonText>
                 {!isAdditionalExpanded && additionalPrompt && (
-                  <span className="text-2xs text-neutral-500 font-mono truncate max-w-[200px]">
+                  <span className="text-2xs text-neutral-500 truncate max-w-[200px]">
                     {additionalPrompt}
                   </span>
                 )}
@@ -609,7 +607,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                 value={additionalPrompt}
                 onChange={onAdditionalPromptChange}
                 rows={2}
-                className={`w-full p-2.5 mt-2 rounded-md border focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y h-[80px] ${
+                className={`w-full p-2.5 mt-2 rounded-md border focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-xs whitespace-pre-wrap transition-colors duration-200 resize-y h-[80px] ${
                   theme === 'dark'
                     ? 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400'
                     : 'bg-neutral-50 border-neutral-300 text-neutral-700'

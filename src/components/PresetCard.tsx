@@ -29,7 +29,7 @@ export const CATEGORY_CONFIG: Record<PromptCategory, { icon: any; color: string;
     aesthetics: { icon: Palette, color: 'text-pink-400', label: 'Aesthetics' },
     themes: { icon: Diamond, color: 'text-warning', label: 'Themes' },
     mockup: { icon: ImageIcon, color: 'text-blue-400', label: 'Mockup' },
-    angle: { icon: Camera, color: 'text-brand-cyan', label: 'Angle' },
+    angle: { icon: Camera, color: 'text-neutral-400', label: 'Angle' },
     texture: { icon: Layers, color: 'text-success', label: 'Texture' },
     ambience: { icon: MapPin, color: 'text-orange-400', label: 'Ambience' },
     luminance: { icon: Sun, color: 'text-warning', label: 'Luminance' },
@@ -93,7 +93,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             alt={migrated.name}
             loading="lazy"
             decoding="async"
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            className="w-full h-full object-cover"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
@@ -181,7 +181,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
         <div className="flex items-start justify-between gap-2">
           <h3
             className={cn(
-              'text-xs font-semibold font-mono leading-snug line-clamp-1',
+              'text-xs font-semibold leading-snug line-clamp-1',
               selected ? 'text-white' : 'text-neutral-200'
             )}
           >
@@ -207,7 +207,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
         </div>
 
         {/* Description */}
-        <p className="text-2xs text-neutral-600 font-mono leading-relaxed line-clamp-2 flex-1">
+        <p className="text-2xs text-muted-foreground leading-relaxed line-clamp-2 flex-1">
           {migrated.description || migrated.prompt}
         </p>
 
@@ -215,9 +215,9 @@ export const PresetCard: React.FC<PresetCardProps> = ({
         <div className="flex items-center gap-1.5 flex-wrap mt-auto pt-1">
           <span
             className={cn(
-              'text-2xs font-mono uppercase tracking-wide px-1.5 py-0.5 rounded border',
+              'text-2xs px-1.5 py-0.5 rounded border',
               config.color,
-              'bg-white/[0.03] border-neutral-800'
+              'bg-muted border-border'
             )}
           >
             {config.label}
@@ -225,7 +225,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
           {migrated.difficulty && (
             <span
               className={cn(
-                'text-2xs font-mono uppercase tracking-wide px-1.5 py-0.5 rounded border bg-white/[0.03] border-neutral-800',
+                'text-2xs px-1.5 py-0.5 rounded border bg-muted border-border',
                 migrated.difficulty === 'beginner'
                   ? 'text-success'
                   : migrated.difficulty === 'intermediate'
@@ -248,7 +248,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             <span
               key={tag}
               className={cn(
-                'text-2xs font-mono text-neutral-700 px-1.5 py-0.5 rounded',
+                'text-2xs text-muted-foreground px-1.5 py-0.5 rounded',
                 glassSurface.control
               )}
             >
@@ -256,7 +256,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             </span>
           ))}
           {(migrated.tags?.length ?? 0) > 2 && (
-            <span className="text-2xs font-mono text-neutral-800">
+            <span className="text-2xs text-muted-foreground">
               +{(migrated.tags?.length ?? 0) - 2}
             </span>
           )}

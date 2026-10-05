@@ -168,7 +168,7 @@ export const AnimationTab: React.FC = React.memo(() => {
           <Button
             variant="outline"
             size="sm"
-            className="w-full text-2xs uppercase tracking-wider h-8"
+            className="w-full text-2xs h-8"
             onClick={() => useStudio3DStore.setState({ resetKey: Date.now() })}
           >
             {t('studio3d.animation.physics.reset')}

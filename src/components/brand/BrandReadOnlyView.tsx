@@ -2,6 +2,7 @@ import React, { useMemo, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { colord } from 'colord';
 import { Download, MousePointerClick, Diamond, User, Copy, FileCode } from '@/lib/ui/icons';
+import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { hoverReveal } from '@/lib/ui/hoverReveal';
@@ -280,13 +281,15 @@ interface SectionCommonProps {
 }
 
 const CompactSectionHeader: React.FC<{ label: string }> = ({ label }) => (
-  <MicroTitle className="text-2xs text-neutral-600">{label}</MicroTitle>
+  <MicroTitle className="text-xs text-muted-foreground">{label}</MicroTitle>
 );
 
 const FullSectionHeader: React.FC<{ label: string; className?: string }> = ({
   label,
   className,
-}) => <h2 className={cn('text-4xl font-bold font-manrope opacity-90', className)}>{label}</h2>;
+}) => (
+  <h2 className={cn('text-4xl font-semibold tracking-tight font-manrope', className)}>{label}</h2>
+);
 
 export const BrandIdentityView: React.FC<SectionCommonProps> = ({
   guideline,
@@ -294,20 +297,19 @@ export const BrandIdentityView: React.FC<SectionCommonProps> = ({
   editable,
   onPatch,
 }) => {
+  const { t } = useTranslation();
   const identity = guideline.identity || {};
   if (!editable && !identity.description && !identity.tagline) return null;
 
   if (compact) {
     return (
-      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
-        <CompactSectionHeader label="Identity" />
+      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-border">
+        <CompactSectionHeader label={t('brandView.identity')} />
         {identity.tagline && (
-          <p className="text-2xs font-bold uppercase tracking-wider text-neutral-300">
-            {identity.tagline}
-          </p>
+          <p className="text-xs font-medium text-foreground">{identity.tagline}</p>
         )}
         {identity.description && (
-          <p className="text-xs text-neutral-400 leading-relaxed">{identity.description}</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">{identity.description}</p>
         )}
       </div>
     );
@@ -322,7 +324,7 @@ export const BrandIdentityView: React.FC<SectionCommonProps> = ({
       viewport={{ once: true }}
     >
       <div className="flex flex-col gap-10">
-        <FullSectionHeader label="Identity" />
+        <FullSectionHeader label={t('brandView.identity')} />
         {(editable || identity.description || identity.tagline) && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             <div className="md:col-span-2">
@@ -332,26 +334,21 @@ export const BrandIdentityView: React.FC<SectionCommonProps> = ({
                   multiline
                   editable={editable}
                   value={identity.description || ''}
-                  placeholder="Brand description…"
+                  placeholder={t('brandView.descriptionPlaceholder')}
                   onCommit={(v) => onPatch?.({ identity: { ...identity, description: v } })}
-                  className="text-lg md:text-xl leading-relaxed font-light opacity-70"
+                  className="text-lg md:text-xl leading-relaxed font-light text-[var(--brand-text)]/80"
                 />
               )}
             </div>
             <div className="space-y-8">
-              {(editable || identity.tagline) && (
+              {/* Em edição a tagline se edita no hero da página da marca; um
+                  segundo campo aqui era a mesma porta duas vezes na mesma tela. */}
+              {!editable && identity.tagline && (
                 <div className="space-y-2">
-                  <span className="text-2xs text-[var(--brand-text)]/50 uppercase tracking-widest">
-                    Brand Tagline
+                  <span className="text-xs text-[var(--brand-text)]/60">
+                    {t('brandView.tagline')}
                   </span>
-                  <InlineEditable
-                    as="p"
-                    editable={editable}
-                    value={identity.tagline || ''}
-                    placeholder="Tagline…"
-                    onCommit={(v) => onPatch?.({ identity: { ...identity, tagline: v } })}
-                    className="text-sm font-bold uppercase opacity-80"
-                  />
+                  <p className="text-base font-medium">{identity.tagline}</p>
                 </div>
               )}
             </div>
@@ -376,6 +373,7 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({
   editable,
   onPatch,
 }) => {
+  const { t } = useTranslation();
   const cm: { product?: string; differential?: string; emotionalBond?: string } =
     guideline.strategy?.coreMessage || {};
   if (!editable && !cm.product && !cm.differential && !cm.emotionalBond) return null;
@@ -386,21 +384,21 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({
 
   if (compact) {
     return (
-      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
-        <CompactSectionHeader label="Mensagem Central" />
-        <p className="text-xs text-neutral-400 leading-relaxed">
-          {cm.product}
-          {cm.differential && ` + ${cm.differential}`}
-          {cm.emotionalBond && ` → ${cm.emotionalBond}`}
-        </p>
+      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-border">
+        <CompactSectionHeader label={t('brandView.coreMessage')} />
+        {[cm.product, cm.differential, cm.emotionalBond].filter(Boolean).map((line, i) => (
+          <p key={i} className="text-xs text-muted-foreground leading-relaxed">
+            {line}
+          </p>
+        ))}
       </div>
     );
   }
 
   const fields: Array<['product' | 'differential' | 'emotionalBond', string, string]> = [
-    ['product', 'Produto', 'Produto…'],
-    ['differential', 'Diferencial', 'Diferencial…'],
-    ['emotionalBond', 'Elo Emocional', 'Elo emocional…'],
+    ['product', t('brandView.product'), `${t('brandView.product')}…`],
+    ['differential', t('brandView.differential'), `${t('brandView.differential')}…`],
+    ['emotionalBond', t('brandView.emotionalBond'), `${t('brandView.emotionalBond')}…`],
   ];
   const hasContent = !!(cm.product || cm.differential || cm.emotionalBond);
   const visible = fields.filter(([key]) => editable || cm[key]);
@@ -410,14 +408,14 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({
   if (editable && !hasContent) {
     return (
       <div className="space-y-4">
-        <FullSectionHeader label="Mensagem Central" />
+        <FullSectionHeader label={t('brandView.coreMessage')} />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {fields.map(([key, label, ph]) => (
             <div
               key={key}
               className="rounded-xl bg-[var(--brand-surface)]/10 border border-[var(--brand-text)]/[0.06] px-4 py-3"
             >
-              <MicroTitle className="text-[var(--accent)]/40 mb-1.5">{label}</MicroTitle>
+              <MicroTitle className="text-[var(--brand-text)]/60 mb-1.5">{label}</MicroTitle>
               <InlineEditable
                 as="p"
                 multiline
@@ -425,7 +423,7 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({
                 value={cm[key] || ''}
                 placeholder={ph}
                 onCommit={setField(key)}
-                className="text-sm font-medium opacity-70"
+                className="text-sm font-medium text-[var(--brand-text)]/80"
               />
             </div>
           ))}
@@ -438,7 +436,7 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({
   // fields still balance the row.
   return (
     <div className="space-y-8">
-      <FullSectionHeader label="Mensagem Central" />
+      <FullSectionHeader label={t('brandView.coreMessage')} />
       <div
         className={cn('grid grid-cols-1 gap-8', TRIPLET_COLS[visible.length] || 'md:grid-cols-3')}
       >
@@ -448,7 +446,7 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({
             padding="md"
             className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
           >
-            <MicroTitle className="text-[var(--accent)]/40 mb-3">{label}</MicroTitle>
+            <MicroTitle className="text-[var(--brand-text)]/60 mb-3">{label}</MicroTitle>
             <InlineEditable
               as="p"
               multiline
@@ -456,7 +454,7 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({
               value={cm[key] || ''}
               placeholder={ph}
               onCommit={setField(key)}
-              className="text-lg font-medium opacity-80"
+              className="text-lg font-medium"
             />
           </GlassPanel>
         ))}
@@ -466,18 +464,19 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({
 };
 
 export const BrandPillarsView: React.FC<SectionCommonProps> = ({ guideline, compact }) => {
+  const { t } = useTranslation();
   const pillars = guideline.strategy?.pillars;
   if (!pillars?.length) return null;
 
   if (compact) {
     return (
-      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
-        <CompactSectionHeader label="Pilares" />
+      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-border">
+        <CompactSectionHeader label={t('brandView.pillars')} />
         <div className="flex flex-wrap gap-2">
           {pillars.map((p, i) => (
             <span
               key={i}
-              className="text-xs font-semibold text-neutral-300 bg-white/5 px-2 py-0.5 rounded"
+              className="text-xs font-medium text-foreground bg-muted px-2 py-0.5 rounded"
             >
               {p.value}
             </span>
@@ -493,7 +492,7 @@ export const BrandPillarsView: React.FC<SectionCommonProps> = ({ guideline, comp
 
   return (
     <div className="space-y-8">
-      <FullSectionHeader label="Pilares" />
+      <FullSectionHeader label={t('brandView.pillars')} />
       <div className={cn('grid grid-cols-1 gap-8', cols)}>
         {pillars.map((p, i) => (
           <GlassPanel
@@ -502,12 +501,14 @@ export const BrandPillarsView: React.FC<SectionCommonProps> = ({ guideline, comp
             className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
           >
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-3xl font-bold opacity-20">
+              <span className="text-3xl font-medium tabular-nums text-[var(--brand-text)]/30">
                 {String(i + 1).padStart(2, '0')}
               </span>
-              <h4 className="text-xl font-bold opacity-90">{p.value}</h4>
+              <h4 className="text-xl font-semibold">{p.value}</h4>
             </div>
-            <p className="text-sm font-light opacity-60 leading-relaxed">{p.description}</p>
+            <p className="text-sm font-light text-[var(--brand-text)]/70 leading-relaxed">
+              {p.description}
+            </p>
           </GlassPanel>
         ))}
       </div>
@@ -521,6 +522,7 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
   editable,
   onPatch,
 }) => {
+  const { t } = useTranslation();
   const raw = guideline.strategy?.manifesto;
   if (!editable && !raw) return null;
 
@@ -538,9 +540,9 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
 
   if (compact) {
     return (
-      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
-        <CompactSectionHeader label="Manifesto" />
-        <p className="text-xs text-neutral-400 italic leading-relaxed whitespace-pre-line line-clamp-6">
+      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-border">
+        <CompactSectionHeader label={t('brandView.manifesto')} />
+        <p className="text-xs text-muted-foreground italic leading-relaxed whitespace-pre-line line-clamp-6">
           &ldquo;{fullText}&rdquo;
         </p>
       </div>
@@ -548,18 +550,13 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
   }
 
   const fields: Array<['provocation' | 'tension' | 'promise', string, string]> = [
-    ['provocation', 'Provocação', m.provocation || ''],
-    ['tension', 'Tensão', m.tension || ''],
-    ['promise', 'Promessa', m.promise || ''],
+    ['provocation', t('brandView.provocation'), m.provocation || ''],
+    ['tension', t('brandView.tension'), m.tension || ''],
+    ['promise', t('brandView.promise'), m.promise || ''],
   ];
   const hasContent = !!(m.provocation || m.tension || m.promise);
 
-  const header = (
-    <div className="flex items-center gap-4">
-      <div className="h-[1px] w-12 bg-[var(--accent)]/30" />
-      <MicroTitle className="text-[var(--accent)]/60">[Manifesto]</MicroTitle>
-    </div>
-  );
+  const header = <FullSectionHeader label={t('brandView.manifesto')} />;
 
   // Pillars own the section when they exist, or when there's nothing at all to
   // show and the owner is editing (three fields to fill beats a blank hero).
@@ -579,7 +576,7 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
                 key={key}
                 className="rounded-xl bg-[var(--brand-surface)]/10 border border-[var(--brand-text)]/[0.06] px-4 py-3"
               >
-                <MicroTitle className="text-[var(--accent)]/40 mb-1.5">{label}</MicroTitle>
+                <MicroTitle className="text-[var(--brand-text)]/60 mb-1.5">{label}</MicroTitle>
                 <InlineEditable
                   as="p"
                   multiline
@@ -587,7 +584,7 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
                   value={value}
                   placeholder={`${label}…`}
                   onCommit={setManifesto(key)}
-                  className="text-sm leading-relaxed font-light opacity-70"
+                  className="text-sm leading-relaxed font-light text-[var(--brand-text)]/80"
                 />
               </div>
             ))}
@@ -607,7 +604,7 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
         >
           {visible.map(([key, label, value]) => (
             <div key={key} className="space-y-3">
-              <MicroTitle className="text-[var(--accent)]/40">{label}</MicroTitle>
+              <MicroTitle className="text-[var(--brand-text)]/60">{label}</MicroTitle>
               <InlineEditable
                 as="p"
                 multiline
@@ -615,13 +612,13 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
                 value={value}
                 placeholder={`${label}…`}
                 onCommit={setManifesto(key)}
-                className="text-lg leading-relaxed font-light opacity-70"
+                className="text-lg leading-relaxed font-light text-[var(--brand-text)]/80"
               />
             </div>
           ))}
         </div>
         {m.full && (
-          <p className="text-xl leading-relaxed font-light opacity-60 mt-8 italic">
+          <p className="text-xl leading-relaxed font-light text-[var(--brand-text)]/70 mt-8 italic">
             &ldquo;{m.full}&rdquo;
           </p>
         )}
@@ -634,8 +631,7 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
   return (
     <div className="space-y-12">
       {header}
-      <div className="relative group">
-        <div className="absolute -inset-8 bg-[var(--accent)]/[0.02] blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+      <div>
         {editable ? (
           // Edit the whole text as one field — the first-line/rest split below is
           // presentation, not structure, so editing it piecewise would be a lie.
@@ -644,19 +640,22 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
             multiline
             editable
             value={fullText}
-            placeholder="Manifesto…"
+            placeholder={t('brandView.manifestoPlaceholder')}
             onCommit={setFull}
-            className="text-2xl md:text-3xl leading-relaxed font-light opacity-80 whitespace-pre-line"
+            className="text-2xl md:text-3xl leading-relaxed font-light whitespace-pre-line"
           />
         ) : (
           <>
-            <h3 className="text-4xl md:text-6xl font-bold tracking-tight font-manrope leading-[1.1] opacity-90">
+            <h3 className="text-4xl md:text-6xl font-semibold tracking-tight font-manrope leading-[1.1]">
               {firstLine}
             </h3>
             {rest.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-16">
                 {rest.map((para, i) => (
-                  <p key={i} className="text-lg md:text-xl leading-relaxed font-light opacity-60">
+                  <p
+                    key={i}
+                    className="text-lg md:text-xl leading-relaxed font-light text-[var(--brand-text)]/70"
+                  >
                     {para}
                   </p>
                 ))}
@@ -675,7 +674,7 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
               key={key}
               className="rounded-xl bg-[var(--brand-surface)]/10 border border-[var(--brand-text)]/[0.06] px-4 py-3"
             >
-              <MicroTitle className="text-[var(--accent)]/40 mb-1.5">{label}</MicroTitle>
+              <MicroTitle className="text-[var(--brand-text)]/60 mb-1.5">{label}</MicroTitle>
               <InlineEditable
                 as="p"
                 multiline
@@ -683,7 +682,7 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
                 value={value}
                 placeholder={`${label}…`}
                 onCommit={setManifesto(key)}
-                className="text-sm leading-relaxed font-light opacity-70"
+                className="text-sm leading-relaxed font-light text-[var(--brand-text)]/80"
               />
             </div>
           ))}
@@ -726,19 +725,20 @@ const ImgOrFallback: React.FC<{
 };
 
 export const BrandArchetypesView: React.FC<SectionCommonProps> = ({ guideline, compact }) => {
+  const { t } = useTranslation();
   const archetypes = guideline.strategy?.archetypes || [];
   if (archetypes.length === 0) return null;
 
   if (compact) {
     return (
-      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
-        <CompactSectionHeader label="Archetypes" />
+      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-border">
+        <CompactSectionHeader label={t('brandView.archetypes')} />
         <div className="flex flex-col gap-1.5">
           {archetypes.map((a, i) => (
             <div key={i} className="text-xs">
-              <span className="font-bold text-neutral-300 uppercase tracking-wide">{a.name}</span>
+              <span className="font-medium text-foreground">{a.name}</span>
               {a.description && (
-                <p className="text-2xs text-neutral-500 leading-snug mt-0.5 line-clamp-2">
+                <p className="text-2xs text-muted-foreground leading-snug mt-0.5 line-clamp-2">
                   {a.description}
                 </p>
               )}
@@ -760,6 +760,7 @@ export const BrandArchetypesView: React.FC<SectionCommonProps> = ({ guideline, c
 const ArchetypesInteractive: React.FC<{
   archetypes: NonNullable<NonNullable<BrandGuideline['strategy']>['archetypes']>;
 }> = ({ archetypes }) => {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<number | null>(null);
   const active = selected !== null ? archetypes[selected] : null;
 
@@ -774,7 +775,7 @@ const ArchetypesInteractive: React.FC<{
 
   return (
     <div className="space-y-12">
-      <FullSectionHeader label="Archetypes" />
+      <FullSectionHeader label={t('brandView.archetypes')} />
       <div className={gridCls}>
         {archetypes.map((arch, i) => {
           const isActive = selected === i;
@@ -785,21 +786,11 @@ const ArchetypesInteractive: React.FC<{
               onClick={() => setSelected(isActive ? null : i)}
               aria-expanded={isActive}
               aria-controls="archetype-detail-panel"
-              className="group relative flex flex-col items-center gap-5 text-center transition-all"
+              className="group relative flex flex-col items-center gap-5 text-center"
             >
-              {/* Just the card PNG — the art carries its own frame; no extra
-                  surface/border. Selection reads via a soft accent glow. */}
-              <div
-                className={cn(
-                  'w-full aspect-[3/4] max-w-[240px] relative transition-transform duration-500 group-hover:-translate-y-1 group-hover:rotate-1 flex items-center justify-center',
-                  isActive
-                    ? 'drop-shadow-[0_18px_40px_rgba(0,0,0,0.35)]'
-                    : 'drop-shadow-[0_10px_28px_rgba(0,0,0,0.22)]'
-                )}
-              >
-                {isActive && (
-                  <div className="absolute -inset-4 rounded-3xl bg-[var(--accent)]/15 blur-2xl -z-10" />
-                )}
+              {/* Just the card PNG: the art carries its own frame, no extra
+                  surface/border. Selection reads via the accent on the name. */}
+              <div className="w-full aspect-[3/4] max-w-[240px] relative flex items-center justify-center drop-shadow-xl">
                 <ImgOrFallback
                   src={arch.image || getArchetypeImage(arch.name) || undefined}
                   alt={arch.name}
@@ -809,16 +800,20 @@ const ArchetypesInteractive: React.FC<{
                 />
               </div>
               <div className="space-y-1">
-                <h4 className="text-2xl font-bold tracking-tight opacity-90">{arch.name}</h4>
+                <h4
+                  className={cn(
+                    'text-2xl font-semibold tracking-tight transition-colors',
+                    isActive && 'text-[var(--accent)]'
+                  )}
+                >
+                  {arch.name}
+                </h4>
                 {arch.role && (
-                  <span className="block text-2xs uppercase tracking-widest opacity-40">
-                    {arch.role}
-                  </span>
+                  <span className="block text-xs text-[var(--brand-text)]/60">{arch.role}</span>
                 )}
               </div>
-              <span className="flex items-center gap-1.5 text-2xs uppercase tracking-widest opacity-40 group-hover:opacity-70 transition-opacity">
-                <MousePointerClick size={11} aria-hidden="true" />
-                {isActive ? 'Hide' : 'Details'}
+              <span className="text-xs text-[var(--brand-text)]/60 group-hover:text-[var(--brand-text)] transition-colors">
+                {isActive ? t('brandView.hideDetails') : t('brandView.details')}
               </span>
             </button>
           );
@@ -842,8 +837,8 @@ const ArchetypesInteractive: React.FC<{
               className="bg-[var(--brand-surface)]/30 border-[var(--brand-text)]/10"
             >
               <div className="space-y-6">
-                <h4 className="text-3xl font-bold tracking-tight opacity-90">{active.name}</h4>
-                <p className="text-lg font-light leading-relaxed opacity-60">
+                <h4 className="text-3xl font-semibold tracking-tight">{active.name}</h4>
+                <p className="text-lg font-light leading-relaxed text-[var(--brand-text)]/70">
                   {active.description}
                 </p>
                 {active.examples && active.examples.length > 0 && (
@@ -851,7 +846,7 @@ const ArchetypesInteractive: React.FC<{
                     {active.examples.map((ex, idx) => (
                       <span
                         key={idx}
-                        className="px-3 py-1 rounded-full border border-[var(--brand-text)]/10 bg-[var(--brand-text)]/5 text-2xs font-bold uppercase tracking-widest opacity-60"
+                        className="px-3 py-1 rounded-full border border-[var(--brand-text)]/10 bg-[var(--brand-text)]/5 text-xs text-[var(--brand-text)]/80"
                       >
                         {ex}
                       </span>
@@ -868,28 +863,29 @@ const ArchetypesInteractive: React.FC<{
 };
 
 export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, compact }) => {
+  const { t } = useTranslation();
   const personas = guideline.strategy?.personas || [];
   if (personas.length === 0) return null;
 
   if (compact) {
     return (
-      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
-        <CompactSectionHeader label="Personas" />
+      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-border">
+        <CompactSectionHeader label={t('brandView.personas')} />
         <div className="flex flex-col gap-1.5">
           {personas.map((p, i) => (
             <div key={i} className="text-xs">
-              <span className="font-bold text-neutral-300">
+              <span className="font-medium text-foreground">
                 {p.name}
                 {p.age ? `, ${p.age}` : ''}
               </span>
               {p.traits && p.traits.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {p.traits.slice(0, 4).map((t, idx) => (
+                  {p.traits.slice(0, 4).map((trait, idx) => (
                     <span
                       key={idx}
-                      className="px-1.5 py-0.5 rounded-full border border-white/10 bg-white/5 text-3xs font-mono uppercase text-neutral-500"
+                      className="px-1.5 py-0.5 rounded-full border border-border bg-muted text-2xs text-muted-foreground"
                     >
-                      {t}
+                      {trait}
                     </span>
                   ))}
                 </div>
@@ -901,13 +897,13 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
     );
   }
 
-  const brandName = guideline.name || guideline.identity?.name || 'a marca';
+  const brandName = guideline.name || guideline.identity?.name || t('brandView.theBrand');
 
   return (
     <div className="space-y-16">
-      <FullSectionHeader label="Personas" />
+      <FullSectionHeader label={t('brandView.personas')} />
       {personas.map((persona, i) => {
-        const displayName = persona.name || 'Persona';
+        const displayName = persona.name || t('brandView.persona');
         return (
           <div key={i} className="space-y-10">
             {/* ── Identity: photo + name/traits/bio (Figma DS Urban Stay layout) ── */}
@@ -922,7 +918,7 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
                     usePlaceholder={false}
                     fallback={
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--brand-surface)] to-[var(--brand-bg)]">
-                        <span className="text-6xl font-black opacity-15 select-none">
+                        <span className="text-6xl font-semibold text-[var(--brand-text)]/20 select-none">
                           {persona.name?.[0]?.toUpperCase() || <User size={56} />}
                         </span>
                       </div>
@@ -930,14 +926,14 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
                   />
                 </div>
                 {persona.imageAttribution?.author && (
-                  <p className="text-2xs font-mono opacity-30 text-center">
-                    Photo:{' '}
+                  <p className="text-xs text-[var(--brand-text)]/50 text-center">
+                    {t('brandView.photo')}{' '}
                     {persona.imageAttribution.authorUrl ? (
                       <a
                         href={persona.imageAttribution.authorUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hover:opacity-60 underline"
+                        className="underline hover:text-[var(--brand-text)]"
                       >
                         {persona.imageAttribution.author}
                       </a>
@@ -952,9 +948,11 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
               <div className="flex-1 min-w-0 space-y-5 pt-1">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
                   <h4 className="text-2xl md:text-3xl tracking-tight text-balance">
-                    <span className="font-bold opacity-90">{displayName}</span>
+                    <span className="font-semibold">{displayName}</span>
                     {persona.age ? (
-                      <span className="font-light opacity-60">, {persona.age}</span>
+                      <span className="font-light text-[var(--brand-text)]/60">
+                        , {persona.age}
+                      </span>
                     ) : null}
                   </h4>
                   {persona.traits && persona.traits.length > 0 && (
@@ -962,7 +960,7 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
                       {persona.traits.map((trait, idx) => (
                         <span
                           key={idx}
-                          className="px-4 py-1.5 rounded-full border border-[var(--brand-text)]/25 text-xs font-light tracking-wide opacity-70"
+                          className="px-4 py-1.5 rounded-full border border-[var(--brand-text)]/25 text-xs text-[var(--brand-text)]/80"
                         >
                           {trait}
                         </span>
@@ -971,12 +969,10 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
                   )}
                 </div>
                 {persona.occupation && (
-                  <p className="text-xs uppercase tracking-widest opacity-40">
-                    {persona.occupation}
-                  </p>
+                  <p className="text-sm text-[var(--brand-text)]/60">{persona.occupation}</p>
                 )}
                 {persona.bio && (
-                  <p className="text-lg md:text-xl font-light leading-relaxed opacity-70 max-w-3xl">
+                  <p className="text-lg md:text-xl font-light leading-relaxed text-[var(--brand-text)]/80 max-w-3xl">
                     {persona.bio}
                   </p>
                 )}
@@ -987,9 +983,11 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
             {persona.desires && persona.desires.length > 0 && (
               <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.9fr)] gap-10 pt-12 border-t border-[var(--brand-text)]/10">
                 <div className="space-y-4 lg:sticky lg:top-24 self-start">
-                  <MicroTitle className="text-[var(--accent)]/60">O que deseja</MicroTitle>
-                  <h3 className="text-2xl md:text-4xl font-light leading-[1.12] tracking-tight opacity-90 text-balance">
-                    O que sente ao ser atendido por {brandName}?
+                  <MicroTitle className="text-[var(--brand-text)]/60">
+                    {t('brandView.desires')}
+                  </MicroTitle>
+                  <h3 className="text-2xl md:text-4xl font-light leading-[1.12] tracking-tight text-balance">
+                    {t('brandView.desiresQuestion', { brand: brandName })}
                   </h3>
                 </div>
                 <div className="flex flex-col gap-3">
@@ -998,7 +996,9 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
                       key={idx}
                       className="rounded-[20px] border border-[var(--brand-text)]/12 bg-[var(--brand-surface)]/10 px-7 py-6 md:px-9 md:py-7"
                     >
-                      <p className="text-base md:text-lg leading-relaxed opacity-80">{desire}</p>
+                      <p className="text-base md:text-lg leading-relaxed text-[var(--brand-text)]/90">
+                        {desire}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -1009,14 +1009,14 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
                 but preserving data the persona may carry). */}
             {persona.painPoints && persona.painPoints.length > 0 && (
               <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.9fr)] gap-10">
-                <MicroTitle className="text-[var(--brand-text)]/40 lg:pt-1">
-                  Dores &amp; atritos
+                <MicroTitle className="text-[var(--brand-text)]/60 lg:pt-1">
+                  {t('brandView.painPoints')}
                 </MicroTitle>
                 <div className="flex flex-wrap gap-2">
                   {persona.painPoints.map((p, idx) => (
                     <span
                       key={idx}
-                      className="px-4 py-2 rounded-xl border border-[var(--brand-text)]/8 bg-[var(--brand-text)]/[0.03] text-sm font-light opacity-60"
+                      className="px-4 py-2 rounded-xl border border-[var(--brand-text)]/8 bg-[var(--brand-text)]/[0.03] text-sm font-light text-[var(--brand-text)]/70"
                     >
                       {p}
                     </span>
@@ -1032,6 +1032,7 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
 };
 
 export const BrandVoiceValuesView: React.FC<SectionCommonProps> = ({ guideline, compact }) => {
+  const { t } = useTranslation();
   const voiceValues = guideline.strategy?.voiceValues || [];
   // Copy examples share this section: voiceValues describe the tone, these show
   // it. A brand can have one without the other.
@@ -1040,21 +1041,21 @@ export const BrandVoiceValuesView: React.FC<SectionCommonProps> = ({ guideline, 
 
   if (compact) {
     return (
-      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
-        <CompactSectionHeader label="Tone of Voice" />
+      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-border">
+        <CompactSectionHeader label={t('brandView.voice')} />
         <div className="flex flex-col gap-1.5">
           {voiceValues.map((v, i) => (
             <div key={i} className="text-xs">
-              <span className="font-bold text-neutral-300 uppercase tracking-wide">{v.title}</span>
+              <span className="font-medium text-foreground">{v.title}</span>
               {v.description && (
-                <p className="text-2xs text-neutral-500 leading-snug mt-0.5 line-clamp-2">
+                <p className="text-2xs text-muted-foreground leading-snug mt-0.5 line-clamp-2">
                   {v.description}
                 </p>
               )}
             </div>
           ))}
           {copyExamples.map((c, i) => (
-            <p key={`copy-${i}`} className="text-2xs text-neutral-500 leading-snug italic">
+            <p key={`copy-${i}`} className="text-2xs text-muted-foreground leading-snug italic">
               "{c.text}"
             </p>
           ))}
@@ -1070,24 +1071,22 @@ export const BrandVoiceValuesView: React.FC<SectionCommonProps> = ({ guideline, 
 
   return (
     <div className="space-y-16">
-      <FullSectionHeader label="Tone of Voice" />
+      <FullSectionHeader label={t('brandView.voice')} />
       <div className={cn('grid grid-cols-1 gap-6', cols, voiceValues.length === 0 && 'hidden')}>
         {voiceValues.map((v, i) => (
           <div
             key={i}
-            className="relative group p-8 rounded-[32px] border transition-all duration-500 overflow-hidden min-h-[220px] flex flex-col bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 hover:bg-[var(--brand-surface)]/40 hover:border-[var(--brand-text)]/10"
+            className="relative group p-8 rounded-[32px] border transition-colors duration-300 overflow-hidden min-h-[220px] flex flex-col bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 hover:bg-[var(--brand-surface)]/40 hover:border-[var(--brand-text)]/10"
           >
-            <div className="absolute top-0 left-0 w-14 h-14 rounded-br-[28px] flex items-center justify-center text-lg font-bold bg-[var(--brand-text)]/5 opacity-20">
+            <div className="absolute top-0 left-0 w-14 h-14 rounded-br-[28px] flex items-center justify-center text-lg font-medium tabular-nums bg-[var(--brand-text)]/5 text-[var(--brand-text)]/30">
               {i + 1}
             </div>
             <div className="mt-10 space-y-4 flex-1 flex flex-col">
-              <h4 className="text-2xl font-bold opacity-90">{v.title}</h4>
-              <p className="text-sm leading-relaxed opacity-60 transition-colors">
-                {v.description}
-              </p>
+              <h4 className="text-2xl font-semibold">{v.title}</h4>
+              <p className="text-sm leading-relaxed text-[var(--brand-text)]/70">{v.description}</p>
               {v.example && (
                 <div className="p-4 rounded-xl border mt-auto bg-[var(--brand-text)]/[0.02] border-[var(--brand-text)]/5 shadow-inner">
-                  <p className="text-xs font-medium leading-relaxed italic opacity-80">
+                  <p className="text-xs font-medium leading-relaxed italic text-[var(--brand-text)]/90">
                     "{v.example}"
                   </p>
                 </div>
@@ -1099,17 +1098,17 @@ export const BrandVoiceValuesView: React.FC<SectionCommonProps> = ({ guideline, 
 
       {copyExamples.length > 0 && (
         <div className="space-y-6">
-          <p className="text-xs uppercase tracking-[0.2em] opacity-40">Copy examples</p>
+          <MicroTitle className="text-[var(--brand-text)]/60">
+            {t('brandView.copyExamples')}
+          </MicroTitle>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {copyExamples.map((c, i) => (
               <div
                 key={i}
                 className="p-6 rounded-[24px] border bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5"
               >
-                {c.type && (
-                  <span className="text-2xs uppercase tracking-wider opacity-30">{c.type}</span>
-                )}
-                <p className="text-lg font-medium leading-snug opacity-80 mt-1">"{c.text}"</p>
+                {c.type && <span className="text-xs text-[var(--brand-text)]/60">{c.type}</span>}
+                <p className="text-lg font-medium leading-snug mt-1">"{c.text}"</p>
               </div>
             ))}
           </div>
@@ -1147,6 +1146,7 @@ const ColorUsagePalette: React.FC<{
   colors: BrandGuideline['colors'];
   onClick: (hex: string, item: { name?: string; role?: string }) => void;
 }> = ({ colors, onClick }) => {
+  const { t } = useTranslation();
   const ranked = useMemo(
     () =>
       [...(colors || [])].sort(
@@ -1165,14 +1165,18 @@ const ColorUsagePalette: React.FC<{
             key={i}
             type="button"
             layout
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             onClick={() => onClick(color.hex, color)}
-            aria-label={`Copy hex ${color.hex}${color.name ? ` — ${color.name}` : ''}${
-              pct !== null ? ` — ${pct}% usage` : ''
-            }`}
+            aria-label={[
+              t('brandView.copyHex', { hex: color.hex }),
+              color.name,
+              pct !== null ? t('brandView.usagePct', { pct }) : null,
+            ]
+              .filter(Boolean)
+              .join(', ')}
             className={cn(
-              'group relative rounded-2xl overflow-hidden border border-[var(--brand-text)]/10 transition-[color,background-color,border-color,box-shadow] hover:border-[var(--accent)]/30 shadow-2xl text-left',
+              'group relative rounded-2xl overflow-hidden border border-[var(--brand-text)]/10 transition-[color,background-color,border-color,box-shadow] hover:border-[var(--brand-text)]/30 text-left',
               rankSpan(color.usageRank)
             )}
           >
@@ -1181,8 +1185,8 @@ const ColorUsagePalette: React.FC<{
             {pct !== null && (
               <span
                 className={cn(
-                  'absolute top-3 right-3 font-mono tabular-nums text-white/90 drop-shadow',
-                  big ? 'text-2xl font-bold' : 'text-xs font-bold'
+                  'absolute top-3 right-3 tabular-nums text-white/90 drop-shadow',
+                  big ? 'text-2xl font-semibold' : 'text-xs font-semibold'
                 )}
               >
                 {pct}%
@@ -1191,17 +1195,16 @@ const ColorUsagePalette: React.FC<{
             <div className="absolute bottom-0 inset-x-0 p-3 flex flex-col gap-0.5">
               <span
                 className={cn(
-                  'font-bold uppercase tracking-tight text-white/95 truncate drop-shadow',
+                  'font-medium text-white/95 truncate drop-shadow',
                   big ? 'text-sm' : 'text-2xs'
                 )}
               >
-                {color.name || 'Untitled'}
+                {color.name || t('brandView.untitled')}
               </span>
-              <span className="text-2xs font-mono uppercase text-white/60 flex items-center gap-1.5">
+              {/* EXCEÇÃO ao ruido-scan/mono-uppercase: hex é valor técnico. */}
+              <span className="text-2xs font-mono uppercase text-white/70 flex items-center gap-1.5">
                 {color.hex}
-                <span className="opacity-70 can-hover:opacity-0 can-hover:group-hover:opacity-100 transition-opacity">
-                  · copy
-                </span>
+                <Copy size={10} aria-hidden className={hoverReveal} />
               </span>
             </div>
           </motion.button>
@@ -1217,6 +1220,7 @@ export const BrandColorsView: React.FC<BrandColorsViewProps> = ({
   searchTerm,
   onColorClick,
 }) => {
+  const { t } = useTranslation();
   const colors = guideline.colors || [];
   const filtered = useMemo(
     () =>
@@ -1232,9 +1236,9 @@ export const BrandColorsView: React.FC<BrandColorsViewProps> = ({
     (hex: string, item: { name?: string; role?: string }) => {
       if (onColorClick) return onColorClick(hex, item);
       copyToClipboard(hex);
-      toast.success(`Copied ${hex}`);
+      toast.success(t('brandView.copied', { hex }));
     },
-    [onColorClick]
+    [onColorClick, t]
   );
 
   // Proportional layout only when usage was computed AND we're not filtering
@@ -1247,15 +1251,15 @@ export const BrandColorsView: React.FC<BrandColorsViewProps> = ({
 
   if (compact) {
     return (
-      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
-        <CompactSectionHeader label="Colors" />
+      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-border">
+        <CompactSectionHeader label={t('brandView.colors')} />
         <div className="grid grid-cols-6 gap-1.5">
           {filtered.slice(0, 12).map((c, i) => (
             <button
               key={i}
               type="button"
               onClick={() => handleClick(c.hex, c)}
-              className="aspect-square rounded border border-white/10 cursor-pointer hover:scale-110 transition-transform"
+              className="aspect-square rounded border border-border cursor-pointer hover:border-ring transition-colors"
               style={{ backgroundColor: c.hex }}
               title={`${c.name || ''} ${c.hex}`.trim()}
             />
@@ -1275,7 +1279,7 @@ export const BrandColorsView: React.FC<BrandColorsViewProps> = ({
     >
       <div className="space-y-12">
         <div className="flex items-end justify-between border-b border-[var(--brand-text)]/10 pb-12">
-          <FullSectionHeader label="Color Palette" />
+          <FullSectionHeader label={t('brandView.colors')} />
         </div>
         {hasUsage ? (
           <ColorUsagePalette colors={filtered} onClick={handleClick} />
@@ -1286,31 +1290,32 @@ export const BrandColorsView: React.FC<BrandColorsViewProps> = ({
                 key={i}
                 type="button"
                 layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 onClick={() => handleClick(color.hex, color)}
-                aria-label={`Copy hex ${color.hex}${color.name ? ` — ${color.name}` : ''}`}
+                aria-label={[t('brandView.copyHex', { hex: color.hex }), color.name]
+                  .filter(Boolean)
+                  .join(', ')}
                 className="group cursor-pointer space-y-3 text-left"
               >
-                <div className="relative aspect-square rounded-2xl overflow-hidden border border-[var(--brand-text)]/10 transition-all group-hover:scale-105 group-hover:border-[var(--accent)]/30 shadow-2xl">
+                <div className="relative aspect-square rounded-2xl overflow-hidden border border-[var(--brand-text)]/10 transition-colors group-hover:border-[var(--brand-text)]/30">
                   <div className="absolute inset-0" style={{ backgroundColor: color.hex }} />
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 backdrop-blur-[2px]">
-                    <span className="text-2xs font-mono text-white opacity-60">COPY HEX</span>
+                  <div
+                    className={cn(
+                      'absolute inset-0 flex items-center justify-center bg-black/20 text-white',
+                      hoverReveal
+                    )}
+                  >
+                    <Copy size={16} aria-hidden />
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs font-bold truncate uppercase tracking-tight opacity-90">
-                    {color.name || 'Untitled'}
+                  <p className="text-sm font-medium truncate">
+                    {color.name || t('brandView.untitled')}
                   </p>
-                  <span className="text-2xs font-mono opacity-40 uppercase flex items-center gap-2">
-                    {color.hex}
-                    {color.role && (
-                      <>
-                        <span className="w-1 h-1 rounded-full bg-current opacity-20" />
-                        {color.role}
-                      </>
-                    )}
+                  <span className="text-xs text-[var(--brand-text)]/60 flex items-center gap-2">
+                    <span className="font-mono uppercase">{color.hex}</span>
+                    {color.role && <span>{color.role}</span>}
                   </span>
                 </div>
               </motion.button>
@@ -1323,25 +1328,24 @@ export const BrandColorsView: React.FC<BrandColorsViewProps> = ({
 };
 
 export const BrandTypographyView: React.FC<SectionCommonProps> = ({ guideline, compact }) => {
+  const { t } = useTranslation();
   const typography = guideline.typography || [];
   if (typography.length === 0) return null;
 
   if (compact) {
     return (
-      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
-        <CompactSectionHeader label="Typography" />
+      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-border">
+        <CompactSectionHeader label={t('brandView.typography')} />
         <div className="flex flex-col gap-1">
-          {typography.map((t, i) => (
+          {typography.map((font, i) => (
             <div key={i} className="flex items-baseline justify-between gap-2 text-xs">
               <span
-                className="font-bold text-neutral-300 truncate"
-                style={{ fontFamily: t.family }}
+                className="font-medium text-foreground truncate"
+                style={{ fontFamily: font.family }}
               >
-                {t.family}
+                {font.family}
               </span>
-              <span className="text-3xs uppercase text-neutral-600 tracking-widest shrink-0">
-                {t.role}
-              </span>
+              <span className="text-2xs text-muted-foreground shrink-0">{font.role}</span>
             </div>
           ))}
         </div>
@@ -1359,7 +1363,7 @@ export const BrandTypographyView: React.FC<SectionCommonProps> = ({ guideline, c
     >
       <div className="space-y-12">
         <div className="flex items-end justify-between border-b border-[var(--brand-text)]/10 pb-12">
-          <FullSectionHeader label="Typography" />
+          <FullSectionHeader label={t('brandView.typography')} />
         </div>
         <div className="grid grid-cols-1 gap-8">
           {typography.map((font, i) => (
@@ -1368,42 +1372,42 @@ export const BrandTypographyView: React.FC<SectionCommonProps> = ({ guideline, c
               className="group flex flex-col md:flex-row md:items-center gap-8 md:gap-16 p-8 rounded-3xl border transition-[color,background-color,border-color,opacity] bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 hover:border-[var(--brand-text)]/10"
             >
               <div
-                className="text-7xl md:text-8xl font-bold tracking-tighter w-40 text-center shrink-0 opacity-90"
+                className="text-7xl md:text-8xl font-semibold tracking-tighter w-40 text-center shrink-0"
                 style={{ fontFamily: font.family }}
               >
                 Aa
               </div>
               <div className="flex-1 space-y-4">
                 <div className="flex items-center gap-4">
-                  <span className="px-3 py-1 rounded-full text-2xs font-mono uppercase font-black tracking-widest border bg-[var(--brand-text)]/5 text-[var(--brand-text)] border-[var(--brand-text)]/10">
+                  <span className="px-3 py-1 rounded-full text-xs font-medium border bg-[var(--brand-text)]/5 text-[var(--brand-text)] border-[var(--brand-text)]/10">
                     {font.role}
                   </span>
-                  <span className="text-xs font-mono font-medium opacity-40">{font.family}</span>
+                  <span className="text-sm text-[var(--brand-text)]/60">{font.family}</span>
                 </div>
                 <p
-                  className="text-4xl md:text-5xl tracking-tight leading-none opacity-80"
+                  className="text-4xl md:text-5xl tracking-tight leading-none"
                   style={{ fontFamily: font.family }}
                 >
-                  The quick brown fox jumps over the lazy dog.
+                  {t('brandView.pangram')}
                 </p>
                 <div className="flex items-center gap-6 pt-2">
-                  {/* Only render declared spec values — a fabricated "Regular"/"16PX"
+                  {/* Only render declared spec values: a fabricated "Regular"/"16PX"
                       on a brand source-of-truth doc reads as declared data and
                       propagates into generation. */}
                   {font.style && (
                     <div className="space-y-1">
-                      <span className="text-2xs uppercase tracking-widest font-bold opacity-30">
-                        Style
+                      <span className="text-xs text-[var(--brand-text)]/60">
+                        {t('brandView.fontStyle')}
                       </span>
-                      <p className="text-sm font-bold opacity-70">{font.style}</p>
+                      <p className="text-sm font-medium">{font.style}</p>
                     </div>
                   )}
                   {font.size && (
                     <div className="space-y-1">
-                      <span className="text-2xs uppercase tracking-widest font-bold opacity-30">
-                        Base Size
+                      <span className="text-xs text-[var(--brand-text)]/60">
+                        {t('brandView.baseSize')}
                       </span>
-                      <p className="text-sm font-bold opacity-70">{font.size}PX</p>
+                      <p className="text-sm font-medium tabular-nums">{font.size}px</p>
                     </div>
                   )}
                 </div>
@@ -1431,6 +1435,7 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
   onAssetDragStart,
   onBatchDownload,
 }) => {
+  const { t } = useTranslation();
   const logos = guideline.logos || [];
   const filtered = useMemo(
     () =>
@@ -1473,25 +1478,31 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
     );
   }, []);
 
-  const handleCopyPng = useCallback(async (logo: any) => {
-    const res = await copyImageAsPng(logo.url);
-    if (res.success) toast.success('Copied as PNG');
-    else toast.error(res.error || 'Could not copy image');
-  }, []);
+  const handleCopyPng = useCallback(
+    async (logo: any) => {
+      const res = await copyImageAsPng(logo.url);
+      if (res.success) toast.success(t('brandView.copiedPng'));
+      else toast.error(res.error || t('brandView.copyImageFailed'));
+    },
+    [t]
+  );
 
-  const handleCopySvg = useCallback(async (logo: any) => {
-    try {
-      // R2 dev domain lacks CORS headers → fetch via same-origin image proxy.
-      let r = await fetch(logo.url).catch(() => null);
-      if (!r || !r.ok) r = await fetch(getProxiedUrl(logo.url));
-      const text = await r.text();
-      const ok = await copyToClipboard(text);
-      if (ok) toast.success('Copied SVG code');
-      else toast.error('Could not copy SVG');
-    } catch {
-      toast.error('Could not copy SVG');
-    }
-  }, []);
+  const handleCopySvg = useCallback(
+    async (logo: any) => {
+      try {
+        // R2 dev domain lacks CORS headers → fetch via same-origin image proxy.
+        let r = await fetch(logo.url).catch(() => null);
+        if (!r || !r.ok) r = await fetch(getProxiedUrl(logo.url));
+        const text = await r.text();
+        const ok = await copyToClipboard(text);
+        if (ok) toast.success(t('brandView.copiedSvg'));
+        else toast.error(t('brandView.copySvgFailed'));
+      } catch {
+        toast.error(t('brandView.copySvgFailed'));
+      }
+    },
+    [t]
+  );
 
   // Assets whose image loaded ok — hide the whole section if every asset is broken.
   const visible = filtered.filter((l) => !failed.has(l.id));
@@ -1499,15 +1510,15 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
 
   if (compact) {
     return (
-      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
-        <CompactSectionHeader label="Logos" />
+      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-border">
+        <CompactSectionHeader label={t('brandView.logos')} />
         <div className="grid grid-cols-4 gap-2">
-          {filtered.slice(0, 12).map((logo) => (
+          {visible.slice(0, 12).map((logo) => (
             <button
               key={logo.id}
               type="button"
               onClick={() => handleClick(logo)}
-              className="group/logo relative aspect-square rounded-md border border-white/5 bg-neutral-900/40 overflow-hidden hover:border-brand-cyan/30 transition-colors"
+              className="relative aspect-square rounded-md border border-border bg-muted/40 overflow-hidden hover:border-ring transition-colors"
               draggable={!!onAssetDragStart}
               onDragStart={(e) =>
                 onAssetDragStart?.(e as unknown as React.DragEvent, logo.url, 'logo')
@@ -1519,8 +1530,9 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
                 alt={logo.label || logo.variant}
                 className="w-full h-full object-contain p-2"
                 loading="lazy"
+                onError={() => markFailed(logo.id)}
               />
-              <span className="absolute bottom-0 left-0 right-0 text-3xs text-neutral-500 text-center py-0.5 bg-black/60 uppercase">
+              <span className="absolute bottom-0 left-0 right-0 text-2xs text-muted-foreground text-center py-0.5 bg-background/80">
                 {logo.variant}
               </span>
             </button>
@@ -1540,16 +1552,16 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
     >
       <div className="space-y-12">
         <div className="flex items-end justify-between border-b border-[var(--brand-text)]/10 pb-12">
-          <FullSectionHeader label="Logo Assets" />
+          <FullSectionHeader label={t('brandView.logos')} />
           {onBatchDownload && (
             <Button
               variant="ghost"
               size="sm"
-              className="text-2xs font-mono opacity-40 hover:opacity-100 hover:text-[var(--accent)] gap-2"
+              className="text-xs text-[var(--brand-text)]/60 hover:text-[var(--brand-text)] gap-2"
               onClick={() => onBatchDownload(visible)}
             >
               <Download size={12} />
-              Export {visible.length} Assets
+              {t('brandView.exportAssets', { count: visible.length })}
             </Button>
           )}
         </div>
@@ -1570,44 +1582,43 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
                   onAssetDragStart?.(e as unknown as React.DragEvent, logo.url, 'logo')
                 }
               >
-                <div className="relative aspect-[4/3] rounded-3xl p-8 flex items-center justify-center overflow-hidden transition-all duration-500 border bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 group-hover:bg-[var(--brand-surface)]/40 group-hover:border-[var(--brand-text)]/10 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)]">
+                <div className="relative aspect-[4/3] rounded-3xl p-8 flex items-center justify-center overflow-hidden transition-colors duration-300 border bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 group-hover:bg-[var(--brand-surface)]/40 group-hover:border-[var(--brand-text)]/10">
                   <img
                     src={logo.url}
-                    alt={logo.label || 'Logo'}
+                    alt={logo.label || t('brandView.logo')}
                     loading="lazy"
                     onError={() => markFailed(logo.id)}
-                    className="w-3/4 h-3/4 object-contain transition-transform duration-500 group-hover:scale-110 drop-shadow-[0_15px_25px_rgba(0,0,0,0.2)]"
+                    className="w-3/4 h-3/4 object-contain"
                   />
-                  <div className="absolute inset-x-0 bottom-0 p-3 opacity-100 translate-y-0 can-hover:opacity-0 can-hover:translate-y-2 can-hover:group-hover:opacity-100 can-hover:group-hover:translate-y-0 transition-all duration-300">
+                  <div className={cn('absolute inset-x-0 bottom-0 p-3', hoverReveal)}>
                     {onAssetClick ? (
                       <Button
-                        className="w-full h-10 rounded-xl text-2xs font-bold uppercase tracking-wider gap-2 shadow-lg transition-all bg-[var(--accent)] text-[var(--accent-text)] hover:scale-[1.02]"
+                        className="w-full h-10 rounded-xl text-xs font-medium gap-2 bg-[var(--accent)] text-[var(--accent-text)] hover:opacity-90 transition-opacity"
                         onClick={() => handleClick(logo)}
                       >
-                        <MousePointerClick size={14} /> Use
+                        <MousePointerClick size={14} /> {t('brandView.use')}
                       </Button>
                     ) : (
                       <div className="flex items-center gap-1.5">
                         <Button
-                          title="Download"
-                          className="flex-1 h-9 rounded-xl text-2xs font-bold uppercase tracking-wider gap-1.5 shadow-lg transition-all bg-[var(--accent)] text-[var(--accent-text)] hover:scale-[1.02]"
+                          className="flex-1 h-9 rounded-xl text-xs font-medium gap-1.5 bg-[var(--accent)] text-[var(--accent-text)] hover:opacity-90 transition-opacity"
                           onClick={() => handleDownload(logo)}
                         >
-                          <Download size={13} /> Download
+                          <Download size={13} /> {t('brandView.download')}
                         </Button>
                         <Button
-                          title="Copy as PNG"
-                          aria-label="Copy as PNG"
-                          className="h-9 w-9 p-0 rounded-xl shadow-lg transition-all bg-[var(--brand-surface)] text-[var(--brand-text)] border border-[var(--brand-text)]/10 hover:scale-[1.05]"
+                          title={t('brandView.copyPng')}
+                          aria-label={t('brandView.copyPng')}
+                          className="h-9 w-9 p-0 rounded-xl transition-colors bg-[var(--brand-surface)] text-[var(--brand-text)] border border-[var(--brand-text)]/10 hover:border-[var(--brand-text)]/30"
                           onClick={() => handleCopyPng(logo)}
                         >
                           <Copy size={13} />
                         </Button>
                         {isSvg && (
                           <Button
-                            title="Copy SVG code"
-                            aria-label="Copy SVG code"
-                            className="h-9 w-9 p-0 rounded-xl shadow-lg transition-all bg-[var(--brand-surface)] text-[var(--brand-text)] border border-[var(--brand-text)]/10 hover:scale-[1.05]"
+                            title={t('brandView.copySvg')}
+                            aria-label={t('brandView.copySvg')}
+                            className="h-9 w-9 p-0 rounded-xl transition-colors bg-[var(--brand-surface)] text-[var(--brand-text)] border border-[var(--brand-text)]/10 hover:border-[var(--brand-text)]/30"
                             onClick={() => handleCopySvg(logo)}
                           >
                             <FileCode size={13} />
@@ -1618,12 +1629,10 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
                   </div>
                 </div>
                 <div className="px-2">
-                  <p className="text-2xs font-bold uppercase tracking-[0.1em] opacity-90">
-                    {logo.label || 'Untitled Asset'}
-                  </p>
-                  <p className="text-2xs uppercase tracking-widest mt-1 opacity-40">
-                    {logo.variant} Variant
-                  </p>
+                  <p className="text-sm font-medium">{logo.label || t('brandView.untitled')}</p>
+                  {logo.variant && (
+                    <p className="text-xs mt-1 text-[var(--brand-text)]/60">{logo.variant}</p>
+                  )}
                 </div>
               </motion.div>
             );
@@ -1654,10 +1663,7 @@ const AssetTagChips: React.FC<{ analysis?: { dimensions?: Record<string, string[
   return (
     <div className="flex flex-wrap gap-1 py-0.5">
       {tags.map((t, i) => (
-        <span
-          key={i}
-          className="px-1.5 py-0.5 rounded-full bg-white/15 backdrop-blur-sm text-3xs font-mono uppercase tracking-wide text-white/80"
-        >
+        <span key={i} className="px-1.5 py-0.5 rounded-full bg-white/15 text-2xs text-white/90">
           {t}
         </span>
       ))}
@@ -1672,12 +1678,12 @@ const AssetTagChips: React.FC<{ analysis?: { dimensions?: Record<string, string[
  */
 const BrandMediaCard: React.FC<{
   item: any;
-  index: number;
   onOpen: () => void;
   onDownload: () => void;
   onError: () => void;
   onDragStart?: (e: React.DragEvent) => void;
-}> = ({ item, index, onOpen, onDownload, onError, onDragStart }) => {
+}> = ({ item, onOpen, onDownload, onError, onDragStart }) => {
+  const { t } = useTranslation();
   const [loaded, setLoaded] = useState(false);
 
   return (
@@ -1694,7 +1700,7 @@ const BrandMediaCard: React.FC<{
     >
       <img
         src={item.url}
-        alt={item.label || 'Media'}
+        alt={item.label || t('brandView.media')}
         loading="lazy"
         onLoad={() => setLoaded(true)}
         onError={onError}
@@ -1708,23 +1714,20 @@ const BrandMediaCard: React.FC<{
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
         <Button
           size="icon"
-          className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/60 text-white/70 hover:text-white hover:bg-black/80 backdrop-blur-sm border border-white/10 pointer-events-auto"
+          className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/60 text-white/80 hover:text-white hover:bg-black/80 border border-white/10 pointer-events-auto"
           onClick={(e) => {
             e.stopPropagation();
             onDownload();
           }}
-          aria-label="Download"
+          aria-label={t('brandView.download')}
         >
           <Download size={15} />
         </Button>
         <div className="absolute bottom-3 left-3 right-3 space-y-1">
-          <p className="text-xs font-bold text-white tracking-tight truncate">
-            {item.label || 'Production File'}
+          <p className="text-xs font-medium text-white truncate">
+            {item.label || t('brandView.untitled')}
           </p>
           <AssetTagChips analysis={item.analysis} />
-          <span className="text-3xs font-mono text-white/40 uppercase tracking-widest">
-            Asset // {String(index + 1).padStart(2, '0')}
-          </span>
         </div>
       </div>
     </motion.div>
@@ -1738,6 +1741,7 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
   onAssetClick,
   onAssetDragStart,
 }) => {
+  const { t } = useTranslation();
   const media = guideline.media || [];
   const [fullScreenIdx, setFullScreenIdx] = useState<number | null>(null);
   const [failed, setFailed] = useState<Set<string>>(new Set());
@@ -1745,7 +1749,7 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
 
   // Broken assets are dropped from the list, not rendered as null: the masonry
   // distributes by index, so a hole would unbalance the columns and throw off
-  // both the "Asset // NN" numbering and the +N count on the button.
+  // the +N count on the button.
   const filtered = useMemo(
     () =>
       media.filter(
@@ -1787,8 +1791,8 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
 
   if (compact) {
     return (
-      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
-        <CompactSectionHeader label="Media" />
+      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-border">
+        <CompactSectionHeader label={t('brandView.media')} />
         <div className="grid grid-cols-3 gap-2">
           {filtered.slice(0, 9).map((item, i) => (
             <button
@@ -1799,14 +1803,15 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
               onDragStart={(e) =>
                 onAssetDragStart?.(e as unknown as React.DragEvent, item.url, 'media')
               }
-              className="aspect-square rounded-md overflow-hidden border border-white/5 bg-neutral-900/40 hover:border-brand-cyan/30 transition-colors"
-              title={item.label || 'Media'}
+              className="aspect-square rounded-md overflow-hidden border border-border bg-muted/40 hover:border-ring transition-colors"
+              title={item.label || t('brandView.media')}
             >
               <img
                 src={item.url}
-                alt={item.label || 'Media'}
+                alt={item.label || t('brandView.media')}
                 className="w-full h-full object-cover"
                 loading="lazy"
+                onError={() => markFailed(item.id)}
               />
             </button>
           ))}
@@ -1825,7 +1830,7 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
     >
       <div className="space-y-12">
         <div className="flex items-end justify-between border-b border-[var(--brand-text)]/10 pb-12">
-          <FullSectionHeader label="Media Library" />
+          <FullSectionHeader label={t('brandView.media')} />
         </div>
 
         <Masonry
@@ -1836,7 +1841,6 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
           renderItem={(item, i) => (
             <BrandMediaCard
               item={item}
-              index={i}
               onOpen={() => handleClick(item, i)}
               onDownload={() => handleDownload(item)}
               onError={() => markFailed(item.id)}
@@ -1852,8 +1856,8 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
         {hidden > 0 && (
           <div className="flex justify-center">
             <Button variant="subtle" onClick={() => setExpanded(true)} className="gap-2">
-              Ver toda a galeria
-              <span className="text-2xs font-mono opacity-50">+{hidden}</span>
+              {t('brandView.showAllMedia')}
+              <span className="text-xs tabular-nums text-muted-foreground">+{hidden}</span>
             </Button>
           </div>
         )}
@@ -1881,21 +1885,22 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
 };
 
 export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, compact }) => {
+  const { t } = useTranslation();
   const g = guideline.guidelines || {};
   const hasAny = !!(g.voice || g.dos?.length || g.donts?.length);
   if (!hasAny) return null;
 
   if (compact) {
     return (
-      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
-        <CompactSectionHeader label="Guidelines" />
+      <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-border">
+        <CompactSectionHeader label={t('brandView.guidelines')} />
         {g.voice && (
-          <p className="text-2xs text-neutral-400 italic leading-snug mb-2">"{g.voice}"</p>
+          <p className="text-2xs text-muted-foreground italic leading-snug mb-2">"{g.voice}"</p>
         )}
         {g.dos && g.dos.length > 0 && (
           <ul className="space-y-1 mb-2">
             {g.dos.slice(0, 5).map((item, i) => (
-              <li key={i} className="flex gap-2 text-2xs text-neutral-400">
+              <li key={i} className="flex gap-2 text-2xs text-muted-foreground">
                 <span className="mt-1.5 w-1 h-1 rounded-full bg-success shrink-0" />
                 <span className="leading-snug">{item}</span>
               </li>
@@ -1905,7 +1910,7 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
         {g.donts && g.donts.length > 0 && (
           <ul className="space-y-1">
             {g.donts.slice(0, 5).map((item, i) => (
-              <li key={i} className="flex gap-2 text-2xs text-neutral-400">
+              <li key={i} className="flex gap-2 text-2xs text-muted-foreground">
                 <span className="mt-1.5 w-1 h-1 rounded-full bg-destructive shrink-0" />
                 <span className="leading-snug">{item}</span>
               </li>
@@ -1926,10 +1931,10 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
         <div className="space-y-8">
-          <FullSectionHeader label="Guidelines" />
+          <FullSectionHeader label={t('brandView.guidelines')} />
           {g.voice && (
             <div className="p-8 rounded-3xl bg-[var(--brand-text)]/[0.03] border border-[var(--brand-text)]/[0.05]">
-              <p className="text-lg md:text-xl font-serif italic leading-relaxed opacity-60">
+              <p className="text-lg md:text-xl font-serif italic leading-relaxed text-[var(--brand-text)]/80">
                 "{g.voice}"
               </p>
             </div>
@@ -1939,14 +1944,12 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
           {g.dos && g.dos.length > 0 && (
             <div className="space-y-6">
-              <MicroTitle className="text-success/60 pt-12">Do</MicroTitle>
+              <MicroTitle className="text-success pt-12">{t('brandView.do')}</MicroTitle>
               <ul className="space-y-4">
                 {g.dos.map((item, i) => (
-                  <li key={i} className="flex gap-4 group">
-                    <div className="mt-1.5 w-1 h-1 rounded-full bg-success shadow-[0_0_10px_rgba(34,197,94,0.3)]" />
-                    <span className="text-sm opacity-60 group-hover:opacity-100 transition-opacity">
-                      {item}
-                    </span>
+                  <li key={i} className="flex gap-4">
+                    <div className="mt-2 w-1 h-1 rounded-full bg-success shrink-0" />
+                    <span className="text-sm text-[var(--brand-text)]/80">{item}</span>
                   </li>
                 ))}
               </ul>
@@ -1954,14 +1957,12 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
           )}
           {g.donts && g.donts.length > 0 && (
             <div className="space-y-6">
-              <MicroTitle className="text-destructive/60 pt-12">Don't</MicroTitle>
+              <MicroTitle className="text-destructive pt-12">{t('brandView.dont')}</MicroTitle>
               <ul className="space-y-4">
                 {g.donts.map((item, i) => (
-                  <li key={i} className="flex gap-4 group">
-                    <div className="mt-1.5 w-1 h-1 rounded-full bg-destructive shadow-[0_0_10px_rgba(239,68,68,0.3)]" />
-                    <span className="text-sm opacity-60 group-hover:opacity-100 transition-opacity">
-                      {item}
-                    </span>
+                  <li key={i} className="flex gap-4">
+                    <div className="mt-2 w-1 h-1 rounded-full bg-destructive shrink-0" />
+                    <span className="text-sm text-[var(--brand-text)]/80">{item}</span>
                   </li>
                 ))}
               </ul>

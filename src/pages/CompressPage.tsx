@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Upload, Minimize2, X } from '@/lib/ui/icons';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Upload, Minimize2, X, ArrowRight } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -20,7 +20,9 @@ import { useBrandDefaults } from '@/hooks/useBrandDefaults';
 import { formatBytes } from '@/utils/formatUtils';
 import JSZip from 'jszip';
 import { glassSurface } from '@/lib/ui/glass';
-import { fadeInUp, itemEnter, transitions } from '@/lib/ui/motion';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { Thumb } from '@/components/ui/Thumb';
+import { fade, transitions } from '@/lib/ui/motion';
 
 /** Local scale-fade — no scale preset in the module; tokens supply ease/duration. */
 const fadeScale = {
@@ -82,7 +84,6 @@ async function compressItem(
 
 export const CompressPage: React.FC = () => {
   const { t } = useTranslation();
-  const inputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [convertProgress, setConvertProgress] = useState(0);
@@ -178,7 +179,7 @@ export const CompressPage: React.FC = () => {
     if (isProcessing) return;
     const toProcess = items.filter((i) => i.status === 'queued' || i.status === 'error');
     if (!toProcess.length) {
-      toast.info('Nothing to process');
+      toast.info(t('miniTools.nothingToProcess'));
       return;
     }
 
@@ -192,8 +193,8 @@ export const CompressPage: React.FC = () => {
       setConvertProgress(Math.round((done / total) * 100));
     }
     setIsProcessing(false);
-    toast.success(`${done} image${done > 1 ? 's' : ''} compressed`);
-  }, [items, quality, maxDimension, outputFormat, isProcessing, updateItem, setIsProcessing]);
+    toast.success(t('miniTools.compress.done', { count: done }));
+  }, [items, quality, maxDimension, outputFormat, isProcessing, updateItem, setIsProcessing, t]);
 
   const handleDownloadAll = useCallback(async () => {
     const doneItems = items.filter((i) => i.status === 'done' && i.resultBase64);
@@ -214,23 +215,31 @@ export const CompressPage: React.FC = () => {
     }
     const blob = await zip.generateAsync({ type: 'blob' });
     downloadBlob(blob, `compress-batch-${Date.now()}.zip`);
-    toast.success('ZIP downloaded');
-  }, [items, outputFormat]);
+    toast.success(t('miniTools.zipDownloaded'));
+  }, [items, outputFormat, t]);
 
   const handleCopyPreview = useCallback(async () => {
     const src = previewItem?.resultBase64 || previewItem?.sourceUrl;
     if (!src) return;
     const result = await copyImageAsPng(src);
-    if (result.success) toast.success('Copied to clipboard');
-    else toast.error(result.error || 'Copy failed');
-  }, [previewItem]);
+    if (result.success) toast.success(t('miniTools.copied'));
+    else toast.error(result.error || t('miniTools.copyFailed'));
+  }, [previewItem, t]);
+
+  const chipClass = (selected: boolean) =>
+    cn(
+      'flex-1 rounded border px-2 py-1 text-xs font-mono tabular-nums transition-colors duration-200',
+      selected
+        ? 'border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan'
+        : 'border-border bg-muted/40 text-muted-foreground hover:border-ring hover:text-foreground'
+    );
 
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Add more */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-2xs font-mono uppercase tracking-wider cursor-pointer transition-colors duration-200">
+      <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
         <Upload size={12} />
-        Add images
+        {t('miniTools.addImages')}
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp"
@@ -242,53 +251,48 @@ export const CompressPage: React.FC = () => {
 
       {/* Thumbnail queue */}
       <div className="max-h-[32vh] overflow-y-auto space-y-1.5 pr-1">
-        {items.map((item, i) => (
+        {items.map((item) => (
           <motion.div
             key={item.id}
             onClick={() => setPreviewId(item.id)}
-            {...itemEnter(i)}
+            {...fade}
             layout
             className={cn(
-              'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors duration-200 group',
-              previewItem?.id === item.id
-                ? 'bg-neutral-800/60 ring-1 ring-brand-cyan/30'
-                : 'hover:bg-neutral-900/60'
+              'group flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors duration-200',
+              previewItem?.id === item.id ? 'bg-muted ring-1 ring-border' : 'hover:bg-muted/60'
             )}
           >
-            <img
+            <Thumb
               src={item.resultBase64 || item.sourceUrl}
               alt=""
-              className="w-10 h-10 rounded object-cover bg-neutral-900 flex-shrink-0"
+              className="w-10 h-10 rounded object-cover bg-muted flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-2xs font-mono text-neutral-300 truncate">{item.fileName}</p>
+              <p className="text-2xs font-mono text-foreground truncate">{item.fileName}</p>
               <div className="flex items-center gap-1">
                 <StatusBadge status={item.status} />
-                <AnimatePresence>
-                  {item.status === 'done' && item.originalSize > 0 && (
-                    <motion.span
-                      className="text-2xs font-mono text-success tabular-nums"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={transitions.fast}
-                    >
-                      -
-                      {Math.round(
-                        ((item.originalSize - item.compressedSize) / item.originalSize) * 100
-                      )}
-                      %
-                    </motion.span>
-                  )}
-                </AnimatePresence>
+                {item.status === 'done' && item.originalSize > 0 && (
+                  <span className="text-2xs font-mono text-success tabular-nums">
+                    -
+                    {Math.round(
+                      ((item.originalSize - item.compressedSize) / item.originalSize) * 100
+                    )}
+                    %
+                  </span>
+                )}
               </div>
             </div>
             <button
+              type="button"
+              aria-label={t('miniTools.remove')}
               onClick={(e) => {
                 e.stopPropagation();
                 removeItem(item.id);
               }}
-              className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-neutral-300 transition-[color,background-color,border-color,opacity] duration-200 flex-shrink-0"
+              className={cn(
+                hoverReveal,
+                'text-muted-foreground hover:text-foreground flex-shrink-0'
+              )}
             >
               <X size={12} />
             </button>
@@ -296,7 +300,7 @@ export const CompressPage: React.FC = () => {
         ))}
       </div>
 
-      <div className="h-px bg-neutral-800" />
+      <div className="h-px bg-border" />
 
       {/* Controls */}
       <div className="space-y-4">
@@ -305,8 +309,12 @@ export const CompressPage: React.FC = () => {
         {/* Quality slider */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-neutral-500">Quality</span>
-            <span className="text-2xs font-mono text-neutral-500 tabular-nums">{quality}%</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              {t('miniTools.quality')}
+            </span>
+            <span className="text-2xs font-mono text-muted-foreground tabular-nums">
+              {quality}%
+            </span>
           </div>
           <input
             type="range"
@@ -316,25 +324,23 @@ export const CompressPage: React.FC = () => {
             value={quality}
             onChange={(e) => setQuality(parseInt(e.target.value))}
             disabled={isProcessing}
-            className="w-full h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
+            className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
           />
         </div>
 
         {/* Max dimension */}
         <div className="space-y-1.5">
-          <span className="text-xs font-medium text-neutral-500">Max dimension</span>
+          <span className="text-xs font-medium text-muted-foreground">
+            {t('miniTools.maxDimension')}
+          </span>
           <div className="flex gap-1">
             {DIMENSION_OPTIONS.map((d) => (
               <button
                 key={d}
+                type="button"
                 onClick={() => setMaxDimension(d)}
                 disabled={isProcessing}
-                className={cn(
-                  'flex-1 px-2 py-1 rounded text-xs font-mono transition-colors duration-200 tabular-nums',
-                  maxDimension === d
-                    ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40'
-                    : 'bg-neutral-900 text-neutral-500 border border-neutral-800 hover:border-neutral-600'
-                )}
+                className={chipClass(maxDimension === d)}
               >
                 {d}
               </button>
@@ -344,28 +350,24 @@ export const CompressPage: React.FC = () => {
 
         {/* Format */}
         <div className="space-y-1.5">
-          <span className="text-xs font-medium text-neutral-500">Format</span>
+          <span className="text-xs font-medium text-muted-foreground">{t('miniTools.format')}</span>
           <div className="flex gap-1">
             {FORMAT_OPTIONS.map((f) => (
               <button
                 key={f}
+                type="button"
                 onClick={() => setOutputFormat(f)}
                 disabled={isProcessing}
-                className={cn(
-                  'flex-1 px-2 py-1 rounded text-xs font-mono uppercase transition-colors duration-200',
-                  outputFormat === f
-                    ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40'
-                    : 'bg-neutral-900 text-neutral-500 border border-neutral-800 hover:border-neutral-600'
-                )}
+                className={chipClass(outputFormat === f)}
               >
-                {f}
+                {f.toUpperCase()}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="h-px bg-neutral-800" />
+      <div className="h-px bg-border" />
 
       {/* Actions */}
       <div className="space-y-2">
@@ -384,8 +386,10 @@ export const CompressPage: React.FC = () => {
                 )}
                 <span className="ml-2">
                   {isProcessing
-                    ? 'Compressing...'
-                    : `Compress ${queuedOrErrorCount > 1 ? `${queuedOrErrorCount} images` : 'All'}`}
+                    ? t('miniTools.compress.running')
+                    : queuedOrErrorCount > 1
+                      ? t('miniTools.compress.runCount', { count: queuedOrErrorCount })
+                      : t('miniTools.compress.run')}
                 </span>
               </Button>
             </motion.div>
@@ -397,7 +401,7 @@ export const CompressPage: React.FC = () => {
               <QuickActions
                 toolId="compress"
                 outputMime={`image/${outputFormat}`}
-                summary={`${doneCount} image${doneCount > 1 ? 's' : ''} compressed`}
+                summary={t('miniTools.compress.done', { count: doneCount })}
                 savedBytes={totalSaved}
                 savedPercent={totalPercent}
                 onDownloadAll={handleDownloadAll}
@@ -420,14 +424,14 @@ export const CompressPage: React.FC = () => {
   ) : undefined;
 
   const statusBarContent = hasItems ? (
-    <div className="flex items-center gap-3 text-2xs font-mono uppercase tracking-widest tabular-nums">
-      <span className="text-neutral-400">
+    <div className="flex items-center gap-3 text-2xs tabular-nums text-muted-foreground">
+      <span>
         {doneCount}/{items.length}
       </span>
       {doneCount > 0 && totalPercent > 0 && (
         <>
-          <span className="text-neutral-700">·</span>
-          <span className="text-success">-{totalPercent}% saved</span>
+          <span>·</span>
+          <span className="text-success">{t('miniTools.smaller', { percent: totalPercent })}</span>
         </>
       )}
     </div>
@@ -441,7 +445,7 @@ export const CompressPage: React.FC = () => {
       documentTitle={t('apps.imageCompressor.name')}
       onReset={hasItems ? reset : undefined}
       panel={panelContent}
-      panelLabel="Queue & settings"
+      panelLabel={t('miniTools.panelLabel')}
       statusBar={statusBarContent}
       dragDrop={{
         onDrop: handleDrop,
@@ -451,59 +455,19 @@ export const CompressPage: React.FC = () => {
       }}
     >
       <AnimatePresence mode="wait">
-        {/* Upload zone — centered Apple-style landing */}
         {!hasItems ? (
-          <motion.div key="upload" {...fadeInUp} className="flex flex-col items-center gap-6 py-8">
-            <motion.div
-              className={cn(
-                'w-16 h-16 rounded-2xl flex items-center justify-center',
-                glassSurface.panel
-              )}
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ ...transitions.base, delay: 0.08 }}
-            >
-              <Minimize2 size={28} className="text-neutral-500" />
-            </motion.div>
-
-            <motion.div
-              className="text-center space-y-2"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...transitions.base, delay: 0.12 }}
-            >
-              <p className="text-sm text-neutral-300 font-medium">Compress & optimize images</p>
-              <p className="text-xs text-neutral-600 font-mono">
-                Reduce file size with quality control — batch supported
-              </p>
-            </motion.div>
-
-            <motion.label
-              className={cn(
-                'flex flex-col items-center justify-center gap-3 w-full max-w-md h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-colors duration-200',
-                isDragOver
-                  ? 'border-brand-cyan bg-brand-cyan/5'
-                  : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40'
-              )}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...transitions.base, delay: 0.16 }}
-              whileHover={{ scale: 1.01, transition: transitions.fast }}
-              whileTap={{ scale: 0.99, transition: transitions.press }}
-            >
-              <Upload size={24} className="text-neutral-500" />
-              <span className="text-xs font-medium text-neutral-500">
-                Drop images or click — batch supported
-              </span>
+          <motion.div key="upload" {...fade} className="flex w-full justify-center py-8">
+            <label className="flex h-48 w-full max-w-md cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border px-4 text-center text-sm text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
+              <Upload size={20} />
+              {t('miniTools.dropImages')}
               <input
-                ref={inputRef}
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 multiple
                 className="hidden"
                 onChange={handleInputChange}
               />
-            </motion.label>
+            </label>
           </motion.div>
         ) : (
           <motion.div
@@ -511,7 +475,7 @@ export const CompressPage: React.FC = () => {
             {...fadeScale}
             className={cn(
               'relative w-full max-w-3xl rounded-2xl overflow-hidden min-h-[300px] flex items-center justify-center',
-              glassSurface.panel
+              glassSurface.surface
             )}
           >
             {previewItem ? (
@@ -524,15 +488,12 @@ export const CompressPage: React.FC = () => {
                 <AnimatePresence>
                   {isProcessing && (
                     <motion.div
-                      className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={transitions.base}
+                      className="absolute inset-0 flex items-center justify-center bg-background/80"
+                      {...fade}
                     >
                       <FlyingPaperLoader
                         progress={convertProgress}
-                        label={`${convertProgress}% — ${doneCount}/${items.length}`}
+                        label={`${convertProgress}% · ${doneCount}/${items.length}`}
                       />
                     </motion.div>
                   )}
@@ -540,21 +501,18 @@ export const CompressPage: React.FC = () => {
                 <AnimatePresence>
                   {previewItem.status === 'done' && (
                     <motion.div
-                      className="absolute top-2 right-2 flex items-center gap-1.5"
-                      initial={{ opacity: 0, y: -8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={transitions.base}
+                      className="absolute top-2 right-2 flex items-center gap-1.5 text-2xs font-mono tabular-nums"
+                      {...fade}
                     >
-                      <span className="text-2xs font-mono uppercase tracking-wider bg-neutral-900/80 text-neutral-400 px-2 py-0.5 rounded tabular-nums">
+                      <span className="rounded bg-muted px-2 py-0.5 text-muted-foreground">
                         {formatBytes(previewItem.originalSize)}
                       </span>
-                      <span className="text-2xs font-mono text-neutral-500">→</span>
-                      <span className="text-2xs font-mono uppercase tracking-wider bg-neutral-800 text-neutral-200 px-2 py-0.5 rounded tabular-nums">
+                      <ArrowRight size={10} className="text-muted-foreground" />
+                      <span className="rounded bg-muted px-2 py-0.5 text-foreground">
                         {formatBytes(previewItem.compressedSize)}
                       </span>
                       {previewItem.originalSize > 0 && (
-                        <span className="text-2xs font-mono uppercase tracking-wider bg-success/20 text-success px-2 py-0.5 rounded tabular-nums">
+                        <span className="rounded bg-success/20 px-2 py-0.5 text-success">
                           -
                           {Math.round(
                             ((previewItem.originalSize - previewItem.compressedSize) /

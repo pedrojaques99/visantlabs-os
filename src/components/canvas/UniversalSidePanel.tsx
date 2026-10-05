@@ -4,7 +4,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useResizable } from '@/hooks/useResizable';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
-import { MessageSquare, Settings, X, Brush, Image as ImageIcon } from '@/lib/ui/icons';
+import { MessageSquare, Settings, X, Brush, Image as ImageIcon, Users } from '@/lib/ui/icons';
 import { getTextColors, lightenColor } from '@/utils/colorUtils';
 
 // Import child components
@@ -314,8 +314,8 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
             className="flex items-center px-4 gap-2 font-medium text-xs"
             style={{ color: textColors.primary }}
           >
-            <ImageIcon size={13} style={{ color: 'var(--brand-cyan)' }} />
-            Brand Media
+            <ImageIcon size={13} style={{ color: textColors.muted }} />
+            {t('canvasPanel.brandMedia')}
           </div>
           <Button
             variant="ghost"
@@ -347,9 +347,8 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
             className="flex items-center px-4 gap-2 font-medium text-xs"
             style={{ color: textColors.primary }}
           >
-            {/* We need Users icon imported */}
-            <span style={{ color: 'var(--brand-cyan)' }}>❖</span>
-            Community Presets
+            <Users size={13} style={{ color: textColors.muted }} />
+            {t('communityPresets.title')}
           </div>
           <Button
             variant="ghost"

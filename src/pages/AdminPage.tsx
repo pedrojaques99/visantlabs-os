@@ -47,7 +47,6 @@ import {
   Legend,
 } from 'recharts';
 
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { NavigationSidebar, type NavigationItem } from '../components/ui/NavigationSidebar';
 import {
   BreadcrumbWithBack,
@@ -376,28 +375,28 @@ export const AdminPage: React.FC = () => {
 
   const adminNavItems = useMemo<NavigationItem[]>(
     () => [
-      { id: 'overview', label: t('admin.dashboard') || 'Dashboard', icon: ShieldCheck },
+      { id: 'overview', label: t('admin.dashboard'), icon: ShieldCheck },
       ...(data?.generationStats
-        ? [{ id: 'generations', label: t('admin.generations') || 'Generations', icon: TrendingUp }]
+        ? [{ id: 'generations', label: t('admin.generations'), icon: TrendingUp }]
         : []),
       { id: 'product-analytics', label: 'Product Analytics', icon: BarChart2 },
-      { id: 'users', label: t('admin.users') || 'Users', icon: Users },
-      { id: 'financial', label: t('admin.financial') || 'Financial', icon: DollarSign },
+      { id: 'users', label: t('admin.users'), icon: Users },
+      { id: 'financial', label: t('admin.financial'), icon: DollarSign },
       { id: 'mcp-usage', label: 'MCP Usage', icon: Activity },
       { id: 'feedback-rag', label: 'Feedback & RAG', icon: BarChart2 },
       { id: 'references', label: 'Reference Library', icon: Image },
       // External routes — grouped below a divider in the sidebar.
-      { id: 'presets', label: t('common.presets') || 'Presets', icon: Settings, external: true },
+      { id: 'presets', label: t('common.presets'), icon: Settings, external: true },
       {
         id: 'products',
-        label: t('admin.products.title') || 'Products',
+        label: t('admin.products.title'),
         icon: ShoppingCart,
         external: true,
       },
       { id: 'admin-chat', label: 'Chat Estratégico', icon: MessageSquare, external: true },
       {
         id: 'design-system',
-        label: t('admin.designSystem') || 'Design System',
+        label: t('admin.designSystem'),
         icon: Palette,
         external: true,
       },
@@ -541,7 +540,7 @@ export const AdminPage: React.FC = () => {
 
     const token = authService.getToken();
     if (!token) {
-      toast.error(t('admin.authRequired') || 'Authentication required');
+      toast.error(t('admin.authRequired'));
       return;
     }
 
@@ -561,16 +560,16 @@ export const AdminPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error(t('admin.saveError') || 'Failed to update user');
+        throw new Error(t('admin.saveError'));
       }
 
-      toast.success(t('admin.saveSuccess') || 'User updated successfully');
+      toast.success(t('admin.saveSuccess'));
 
       // Refresh the affected slices (user rows + KPI totals) via React Query.
       refreshDashboard();
     } catch (error) {
       console.error('Error updating user:', error);
-      toast.error(t('admin.saveError') || 'Failed to update user');
+      toast.error(t('admin.saveError'));
     }
   };
 
@@ -1207,7 +1206,7 @@ export const AdminPage: React.FC = () => {
                 }
               }}
               title="Admin"
-              externalGroupLabel={t('admin.pages') || 'Páginas'}
+              externalGroupLabel={t('admin.pages')}
               isOpen={sidebarOpen}
               onToggleOpen={setSidebarOpen}
               width={sidebarWidth}
@@ -2386,10 +2385,10 @@ export const AdminPage: React.FC = () => {
                           <CardHeader>
                             <CardTitle className="text-neutral-300 flex items-center gap-2">
                               <DollarSign className="h-5 w-5 text-success" />
-                              {t('admin.revenueOverTime') || 'Receita ao Longo do Tempo'}
+                              {t('admin.revenueOverTime')}
                             </CardTitle>
                             <CardDescription className="text-neutral-500">
-                              {t('admin.cumulativeRevenue') || 'Receita acumulada (BRL)'}
+                              {t('admin.cumulativeRevenue')}
                             </CardDescription>
                           </CardHeader>
                           <CardContent>
@@ -2460,10 +2459,10 @@ export const AdminPage: React.FC = () => {
                           <CardHeader>
                             <CardTitle className="text-neutral-300 flex items-center gap-2">
                               <Database className="h-5 w-5 text-orange-500" />
-                              {t('admin.costOverTime') || 'Custo Estimado ao Longo do Tempo'}
+                              {t('admin.costOverTime')}
                             </CardTitle>
                             <CardDescription className="text-neutral-500">
-                              {t('admin.cumulativeCost') || 'Custo API acumulado (USD)'}
+                              {t('admin.cumulativeCost')}
                             </CardDescription>
                           </CardHeader>
                           <CardContent>
@@ -2669,10 +2668,10 @@ export const AdminPage: React.FC = () => {
                           <CardHeader>
                             <CardTitle className="text-neutral-300 flex items-center gap-2">
                               <Database className="h-5 w-5 text-orange-500" />
-                              {t('admin.dailyCostChart') || 'Custo Diário (USD)'}
+                              {t('admin.dailyCostChart')}
                             </CardTitle>
                             <CardDescription className="text-neutral-500">
-                              {t('admin.dailyCost') || 'Custo por dia'}
+                              {t('admin.dailyCost')}
                             </CardDescription>
                           </CardHeader>
                           <CardContent>
@@ -3263,8 +3262,12 @@ export const AdminPage: React.FC = () => {
                                         }`}
                                       >
                                         {t.tag}
-                                        <span className="opacity-60">
-                                          {t.approvalRate.toFixed(0)}% ({t.up}↑{t.down}↓)
+                                        <span className="opacity-60 inline-flex items-center gap-1">
+                                          {t.approvalRate.toFixed(0)}%
+                                          <ThumbsUp className="h-3 w-3" aria-hidden />
+                                          {t.up}
+                                          <ThumbsDown className="h-3 w-3" aria-hidden />
+                                          {t.down}
                                         </span>
                                       </Badge>
                                     </div>
@@ -3284,7 +3287,7 @@ export const AdminPage: React.FC = () => {
                             <div className="flex items-center justify-between">
                               <CardTitle className="text-sm font-mono text-neutral-300 flex items-center gap-2">
                                 <ThumbsDown className="h-4 w-4 text-destructive" />
-                                Recent Thumbs Down (last 20) — manual curation queue
+                                Recent Thumbs Down (last 20), manual curation queue
                               </CardTitle>
                               <ChevronRight
                                 className={`h-4 w-4 text-neutral-500 transition-transform ${

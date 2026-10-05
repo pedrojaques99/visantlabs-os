@@ -300,9 +300,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
         <div className="p-3 pt-0 animate-fade-in">
           {suggestedTags.length > 0 && (
             <div className="mb-2">
-              <span className="text-xs text-neutral-400 mb-1 block">
-                {t('mockup.suggested') || 'Suggested'}
-              </span>
+              <span className="text-xs text-neutral-400 mb-1 block">{t('mockup.suggested')}</span>
               <div className="flex flex-wrap gap-1.5">
                 {suggestedTags.map((tag) => {
                   const isSelected = selectedTags.includes(tag);
@@ -428,7 +426,7 @@ const ColorSection: React.FC<ColorSectionProps> = ({
           <span
             className={cn('text-xs', theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600')}
           >
-            {t('mockup.colorPalette') || 'Color Palette'}
+            {t('mockup.colorPalette')}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -460,10 +458,10 @@ const ColorSection: React.FC<ColorSectionProps> = ({
                 key={color}
                 onClick={() => onColorToggle(color)}
                 className={cn(
-                  'w-8 h-8 rounded-md border-2 transition-all duration-200',
+                  'w-8 h-8 rounded-md border-2 transition-colors duration-200',
                   selectedColors.includes(color)
-                    ? 'border-brand-cyan scale-110 shadow-lg shadow-brand-cyan/20'
-                    : 'border-transparent hover:border-neutral-500 hover:scale-105'
+                    ? 'border-brand-cyan'
+                    : 'border-transparent hover:border-neutral-500'
                 )}
                 style={{ backgroundColor: color }}
                 title={color}
@@ -552,8 +550,8 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
       <div className="flex items-center justify-between p-4 border-b border-neutral-800/50">
         <div className="flex items-center gap-3">
           <Compass size={20} className="text-neutral-400" />
-          <h2 className="text-sm font-semibold text-neutral-200 uppercase">
-            {t('canvasNodes.directorNode.title') || 'Director'}
+          <h2 className="text-sm font-semibold text-neutral-200">
+            {t('canvasNodes.directorNode.title')}
           </h2>
         </div>
         <Button
@@ -594,12 +592,12 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                 {isAnalyzing ? (
                   <>
                     <GlitchLoader size="sm" />
-                    {t('mockup.analyzing') || 'Analyzing...'}
+                    {t('mockup.analyzing')}
                   </>
                 ) : (
                   <>
                     <Diamond size={16} />
-                    {t('canvasNodes.directorNode.analyze') || 'Analyze Image'}
+                    {t('canvasNodes.directorNode.analyze')}
                   </>
                 )}
               </Button>
@@ -608,7 +606,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
             {hasAnalyzed && (
               <>
                 <CollapsableTagSection
-                  title={t('mockup.branding') || 'Branding'}
+                  title={t('mockup.branding')}
                   tags={AVAILABLE_BRANDING_TAGS}
                   selectedTags={selectedBrandingTags}
                   suggestedTags={suggestedBrandingTags}
@@ -634,7 +632,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                 />
 
                 <CollapsableTagSection
-                  title={t('mockup.location') || 'Location'}
+                  title={t('mockup.location')}
                   tags={AVAILABLE_LOCATION_TAGS}
                   selectedTags={selectedLocationTags}
                   suggestedTags={suggestedLocationTags}
@@ -660,7 +658,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                 />
 
                 <CollapsableTagSection
-                  title={t('mockup.angle') || 'Angle'}
+                  title={t('mockup.angle')}
                   tags={AVAILABLE_ANGLE_TAGS}
                   selectedTags={selectedAngleTags}
                   suggestedTags={suggestedAngleTags}
@@ -686,7 +684,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                 />
 
                 <CollapsableTagSection
-                  title={t('mockup.lighting') || 'Lighting'}
+                  title={t('mockup.lighting')}
                   tags={AVAILABLE_LIGHTING_TAGS}
                   selectedTags={selectedLightingTags}
                   suggestedTags={suggestedLightingTags}
@@ -712,7 +710,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                 />
 
                 <CollapsableTagSection
-                  title={t('mockup.effect') || 'Effect'}
+                  title={t('mockup.effect')}
                   tags={AVAILABLE_EFFECT_TAGS}
                   selectedTags={selectedEffectTags}
                   suggestedTags={suggestedEffectTags}
@@ -738,7 +736,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                 />
 
                 <CollapsableTagSection
-                  title={t('mockup.material') || 'Material'}
+                  title={t('mockup.material')}
                   tags={AVAILABLE_MATERIAL_TAGS}
                   selectedTags={selectedMaterialTags}
                   suggestedTags={suggestedMaterialTags}
@@ -781,7 +779,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                     <div className="flex items-center gap-2">
                       <FileText size={14} className="text-neutral-400 flex-shrink-0" />
                       <span className="text-xs font-medium text-neutral-500">
-                        {t('mockup.generatedPrompt') || 'Generated Prompt'}
+                        {t('mockup.generatedPrompt')}
                       </span>
                     </div>
                     {isGeneratingPrompt ? (
@@ -800,7 +798,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                     onClick={onGeneratePrompt}
                     className="w-full text-xs py-2"
                   >
-                    {t('mockup.generatePrompt') || 'Generate Prompt'}
+                    {t('mockup.generatePrompt')}
                   </Button>
                 )}
               </>
@@ -810,8 +808,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Smartphone size={32} className="text-neutral-600 mb-3" />
             <p className="text-sm text-neutral-500">
-              {t('canvasNodes.directorNode.connectImageFirst') ||
-                'Connect an image to the Director node to start'}
+              {t('canvasNodes.directorNode.connectImageFirst')}
             </p>
           </div>
         )}
