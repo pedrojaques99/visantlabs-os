@@ -271,17 +271,6 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
 
       {/* ── On-brand proof ──────────────────────────────────────── */}
       <section className="relative z-10 py-16 sm:py-20">
-        <div data-reveal className="mx-auto mb-10 flex max-w-6xl flex-col gap-3 px-6 text-center">
-          <span className="font-redhatmono text-2xs uppercase tracking-widest text-neutral-500">
-            {t('landing.proof.eyebrow')}
-          </span>
-          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            {t('landing.proof.title')}
-          </h2>
-          <p className="mx-auto max-w-xl text-sm leading-relaxed text-neutral-500">
-            {t('landing.proof.subtitle')}
-          </p>
-        </div>
         <Marquee names={PROOF} speed={90} tall srcOf={(name) => `/proof/brand-${name}.webp`} />
       </section>
 
@@ -336,9 +325,6 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
         className="relative z-10 mx-auto max-w-6xl px-6 py-20 sm:py-28 scroll-mt-16"
       >
         <div data-reveal className="mb-10 flex flex-col gap-3 text-center">
-          <span className="font-redhatmono text-2xs uppercase tracking-widest text-neutral-500">
-            {t('landing.bento.eyebrow')}
-          </span>
           <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
             {t('landing.bento.title')}
           </h2>

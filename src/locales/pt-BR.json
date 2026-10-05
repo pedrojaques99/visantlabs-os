@@ -1146,7 +1146,7 @@
       "description": "Seus designs em produtos reais. Em segundos.",
       "name": "Mockup Machine"
     },
-    "seoDescription": "Escolha entre nossas ferramentas criativas: Mockup Machine, Branding Machine, Budget Machine e Canvas Editor.",
+    "seoDescription": "Canvas, 3D Studio, Image Lab, Playground e Mockup Machine. Grátis pra começar.",
     "seoKeywords": "apps, aplicativos, ferramentas criativas, mockup, branding, budget, canvas",
     "searchPlaceholder": "Buscar apps...",
     "seoTitle": "Aplicativos Criativos",
@@ -1164,7 +1164,7 @@
     "edit_app": "Editar App",
     "failed_to_load_apps_from_database_using": "Não foi possível carregar os apps. Mostrando a lista offline.",
     "microTitle": "Plataforma // Ferramentas",
-    "headerDescription": "Seu kit criativo de ferramentas pro de design e experimentos gratuitos.",
+    "headerDescription": "As ferramentas que leem seu brand system, mais experimentos grátis.",
     "addApp": "Adicionar App",
     "allApps": "Todos",
     "categoriesLabel": "Categorias",
@@ -3777,8 +3777,8 @@
     "heroSubtitle": "e experimente a Mockup Machine®",
     "heroTitle": "Crie com moderação",
     "sendImage": "Enviar imagem",
-    "seoDescription": "Sobe sua marca uma vez e todo output de IA sai on-brand. Mockup, campanha e deck lendo o mesmo guia.",
-    "seoTitle": "Brand guidelines para agentes de IA. Visant Labs®"
+    "seoDescription": "Crie seu brand system uma vez e ensine pro seu agente. Mockup, campanha e deck saem na sua cor, na sua letra, no seu tom.",
+    "seoTitle": "Brand system para agentes de IA"
   },
   "messages": {
     "aiBusy": "A IA está um pouco ocupada. Mudamos para um prompt mais simples que você pode editar manualmente, ou tente regenerar.",
@@ -6354,17 +6354,12 @@
   },
   "landing": {
     "hero": {
-      "titleLine1": "Um guia de marca",
+      "titleLine1": "Um brand system",
       "titleLine2": "para o seu agente.",
-      "subtitle": "Sobe a marca uma vez. Todo output depois já sai na sua cor, na sua letra, no seu tom.",
-      "icp": "Pra designer que projeta com agente.",
+      "subtitle": "Crie uma vez. Ele lembra da sua cor, da sua letra e do seu tom em todo output.",
+      "icp": "Para designers que trabalham de forma inteligente.",
       "ctaPrimary": "Começar grátis",
       "ctaSecondary": "Ver os apps"
-    },
-    "proof": {
-      "eyebrow": "Saiu do guia",
-      "title": "Todas leram o mesmo guia.",
-      "subtitle": "Do saco de café ao dashboard. Catorze marcas."
     },
     "howItWorks": {
       "eyebrow": "Como funciona",
@@ -6373,7 +6368,7 @@
       "step1Title": "Sobe o material",
       "step1Desc": "PDF, imagem, link ou texto colado.",
       "step2Num": "02",
-      "step2Title": "Vira contexto tipado",
+      "step2Title": "Vira brand system",
       "step2Desc": "Paleta, régua de logo, tom. Campo a campo.",
       "step3Num": "03",
       "step3Title": "O agente produz",
@@ -6386,8 +6381,7 @@
       "label4": "Plugin do Figma"
     },
     "bento": {
-      "eyebrow": "Onde o guia entra",
-      "title": "As ferramentas que leem o guia.",
+      "title": "Nossas ferramentas",
       "brandName": "Brand Guidelines",
       "brandDesc": "A fonte que o resto lê.",
       "canvasName": "Canvas",
@@ -6400,8 +6394,8 @@
       "playgroundDesc": "Mini-app gerado e rodando na hora."
     },
     "finalCta": {
-      "title": "Dá o guia pro seu agente.",
-      "button": "Começar grátis",
+      "title": "Experimente criar um brand system",
+      "button": "Criar meu brand system",
       "anchor": "Grátis pra começar. Sem cartão."
     },
     "footer": {
@@ -6429,9 +6423,9 @@
       "designer": {
         "label": "Designer",
         "desc": "UI/UX, branding, visual design",
-        "actionTitle": "Crie seu primeiro mockup",
-        "actionDesc": "Um mockup profissional em segundos, direto do seu logo.",
-        "actionCta": "Criar mockup"
+        "actionTitle": "Seu brand system tá pronto",
+        "actionDesc": "Confere paleta, logo e tom antes do primeiro output.",
+        "actionCta": "Abrir meu brand system"
       },
       "agency": {
         "label": "Agência",
@@ -6489,7 +6483,7 @@
     "welcomeToast": "Bem-vindo à Visant Labs.",
     "demoBanner": {
       "label": "Você está na marca demo",
-      "message": "traga a sua pra gerar de verdade on-brand.",
+      "message": "traga a sua pra gerar na sua cor, na sua letra, no seu tom.",
       "cta": "Trazer minha marca"
     },
     "checklist": {
