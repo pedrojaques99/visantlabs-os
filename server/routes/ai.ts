@@ -1299,8 +1299,9 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
     const userOwnKey =
       (await getGeminiApiKey(req.userId!, { skipFallback: true })) ||
       (await getOpenAiApiKey(req.userId!, { skipFallback: true }));
-    await chargeCredits(req.userId!, 1, { isUserApiKey: !!userOwnKey });
-    charged = true;
+    // admin, BYOK e ilimitado NÃO são cobrados (charged:false). Marcar true sem
+    // olhar o retorno fazia o catch estornar crédito que nunca saiu: criava saldo.
+    charged = (await chargeCredits(req.userId!, 1, { isUserApiKey: !!userOwnKey })).charged;
 
     let brandContext = '';
     if (brandGuidelineId) {
