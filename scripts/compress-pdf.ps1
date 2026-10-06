@@ -99,6 +99,21 @@ if ($Mobile) {
 }
 $script:Suffix = if ($Mobile) { ' - MOBILE.pdf' } else { ' -.pdf' }
 
+# -dJPEGQ e' IGNORADO pelo dispositivo pdfwrite do Ghostscript. Testado em 10.05.0:
+# -JpegQuality 20 e 90 no mesmo PDF geram arquivos de 8927882 e 8927881 bytes
+# (1 byte de diferenca = so o valor gravado no metadado). O knob que vale e' o
+# QFactor do Distiller, via setdistillerparams. QFactor MENOR = qualidade MELHOR.
+function Get-DistillerArgs {
+  param([ValidateRange(1,100)][int]$Quality)
+  # q95 -> 0.17 | q85 -> 0.42 | q70 -> 0.79 | q50 -> 1.28  (Distiller: 0.15 alta, 0.76 media, 1.3 baixa)
+  $qf = 0.05 + ((100 - $Quality) / 100.0) * 2.45
+  # InvariantCulture obrigatorio: em pt-BR o "." viraria "," e quebraria o PostScript.
+  $qfs = [string]::Format([System.Globalization.CultureInfo]::InvariantCulture, '{0:0.###}', $qf)
+  $dict = "<< /QFactor $qfs /Blend 1 /ColorTransform 1 /HSamples [1 1 1 1] /VSamples [1 1 1 1] >>"
+  return @('-c', "<< /ColorImageDict $dict /GrayImageDict $dict >> setdistillerparams", '-f')
+}
+
+
 function Resolve-Tool {
   param([string[]]$Candidates, [string]$FriendlyName)
   foreach ($c in $Candidates) {
@@ -217,7 +232,6 @@ function Compress-One {
       '-dAutoFilterColorImages=false','-dAutoFilterGrayImages=false',
       '-dEncodeColorImages=true','-dEncodeGrayImages=true',
       '-dColorImageFilter=/DCTEncode','-dGrayImageFilter=/DCTEncode',
-      "-dJPEGQ=$JpegQuality",
       '-dCompressFonts=true','-dSubsetFonts=true'
     )
   } elseif ($Preset) {
@@ -232,8 +246,7 @@ function Compress-One {
       '-dColorImageDownsampleThreshold=1.0','-dGrayImageDownsampleThreshold=1.0','-dMonoImageDownsampleThreshold=1.0',
       '-dAutoFilterColorImages=false','-dAutoFilterGrayImages=false',
       '-dEncodeColorImages=true','-dEncodeGrayImages=true','-dEncodeMonoImages=true',
-      '-dColorImageFilter=/DCTEncode','-dGrayImageFilter=/DCTEncode','-dMonoImageFilter=/CCITTFaxEncode',
-      "-dJPEGQ=$q"
+      '-dColorImageFilter=/DCTEncode','-dGrayImageFilter=/DCTEncode','-dMonoImageFilter=/CCITTFaxEncode'
     )
   } else {
     $gsArgs += @(
@@ -242,7 +255,10 @@ function Compress-One {
       '-dColorImageDownsampleThreshold=1.0','-dGrayImageDownsampleThreshold=1.0','-dMonoImageDownsampleThreshold=1.0'
     )
   }
-  $gsArgs += @("-sOutputFile=$tmp", $In)
+  $gsArgs += @("-sOutputFile=$tmp")
+  # Só os modos que forçam DCTEncode têm qualidade JPEG pra controlar.
+  if ($Mobile -or $Aggressive) { $gsArgs += (Get-DistillerArgs -Quality $JpegQuality) }
+  $gsArgs += $In
 
   $fileName = Split-Path $In -Leaf
   $before = (Get-Item $In).Length
@@ -265,7 +281,10 @@ function Compress-One {
   $after = (Get-Item $Out).Length
   $pct   = if ($before -gt 0) { [math]::Round(100 - ($after / $before * 100), 1) } else { 0 }
   $afterMB = "{0:N2} MB" -f ($after / 1MB)
-  Write-Host " -> $afterMB (-${pct}%)" -ForegroundColor Green
+  # $pct negativo = cresceu; o "-" fixo do template gerava "(--40,4%)".
+  $sinal = if ($pct -ge 0) { "-$pct% menor" } else { "+$([Math]::Abs($pct))% MAIOR" }
+  $cor   = if ($pct -ge 0) { 'Green' } else { 'Yellow' }
+  Write-Host " -> $afterMB ($sinal)" -ForegroundColor $cor
 
   if ($Mobile) {
     $st = Get-PdfImageStats -File $Out
@@ -312,7 +331,9 @@ if ($Recurse) {
   }
   Write-Host ""
   $totalPct = if ($totalBefore -gt 0) { [math]::Round(100 - ($totalAfter / $totalBefore * 100), 1) } else { 0 }
-  Write-Host ("    Total: {0:N2} MB -> {1:N2} MB (-{2}%)" -f ($totalBefore/1MB), ($totalAfter/1MB), $totalPct) -ForegroundColor Green
+  $sinalTot = if ($totalPct -ge 0) { "-$totalPct% menor" } else { "+$([Math]::Abs($totalPct))% MAIOR" }
+  $corTot   = if ($totalPct -ge 0) { 'Green' } else { 'Yellow' }
+  Write-Host ("    Total: {0:N2} MB -> {1:N2} MB ({2})" -f ($totalBefore/1MB), ($totalAfter/1MB), $sinalTot) -ForegroundColor $corTot
 } else {
   if (-not (Test-Path $Path -PathType Leaf)) { throw "Input file not found: $Path" }
   $in = (Resolve-Path $Path).Path
