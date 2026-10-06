@@ -12,6 +12,7 @@ import {
   NAV_SECTIONS,
   type NavCtx,
 } from '@/config/navConfig';
+import { HIDE_APPS_ENABLED } from '@/config/hiddenApps';
 
 const baseCtx: NavCtx = {
   isAuthenticated: true,
@@ -213,9 +214,11 @@ describe('visibleSections', () => {
     expect(ids).not.toContain('brands'); // colapsado no Início (HOME-ADAPTIVE-IA)
   });
 
-  it('mostra tudo com as flags on', () => {
+  it('com as flags on, o foco no ouro (hiddenApps) tira Copilot e Canvas do rail', () => {
     const ids = visibleSections(baseCtx).map((s) => s.id);
-    expect(ids).toEqual(['cockpit', 'copilot', 'canvas', 'apps']);
+    expect(ids).toEqual(
+      HIDE_APPS_ENABLED ? ['cockpit', 'apps'] : ['cockpit', 'copilot', 'canvas', 'apps']
+    );
   });
 });
 

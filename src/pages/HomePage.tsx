@@ -11,6 +11,7 @@ import { AuthModal } from '@/components/AuthModal';
 import { LandingHome } from '@/components/landing/LandingHome';
 import { GettingStartedChecklist } from '@/components/onboarding/GettingStartedChecklist';
 import { FEATURE_COCKPIT, FEATURE_COCKPIT_HOME } from '@/config/featureFlags';
+import { isAppHidden } from '@/config/hiddenApps';
 
 // ─── Real mobile detection ────────────────────────────────────────────────────
 const detectRealMobile = (): boolean => {
@@ -203,7 +204,7 @@ const useLauncherApps = (): LauncherAppsResult => {
           .filter(Boolean)
           .filter((a) => !isMobile || !MOBILE_BLOCKED.has(a.appId))
           .filter((a) => isElevated || PUBLIC_APP_IDS.has(a.appId));
-        const withExtras = [...pinned, COMMUNITY_ENTRY, LABS_ENTRY];
+        const withExtras = [...pinned, COMMUNITY_ENTRY, LABS_ENTRY].filter((a) => !isAppHidden(a));
         if (!isMobile && isElevated) withExtras.push(EXPORTER_ENTRY);
         setApps(smartSort(withExtras));
       })

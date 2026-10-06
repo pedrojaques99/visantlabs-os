@@ -30,6 +30,7 @@ import { appsService, AppConfig } from '@/services/appsService';
 import { getLucideIcon } from '@/lib/ui/lucideIcon';
 import { usePinnedNav } from '@/hooks/usePinnedNav';
 import { FEATURE_COPILOT } from '@/config/featureFlags';
+import { isAppHidden } from '@/config/hiddenApps';
 import { AppEditDialog } from '@/components/AppEditDialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -84,6 +85,8 @@ const ADMIN_CATEGORY: CategoryDef = { key: 'admin', icon: ShieldCheck };
 const CORE_CATEGORY_KEYS = new Set(['pro', 'creative']);
 
 const appId = (app: any): string => app.id || app.appId;
+// Ids do banco nem sempre batem com o estático (`mockupmachine` vs `mockup-machine`).
+const normId = (id: string): string => id.toLowerCase().replace(/[^a-z0-9]/g, '');
 
 // ─── Skeleton ───────────────────────────────────────────────────────────────
 
@@ -644,10 +647,10 @@ export const AppsPage: React.FC = () => {
       if (!opts?.silent) setIsLoading(true);
       try {
         const data = await appsService.getAll();
-        const dbAppIds = new Set(data.map((app) => app.appId));
+        const dbAppIds = new Set(data.map((app) => normId(app.appId)));
 
         if (isAdmin) {
-          const missingApps = staticAppsData.filter((app) => !dbAppIds.has(app.id));
+          const missingApps = staticAppsData.filter((app) => !dbAppIds.has(normId(app.id)));
           if (missingApps.length > 0) {
             await appsService.seed(staticAppsData);
             const syncedData = await appsService.getAll();
@@ -656,9 +659,9 @@ export const AppsPage: React.FC = () => {
           }
         }
 
-        const staticById = new Map(staticAppsData.map((a) => [a.id, a]));
+        const staticById = new Map(staticAppsData.map((a) => [normId(a.id), a]));
         const mergedDbApps = data.map((dbApp) => {
-          const s = staticById.get(dbApp.appId);
+          const s = staticById.get(normId(dbApp.appId));
           if (!s) return dbApp;
           return {
             ...dbApp,
@@ -673,7 +676,7 @@ export const AppsPage: React.FC = () => {
         });
 
         const missingStaticApps = staticAppsData
-          .filter((app) => !dbAppIds.has(app.id))
+          .filter((app) => !dbAppIds.has(normId(app.id)))
           .map((app) => ({ ...app, appId: app.id, description: app.desc })) as any[];
 
         setApps(
@@ -721,7 +724,9 @@ export const AppsPage: React.FC = () => {
 
   // Quem o usuário pode ver: oculto, admin-only e "em breve" só pro admin.
   const isListed = useCallback(
-    (app: any) => isAdmin || (!app.isHidden && !app.adminOnly && app.badgeVariant !== 'comingSoon'),
+    (app: any) =>
+      !isAppHidden(app) &&
+      (isAdmin || (!app.isHidden && !app.adminOnly && app.badgeVariant !== 'comingSoon')),
     [isAdmin]
   );
 

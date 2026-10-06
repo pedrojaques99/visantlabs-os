@@ -13,6 +13,7 @@
  * (AppSidebar/AppShell) consome; nenhum componente decide navegação por conta.
  */
 import { FEATURE_ALPHA_TOOLS } from '@/config/featureFlags';
+import { HIDE_APPS_ENABLED, RAIL_HIDDEN_SECTIONS } from '@/config/hiddenApps';
 import type { LucideIcon } from '@/lib/ui/icons';
 import {
   Home,
@@ -399,7 +400,17 @@ export const LIBRARY_ITEMS: ContextNavItem[] = [
       ]
     : []),
   { id: 'my-outputs', labelKey: 'nav.library.myOutputs', to: '/my-outputs', icon: Images },
-  { id: 'references', labelKey: 'nav.library.references', to: '/references', icon: Library },
+  // Referências saiu do rail (foco no ouro, config/hiddenApps.ts); a rota /references segue viva.
+  ...(HIDE_APPS_ENABLED
+    ? []
+    : [
+        {
+          id: 'references',
+          labelKey: 'nav.library.references',
+          to: '/references',
+          icon: Library,
+        } as ContextNavItem,
+      ]),
   { id: 'community', labelKey: 'nav.library.community', to: '/community', icon: Users },
 ];
 
@@ -541,7 +552,8 @@ export const NAV_SECTIONS: NavSection[] = [
     labelKey: 'nav.copilot.label',
     icon: Bot,
     to: '/copilot',
-    visibleWhen: (ctx) => ctx.flags.copilot,
+    // Foco no ouro: Copilot fica escondido mesmo com a flag ligada (config/hiddenApps.ts).
+    visibleWhen: (ctx) => ctx.flags.copilot && !HIDE_APPS_ENABLED,
     contextNav: () => [],
   },
   {
@@ -549,7 +561,8 @@ export const NAV_SECTIONS: NavSection[] = [
     labelKey: 'nav.canvas.label',
     icon: Workflow,
     to: '/canvas',
-    visibleWhen: () => true,
+    // Fora do rail principal (foco no ouro); segue em /apps e acessível por link.
+    visibleWhen: () => !(HIDE_APPS_ENABLED && RAIL_HIDDEN_SECTIONS.includes('canvas')),
     contextNav: emptyNav,
   },
   {

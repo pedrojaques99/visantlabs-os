@@ -10,6 +10,7 @@ import { usePinnedNav } from '@/hooks/usePinnedNav';
 import { useRecentCommands } from '@/hooks/useRecentCommands';
 import { visibleSections, type NavCtx } from '@/config/navConfig';
 import { FEATURE_COCKPIT, FEATURE_COPILOT } from '@/config/featureFlags';
+import { HIDE_APPS_ENABLED, isAppHidden } from '@/config/hiddenApps';
 import { appsService } from '@/services/appsService';
 import { getLucideIcon } from '@/lib/ui/lucideIcon';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';
@@ -92,7 +93,7 @@ export function useShellCommands(): ShellCommand[] {
 
     // ── Apps ───────────────────────────────────────────────────────────────
     const appCmds: ShellCommand[] = apps
-      .filter((a) => !a.isHidden)
+      .filter((a) => !a.isHidden && !isAppHidden(a))
       .map((a) => {
         const Icon = getLucideIcon(a.icon) ?? LayoutGrid;
         const id = `app:${a.appId}`;
@@ -144,7 +145,7 @@ export function useShellCommands(): ShellCommand[] {
     // ── Ações ────────────────────────────────────────────────────────────────
     const suffix = activeBrandName ? `: ${activeBrandName}` : '';
     const agentCmds: ShellCommand[] =
-      FEATURE_COPILOT && activeBrandName
+      FEATURE_COPILOT && !HIDE_APPS_ENABLED && activeBrandName
         ? [
             { id: 'act:mockupKit', prompt: t('copilot.suggestions.mockupKit') },
             { id: 'act:seasonal', prompt: t('copilot.suggestions.seasonalCampaign') },
