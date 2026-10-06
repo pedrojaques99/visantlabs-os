@@ -101,6 +101,8 @@ export const SECTION_VISIBILITY: Record<string, SectionVisibility> = {
 export interface PublicTab {
   id: string;
   label: string;
+  /** Chave i18n da aba (brandView.*); `label` fica só como fallback de dev. */
+  labelKey: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
   sections: BrandViewSection[];
 }
@@ -109,6 +111,7 @@ export const PUBLIC_TABS: PublicTab[] = [
   {
     id: 'all',
     label: 'Overview',
+    labelKey: 'brandView.tabOverview',
     icon: Globe,
     sections: [
       'identity',
@@ -128,12 +131,14 @@ export const PUBLIC_TABS: PublicTab[] = [
   {
     id: 'identity',
     label: 'Identity',
+    labelKey: 'brandView.identity',
     icon: FileText,
     sections: ['identity', 'guidelines'],
   },
   {
     id: 'strategy',
     label: 'Strategy',
+    labelKey: 'brandView.tabStrategy',
     icon: Compass,
     sections: [
       'coreMessage',
@@ -148,30 +153,35 @@ export const PUBLIC_TABS: PublicTab[] = [
   {
     id: 'colors',
     label: 'Colors',
+    labelKey: 'brandView.colors',
     icon: Palette,
     sections: ['colors'],
   },
   {
     id: 'typography',
     label: 'Typography',
+    labelKey: 'brandView.typography',
     icon: Type,
     sections: ['typography'],
   },
   {
     id: 'logos',
     label: 'Assets',
+    labelKey: 'brandView.tabAssets',
     icon: ImageIcon,
     sections: ['logos'],
   },
   {
     id: 'media',
     label: 'Library',
+    labelKey: 'brandView.tabLibrary',
     icon: ImageIcon,
     sections: ['media'],
   },
   {
     id: 'preview',
     label: 'Preview',
+    labelKey: 'brandView.tabPreview',
     icon: Smartphone,
     sections: [],
   },

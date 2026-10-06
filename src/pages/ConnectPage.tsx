@@ -7,7 +7,7 @@ import { useLayout } from '../hooks/useLayout';
 import { authService } from '../services/authService';
 import { cn } from '../lib/utils';
 import { Check, Copy, ArrowRight, ExternalLink, Terminal, ChevronRight } from '@/lib/ui/icons';
-import { getCurrentLocale } from '../utils/localeUtils';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const API = (import.meta as any).env?.VITE_API_URL || '/api';
 
@@ -31,6 +31,8 @@ interface InviteData {
   creator: { name: string; picture: string | null } | null;
 }
 
+type Assistant = { id: string; name: string; tag: string; open: string; steps: string[] };
+
 type Step = 'loading' | 'invite' | 'auth' | 'accepting' | 'connected' | 'error';
 
 // ── Deep links ──
@@ -50,14 +52,14 @@ const DEV_PROVIDERS = [
   {
     id: 'cursor',
     name: 'Cursor',
-    sub: 'One-click install',
+    sub: 'connect.oneClick',
     href: cursorLink(),
     action: 'connect' as const,
   },
   {
     id: 'vscode',
     name: 'VS Code',
-    sub: 'One-click install',
+    sub: 'connect.oneClick',
     href: vscodeLink(),
     action: 'connect' as const,
   },
@@ -69,135 +71,6 @@ const DEV_PROVIDERS = [
     cli: `claude mcp add --transport http visant ${MCP_URL}`,
   },
 ] as const;
-
-// ── Localized copy (the brand manual is PT-first, so the connect flow follows) ──
-type Assistant = { id: string; name: string; tag: string; open: string; steps: string[] };
-interface ConnectCopy {
-  loading: string;
-  errorHint: string;
-  back: string;
-  invitedBy: (name: string) => string;
-  inviteDesc: (brand: string) => string;
-  ctaAuthed: string;
-  ctaGuest: string;
-  freeHint: string;
-  accepting: (brand: string) => string;
-  connectedTitle: (brand: string) => string;
-  connectedSubtext: string;
-  step1: string;
-  step2: string;
-  dashboard: string;
-  dev: string;
-  open: string;
-  assistants: Assistant[];
-  prompts: (brand: string) => string[];
-}
-
-const COPY: Record<'pt' | 'en', ConnectCopy> = {
-  pt: {
-    loading: 'Carregando convite...',
-    errorHint:
-      'Este link de conexão pode ter expirado ou já ter sido usado. Abra o link da sua marca de novo e toque em Conectar para gerar um novo, ou peça pra quem te enviou reenviar.',
-    back: 'Voltar ao início',
-    invitedBy: (n) => `Enviado por ${n}`,
-    inviteDesc: (b) =>
-      `Conecte ${b} ao seu assistente de IA (Claude, ChatGPT…). Ele passa a criar, escrever e desenhar com as cores, fontes, logos e tom de voz da marca.`,
-    ctaAuthed: 'Aceitar e conectar',
-    ctaGuest: 'Criar conta grátis e conectar',
-    freeHint: 'Grátis. Entre com o Google em um clique.',
-    accepting: (b) => `Conectando ${b}...`,
-    connectedTitle: (b) => `${b} está conectada`,
-    connectedSubtext:
-      'Dois passos e seu assistente de IA passa a criar, escrever e desenhar no padrão da marca.',
-    step1: '1. Conecte seu assistente',
-    step2: '2. Teste: abra seu assistente e peça',
-    dashboard: 'Ir para o painel',
-    dev: 'Para desenvolvedores (Cursor, VS Code, Terminal)',
-    open: 'Abrir',
-    assistants: [
-      {
-        id: 'claude',
-        name: 'Claude',
-        tag: 'Recomendado',
-        open: 'https://claude.ai/customize/connectors?modal=add-custom-connector',
-        steps: [
-          'No Claude, abra Configurações e depois Conectores',
-          'Clique em "Adicionar conector personalizado"',
-          'Cole o link abaixo',
-          'Faça login com sua conta quando o Claude pedir',
-        ],
-      },
-      {
-        id: 'chatgpt',
-        name: 'ChatGPT',
-        tag: '',
-        open: 'https://chatgpt.com/apps#settings/Connectors',
-        steps: [
-          'No ChatGPT, abra Configurações e depois Conectores',
-          'Adicione um conector',
-          'Cole o link abaixo',
-          'Faça login com sua conta quando o ChatGPT pedir',
-        ],
-      },
-    ],
-    prompts: (b) => [
-      `Crie um post de Instagram no padrão da ${b}.`,
-      `Escreva uma descrição de produto no tom de voz da ${b}.`,
-      `Quais são as cores, fontes e logos da ${b}?`,
-    ],
-  },
-  en: {
-    loading: 'Loading invite...',
-    errorHint:
-      'This connect link may have expired or already been used. Open your brand link again and tap Connect for a fresh one, or ask the team that shared it to resend.',
-    back: 'Back to home',
-    invitedBy: (n) => `Invited by ${n}`,
-    inviteDesc: (b) =>
-      `Connect ${b} to your AI assistant (Claude, ChatGPT…). It will then design and write with the brand's colors, fonts, logos and voice.`,
-    ctaAuthed: 'Accept & Connect',
-    ctaGuest: 'Create free account & connect',
-    freeHint: 'Free. Sign in with Google in one click.',
-    accepting: (b) => `Connecting ${b}...`,
-    connectedTitle: (b) => `${b} is connected`,
-    connectedSubtext: 'Two steps and your AI assistant will design and write on-brand.',
-    step1: '1. Connect your assistant',
-    step2: '2. Try it: open your assistant and ask',
-    dashboard: 'Go to dashboard',
-    dev: 'For developers (Cursor, VS Code, Terminal)',
-    open: 'Open',
-    assistants: [
-      {
-        id: 'claude',
-        name: 'Claude',
-        tag: 'Recommended',
-        open: 'https://claude.ai/customize/connectors?modal=add-custom-connector',
-        steps: [
-          'In Claude, open Settings, then Connectors',
-          'Click "Add custom connector"',
-          'Paste the link below',
-          'Sign in with your account when Claude asks',
-        ],
-      },
-      {
-        id: 'chatgpt',
-        name: 'ChatGPT',
-        tag: '',
-        open: 'https://chatgpt.com/apps#settings/Connectors',
-        steps: [
-          'In ChatGPT, open Settings, then Connectors',
-          'Add a connector',
-          'Paste the link below',
-          'Sign in with your account when ChatGPT asks',
-        ],
-      },
-    ],
-    prompts: (b) => [
-      `Create an on-brand Instagram post for ${b}.`,
-      `Write a product description in ${b}'s tone of voice.`,
-      `What are ${b}'s colors, fonts and logos?`,
-    ],
-  },
-};
 
 // ── Animations ──
 
@@ -229,24 +102,58 @@ export default function ConnectPage() {
   const [copied, setCopied] = useState<string | null>(null);
   const [brandName, setBrandName] = useState('');
 
-  // Brand manual is PT-first → the connect flow follows the same locale.
-  const L = COPY[getCurrentLocale() === 'pt-BR' ? 'pt' : 'en'];
+  const { t } = useTranslation();
+  const L = {
+    loading: t('connect.loading'),
+    errorHint: t('connect.errorHint'),
+    back: t('connect.back'),
+    invitedBy: (name: string) => t('connect.invitedBy', { name }),
+    inviteDesc: (brand: string) => t('connect.inviteDesc', { brand }),
+    ctaAuthed: t('connect.ctaAuthed'),
+    ctaGuest: t('connect.ctaGuest'),
+    freeHint: t('connect.freeHint'),
+    accepting: (brand: string) => t('connect.accepting', { brand }),
+    connectedTitle: (brand: string) => t('connect.connectedTitle', { brand }),
+    connectedSubtext: t('connect.connectedSubtext'),
+    step1: t('connect.step1'),
+    step2: t('connect.step2'),
+    dashboard: t('connect.dashboard'),
+    dev: t('connect.dev'),
+    open: t('connect.open'),
+    assistants: [
+      {
+        id: 'claude',
+        name: 'Claude',
+        tag: t('connect.recommended'),
+        open: 'https://claude.ai/customize/connectors?modal=add-custom-connector',
+        steps: [1, 2, 3, 4].map((n) => t(`connect.claude.step${n}`)),
+      },
+      {
+        id: 'chatgpt',
+        name: 'ChatGPT',
+        tag: '',
+        open: 'https://chatgpt.com/apps#settings/Connectors',
+        steps: [1, 2, 3, 4].map((n) => t(`connect.chatgpt.step${n}`)),
+      },
+    ] as Assistant[],
+    prompts: (brand: string) => [1, 2, 3].map((n) => t(`connect.prompt${n}`, { brand })),
+  };
 
   useEffect(() => {
     if (!token) {
-      setError('Invalid link');
+      setError(t('connect.errors.invalidLink'));
       setStep('error');
       return;
     }
     fetchInvite(token);
   }, [token]);
 
-  async function fetchInvite(t: string) {
+  async function fetchInvite(inviteToken: string) {
     try {
-      const res = await fetch(`${API}/brand-guidelines/invite/${t}`);
+      const res = await fetch(`${API}/brand-guidelines/invite/${inviteToken}`);
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        setError(d.error || 'This invite is no longer available');
+        setError(d.error || t('connect.errors.unavailable'));
         setStep('error');
         return;
       }
@@ -255,7 +162,7 @@ export default function ConnectPage() {
       setBrandName(data.brand.name || 'Brand Kit');
       setStep('invite');
     } catch {
-      setError('Unable to load invite');
+      setError(t('connect.errors.loadFailed'));
       setStep('error');
     }
   }
@@ -274,7 +181,7 @@ export default function ConnectPage() {
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        setError(d.error || 'Could not accept invite');
+        setError(d.error || t('connect.errors.acceptFailed'));
         setStep('error');
         return;
       }
@@ -282,7 +189,7 @@ export default function ConnectPage() {
       setBrandName(data.brandName || brandName);
       setStep('connected');
     } catch {
-      setError('Connection failed');
+      setError(t('connect.errors.connectionFailed'));
       setStep('error');
     }
   }
@@ -599,6 +506,7 @@ function CopyBtn({
   onCopy: (t: string, id: string) => void;
   className?: string;
 }) {
+  const { t } = useTranslation();
   const isCopied = copied === id;
   return (
     <button
@@ -620,7 +528,7 @@ function CopyBtn({
             transition={{ duration: 0.15 }}
             className="flex items-center gap-1 text-success"
           >
-            <Check className="w-3 h-3" /> Copied
+            <Check className="w-3 h-3" /> {t('connect.copied')}
           </motion.span>
         ) : (
           <motion.span
@@ -631,7 +539,7 @@ function CopyBtn({
             transition={{ duration: 0.15 }}
             className="flex items-center gap-1"
           >
-            <Copy className="w-3 h-3" /> Copy
+            <Copy className="w-3 h-3" /> {t('common.copy')}
           </motion.span>
         )}
       </AnimatePresence>
@@ -733,7 +641,9 @@ function ProviderRow({
   copied: string | null;
   onCopy: (t: string, id: string) => void;
 }) {
+  const { t } = useTranslation();
   const p = provider;
+  const sub = p.sub.startsWith('connect.') ? t(p.sub) : p.sub;
 
   return (
     <div
@@ -748,10 +658,10 @@ function ProviderRow({
           <div className="text-sm font-medium text-foreground">{p.name}</div>
           {p.action === 'cli' ? (
             <code className="text-2xs text-muted-foreground font-mono truncate block max-w-[260px]">
-              {p.sub}
+              {sub}
             </code>
           ) : (
-            <div className="text-2xs text-muted-foreground">{p.sub}</div>
+            <div className="text-2xs text-muted-foreground">{sub}</div>
           )}
         </div>
       </div>

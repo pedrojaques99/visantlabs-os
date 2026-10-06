@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '../../lib/utils';
-import { Dices, RotateCcw, Pickaxe, Loader2 } from '@/lib/ui/icons';
+import { Pickaxe } from '@/lib/ui/icons';
 import { Thumb } from '../ui/Thumb';
 import type { UploadedImage, DesignType } from '../../types/types';
 import { useMockup } from './MockupContext';
@@ -73,8 +73,6 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
     selectedBrandingTags,
     selectedTags,
     isSurpriseMeMode,
-    isGeneratingPrompt,
-    isLoading,
   } = useMockup();
 
   const [mode, setMode] = React.useState<'essential' | 'expert'>('essential');
@@ -89,8 +87,6 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
     brandingComplete: selectedBrandingTags.length > 0,
     categoriesComplete: selectedTags.length > 0,
   });
-
-  const isOutputsLoading = isLoading.some((v) => v);
 
   // --- Compact Sidebar (Essentialist / Intelligent) ---
   if (isCollapsed && hasAnalyzed) {
@@ -109,56 +105,6 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
           fallbackIcon={Pickaxe}
           className="w-11 h-11 rounded-xl object-cover border border-border"
         />
-
-        <div className="flex-1 flex flex-col items-center gap-7">
-          {/* Surprise Me Icon */}
-          <button
-            onClick={() => onSurpriseMe(true)}
-            disabled={isGeneratingPrompt || isOutputsLoading}
-            className={cn(
-              'w-11 h-11 rounded-xl flex items-center justify-center border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              isSurpriseMeMode
-                ? 'bg-brand-cyan/10 border-brand-cyan/40 text-foreground'
-                : 'text-neutral-500 hover:text-foreground border-transparent hover:bg-muted'
-            )}
-            title={t('mockup.surpriseMe')}
-            aria-label={t('mockup.surpriseMe')}
-          >
-            <Dices size={20} className={cn(isGeneratingPrompt && 'animate-spin')} />
-          </button>
-
-          {/* Generate Icon (Core Action) */}
-          <button
-            onClick={onGenerateClick}
-            disabled={isOutputsLoading}
-            className={cn(
-              'w-12 h-12 rounded-xl flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              isOutputsLoading
-                ? 'bg-neutral-800 text-neutral-600 border border-neutral-800'
-                : isPromptReady
-                  ? 'bg-brand-cyan text-black hover:bg-brand-cyan/90'
-                  : 'bg-neutral-900 text-neutral-500 hover:text-foreground border border-neutral-800 hover:bg-neutral-800'
-            )}
-            title={t('mockup.generateOutputs')}
-            aria-label={t('mockup.generateOutputs')}
-          >
-            {isOutputsLoading ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <Pickaxe size={22} />
-            )}
-          </button>
-
-          {/* Start Over Button */}
-          <button
-            onClick={onStartOver}
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-neutral-500 hover:text-destructive hover:bg-destructive/5 border border-transparent hover:border-destructive/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            title={t('mockup.startOver')}
-            aria-label={t('mockup.startOver')}
-          >
-            <RotateCcw size={18} />
-          </button>
-        </div>
       </aside>
     );
   }

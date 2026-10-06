@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
   onUpdate,
   span,
 }) => {
+  const { t } = useTranslation();
   const [isLinking, setIsLinking] = useState(false);
   const [isUnlinking, setIsUnlinking] = useState(false);
   const [figmaUrl, setFigmaUrl] = useState('');
@@ -44,9 +46,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
     try {
       parsedUrl = new URL(trimmedUrl);
     } catch {
-      toast.error(
-        'URL inválida. Use uma URL do Figma (figma.com/file/... ou figma.com/design/...)'
-      );
+      toast.error(t('brandEditor.figmaInvalidUrl'));
       return;
     }
 
@@ -56,9 +56,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
     const isExpectedPath = path.startsWith('/file/') || path.startsWith('/design/');
 
     if (!isAllowedHost || !isExpectedPath) {
-      toast.error(
-        'URL inválida. Use uma URL do Figma (figma.com/file/... ou figma.com/design/...)'
-      );
+      toast.error(t('brandEditor.figmaInvalidUrl'));
       return;
     }
 
@@ -70,9 +68,9 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
         figmaFileKey: result.figmaFileKey,
       });
       setFigmaUrl('');
-      toast.success('Arquivo Figma linkado com sucesso!');
+      toast.success(t('brandEditor.figmaLinked'));
     } catch (error: any) {
-      toast.error(error.message || 'Erro ao linkar arquivo Figma');
+      toast.error(error.message || t('brandEditor.figmaLinkFailed'));
     } finally {
       setIsLinking(false);
     }
@@ -89,9 +87,9 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
         figmaFileKey: undefined,
         figmaSyncedAt: undefined,
       });
-      toast.success('Arquivo Figma desvinculado');
+      toast.success(t('brandEditor.figmaUnlinked'));
     } catch (error: any) {
-      toast.error(error.message || 'Erro ao desvincular');
+      toast.error(error.message || t('brandEditor.figmaUnlinkFailed'));
     } finally {
       setIsUnlinking(false);
     }
@@ -107,15 +105,15 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
       setIsModalOpen(true);
     } catch (error: any) {
       if (error.needsToken) {
-        toast.error('Token do Figma não configurado', {
-          description: 'Vá em Perfil > Gerenciar para configurar seu token.',
+        toast.error(t('brandEditor.figmaNoToken'), {
+          description: t('brandEditor.figmaNoTokenHint'),
           action: {
-            label: 'Configurar',
+            label: t('brandEditor.configure'),
             onClick: () => (window.location.href = '/profile?tab=configuration'),
           },
         });
       } else {
-        toast.error(error.message || 'Erro ao carregar preview do Figma');
+        toast.error(error.message || t('brandEditor.figmaPreviewFailed'));
       }
     } finally {
       setIsPreviewing(false);
@@ -137,10 +135,10 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return 'agora';
-    if (diffMins < 60) return `${diffMins}min atrás`;
-    if (diffHours < 24) return `${diffHours}h atrás`;
-    return `${diffDays}d atrás`;
+    if (diffMins < 1) return t('brandEditor.timeNow');
+    if (diffMins < 60) return t('brandEditor.timeMinAgo', { n: diffMins });
+    if (diffHours < 24) return t('brandEditor.timeHourAgo', { n: diffHours });
+    return t('brandEditor.timeDayAgo', { n: diffDays });
   };
 
   return (
@@ -150,7 +148,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
           {/* Linked state */}
           <div className="flex items-center gap-2">
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-muted-foreground mb-1">Arquivo Linkado</p>
+              <p className="text-xs text-muted-foreground mb-1">{t('brandEditor.figmaLinkedFile')}</p>
               <div className="flex items-center gap-2">
                 <p className="text-xs text-foreground truncate font-mono">
                   {guideline.figmaFileKey}
@@ -160,7 +158,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
                   size="icon"
                   onClick={handleOpenInFigma}
                   className="h-5 w-5 text-muted-foreground hover:text-foreground p-0"
-                  title="Abrir no Figma"
+                  title={t('brandEditor.openInFigma')}
                 >
                   <ExternalLink size={10} />
                 </Button>
@@ -175,7 +173,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
                 className="h-8 px-4 text-xs gap-1.5"
               >
                 {isPreviewing ? <GlitchLoader size={12} /> : <Figma size={12} />}
-                Importar do Figma
+                {t('brandEditor.importFromFigma')}
               </Button>
             </div>
           </div>
@@ -196,9 +194,9 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
 
           {/* Sync status */}
           {guideline.figmaSyncedAt && (
-            <div className="flex items-center gap-2 text-2xs text-neutral-500">
+            <div className="flex items-center gap-2 text-2xs text-muted-foreground">
               <RefreshCw size={10} className="text-success" />
-              <span>Sync: {formatSyncTime(guideline.figmaSyncedAt)}</span>
+              <span>t('brandEditor.syncLabel'): {formatSyncTime(guideline.figmaSyncedAt)}</span>
             </div>
           )}
 
@@ -208,28 +206,28 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
             size="sm"
             onClick={handleUnlink}
             disabled={isUnlinking}
-            className="h-7 px-2 text-2xs text-neutral-500 hover:text-destructive hover:bg-destructive/10"
+            className="h-7 px-2 text-2xs text-muted-foreground hover:text-destructive hover:bg-destructive/10"
           >
             {isUnlinking ? (
               <GlitchLoader size={10} className="mr-1" />
             ) : (
               <Unlink size={10} className="mr-1" />
             )}
-            Desvincular
+            {t('brandEditor.unlink')}
           </Button>
         </div>
       ) : (
         <div className="space-y-3">
           {/* Unlinked state */}
-          <p className="text-2xs text-neutral-500">
-            Conecte um arquivo Figma para sincronizar cores, tipografia e tokens automaticamente.
+          <p className="text-2xs text-muted-foreground">
+            {t('brandEditor.figmaConnectHint')}
           </p>
 
           <div className="flex gap-2">
             <Input
               value={figmaUrl}
               onChange={(e) => setFigmaUrl(e.target.value)}
-              placeholder="Cole a URL do arquivo Figma..."
+              placeholder={t('brandEditor.figmaUrlPlaceholder')}
               className="h-8 text-xs"
               onKeyDown={(e) => e.key === 'Enter' && handleLink()}
             />
@@ -244,8 +242,8 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
             </Button>
           </div>
 
-          <p className="text-2xs text-neutral-600">
-            O sync acontece automaticamente quando você abre o arquivo no plugin Figma.
+          <p className="text-2xs text-muted-foreground/70">
+            {t('brandEditor.figmaSyncHint')}
           </p>
         </div>
       )}

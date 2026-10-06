@@ -51,7 +51,7 @@ export const NotFoundPage: React.FC = () => {
               className="space-y-6"
               style={{ verticalAlign: 'bottom', marginBottom: '16px', height: '193px' }}
             >
-              <VHSText fontSize="text-6xl md:text-7xl lg:text-8xl" theme={theme}>
+              <VHSText fontSize="text-6xl md:text-7xl lg:text-8xl" color="brand-cyan" theme={theme}>
                 404
               </VHSText>
             </div>
@@ -102,7 +102,7 @@ export const NotFoundPage: React.FC = () => {
               <div className="flex flex-wrap justify-center gap-6">
                 <Button
                   variant="ghost"
-                  onClick={() => navigate('/')}
+                  onClick={() => navigate('/mockupmachine')}
                   className={`text-sm hover:text-foreground transition-colors cursor-pointer ${
                     theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                   }`}

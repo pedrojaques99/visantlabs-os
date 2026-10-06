@@ -31,11 +31,9 @@ export const NodePlaceholder: React.FC<NodePlaceholderProps> = ({
           {uploadButton || (
             <>
               {emptyIcon}
-              <span className="text-xs font-mono text-neutral-500 text-center">{emptyMessage}</span>
+              <span className="text-xs text-neutral-500 text-center">{emptyMessage}</span>
               {emptySubmessage && (
-                <span className="text-xs font-mono text-neutral-600 text-center">
-                  {emptySubmessage}
-                </span>
+                <span className="text-xs text-neutral-600 text-center">{emptySubmessage}</span>
               )}
             </>
           )}

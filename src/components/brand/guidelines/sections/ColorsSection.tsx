@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,7 @@ interface ContrastPair {
 }
 
 export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdate, span }) => {
+  const { t } = useTranslation();
   const local = guideline.colors || [];
   const [showWCAG, setShowWCAG] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -47,11 +49,11 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
       const ranked = (colors || []).filter((c) => (c as any)?.usage > 0).length;
       toast.success(
         ranked > 0
-          ? 'Color hierarchy updated from asset usage'
-          : 'No palette colors found across the assets'
+          ? t('brandEditor.colorUsageUpdated')
+          : t('brandEditor.colorUsageNone')
       );
     } catch {
-      toast.error('Failed to analyze color usage');
+      toast.error(t('brandEditor.colorUsageFailed'));
     } finally {
       setAnalyzing(false);
     }
@@ -104,7 +106,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
 
   const copyAll = (format: 'json' | 'css' | 'tailwind' | 'cmyk') => {
     if (!local.length) {
-      toast.error('No colors to copy');
+      toast.error(t('brandEditor.noColorsToCopy'));
       return;
     }
     let content = '';
@@ -143,14 +145,14 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
         })
         .join('\n');
     copyToClipboard(content);
-    toast.success(`Copied ${local.length} colors as ${format.toUpperCase()}`);
+    toast.success(t('brandEditor.colorsCopiedAs', { count: local.length, format: format.toUpperCase() }));
   };
 
   return (
     <SectionBlock
       id="colors"
       icon={<Palette size={14} />}
-      title="Colors"
+      title={t('brandView.colors')}
       span={span as any}
       actions={
         <div className="flex items-center gap-1">
@@ -160,8 +162,8 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
               size="icon-sm"
               onClick={analyzeUsage}
               disabled={analyzing}
-              title="Analyze color usage across assets (proportional hierarchy)"
-              aria-label="Analyze color usage across assets"
+              title={t('brandEditor.analyzeUsageTitle')}
+              aria-label={t('brandEditor.analyzeUsage')}
             >
               {analyzing ? <Loader2 size={12} className="animate-spin" /> : <BarChart3 size={12} />}
             </Button>
@@ -171,8 +173,8 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
               variant="action"
               size="icon-sm"
               onClick={() => setShowWCAG(!showWCAG)}
-              title="WCAG Contrast"
-              aria-label="Toggle WCAG matrix"
+              title={t('brandEditor.wcagContrast')}
+              aria-label={t('brandEditor.toggleWcag')}
             >
               <ShieldCheck size={12} />
             </Button>
@@ -180,7 +182,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
           {local.length > 0 && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="action" size="icon-sm" aria-label="Copy all colors">
+                <Button variant="action" size="icon-sm" aria-label={t('brandEditor.copyAllColors')}>
                   <Copy size={12} />
                 </Button>
               </DropdownMenuTrigger>
@@ -193,14 +195,14 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          <Button variant="action" size="icon-sm" onClick={addColor} aria-label="Add color">
+          <Button variant="action" size="icon-sm" onClick={addColor} aria-label={t('brandEditor.addColor')}>
             <Plus size={12} />
           </Button>
         </div>
       }
     >
       <div className="space-y-1.5 py-1">
-        {local.length === 0 && <p className="text-2xs text-neutral-700 py-2">No colors yet.</p>}
+        {local.length === 0 && <p className="text-2xs text-muted-foreground/50 py-2">{t('brandEditor.noColorsYet')}</p>}
         {local.map((c, i) => (
           <div key={i} className="flex items-center gap-3 group/color">
             {/* Color swatch + picker */}
@@ -220,22 +222,22 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
             <Input
               value={c.name || ''}
               onChange={(e) => updateColor(i, { name: e.target.value })}
-              className="h-7 flex-1 bg-transparent border-none p-0 text-xs font-medium text-neutral-200 focus-visible:ring-0 placeholder:text-neutral-700"
-              placeholder="Color name"
+              className="h-7 flex-1 bg-transparent border-none p-0 text-xs font-medium text-foreground focus-visible:ring-0 placeholder:text-muted-foreground/50"
+              placeholder={t('brandEditor.colorName')}
             />
             {/* Hex */}
             <span
-              className="text-2xs font-mono text-neutral-500 w-16 text-right cursor-pointer hover:text-neutral-300 transition-colors"
+              className="text-2xs font-mono text-muted-foreground w-16 text-right cursor-pointer hover:text-foreground transition-colors"
               onClick={() => {
                 copyToClipboard(c.hex);
-                toast.success(`Copied ${c.hex}`);
+                toast.success(t('brandView.copied', { hex: c.hex }));
               }}
-              title="Copy hex"
+              title={t('brandEditor.copyHex')}
             >
               {c.hex}
             </span>
             {/* CMYK */}
-            <span className="text-2xs font-mono text-neutral-700 w-28 text-right hidden sm:block">
+            <span className="text-2xs font-mono text-muted-foreground/50 w-28 text-right hidden sm:block">
               {(() => {
                 try {
                   const cm = c.cmyk || hexToCmyk(c.hex);
@@ -250,7 +252,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
               size="icon-sm"
               className="opacity-0 group-hover/color:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0"
               onClick={() => removeColor(i)}
-              aria-label="Remove color"
+              aria-label={t('brandEditor.removeColor')}
             >
               <Trash2 size={11} />
             </Button>
@@ -268,14 +270,14 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="mt-4 pt-4 border-t border-neutral-800 space-y-2">
+            <div className="mt-4 pt-4 border-t border-border space-y-2">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-neutral-500">WCAG Contrast</span>
+                <span className="text-xs font-medium text-muted-foreground">{t('brandEditor.wcagContrast')}</span>
                 <Button
                   variant="action"
                   size="icon-sm"
                   onClick={() => setShowWCAG(false)}
-                  aria-label="Close"
+                  aria-label={t('common.close')}
                 >
                   <X size={10} />
                 </Button>
@@ -293,10 +295,10 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                     className="w-5 h-5 rounded border border-border shrink-0"
                     style={{ backgroundColor: pair.bg }}
                   />
-                  <span className="text-2xs font-mono text-neutral-400 flex-1 truncate">
+                  <span className="text-2xs font-mono text-muted-foreground flex-1 truncate">
                     {pair.fgName} / {pair.bgName}
                   </span>
-                  <span className="text-2xs font-mono text-neutral-300 tabular-nums">
+                  <span className="text-2xs font-mono text-foreground tabular-nums">
                     {pair.ratio.toFixed(2)}:1
                   </span>
                   <span

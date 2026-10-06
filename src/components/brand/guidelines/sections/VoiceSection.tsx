@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -15,13 +16,14 @@ interface VoiceSectionProps {
 }
 
 const COPY_TYPE_OPTIONS = [
-  { value: 'headline', label: 'Headline' },
-  { value: 'tagline', label: 'Tagline' },
-  { value: 'cta', label: 'CTA' },
-  { value: 'body', label: 'Body' },
+  { value: 'headline', label: 'brandEditor.copyHeadline' },
+  { value: 'tagline', label: 'brandView.tagline' },
+  { value: 'cta', label: 'brandEditor.copyCta' },
+  { value: 'body', label: 'brandEditor.copyBody' },
 ];
 
 export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate, span }) => {
+  const { t } = useTranslation();
   const values = guideline.strategy?.voiceValues || [];
   const copies = guideline.strategy?.copyExamples || [];
 
@@ -65,7 +67,7 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
     <SectionBlock
       id="voice"
       icon={<MessageCircle size={14} />}
-      title="Tone of Voice"
+      title={t('brandView.voice')}
       span={span as any}
       actions={
         <div className="flex items-center gap-1">
@@ -81,7 +83,7 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
             size="icon"
             className="h-5 w-5"
             onClick={add}
-            aria-label="Add tone"
+            aria-label={t('brandEditor.addTone')}
           >
             <Plus size={11} />
           </Button>
@@ -90,39 +92,39 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
     >
       <div className="space-y-0 py-1">
         {values.length === 0 && (
-          <p className="text-2xs text-neutral-700 py-2">No voice values yet. Click + to add.</p>
+          <p className="text-2xs text-muted-foreground/50 py-2">{t('brandEditor.noVoiceAdd')}</p>
         )}
         {values.map((v, i) => (
           <div
             key={i}
-            className="flex gap-3 items-start py-2.5 border-b border-neutral-800 last:border-0 group/item"
+            className="flex gap-3 items-start py-2.5 border-b border-border last:border-0 group/item"
           >
             <div className="flex-1 min-w-0 space-y-1">
               <Input
                 value={v.title}
                 onChange={(e) => set(i, { title: e.target.value })}
                 className="h-6 bg-transparent border-none px-0 text-xs font-medium text-foreground focus-visible:ring-0 placeholder:text-muted-foreground"
-                placeholder="Tom (ex: Direto, Inspirador)"
+                placeholder={t('brandEditor.toneName')}
               />
               <Input
                 value={v.description}
                 onChange={(e) => set(i, { description: e.target.value })}
-                className="h-6 bg-transparent border-none px-0 text-xs text-neutral-400 focus-visible:ring-0 placeholder:text-neutral-700"
-                placeholder="Como soa..."
+                className="h-6 bg-transparent border-none px-0 text-xs text-muted-foreground focus-visible:ring-0 placeholder:text-muted-foreground/50"
+                placeholder={t('brandEditor.toneSounds')}
               />
               <Input
                 value={v.example}
                 onChange={(e) => set(i, { example: e.target.value })}
-                className="h-6 bg-transparent border-none px-0 text-xs text-neutral-600 italic focus-visible:ring-0 placeholder:text-neutral-800"
-                placeholder='"Frase de exemplo..."'
+                className="h-6 bg-transparent border-none px-0 text-xs text-muted-foreground/70 italic focus-visible:ring-0 placeholder:text-muted-foreground/50"
+                placeholder={t('brandEditor.toneExample')}
               />
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/item:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0 mt-0.5"
+              className="h-6 w-6 text-muted-foreground/50 hover:text-destructive opacity-0 group-hover/item:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0 mt-0.5"
               onClick={() => remove(i)}
-              aria-label="Remove"
+              aria-label={t('common.remove')}
             >
               <Trash2 size={10} />
             </Button>
@@ -131,28 +133,28 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
       </div>
 
       {/* Copy examples — real shipped copy, fed to generation as few-shot. */}
-      <div className="space-y-1.5 pt-3 mt-2 border-t border-neutral-800">
+      <div className="space-y-1.5 pt-3 mt-2 border-t border-border">
         <div className="flex items-center justify-between">
-          <MicroTitle className="text-neutral-600">Copy examples</MicroTitle>
+          <MicroTitle className="text-muted-foreground/70">{t('brandView.copyExamples')}</MicroTitle>
           <Button
             variant="ghost"
             size="icon"
             className="h-5 w-5"
             onClick={addCopy}
-            aria-label="Add copy example"
+            aria-label={t('brandEditor.addCopyExample')}
           >
             <Plus size={11} />
           </Button>
         </div>
         {copies.length === 0 && (
-          <p className="text-2xs text-neutral-700 py-1">
-            Real copy the brand has shipped. The AI matches its register when writing new copy.
+          <p className="text-2xs text-muted-foreground/50 py-1">
+            {t('brandEditor.copyExamplesHint')}
           </p>
         )}
         {copies.map((c, i) => (
           <div key={i} className="flex gap-2 items-center group/copy">
             <Select
-              options={COPY_TYPE_OPTIONS}
+              options={COPY_TYPE_OPTIONS.map((o) => ({ ...o, label: t(o.label) }))}
               value={c.type || 'headline'}
               onChange={(value) => setCopy(i, { type: value as BrandCopyExample['type'] })}
               className="w-24 shrink-0"
@@ -160,15 +162,15 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
             <Input
               value={c.text}
               onChange={(e) => setCopy(i, { text: e.target.value })}
-              className="h-6 bg-transparent border-none px-0 text-xs text-neutral-400 focus-visible:ring-0 placeholder:text-neutral-800"
-              placeholder='"A cidade pinta. A gente emoldura."'
+              className="h-6 bg-transparent border-none px-0 text-xs text-muted-foreground focus-visible:ring-0 placeholder:text-muted-foreground/50"
+              placeholder={t('brandEditor.copyExamplePlaceholder')}
             />
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/copy:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0"
+              className="h-6 w-6 text-muted-foreground/50 hover:text-destructive opacity-0 group-hover/copy:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0"
               onClick={() => removeCopy(i)}
-              aria-label="Remove copy example"
+              aria-label={t('brandEditor.removeCopyExample')}
             >
               <Trash2 size={10} />
             </Button>

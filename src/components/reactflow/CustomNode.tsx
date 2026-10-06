@@ -20,6 +20,7 @@ import type {
 } from '@/types/customNode';
 import { nodeBuilderApi } from '@/services/nodeBuilderApi';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Top offset (px) for each input handle count
 const HANDLE_TOPS: Record<number, number[]> = {
@@ -30,6 +31,7 @@ const HANDLE_TOPS: Record<number, number[]> = {
 };
 
 export const CustomNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
+  const { t } = useTranslation();
   const nodeData = data as CustomNodeData;
   const { definition } = nodeData;
   const cfg = definition.behaviorConfig;
@@ -81,11 +83,11 @@ export const CustomNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     try {
       await nodeBuilderApi.save(definition);
       nodeData.onUpdateData?.(id, { definition: { ...definition, savedToDb: true } });
-      toast.success(`"${definition.name}" saved to library`);
+      toast.success(t('canvasNodes.customNode.savedToLibrary', { name: definition.name }));
     } catch {
-      toast.error('Failed to save node');
+      toast.error(t('canvasNodes.customNode.saveFailed'));
     }
-  }, [id, nodeData, definition]);
+  }, [id, nodeData, definition, t]);
 
   // ── Input handles ─────────────────────────────────────────────────────────
   const inputHandleCount: number = (() => {
@@ -106,7 +108,11 @@ export const CustomNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           type="target"
           position={Position.Left}
           id={`input-${i}`}
-          label={inputHandleCount === 1 ? 'Image' : `Image ${i + 1}`}
+          label={
+            inputHandleCount === 1
+              ? t('canvasNodes.customNode.image')
+              : t('canvasNodes.customNode.imageN', { n: i + 1 })
+          }
           handleType="image"
           style={{ top: `${top}px` }}
         />
@@ -152,12 +158,12 @@ export const CustomNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         {isLoading ? (
           <div className="flex items-center gap-2">
             <GlitchLoader size={14} />
-            <span>Running...</span>
+            <span>{t('canvasNodes.customNode.running')}</span>
           </div>
         ) : (
           <div className="flex items-center gap-2">
             <Play size={14} />
-            <span className="font-medium">Run</span>
+            <span className="font-medium">{t('canvasNodes.customNode.run')}</span>
           </div>
         )}
       </NodeButton>
@@ -170,7 +176,7 @@ export const CustomNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           className="nodrag nopan w-full text-neutral-600 hover:text-brand-cyan"
         >
           <BookmarkPlus size={12} />
-          Save to library
+          {t('canvasNodes.customNode.saveToLibrary')}
         </NodeButton>
       )}
 
@@ -178,7 +184,7 @@ export const CustomNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         type="source"
         position={Position.Right}
         id="output"
-        label="Output"
+        label={t('canvasNodes.customNode.output')}
         handleType="image"
         style={{ top: '50%' }}
       />

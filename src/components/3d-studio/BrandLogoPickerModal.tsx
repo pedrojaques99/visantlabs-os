@@ -4,6 +4,8 @@ import { SearchBar } from '@/components/ui/SearchBar';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { cn } from '@/lib/utils';
 import { Thumb } from '@/components/ui/Thumb';
+import { MediaTile } from '@/components/ui/MediaTile';
+import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, Image as ImageIcon } from '@/lib/ui/icons';
 import type { BrandGuideline } from '@/lib/figma-types';
 
@@ -93,35 +95,22 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
                 .map((logo) => {
                   const svg = isSvgUrl(logo.url);
                   return (
-                    <button
+                    <MediaTile
                       key={logo.id}
-                      onClick={() => handlePickLogo(logo)}
-                      className={cn(
-                        'group relative flex flex-col items-center gap-2 p-3 rounded-xl border transition-colors cursor-pointer',
-                        svg
-                          ? 'border-success/30 hover:border-success/60 hover:bg-success/5'
-                          : 'border-border hover:border-border-hover hover:bg-accent'
-                      )}
-                    >
-                      <div className="w-full aspect-square flex items-center justify-center bg-muted rounded overflow-hidden relative">
-                        <Thumb
-                          src={logo.url}
-                          alt={logo.label || logo.variant}
-                          className="max-w-full max-h-full object-contain p-2"
-                        />
-                        <span
-                          className={cn(
-                            'absolute top-1 right-1 px-1.5 py-0.5 rounded text-3xs font-mono',
-                            svg ? 'bg-success/20 text-success' : 'bg-accent text-muted-foreground'
-                          )}
-                        >
+                      src={logo.url}
+                      alt={logo.label || logo.variant}
+                      title={logo.label || logo.variant}
+                      aspectRatio={1}
+                      density="compact"
+                      imageClassName="object-contain p-2"
+                      className={svg ? 'border-success/30 hover:border-success/60' : undefined}
+                      badge={
+                        <Badge variant={svg ? 'success' : 'neutral'} className="font-mono text-3xs">
                           {svg ? 'SVG' : 'IMG'}
-                        </span>
-                      </div>
-                      <span className="text-2xs text-muted-foreground group-hover:text-foreground transition-colors">
-                        {logo.label || logo.variant}
-                      </span>
-                    </button>
+                        </Badge>
+                      }
+                      onClick={() => handlePickLogo(logo)}
+                    />
                   );
                 })}
             </div>

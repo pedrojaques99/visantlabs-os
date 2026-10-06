@@ -1,7 +1,6 @@
 import React, { useEffect, memo, useRef, useCallback, useState } from 'react';
 import { type NodeProps, type Node, NodeResizer } from '@xyflow/react';
 import { Download, Maximize2, Layers, Image as ImageIcon } from '@/lib/ui/icons';
-import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { NodeHeader } from './shared/node-header';
 import type { TextureFilterNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
@@ -16,8 +15,7 @@ import { NodeSlider } from './shared/node-slider';
 import { TEXTURE_FILTER_RENDER_DEFAULTS } from '@/utils/textureFilter/renderTextureFilter';
 import { FILTER_PRESETS } from '@/stores/textureFilterStore';
 
-import { Thumb } from '@/components/ui/Thumb';
-import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { NodeMediaDisplay } from './shared/NodeMediaDisplay';
 
 const BLEND_MODES = [
   { id: 'multiply', label: 'Multiply' },
@@ -42,7 +40,6 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
   const hasConnectedImage = !!data.connectedImage;
   const resultImageUrl = data.resultImageUrl || data.resultImageBase64;
   const previousConnectedImageRef = useRef<string | undefined>(undefined);
-  const [isHovered, setIsHovered] = useState(false);
 
   const opacity = data.opacity ?? TEXTURE_FILTER_RENDER_DEFAULTS.opacity;
   const scale = data.scale ?? TEXTURE_FILTER_RENDER_DEFAULTS.scale;
@@ -168,64 +165,40 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
 
       {/* Result preview */}
       {hasResult && resultImageUrl && (
-        <div
-          className="mt-2 pt-2 border-t border-neutral-700/30 relative group flex-1 min-h-0 flex flex-col"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
-          <div className="relative w-full h-full flex items-center justify-center">
-            <Thumb
-              src={resultImageUrl}
-              alt={t('canvasNodes.textureFilterNode.title')}
-              className="w-full h-full object-contain rounded"
-              onLoad={(e) => {
-                const img = e.target as HTMLImageElement;
-                if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-                  data.onUpdateData?.(id, {
-                    imageWidth: img.naturalWidth,
-                    imageHeight: img.naturalHeight,
-                  });
-                }
-              }}
-            />
-          </div>
-
-          {isLoading && (
-            <div className="absolute top-3 left-3 z-20">
-              <div className="p-1.5 rounded-md bg-neutral-950/80 border-node border-neutral-800 shadow-lg">
-                <GlitchLoader size={14} />
-              </div>
-            </div>
-          )}
-
-          <div
-            className={cn(
-              'absolute top-3 right-3 flex gap-1.5 transition-[color,background-color,border-color,box-shadow,opacity,filter] z-10',
-              selected ? 'opacity-100' : hoverReveal
-            )}
-          >
-            {data.onViewFullscreen && (
+        <NodeMediaDisplay
+          variant="result"
+          url={resultImageUrl}
+          alt={t('canvasNodes.textureFilterNode.title')}
+          isLoading={isLoading}
+          selected={selected}
+          onMediaLoad={(width, height) =>
+            data.onUpdateData?.(id, { imageWidth: width, imageHeight: height })
+          }
+          actions={
+            <>
+              {data.onViewFullscreen && (
+                <NodeButton
+                  variant="ghost"
+                  size="xs"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    data.onViewFullscreen!(resultImageUrl, data.resultImageBase64);
+                  }}
+                >
+                  <Maximize2 size={14} />
+                </NodeButton>
+              )}
               <NodeButton
                 variant="ghost"
                 size="xs"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  data.onViewFullscreen!(resultImageUrl, data.resultImageBase64);
-                }}
+                onClick={handleDownload}
+                aria-label={t('common.download')}
               >
-                <Maximize2 size={14} />
+                <Download size={14} />
               </NodeButton>
-            )}
-            <NodeButton
-              variant="ghost"
-              size="xs"
-              onClick={handleDownload}
-              aria-label={t('common.download')}
-            >
-              <Download size={14} />
-            </NodeButton>
-          </div>
-        </div>
+            </>
+          }
+        />
       )}
 
       {/* Inline settings */}

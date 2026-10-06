@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { MediaKitGallery } from '@/components/brand/MediaKitGallery';
 import { Image as ImageIcon, Zap, Loader2, Search, X } from '@/lib/ui/icons';
@@ -22,13 +23,17 @@ interface SearchHit {
  * config problems (missing keys) as machine codes; the end-user can't act on
  * "Set GEMINI_API_KEY", so we translate to plain language.
  */
-function friendlyAssetError(e: unknown, fallback: string): string {
+function friendlyAssetError(
+  e: unknown,
+  fallback: string,
+  t: (key: string, vars?: Record<string, string | number>) => string
+): string {
   const code = (e as { code?: string })?.code;
   switch (code) {
     case 'vision_not_configured':
-      return 'AI asset analysis isn’t available right now (admin setting).';
+      return t('brandEditor.assetVisionOff');
     case 'vector_search_not_configured':
-      return 'Semantic search isn’t available right now (admin setting).';
+      return t('brandEditor.assetSearchOff');
     default:
       return e instanceof Error ? e.message : fallback;
   }
@@ -51,6 +56,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
   onLogosChange,
   span,
 }) => {
+  const { t } = useTranslation();
   const [analyzing, setAnalyzing] = useState(false);
   const [progress, setProgress] = useState<{ processed: number; total: number } | null>(null);
   const [query, setQuery] = useState('');
@@ -74,20 +80,20 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
       // Tell the truth about what happened — never show "success" when nothing
       // was analyzed because the AI provider was down/over quota (the prod case).
       if (res.total === 0) {
-        toast.info('All assets are already analyzed.');
+        toast.info(t('brandEditor.assetsAllAnalyzed'));
       } else if (res.analyzed === 0) {
         toast.error(
-          `Couldn’t analyze ${res.total} asset${res.total === 1 ? '' : 's'}. The AI service is temporarily unavailable, try again shortly.`
+          t(res.total === 1 ? 'brandEditor.assetsAnalyzeFailedOne' : 'brandEditor.assetsAnalyzeFailedMany', { count: res.total })
         );
       } else if (res.failed > 0) {
         toast.warning(
-          `${res.analyzed} asset${res.analyzed === 1 ? '' : 's'} analyzed, ${res.failed} couldn’t be processed. Run again to retry those.`
+          t(res.analyzed === 1 ? 'brandEditor.assetsPartialOne' : 'brandEditor.assetsPartialMany', { analyzed: res.analyzed, failed: res.failed })
         );
       } else {
-        toast.success(`${res.analyzed} asset${res.analyzed === 1 ? '' : 's'} analyzed by AI`);
+        toast.success(t(res.analyzed === 1 ? 'brandEditor.assetsAnalyzedOne' : 'brandEditor.assetsAnalyzedMany', { count: res.analyzed }));
       }
     } catch (e) {
-      toast.error(friendlyAssetError(e, 'Failed to analyze assets'));
+      toast.error(friendlyAssetError(e, t('brandEditor.assetsAnalyzeFailed'), t));
     } finally {
       setAnalyzing(false);
       setProgress(null);
@@ -102,7 +108,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
       const res = await brandGuidelineApi.searchAssets(guidelineId, q);
       setHits((res.results || []) as SearchHit[]);
     } catch (e) {
-      toast.error(friendlyAssetError(e, 'Search failed'));
+      toast.error(friendlyAssetError(e, t('brandEditor.searchFailed'), t));
     } finally {
       setSearching(false);
     }
@@ -118,7 +124,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
       id="media"
       span={span as any}
       icon={<ImageIcon size={14} />}
-      title="Visual Library & Components"
+      title={t('brandEditor.visualLibrary')}
       actions={
         hasAssets && guidelineId ? (
           <Button
@@ -126,8 +132,8 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
             size="icon-sm"
             onClick={analyzeAssets}
             disabled={analyzing}
-            title="Analyze assets with AI"
-            aria-label="Analyze assets with AI"
+            title={t('brandEditor.analyzeAssets')}
+            aria-label={t('brandEditor.analyzeAssets')}
           >
             {analyzing ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
           </Button>
@@ -136,11 +142,11 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
     >
       <div className="py-6 space-y-5">
         {analyzing && (
-          <div className="flex items-center gap-2 text-2xs text-neutral-400">
+          <div className="flex items-center gap-2 text-2xs text-muted-foreground">
             <Loader2 size={12} className="animate-spin" />
             {progress && progress.total > 0
-              ? `Analyzing assets with AI… ${progress.processed}/${progress.total}`
-              : 'Starting analysis…'}
+              ? t('brandEditor.analyzingProgress', { processed: progress.processed, total: progress.total })
+              : t('brandEditor.analysisStarting')}
           </div>
         )}
         {hasAssets && guidelineId && (
@@ -150,13 +156,13 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
               <div className="relative flex-1">
                 <Search
                   size={13}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70"
                 />
                 <Input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && runSearch()}
-                  placeholder="Search by vibe, theme, mood… (run Analyze first)"
+                  placeholder={t('brandEditor.assetSearchPlaceholder')}
                   className="h-8 pl-8 text-xs"
                 />
               </div>
@@ -166,14 +172,14 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
                 onClick={runSearch}
                 disabled={searching || !query.trim()}
               >
-                {searching ? <Loader2 size={12} className="animate-spin" /> : 'Search'}
+                {searching ? <Loader2 size={12} className="animate-spin" /> : t('common.search')}
               </Button>
               {hits !== null && (
                 <Button
                   variant="ghost"
                   size="icon-sm"
                   onClick={clearSearch}
-                  aria-label="Clear search"
+                  aria-label={t('common.clearSearch')}
                 >
                   <X size={12} />
                 </Button>

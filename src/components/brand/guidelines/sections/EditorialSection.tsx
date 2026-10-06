@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -12,15 +13,15 @@ type Person = 'first' | 'second' | 'third';
 type EmojiPolicy = 'none' | 'informal' | 'free';
 
 const PERSON_OPTIONS: { value: Person; label: string }[] = [
-  { value: 'first', label: '1st' },
-  { value: 'second', label: '2nd' },
-  { value: 'third', label: '3rd' },
+  { value: 'first', label: 'brandEditor.person1' },
+  { value: 'second', label: 'brandEditor.person2' },
+  { value: 'third', label: 'brandEditor.person3' },
 ];
 
 const EMOJI_OPTIONS: { value: EmojiPolicy; label: string }[] = [
-  { value: 'none', label: 'Never' },
-  { value: 'informal', label: 'Informal' },
-  { value: 'free', label: 'Free' },
+  { value: 'none', label: 'brandEditor.emojiNever' },
+  { value: 'informal', label: 'brandEditor.emojiInformal' },
+  { value: 'free', label: 'brandEditor.emojiFree' },
 ];
 
 interface EditorialSectionProps {
@@ -43,6 +44,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
   onUpdate,
   span,
 }) => {
+  const { t } = useTranslation();
   const g = guideline.guidelines || {};
   const local: LocalState = {
     voice: g.voice || '',
@@ -94,7 +96,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
     <SectionBlock
       id="editorial"
       icon={<FileText size={14} />}
-      title="Editorial"
+      title={t('brandEditor.editorial')}
       span={span as any}
       actions={
         isEmpty ? (
@@ -105,19 +107,19 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
       <div className="space-y-3 py-1">
         {/* Voice */}
         <div className="space-y-1">
-          <MicroTitle className="text-neutral-600">Voice</MicroTitle>
+          <MicroTitle className="text-muted-foreground/70">{t('brandEditor.voice')}</MicroTitle>
           <Input
             value={local.voice}
             onChange={(e) => update({ voice: e.target.value })}
-            className="h-7 border-neutral-800 text-xs text-neutral-400 placeholder:text-neutral-700"
-            placeholder="Brand personality..."
+            className="h-7 border-border text-xs text-muted-foreground placeholder:text-muted-foreground/50"
+            placeholder={t('brandEditor.voicePlaceholder')}
           />
         </div>
 
         {/* Person + Emoji */}
         <div className="flex gap-3">
           <div className="space-y-1 flex-1">
-            <MicroTitle className="text-neutral-600">Person</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">{t('brandEditor.person')}</MicroTitle>
             <div className="flex gap-1">
               {PERSON_OPTIONS.map((opt) => (
                 <button
@@ -131,13 +133,13 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
                       : 'border-border text-muted-foreground hover:border-border-hover hover:text-foreground'
                   )}
                 >
-                  {opt.label}
+                  {t(opt.label)}
                 </button>
               ))}
             </div>
           </div>
           <div className="space-y-1 flex-1">
-            <MicroTitle className="text-neutral-600">Emoji</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">{t('brandEditor.emoji')}</MicroTitle>
             <div className="flex gap-1">
               {EMOJI_OPTIONS.map((opt) => (
                 <button
@@ -151,7 +153,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
                       : 'border-border text-muted-foreground hover:border-border-hover hover:text-foreground'
                   )}
                 >
-                  {opt.label}
+                  {t(opt.label)}
                 </button>
               ))}
             </div>
@@ -160,33 +162,33 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
 
         {/* Casing rules */}
         <div className="space-y-1.5">
-          <MicroTitle className="text-neutral-600">Casing rules</MicroTitle>
+          <MicroTitle className="text-muted-foreground/70">{t('brandEditor.casingRules')}</MicroTitle>
           <InlineTags
             values={local.casingRules}
             onChange={(next) => update({ casingRules: next })}
-            placeholder="ex: ALL CAPS"
+            placeholder={t('brandEditor.casingPlaceholder')}
             inputWidth={120}
           />
         </div>
 
         {/* Do's */}
         <div className="space-y-1.5">
-          <MicroTitle className="text-neutral-600">Do's</MicroTitle>
+          <MicroTitle className="text-muted-foreground/70">{t('brandEditor.dos')}</MicroTitle>
           <InlineTags
             values={local.dos}
             onChange={(next) => update({ dos: next })}
-            placeholder="Best practice..."
+            placeholder={t('brandEditor.doPlaceholder')}
             inputWidth={180}
           />
         </div>
 
         {/* Don'ts */}
         <div className="space-y-1.5">
-          <MicroTitle className="text-neutral-600">Don'ts</MicroTitle>
+          <MicroTitle className="text-muted-foreground/70">{t('brandEditor.donts')}</MicroTitle>
           <InlineTags
             values={local.donts}
             onChange={(next) => update({ donts: next })}
-            placeholder="Never say..."
+            placeholder={t('brandEditor.dontPlaceholder')}
             inputWidth={180}
           />
         </div>

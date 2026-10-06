@@ -73,7 +73,7 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
 
       toast.success(t('canvasNodes.pdfNode.pdfUploadedSuccessfully'), { duration: 2000 });
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to process PDF', { duration: 5000 });
+      toast.error(error?.message || t('canvasNodes.shared.failedToProcessPdf'), { duration: 5000 });
       console.error('Failed to process PDF:', error);
     }
   };

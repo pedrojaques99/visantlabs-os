@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,13 +17,14 @@ interface ThemeSectionProps {
 
 const ROLES = ['bg', 'text', 'primary', 'accent'] as const;
 const ROLE_LABELS: Record<string, string> = {
-  bg: 'Background',
-  text: 'Text',
-  primary: 'Primary',
-  accent: 'Accent',
+  bg: 'brandEditor.roleBg',
+  text: 'brandEditor.roleText',
+  primary: 'brandEditor.rolePrimary',
+  accent: 'brandEditor.roleAccent',
 };
 
 function ContrastBadge({ fg, bg, label }: { fg: string; bg: string; label: string }) {
+  const { t } = useTranslation();
   const ratio = getContrastRatioPublic(fg, bg);
   const { normalAA } = checkWCAGCompliance(ratio);
   return (
@@ -30,7 +32,7 @@ function ContrastBadge({ fg, bg, label }: { fg: string; bg: string; label: strin
       className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs tabular-nums ${
         normalAA ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
       }`}
-      title={`${label}: ${ratio.toFixed(1)}:1, ${normalAA ? 'WCAG AA' : 'low contrast'}`}
+      title={`${label}: ${ratio.toFixed(1)}:1, ${normalAA ? 'WCAG AA' : t('brandEditor.lowContrast')}`}
     >
       {label} {ratio.toFixed(1)}:1
       {normalAA && <Check size={8} />}
@@ -39,33 +41,34 @@ function ContrastBadge({ fg, bg, label }: { fg: string; bg: string; label: strin
 }
 
 function ThemePreview({ theme }: { theme: BrandColorTheme }) {
+  const { t } = useTranslation();
   return (
     <div
-      className="rounded-xl overflow-hidden border border-neutral-800 shadow-lg"
+      className="rounded-xl overflow-hidden border border-border shadow-lg"
       style={{ background: theme.bg }}
     >
       <div className="p-4 space-y-2">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full" style={{ background: theme.primary }} />
           <span className="text-2xs opacity-60" style={{ color: theme.text }}>
-            {theme.name || 'Theme'}
+            {theme.name || t('brandEditor.themeFallback')}
           </span>
         </div>
         <h3
           className="text-sm font-bold tracking-tight"
           style={{ color: theme.text, fontFamily: 'inherit' }}
         >
-          Preview headline
+          {t('brandEditor.previewHeadline')}
         </h3>
         <p className="text-2xs opacity-70" style={{ color: theme.text }}>
-          Body text preview for contrast.
+          {t('brandEditor.previewBody')}
         </p>
         <div className="flex gap-2 pt-1">
           <span
             className="px-3 py-1 rounded-md text-2xs font-semibold"
             style={{ background: theme.primary, color: theme.bg }}
           >
-            Primary
+            {t('brandEditor.rolePrimary')}
           </span>
           <span
             className="px-3 py-1 rounded-md text-2xs font-semibold"
@@ -80,6 +83,7 @@ function ThemePreview({ theme }: { theme: BrandColorTheme }) {
 }
 
 export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate, span }) => {
+  const { t } = useTranslation();
   const themes = guideline.colorThemes || [];
   const brandColors = guideline.colors || [];
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -109,7 +113,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
     };
     persist([...themes, newTheme]);
     setEditingId(newTheme.id);
-    toast.success('Theme added');
+    toast.success(t('brandEditor.themeAdded'));
   };
 
   const updateTheme = (id: string, patch: Partial<BrandColorTheme>) => {
@@ -131,15 +135,15 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
       id="colorThemes"
       span={span as any}
       icon={<SwatchBook size={14} />}
-      title="Color Themes"
+      title={t('brandEditor.colorThemes')}
       actions={
         <Button
           size="sm"
           variant="ghost"
           onClick={addTheme}
           className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-          aria-label="New theme"
-          title="New theme"
+          aria-label={t('brandEditor.newTheme')}
+          title={t('brandEditor.newTheme')}
         >
           <Plus size={12} />
         </Button>
@@ -147,13 +151,12 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
     >
       {themes.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
-          <SwatchBook size={20} className="text-neutral-700" />
-          <p className="text-2xs text-neutral-600 max-w-[280px] leading-relaxed">
-            Define combinações de cores (fundo, texto, primary, accent) para garantir contraste e
-            harmonia nos criativos gerados pela IA.
+          <SwatchBook size={20} className="text-muted-foreground/50" />
+          <p className="text-2xs text-muted-foreground/70 max-w-[280px] leading-relaxed">
+            {t('brandEditor.themesHint')}
           </p>
           <Button size="sm" variant="outline" onClick={addTheme} className="mt-2 h-7 text-2xs">
-            <Plus size={10} className="mr-1" /> Create first theme
+            <Plus size={10} className="mr-1" /> {t('brandEditor.createFirstTheme')}
           </Button>
         </div>
       ) : (
@@ -168,23 +171,23 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="border border-neutral-800 rounded-xl overflow-hidden bg-neutral-950/40"
+                  className="border border-border rounded-xl overflow-hidden bg-background/40"
                 >
-                  <div className="flex items-center gap-3 px-4 py-2.5 border-b border-neutral-800">
+                  <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border">
                     <div className="flex gap-1">
                       {ROLES.map((r) => (
                         <span
                           key={r}
                           className="w-4 h-4 rounded-md border border-border"
                           style={{ background: theme[r] }}
-                          title={`${ROLE_LABELS[r]}: ${theme[r]}`}
+                          title={`${t(ROLE_LABELS[r])}: ${theme[r]}`}
                         />
                       ))}
                     </div>
                     <button
                       type="button"
                       onClick={() => setEditingId(isEditing ? null : theme.id)}
-                      className="flex-1 text-left text-2xs font-medium text-neutral-300 hover:text-white transition-colors truncate"
+                      className="flex-1 text-left text-2xs font-medium text-foreground hover:text-foreground transition-colors truncate"
                     >
                       {theme.name}
                     </button>
@@ -195,7 +198,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                         size="icon"
                         variant="ghost"
                         onClick={() => removeTheme(theme.id)}
-                        className="w-6 h-6 text-neutral-600 hover:text-destructive"
+                        className="w-6 h-6 text-muted-foreground/70 hover:text-destructive"
                       >
                         <Trash2 size={12} />
                       </Button>
@@ -214,13 +217,13 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                           <Input
                             value={theme.name}
                             onChange={(e) => updateTheme(theme.id, { name: e.target.value })}
-                            placeholder="Theme name"
+                            placeholder={t('brandEditor.themeName')}
                             className="h-7 text-xs bg-transparent border-border"
                           />
                           {ROLES.map((role) => (
                             <div key={role} className="flex items-center gap-2">
                               <label className="text-2xs text-muted-foreground w-16 shrink-0">
-                                {ROLE_LABELS[role]}
+                                {t(ROLE_LABELS[role])}
                               </label>
                               <div className="flex items-center gap-1.5 flex-1">
                                 <input

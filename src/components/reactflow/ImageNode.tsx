@@ -468,7 +468,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           )}
         >
           <div className="flex items-center justify-between mb-[var(--node-gap-sm)]">
-            <label className="text-xs text-neutral-400 font-mono">
+            <label className="text-xs text-neutral-400">
               {t('canvasNodes.imageNode.description')}
             </label>
             <div className="flex items-center gap-1">

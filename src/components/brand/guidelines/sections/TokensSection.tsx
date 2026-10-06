@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -12,6 +13,7 @@ interface TokensSectionProps {
 }
 
 export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdate, span }) => {
+  const { t } = useTranslation();
   // json is UI-only state (controlled textarea buffer for partial JSON input)
   const [json, setJson] = useState(JSON.stringify(guideline.tokens || {}, null, 2));
   const [isValid, setIsValid] = useState(true);
@@ -37,18 +39,18 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
   const tokens = guideline.tokens || {};
 
   return (
-    <SectionBlock id="tokens" icon={<Layers size={14} />} title="Design Tokens" span={span as any}>
+    <SectionBlock id="tokens" icon={<Layers size={14} />} title={t('brandEditor.designTokens')} span={span as any}>
       <div className="space-y-3 py-1">
         {/* View: flat token rows */}
         {(tokens.spacing || tokens.radius) && (
           <div className="space-y-2">
             {tokens.spacing && (
               <div className="space-y-1">
-                <MicroTitle className="text-neutral-600">Spacing</MicroTitle>
+                <MicroTitle className="text-muted-foreground/70">Spacing</MicroTitle>
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5">
                   {Object.entries(tokens.spacing).map(([k, v]) => (
-                    <span key={k} className="text-2xs font-mono text-neutral-500">
-                      <span className="text-neutral-600">{k}:</span> {String(v)}
+                    <span key={k} className="text-2xs font-mono text-muted-foreground">
+                      <span className="text-muted-foreground/70">{k}:</span> {String(v)}
                     </span>
                   ))}
                 </div>
@@ -56,11 +58,11 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
             )}
             {tokens.radius && (
               <div className="space-y-1">
-                <MicroTitle className="text-neutral-600">Radius</MicroTitle>
+                <MicroTitle className="text-muted-foreground/70">Radius</MicroTitle>
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5">
                   {Object.entries(tokens.radius).map(([k, v]) => (
-                    <span key={k} className="text-2xs font-mono text-neutral-500">
-                      <span className="text-neutral-600">{k}:</span> {String(v)}
+                    <span key={k} className="text-2xs font-mono text-muted-foreground">
+                      <span className="text-muted-foreground/70">{k}:</span> {String(v)}
                     </span>
                   ))}
                 </div>
@@ -74,12 +76,12 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
             setJson(e.target.value);
             persist(e.target.value);
           }}
-          className={`border-neutral-800 text-2xs font-mono min-h-[120px] resize-none placeholder:text-neutral-700 ${
+          className={`border-border text-2xs font-mono min-h-[120px] resize-none placeholder:text-muted-foreground/50 ${
             !isValid ? 'border-destructive/30' : ''
           }`}
           placeholder={'{"spacing": {"s": "4px"}, "radius": {"m": "10px"}}'}
         />
-        {!isValid && <p className="text-2xs text-destructive">Invalid JSON</p>}
+        {!isValid && <p className="text-2xs text-destructive">{t('brandEditor.invalidJson')}</p>}
       </div>
     </SectionBlock>
   );

@@ -1138,7 +1138,7 @@
     "home": "Home",
     "instagramExtractor": {
       "description": "Extract HD images from Google, URL, Instagram or Documents.",
-      "name": "Universal Extractor"
+      "name": "Image extractor"
     },
     "moodboardStudio": {
       "name": "Moodboard Studio",
@@ -1182,15 +1182,7 @@
       "free": "Free",
       "premium": "Pro"
     },
-    "sort": {
-      "label": "Sort",
-      "recent": "Most used",
-      "name": "A-Z",
-      "hintDefault": "Sort",
-      "hintRecent": "Most used first",
-      "hintName": "Sorted A-Z",
-      "default": "By category"
-    },
+    "sort": {},
     "empty": {
       "noResultsTitle": "No results found",
       "noResultsDesc": "We couldn't find anything matching “{query}”. Try a different term.",
@@ -1481,9 +1473,6 @@
     "sortCompleteness": "Readiness",
     "countBrands": "{filtered} of {total} brands",
     "noMatch": "No brands match “{term}”",
-    "completenessFull": "{score}% ready, all set",
-    "completenessMissing": "{score}% ready, missing: {items}",
-    "completenessMore": "+{count}",
     "completenessAllSet": "All set.",
     "loadFailedTitle": "Could not load your brands",
     "loadFailedBody": "Your brands are safe. Try loading again.",
@@ -1883,7 +1872,103 @@
     "presetsCountMany": "{count} templates",
     "myBudgetsSeoTitle": "My budgets",
     "myBudgetsSeoDescription": "Your saved budgets and PDF templates.",
-    "copied": "Copied"
+    "copied": "Copied",
+    "basicInfo": "Basic information",
+    "pdf": {
+      "selectPdf": "Please select a PDF file",
+      "tooLarge": "The PDF must be smaller than {max}MB (current size: {size}MB)",
+      "processFailed": "Failed to process PDF",
+      "presetSaved": "PDF saved as preset",
+      "uploaded": "PDF uploaded",
+      "uploadFailed": "Failed to upload PDF",
+      "presetNameRequired": "Enter a name for the preset",
+      "useWithoutSaving": "Use without saving",
+      "customLayoutTitle": "Custom layout",
+      "uploadToStart": "Upload your custom PDF to get started",
+      "savingPreset": "Saving preset...",
+      "uploading": "Uploading PDF...",
+      "selectButton": "Select PDF",
+      "requirements": "Requirements:",
+      "reqFormat": "Format: PDF",
+      "reqMaxSize": "Max size: {max}MB",
+      "reqMapFields": "After the upload, you map the form fields",
+      "sectionTitle": "Custom PDF",
+      "loaded": "Custom PDF loaded",
+      "replaceLong": "Replace PDF",
+      "replaceShort": "Replace",
+      "removeTitle": "Remove PDF",
+      "uploadCustom": "Upload custom PDF",
+      "hint": "Upload a custom PDF and map the form fields to fill it automatically. You can save it as a preset to reuse later."
+    },
+    "fieldProps": {
+      "fontSizeRange": "Size must be between 6 and 144",
+      "positionMin": "Value must be 0 or greater",
+      "closeWarning": "Apply or discard your changes before closing",
+      "title": "Properties",
+      "removeHint": "Remove field (Delete)",
+      "remove": "Remove field",
+      "font": "Font",
+      "fontFamilyAria": "Select font family",
+      "fontSize": "Font size",
+      "style": "Style",
+      "boldOff": "Turn bold off",
+      "boldOn": "Turn bold on",
+      "bold": "Bold",
+      "normal": "Normal",
+      "color": "Color",
+      "colorAria": "Select text color",
+      "align": "Alignment",
+      "alignLeft": "Align left",
+      "alignCenter": "Align center",
+      "alignRight": "Align right",
+      "position": "Position (points)",
+      "apply": "Apply",
+      "applyHint": "Apply changes",
+      "dismiss": "Discard",
+      "dismissHint": "Discard changes"
+    },
+    "variableModal": {
+      "currentValue": "Current value",
+      "value": "Value",
+      "valueCurrency": "Value (R$)",
+      "currencyPlaceholder": "Enter the value (e.g. 1500.00)",
+      "valuePlaceholder": "Enter the value...",
+      "preview": "Preview: R$ {value}",
+      "cancel": "Cancel",
+      "place": "Place on PDF"
+    },
+    "pdfFields": {
+      "clientName": "Client name",
+      "projectName": "Project name",
+      "projectDescription": "Project description",
+      "brandName": "Brand name",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "year": "Year",
+      "observations": "Notes",
+      "finalCTAText": "Final CTA text",
+      "custom_text": "Text field",
+      "custom_currency": "Value field (currency)"
+    },
+    "pdfEditor": {
+      "zoomOut": "Zoom out",
+      "zoomIn": "Zoom in",
+      "zoomReset": "Reset zoom",
+      "zoomResetLabel": "Reset",
+      "cancel": "Cancel",
+      "accept": "Accept",
+      "pendingPosition": "Position set. Pick a filled field from the form.",
+      "clickToPlace": "Click the PDF to place:",
+      "reloading": "Reloading PDF...",
+      "loading": "Loading PDF...",
+      "loadError": "Failed to load PDF",
+      "panelAria": "Field properties panel",
+      "dragToMove": "Drag to move: {label}",
+      "fieldAria": "Field {label}",
+      "fieldAriaSelected": "Field {label} selected",
+      "deleteHint": "Delete field (Delete)",
+      "deleteAria": "Delete field {label}"
+    }
   },
   "canvas": {
     "community": {
@@ -2254,7 +2339,8 @@
       "setAsPrimary": "Set as primary",
       "smartReferences": "Smart references",
       "curatedReferences": "Curated references",
-      "clearFilters": "Clear"
+      "clearFilters": "Clear",
+      "closeFilter": "Close filter"
     }
   },
   "canvasBottomToolbar": {
@@ -2344,7 +2430,8 @@
       "strategicPrompts": "Strategic prompts",
       "consolidatedStrategy": "Consolidated strategy",
       "generatingPrompts": "Generating prompts",
-      "copyPrompt": "Copy prompt"
+      "copyPrompt": "Copy prompt",
+      "fileUploadedSuccessfully": "{type} uploaded successfully"
     },
     "brandNode": {
       "analysisFailed": "Analysis failed",
@@ -2366,7 +2453,7 @@
       "refineFromLogo": "Refine from Logo",
       "removeIdentityGuide": "Remove identity guide",
       "removeLogo": "Remove logo",
-      "title": "Brand Node",
+      "title": "Brand",
       "tone": "Tone:",
       "typography": "Typography",
       "visualLanguage": "Visual Language"
@@ -2424,7 +2511,7 @@
       "systemPromptSettings": "System Prompt Settings",
       "textContext": "Text Context",
       "thinking": "Thinking...",
-      "title": "Chat Node",
+      "title": "Chat",
       "typeYourMessage": "Type your message...",
       "openAsPanel": "Open As Panel",
       "replyingInPanel": "This chat is open in the side panel. Reply there."
@@ -2519,7 +2606,7 @@
       "logoAltText": "Logo",
       "logoUploadedSuccessfully": "Logo uploaded successfully!",
       "removeLogo": "Remove logo",
-      "title": "Logo Node",
+      "title": "Logo",
       "uploadLogo": "Upload Logo",
       "deleteTitle": "Delete the logo node?",
       "deleteMessage": "The node leaves the canvas.",
@@ -2543,7 +2630,7 @@
       "inputImages": "Input Images",
       "promptPlaceholder": "Describe how to merge the images...",
       "result": "Merge result",
-      "title": "Merge Node"
+      "title": "Merge"
     },
     "mockupNode": {
       "add": "Add",
@@ -2581,7 +2668,8 @@
       "selectPreset": "Select preset",
       "strategyDataFromBrandCore": "Strategy Data (from BrandCore)",
       "textDirectionFromBrandCore": "Text Direction (from BrandCore)",
-      "title": "Mockup Preset"
+      "title": "Mockup Preset",
+      "resultAlt": "Generation result"
     },
     "nodeContextMenu": {
       "duplicate": "Duplicate",
@@ -2606,7 +2694,7 @@
     "pdfNode": {
       "pdfUploadedSuccessfully": "PDF uploaded successfully!",
       "pleaseSelectPdfFile": "Please select a PDF file",
-      "title": "PDF Node",
+      "title": "PDF",
       "uploadPdf": "Upload Pdf"
     },
     "promptNode": {
@@ -2660,7 +2748,7 @@
       "suggestions": "Suggestions",
       "textDirectionFromBrandCore": "Text Direction (from BrandCore)",
       "textInput": "Text",
-      "title": "Prompt Node",
+      "title": "Prompt",
       "creditsRequired": "Credits required",
       "brandConnected": "Brand connected",
       "selectModel": "Select Model"
@@ -2671,7 +2759,9 @@
       "uploadImageOrVideo": "Upload Image or Video",
       "processingVideo": "Processing video…",
       "applyingShader": "Applying shader…",
-      "imageConnected": "Image connected"
+      "imageConnected": "Image connected",
+      "title": "Shader effect",
+      "readyToProcess": "Ready to process"
     },
     "shared": {
       "imageDownloaded": "Image downloaded!",
@@ -2683,7 +2773,20 @@
       "brandMediaLibrary": "Brand media library",
       "brandCoreActive": "Brand core on",
       "brandCoreInactive": "Brand core off",
-      "brandCoreToggle": "Use brand core"
+      "brandCoreToggle": "Use brand core",
+      "failedToProcessPdf": "Failed to process PDF",
+      "failedToProcessImage": "Failed to process image",
+      "failedToProcessFile": "Failed to process file",
+      "invalidPdf": "Invalid PDF",
+      "pdfTooLarge": "PDF is too large for upload",
+      "uploadingPdf": "Uploading PDF...",
+      "failedToPrepareImages": "Failed to prepare images for analysis",
+      "failedToSaveImage": "Failed to save image",
+      "failedToFindNodePosition": "Failed to find node position",
+      "advancedSettings": "Advanced settings",
+      "dragToAdjust": "Drag to adjust",
+      "selectResolution": "Select resolution",
+      "creditsCount": "{count} credits"
     },
     "strategyNode": {
       "analyze": "Analyze",
@@ -2727,8 +2830,13 @@
       },
       "selectExistingProject": "Select Existing Project",
       "strategySavedSuccessfully": "Strategy saved successfully",
-      "title": "Strategy Node",
-      "generatingAllSections": "Generating all sections…"
+      "title": "Strategy",
+      "generatingAllSections": "Generating all sections…",
+      "failedToGenerateStrategy": "Failed to generate strategy",
+      "failedToGeneratePdf": "Failed to generate PDF",
+      "failedToSaveStrategy": "Failed to save strategy",
+      "failedToOpenProject": "Failed to open project",
+      "failedToAnalyze": "Failed to analyze"
     },
     "textNode": {
       "aiHint": "Click the diamond to rewrite the prompt",
@@ -2741,7 +2849,7 @@
       "improvingPrompt": "Improving prompt...",
       "placeholder": "Enter text here...",
       "promptImproved": "Prompt improved!",
-      "title": "Text Node"
+      "title": "Text"
     },
     "textureNode": {
       "title": "Texture Preset",
@@ -2758,7 +2866,10 @@
       "pleaseUseImageFromR2": "Please use an image from R2 storage",
       "title": "Upscale",
       "upscaling": "Upscaling",
-      "upscale": "Upscale"
+      "upscale": "Upscale",
+      "connectImageNode": "Connect an image node",
+      "targetResolution": "Target resolution",
+      "resultAlt": "Upscale result"
     },
     "videoInputNode": {
       "title": "Video Input",
@@ -2798,7 +2909,12 @@
       "video": "Video",
       "startFrameRequired": "Start frame is required for frames-to-video mode",
       "inputVideoRequired": "Input video is required for extend mode",
-      "allSlotsFull": "All reference slots are full. Added to board instead."
+      "allSlotsFull": "All reference slots are full. Added to board instead.",
+      "qualityMode": "Quality mode",
+      "generateAudio": "Generate audio",
+      "outputResolution": "Output: {value}",
+      "free": "Free",
+      "strict": "Strict"
     },
     "savePromptModal": {
       "add": "Add",
@@ -2877,7 +2993,15 @@
         "mockupSeries": "Product for the mockup series",
         "imageChain": "What should come out of the visual analysis?",
         "default": "Describe the effect"
-      }
+      },
+      "saveFailed": "Failed to save node",
+      "savedToLibrary": "\"{name}\" saved to library",
+      "running": "Running...",
+      "run": "Run",
+      "saveToLibrary": "Save to library",
+      "image": "Image",
+      "imageN": "Image {n}",
+      "output": "Output"
     },
     "studio3dNode": {
       "snapshotCaptured": "3D snapshot captured",
@@ -3085,8 +3209,7 @@
       }
     },
     "nba": {
-      "title": "Next best action",
-      "complete": "Brand complete, primed as AI ammunition."
+      "title": "Next best action"
     },
     "produce": {
       "title": "Produce",
@@ -3437,7 +3560,10 @@
       "mockup": "Mockup",
       "texture": "Texture",
       "themes": "Themes",
-      "title": "Categories"
+      "title": "Categories",
+      "presets": "Presets",
+      "ui-prompts": "UI Prompts",
+      "figma-prompts": "Figma Prompts"
     },
     "category": "Category",
     "context": "Context",
@@ -4429,14 +4555,22 @@
     "models": {
       "gemini-2.5-flash-image": {
         "emoji": "⛏️",
-        "features": ["Fast generation", "1 credit per image", "Auto aspect ratio"],
+        "features": [
+          "Fast generation",
+          "1 credit per image",
+          "Auto aspect ratio"
+        ],
         "name": "Standard (HD)",
         "version": "HD"
       },
       "gemini-3-pro-image-preview": {
         "credits": "3-7 credits",
         "emoji": "⛏️",
-        "features": ["4K resolution", "Advanced tools", "Higher quality"],
+        "features": [
+          "4K resolution",
+          "Advanced tools",
+          "Higher quality"
+        ],
         "name": "Pro (4K)",
         "version": "4K"
       }
@@ -4656,7 +4790,9 @@
     "imageAlt": "Mockup",
     "addedToFavorites": "Added to favorites",
     "removedFromFavorites": "Removed from favorites",
-    "likeFailed": "Could not update the favorite. Try again."
+    "likeFailed": "Could not update the favorite. Try again.",
+    "showTags": "Tags",
+    "hideTags": "Hide tags"
   },
   "notFound": {
     "brandingMachine": "Branding Machine",
@@ -4841,7 +4977,11 @@
           "title": "6.1 Google Analytics"
         },
         "intro": "We use cookies for:",
-        "items": ["Authentication", "Interface preferences", "Internal metrics"],
+        "items": [
+          "Authentication",
+          "Interface preferences",
+          "Internal metrics"
+        ],
         "noAdvertising": "We do not use advertising cookies or tracking pixels for marketing purposes.",
         "title": "6. Cookies and tracking technologies"
       },
@@ -5012,7 +5152,12 @@
           "title": "1.2 Payment Information"
         },
         "technicalData": {
-          "items": ["IP address", "Device type", "Browser", "Language preferences"],
+          "items": [
+            "IP address",
+            "Device type",
+            "Browser",
+            "Language preferences"
+          ],
           "title": "1.4 Technical Data"
         },
         "title": "1. Information we collect",
@@ -6223,7 +6368,8 @@
     "screen": {
       "fechar": "Fechar",
       "close_tutorial": "Close tutorial"
-    }
+    },
+    "start": "Get started"
   },
   "workflows": {
     "actions": {
@@ -6617,7 +6763,6 @@
     "shortcuts": "Shortcuts (?)",
     "pinBar": "Pin bar",
     "unpinBar": "Unpin bar",
-    "shortcutsHint": "Ctrl+V pastes, Tab shows the panel, 1 to 4 switch mode. Full shortcuts under ?",
     "shortcutsTitle": "Keyboard shortcuts",
     "shortcutSections": {
       "modes": "Modes",
@@ -6967,14 +7112,11 @@
         "download_brand_variables_as": "Download brand variables as CSS",
         "download_brand_guidelines_a": "Download brand guidelines as JSON",
         "brand_sections": "Brand sections",
-        "access_denied": "Access Denied",
-        "decrypting_brand_assets": "Decrypting Brand Assets",
         "downloaded_as_css": "Downloaded as CSS",
         "downloaded_as_json": "Downloaded as JSON",
         "edit_mode": "Edit",
         "viewing_mode": "View",
         "edit_section": "Edit section",
-        "open_full_editor": "Open full editor",
         "editing_section": "Editing",
         "connect": "Connect",
         "connect_brand_aria": "Connect brand to Claude, Cursor or other AI tools",
@@ -7262,7 +7404,8 @@
       "shareOrExport": "Share or export",
       "allDone": "All set."
     },
-    "pageTitle": "Welcome"
+    "pageTitle": "Welcome",
+    "bringBrandCta": "Bring your brand"
   },
   "brandCompleteness": {
     "name": "Brand name",
@@ -7321,7 +7464,6 @@
     "nothingToCompile": "Nothing to compile",
     "tokensDownloaded": "{format} tokens downloaded",
     "compileFailed": "Couldn’t compile tokens",
-    "assistantsBlurb": "Your colors, type, logos and voice — loaded into any assistant, automatically.",
     "connect": "Connect to your AI",
     "shareConnect": "Share + connect",
     "copyContext": "Copy brand context",
@@ -7367,12 +7509,7 @@
     "emptyDesc": "Open Canvas and ask the assistant to generate a campaign from your product and brand. It lands here automatically.",
     "emptyAction": "Generate in Canvas",
     "ads": "ads",
-    "status": {
-      "planning": "planning",
-      "generating": "generating",
-      "done": "done",
-      "error": "error"
-    },
+    "status": {},
     "detail": {
       "fallbackTitle": "Campaign",
       "back": "Campaigns",
@@ -7462,7 +7599,18 @@
       "rotation": "Rotation",
       "run": "Apply",
       "runCount": "Apply to {count} images",
-      "done": "Images watermarked: {count}"
+      "done": "Images watermarked: {count}",
+      "positions": {
+        "top-left": "Top left",
+        "top-center": "Top center",
+        "top-right": "Top right",
+        "center-left": "Middle left",
+        "center": "Center",
+        "center-right": "Middle right",
+        "bottom-left": "Bottom left",
+        "bottom-center": "Bottom center",
+        "bottom-right": "Bottom right"
+      }
     },
     "svg": {
       "options": "Options",
@@ -7626,7 +7774,121 @@
       "oceania": "Oceania"
     },
     "allCountries": "All countries",
-    "allRegions": "All regions"
+    "allRegions": "All regions",
+    "fallbackTitle": "Reference",
+    "seoDescription": "Curated library of design references from around the world, filterable by tag and country of origin.",
+    "toast": {
+      "notFound": "Reference not found",
+      "loginForImages": "Sign in to upload and search by image",
+      "noSimilarImage": "No similar references found",
+      "imageSearchError": "Image search failed",
+      "noSimilar": "No similar references found",
+      "similarError": "Could not find similar references",
+      "openCollectionError": "Could not open collection",
+      "deleteError": "Could not delete",
+      "deletedOne": "Reference deleted",
+      "deletedMany": "{count} references deleted",
+      "deleteCollectionError": "Could not delete",
+      "collectionDeleted": "Collection deleted",
+      "collectionCreated": "Collection created",
+      "createCollectionError": "Could not create collection",
+      "removeError": "Could not remove",
+      "savedMany": "{count} references saved",
+      "saveError": "Could not save",
+      "linkCopied": "Link copied",
+      "copyError": "Could not copy"
+    },
+    "imageSearch": "Image search",
+    "similarTo": "Similar to \"{title}\"",
+    "undo": "Undo",
+    "country": "Country",
+    "searchByImage": "Search by image",
+    "uploadCta": "Upload reference",
+    "rankedBy": "Ranked by affinity with",
+    "colorLabel": "Color",
+    "removeColorFilter": "Remove color filter",
+    "sourceLabel": "Source:",
+    "removeSourceFilter": "Remove source filter",
+    "backToLibrary": "Back to library",
+    "deleteCollection": "Delete collection",
+    "collections": "Collections",
+    "shuffleFeed": "Shuffle feed",
+    "shuffle": "Shuffle",
+    "filters": "Filters",
+    "forYou": "For you",
+    "clearAll": "Clear all",
+    "loadError": "Could not load references",
+    "loadingMore": "Loading more...",
+    "dropToSearch": "Drop to find similar",
+    "loginForCollections": "Sign in to create and view your collections.",
+    "collectionsLoadError": "Could not load your collections",
+    "collectionName": "Collection name",
+    "create": "Create",
+    "newCollection": "New collection",
+    "saveManyToCollection": "Save {count} to collection",
+    "saveToCollection": "Save to collection",
+    "newCollectionPlaceholder": "New collection...",
+    "collectionsLoadErrorShort": "Could not load your collections.",
+    "retry": "Try again",
+    "noCollections": "No collections yet.",
+    "viewSimilar": "View similar",
+    "selectionActions": "Selection actions",
+    "selectedOne": "selected",
+    "selectedMany": "selected",
+    "selectAll": "All",
+    "finishSelection": "Done selecting",
+    "removeFilter": "Remove filter {label}",
+    "searchPlaceholder": "Search",
+    "semanticTitle": "Search by meaning",
+    "exactTitle": "Exact search",
+    "semantic": "Meaning",
+    "exact": "Exact",
+    "deselect": "Deselect",
+    "select": "Select",
+    "removeFromCollection": "Remove from collection",
+    "close": "Close",
+    "previous": "Previous",
+    "next": "Next",
+    "imageUnavailable": "Image unavailable",
+    "lowRes": "Low resolution ({width}×{height})",
+    "palette": "Palette",
+    "viewByColor": "View references in this color ({hex})",
+    "viewByColorAria": "View references in color {hex}",
+    "whyMatches": "Why it matches",
+    "auto": "auto",
+    "designer": "Designer",
+    "description": "Description",
+    "copyLink": "Copy link",
+    "viewSource": "View original source",
+    "firstRunTitle": "Your reference library",
+    "firstRunCta": "Upload your first reference",
+    "noResults": "No references for this filter",
+    "clearFilters": "Clear filters",
+    "upload": {
+      "pickOne": "Select at least 1 image",
+      "pending": "{count} sent for review",
+      "deduped": "{count} already in the library",
+      "failed": "{count} failed",
+      "error": "Upload failed",
+      "sendingTitle": "Uploading references",
+      "sending": "Uploading {count} image(s)...",
+      "title": "Upload references",
+      "selected": "{count} image(s) selected",
+      "pick": "Select images (max. 10)",
+      "hint": "Free. Images go through review before appearing in the library.",
+      "countryOptional": "Country (optional)",
+      "auto": "Auto",
+      "designer": "Designer / Studio",
+      "designerPlaceholder": "e.g. Pentagram",
+      "source": "Source (URL)",
+      "award": "Award / Archive",
+      "awardPlaceholder": "e.g. D&AD 2024",
+      "makePublic": "Make public in the shared library",
+      "submit": "Send for review"
+    },
+    "countOne": "{count} ref",
+    "countMany": "{count} refs",
+    "regionPlaceholder": "Region"
   },
   "connectedApps": {
     "description": "AI agents and apps with access to your account via OAuth.",
@@ -7678,6 +7940,14 @@
       "nope": "Not it",
       "like": "Like",
       "save": "Save"
+    },
+    "history": {
+      "title": "Previous sessions",
+      "new": "new",
+      "loading": "loading…",
+      "empty": "No previous sessions yet.",
+      "liked": "{count} liked",
+      "remove": "Remove session"
     }
   },
   "brandQuickEdit": {
@@ -7748,7 +8018,12 @@
     "dont": "Don't",
     "viewAll": "View all",
     "mockups": "Mockups",
-    "manifestoPlaceholder": "Write the brand manifesto…"
+    "manifestoPlaceholder": "Write the brand manifesto…",
+    "tabOverview": "Overview",
+    "tabStrategy": "Strategy",
+    "tabAssets": "Assets",
+    "tabLibrary": "Library",
+    "tabPreview": "Preview"
   },
   "brandHealth": {
     "title": "Brand audit",
@@ -8300,5 +8575,363 @@
     "preview": {
       "alt": "Preview"
     }
+  },
+  "connect": {
+    "loading": "Loading invite...",
+    "errorHint": "This connect link may have expired or already been used. Open your brand link again and tap Connect for a fresh one, or ask the team that shared it to resend.",
+    "back": "Back to home",
+    "invitedBy": "Invited by {name}",
+    "inviteDesc": "Connect {brand} to your AI assistant (Claude, ChatGPT…). It will then design and write with the brand's colors, fonts, logos and voice.",
+    "ctaAuthed": "Accept & Connect",
+    "ctaGuest": "Create free account & connect",
+    "freeHint": "Free. Sign in with Google in one click.",
+    "accepting": "Connecting {brand}...",
+    "connectedTitle": "{brand} is connected",
+    "connectedSubtext": "Two steps and your AI assistant will design and write on-brand.",
+    "step1": "1. Connect your assistant",
+    "step2": "2. Try it: open your assistant and ask",
+    "dashboard": "Go to dashboard",
+    "dev": "For developers (Cursor, VS Code, Terminal)",
+    "open": "Open",
+    "copied": "Copied",
+    "oneClick": "One-click install",
+    "recommended": "Recommended",
+    "claude": {
+      "step1": "In Claude, open Settings, then Connectors",
+      "step2": "Click \"Add custom connector\"",
+      "step3": "Paste the link below",
+      "step4": "Sign in with your account when Claude asks"
+    },
+    "chatgpt": {
+      "step1": "In ChatGPT, open Settings, then Connectors",
+      "step2": "Add a connector",
+      "step3": "Paste the link below",
+      "step4": "Sign in with your account when ChatGPT asks"
+    },
+    "prompt1": "Create an on-brand Instagram post for {brand}.",
+    "prompt2": "Write a product description in {brand}'s tone of voice.",
+    "prompt3": "What are {brand}'s colors, fonts and logos?",
+    "errors": {
+      "invalidLink": "Invalid link",
+      "unavailable": "This invite is no longer available",
+      "loadFailed": "Unable to load invite",
+      "acceptFailed": "Could not accept invite",
+      "connectionFailed": "Connection failed"
+    }
+  },
+  "gettingStarted": {
+    "seo": {
+      "title": "Getting Started with the Visant API",
+      "description": "Follow a step-by-step guide to authenticate and call Visant's AI brand, mockup, and creative generation tools via API."
+    },
+    "breadcrumbDocs": "Documentation",
+    "title": "Getting Started",
+    "subtitle": "Authenticate and make your first API call in under 5 minutes.",
+    "onThisPage": "On this page",
+    "copyCode": "Copy code",
+    "copied": "Copied!",
+    "sections": {
+      "authentication": "Authentication",
+      "brand": "Brand Generation",
+      "mockup": "Mockup Generation",
+      "creative": "Creative Studio",
+      "next": "Next Steps"
+    },
+    "auth": {
+      "intro": "All API requests require a {key} API key passed as a {bearer} token in the {header} header.",
+      "noKey": "Don't have a key yet?",
+      "createKey": "Create an API key",
+      "oauthTitle": "OAuth 2.1 (for AI agents & third-party apps)",
+      "oauthBody": "Agents and apps can authenticate via {oauth} with dynamic client registration. See {link} to manage authorized agents.",
+      "connectedApps": "Connected Apps",
+      "listTools": "List available tools",
+      "scopesTitle": "Available scopes"
+    },
+    "scopes": {
+      "read": "Read resources and metadata",
+      "write": "Create and modify resources",
+      "generate": "Invoke AI generation tools"
+    },
+    "scopeRequired": "Scope required:",
+    "tool": "Tool:",
+    "paramOptionalString": "string, optional",
+    "brand": {
+      "intro": "Create a brand guideline from a name and a short description, then add colors, typography, voice and visual direction. Brand guidelines become input for all subsequent generation tools.",
+      "example": "Create a brand guideline",
+      "paramName": "string, required",
+      "paramDescription": "string, optional",
+      "paramRest": "optional, or later via brand-guidelines-update"
+    },
+    "mockup": {
+      "intro": "Place your artwork or brand into a realistic scene (apparel, packaging, devices, print) and receive a rendered mockup image URL.",
+      "example": "Generate a product mockup",
+      "paramPrompt": "string, required (scene only)",
+      "paramReferences": "public URLs, optional"
+    },
+    "creative": {
+      "intro": "Generate on-brand social posts, banners and ads from a natural language prompt paired with your brand context. Brand guidelines are used as generation input, not just documentation.",
+      "example": "Generate a creative asset",
+      "paramPrompt": "string, required",
+      "paramBrand": "string, optional (injects brand context)",
+      "paramFormat": "1:1, 16:9, 9:16 or 4:5"
+    },
+    "next": {
+      "reference": {
+        "title": "Full API Reference",
+        "desc": "Browse all MCP tools with params and response schemas"
+      },
+      "keys": {
+        "title": "Manage API Keys",
+        "desc": "Create, rotate, and scope your API keys"
+      },
+      "usage": {
+        "title": "Usage Dashboard",
+        "desc": "Monitor request counts, credits, and quotas"
+      }
+    }
+  },
+  "brandEditor": {
+    "reingestTitle": "Re-ingest from website",
+    "reingest": "Re-ingest",
+    "deleteGuideline": "Delete brand",
+    "namePlaceholder": "Name",
+    "identityDescPlaceholder": "What the brand does, for whom",
+    "colorUsageUpdated": "Color hierarchy updated from asset usage",
+    "colorUsageNone": "No palette colors found across the assets",
+    "colorUsageFailed": "Failed to analyze color usage",
+    "noColorsToCopy": "No colors to copy",
+    "colorsCopiedAs": "Copied {count} colors as {format}",
+    "analyzeUsageTitle": "Analyze color usage across assets (proportional hierarchy)",
+    "analyzeUsage": "Analyze color usage across assets",
+    "wcagContrast": "WCAG Contrast",
+    "toggleWcag": "Toggle WCAG matrix",
+    "copyAllColors": "Copy all colors",
+    "addColor": "Add color",
+    "noColorsYet": "No colors yet.",
+    "colorName": "Color name",
+    "copyHex": "Copy hex",
+    "removeColor": "Remove color",
+    "addFont": "Add font",
+    "noFonts": "No fonts yet. Click + to add.",
+    "fontRolePlaceholder": "Role (e.g. Heading)",
+    "fontStyle": "Style",
+    "removeFont": "Remove font",
+    "logoUploaded": "Logo uploaded",
+    "logoUploadFailed": "Failed to upload logo",
+    "logoSetPrimary": "\"{name}\" set as brand logo",
+    "logoDeleteFailed": "Failed to delete logo",
+    "uploadLogo": "Upload logo",
+    "brandLogoHint": "Brand logo (avatars & mockups)",
+    "setAsBrandLogo": "Set as brand logo",
+    "currentBrandLogo": "Current brand logo",
+    "removeLogo": "Remove logo",
+    "remove": "Remove",
+    "accessibility": "Accessibility",
+    "accessibilityPlaceholder": "Accessibility guidelines and universal design standards…",
+    "addArchetype": "Add archetype",
+    "noArchetypesAdd": "No archetypes. Click + to add.",
+    "goalPlaceholder": "Goal…",
+    "borders": "Borders",
+    "addBorder": "Add border",
+    "noBordersYet": "No borders yet.",
+    "seedDefaults": "Use defaults",
+    "borderName": "Border name",
+    "width": "Width",
+    "opacity": "Opacity",
+    "compileFailed": "Failed to compile tokens",
+    "copiedClipboard": "Copied to clipboard",
+    "downloadedFile": "Downloaded {filename}",
+    "allFormatsDownloaded": "All formats downloaded",
+    "downloadFailed": "Failed to download",
+    "dsOutput": "Design System Output",
+    "copiedShort": "Copied",
+    "compiling": "Compiling tokens…",
+    "noOutput": "No output available. Add colors, typography, or tokens to your brand.",
+    "linesCount": "{count} lines",
+    "downloadAll": "Download all formats",
+    "fonts": "Fonts",
+    "shadows": "Shadows",
+    "gradients": "Gradients",
+    "person1": "1st",
+    "person2": "2nd",
+    "person3": "3rd",
+    "emojiNever": "Never",
+    "emojiInformal": "Informal",
+    "emojiFree": "Free",
+    "editorial": "Editorial",
+    "voice": "Voice",
+    "voicePlaceholder": "Brand personality…",
+    "person": "Person",
+    "emoji": "Emoji",
+    "casingRules": "Casing rules",
+    "casingPlaceholder": "e.g. ALL CAPS",
+    "dos": "Do",
+    "doPlaceholder": "Best practice…",
+    "donts": "Don't",
+    "dontPlaceholder": "Never say…",
+    "figmaInvalidUrl": "Invalid URL. Use a Figma URL (figma.com/file/... or figma.com/design/...)",
+    "figmaLinked": "Figma file linked",
+    "figmaLinkFailed": "Failed to link Figma file",
+    "figmaUnlinked": "Figma file unlinked",
+    "figmaUnlinkFailed": "Failed to unlink",
+    "figmaNoToken": "Figma token not configured",
+    "figmaNoTokenHint": "Go to Profile > Manage to set up your token.",
+    "configure": "Configure",
+    "figmaPreviewFailed": "Failed to load Figma preview",
+    "timeNow": "just now",
+    "timeMinAgo": "{n}min ago",
+    "timeHourAgo": "{n}h ago",
+    "timeDayAgo": "{n}d ago",
+    "figmaLinkedFile": "Linked file",
+    "openInFigma": "Open in Figma",
+    "importFromFigma": "Import from Figma",
+    "syncLabel": "Sync",
+    "unlink": "Unlink",
+    "figmaConnectHint": "Connect a Figma file to sync colors, typography and tokens automatically.",
+    "figmaUrlPlaceholder": "Paste the Figma file URL…",
+    "figmaSyncHint": "Sync runs automatically when you open the file in the Figma plugin.",
+    "usageHero": "Hero",
+    "usageDecorative": "Decorative",
+    "usageFill": "Fill",
+    "usageOverlay": "Overlay",
+    "addGradient": "Add gradient",
+    "noGradientsAdd": "No gradients yet. Click + to add.",
+    "gradientName": "Gradient name",
+    "stops": "Stops",
+    "graphicSystem": "Graphic system",
+    "patterns": "Patterns",
+    "patternsPlaceholder": "Court lines\nOrbital patterns\nGeometric textures",
+    "graphics": "Graphic elements",
+    "graphicsPlaceholder": "Overlapping ellipses\nShapes with brand DNA",
+    "imageRules": "Image rules",
+    "imageRulesPlaceholder": "Photography always with a warm filter\nDiagonal cuts\nNo pure white backgrounds",
+    "editorialGrid": "Editorial grid",
+    "editorialGridPlaceholder": "Grid that organizes posts, pages, presentations…",
+    "timeMonthAgo": "{n}mo ago",
+    "knowledgeLoadFailed": "Failed to load files",
+    "filesUploadedMany": "{count} files uploaded",
+    "filesUploadedOne": "{count} file uploaded",
+    "knowledgeUploadFailed": "Failed to upload file",
+    "knowledgeConfirmRemove": "Remove \"{name}\" from brand memory?",
+    "knowledgeRemoved": "File removed",
+    "knowledgeRemoveFailed": "Failed to remove file",
+    "knowledge": "Brand knowledge",
+    "uploadFile": "Upload file",
+    "knowledgeHint": "Files feed the brand's AI generation. More context, more on-point output.",
+    "removeNamed": "Remove {name}",
+    "provocationPlaceholder": "A question or image the reader recognizes…",
+    "tensionPlaceholder": "The problem, the frustration, the pain the brand solves…",
+    "promisePlaceholder": "What the brand does, with whom, for what. A closing line with impact…",
+    "manifestoFullOptional": "Full text (optional)",
+    "manifestoFree": "Free text",
+    "marketResearch": "Market research",
+    "competitors": "Competitors",
+    "competitorsPlaceholder": "Playtomic\nStrava\nFrontify",
+    "gaps": "Gaps (what they deliver poorly)",
+    "gapsPlaceholder": "No cultural DNA\nCold, generic UI",
+    "opportunities": "Opportunities (open territory)",
+    "opportunitiesPlaceholder": "Local culture\nActive community",
+    "extraNotes": "Additional notes",
+    "marketNotesPlaceholder": "Notes about the market…",
+    "assetVisionOff": "AI asset analysis isn’t available right now (admin setting).",
+    "assetSearchOff": "Semantic search isn’t available right now (admin setting).",
+    "assetsAllAnalyzed": "All assets are already analyzed.",
+    "assetsAnalyzeFailedOne": "Couldn’t analyze {count} asset. The AI service is temporarily unavailable, try again shortly.",
+    "assetsAnalyzeFailedMany": "Couldn’t analyze {count} assets. The AI service is temporarily unavailable, try again shortly.",
+    "assetsPartialOne": "{analyzed} asset analyzed, {failed} couldn’t be processed. Run again to retry those.",
+    "assetsPartialMany": "{analyzed} assets analyzed, {failed} couldn’t be processed. Run again to retry those.",
+    "assetsAnalyzedOne": "{count} asset analyzed by AI",
+    "assetsAnalyzedMany": "{count} assets analyzed by AI",
+    "assetsAnalyzeFailed": "Failed to analyze assets",
+    "searchFailed": "Search failed",
+    "visualLibrary": "Visual library & components",
+    "analyzeAssets": "Analyze assets with AI",
+    "analyzingProgress": "Analyzing assets with AI… {processed}/{total}",
+    "analysisStarting": "Starting analysis…",
+    "assetSearchPlaceholder": "Search by vibe, theme, mood… (run Analyze first)",
+    "productPlaceholder": "e.g. ITSM for lean IT teams",
+    "differentialPlaceholder": "e.g. connecting tools in a single flow",
+    "emotionalPlaceholder": "e.g. relief of having operational chaos under control",
+    "preview": "Preview",
+    "previewWith": "with the differential of",
+    "previewFeeling": "that conveys the feeling of",
+    "philosophyMinimal": "Minimal",
+    "philosophyModerate": "Moderate",
+    "philosophyExpressive": "Expressive",
+    "motion": "Motion",
+    "noMotionYet": "No motion tokens yet.",
+    "philosophy": "Philosophy",
+    "durations": "Durations (ms)",
+    "toggleReducedMotion": "Toggle reduced motion",
+    "personaAvatarTitle": "Set avatar / gender for stock photos",
+    "stockGender": "Stock gender",
+    "removeAvatar": "Remove avatar",
+    "noMediaYet": "No media yet. Add images in the Logos tab.",
+    "stockPhotosAdded": "{count} stock photo(s) added",
+    "noNewPhotos": "No new photos found",
+    "stockPhotosFailed": "Failed to fetch stock photos",
+    "autofillPhotos": "Auto-fill persona photos from free stock",
+    "fetchStockPhotos": "Fetch free stock photos (Unsplash/Pexels)",
+    "addPersona": "Add persona",
+    "noPersonasAdd": "No personas yet. Click + to add.",
+    "personaName": "Persona name",
+    "personaRole": "Role / occupation",
+    "age": "Age",
+    "bio": "Bio",
+    "bioPlaceholder": "Context, routine, mindset…",
+    "personaDesires": "Desires",
+    "desiresPlaceholder": "Less friction\nClear ROI\nAutonomous team",
+    "personaPains": "Pains",
+    "painsPlaceholder": "Fragmented tools\nNo visibility\nSlow onboarding",
+    "traits": "Traits",
+    "addPlaceholder": "Add…",
+    "addPillar": "Add pillar",
+    "noPillarsAdd": "No pillars defined. Click + to add.",
+    "pillarName": "e.g. Belonging",
+    "pillarWhy": "Why this pillar matters…",
+    "addShadow": "Add shadow",
+    "noShadowsYet": "No shadows yet.",
+    "shadowName": "Shadow name",
+    "blur": "Blur",
+    "spread": "Spread",
+    "brandStrategy": "Brand strategy",
+    "noArchetypes": "No archetypes",
+    "tags": "Tags",
+    "addCategory": "Add category",
+    "noTagsAdd": "No tags yet. Click + to add a category.",
+    "deleteCategory": "Delete category {name}",
+    "clickToEdit": "Click to edit",
+    "removeTag": "Remove tag",
+    "newTag": "New tag…",
+    "addTagTo": "Add tag to {name}",
+    "newCategory": "new_category",
+    "roleBg": "Background",
+    "roleText": "Text",
+    "rolePrimary": "Primary",
+    "roleAccent": "Accent",
+    "lowContrast": "low contrast",
+    "themeFallback": "Theme",
+    "previewHeadline": "Preview headline",
+    "previewBody": "Body text preview for contrast.",
+    "themeAdded": "Theme added",
+    "colorThemes": "Color themes",
+    "newTheme": "New theme",
+    "themesHint": "Define color combinations (background, text, primary, accent) to keep contrast and harmony in AI-generated creatives.",
+    "createFirstTheme": "Create first theme",
+    "themeName": "Theme name",
+    "designTokens": "Design tokens",
+    "invalidJson": "Invalid JSON",
+    "copyHeadline": "Headline",
+    "copyCta": "CTA",
+    "copyBody": "Body",
+    "addTone": "Add tone",
+    "noVoiceAdd": "No voice values yet. Click + to add.",
+    "toneName": "Tone (e.g. Direct, Inspiring)",
+    "toneSounds": "How it sounds…",
+    "toneExample": "\"Example line…\"",
+    "addCopyExample": "Add copy example",
+    "copyExamplesHint": "Real copy the brand has shipped. The AI matches its register when writing new copy.",
+    "copyExamplePlaceholder": "\"The city paints. We frame it.\"",
+    "removeCopyExample": "Remove copy example"
   }
 }

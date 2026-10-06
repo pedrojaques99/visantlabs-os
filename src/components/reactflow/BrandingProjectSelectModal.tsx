@@ -113,7 +113,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-neutral-800/60">
-          <h2 className="text-lg font-semibold text-neutral-200 font-mono">
+          <h2 className="text-lg font-semibold text-neutral-200">
             {t('canvasNodes.brandingProjectSelectModal.selectBrandingProject')}
           </h2>
           <Button
@@ -180,7 +180,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
               })
             ) : (
               <div className="col-span-full text-center py-8">
-                <p className="text-sm text-neutral-500 font-mono">
+                <p className="text-sm text-neutral-500">
                   {searchQuery
                     ? t('canvasNodes.brandingProjectSelectModal.noProjectsFoundMatchingSearch')
                     : t('canvasNodes.brandingProjectSelectModal.noProjectsFound')}
@@ -203,7 +203,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
           <Button
             variant="ghost"
             onClick={onClose}
-            className="px-4 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 rounded-md text-sm font-mono transition-colors"
+            className="px-4 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 rounded-md text-sm transition-colors"
           >
             {t('common.cancel')}
           </Button>

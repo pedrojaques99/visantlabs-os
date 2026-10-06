@@ -119,7 +119,10 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             variant="surface"
             size={isCopying ? 'xs' : 'icon-sm'}
             aria-label={t('common.copy')}
-            onClick={stop(() => handleCopy('Copied', 'Failed'))}
+            onClick={stop(() => handleCopy(
+                t('canvasNodes.promptNode.presetCard.copied'),
+                t('canvasNodes.promptNode.presetCard.copyFailed')
+              ))}
           >
             {isCopying ? <span className="font-mono">{glitchText}</span> : <Clipboard />}
           </Button>
@@ -175,8 +178,8 @@ export const PresetCard: React.FC<PresetCardProps> = ({
       }
       meta={
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className={cn('rounded border border-border bg-muted px-1.5 py-0.5', config.color)}>
-            {config.label}
+          <span className="rounded border border-border bg-muted px-1.5 py-0.5 text-muted-foreground">
+            {t(`communityPresets.categories.${migrated.category in CATEGORY_CONFIG ? migrated.category : 'all'}`)}
           </span>
           {migrated.difficulty && (
             <span
@@ -189,7 +192,9 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                     : 'text-destructive'
               )}
             >
-              {migrated.difficulty.slice(0, 3)}
+              {t(
+                `communityPresets.difficulty${migrated.difficulty.charAt(0).toUpperCase()}${migrated.difficulty.slice(1)}`
+              )}
             </span>
           )}
           {migrated.aspectRatio && (

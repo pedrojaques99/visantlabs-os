@@ -3,6 +3,7 @@ import type { Resolution, GeminiModel } from '@/types/types';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { isOpenAIImageModel, getOpenAIImageModelConfig } from '@/constants/openaiModels';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { Select } from '@/components/ui/select';
 import { NodeButton } from './node-button';
@@ -81,6 +82,7 @@ export const ResolutionSelector: React.FC<ResolutionSelectorProps> = ({
   compact = false,
   allowVideo = false,
 }) => {
+  const { t } = useTranslation();
   const isVideo = String(model).startsWith('veo-');
   const openaiConfig = isOpenAIImageModel(model) ? getOpenAIImageModelConfig(model) : undefined;
   const resolutions =
@@ -108,9 +110,9 @@ export const ResolutionSelector: React.FC<ResolutionSelectorProps> = ({
           onChange={(v) => onChange(v as Resolution)}
           options={resolutions.map((res) => ({
             value: res,
-            label: `${res} (${getCreditsRequired(model, res)} credits)`,
+            label: `${res} (${t('canvasNodes.shared.creditsCount', { count: getCreditsRequired(model, res) })})`,
           }))}
-          placeholder="Select resolution"
+          placeholder={t('canvasNodes.shared.selectResolution')}
           disabled={disabled}
         />
       </div>

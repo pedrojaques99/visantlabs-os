@@ -136,10 +136,21 @@ function ternaryConditionFor(lines, i) {
   return null;
 }
 
+// Igualdade contra o item do loop (`sel === item.value ?`, `item.id === sel ?`)
+// também é estado de seleção. Lista branca do lado do item (.id/.value/.key ou
+// variável de loop nua) pra NÃO deixar passar `status === 'error' ?`.
+const LOOP_VAR = '(?:item|opt|option|tab|tool|preset|entry|chip|seg|o|v|k)';
+const ITEM_SIDE = String.raw`(?:[\w$]+\.(?:id|value|key)|${LOOP_VAR})`;
+const ITEM_EQ = new RegExp(
+  String.raw`===\s*${ITEM_SIDE}\s*(?:&&.*)?$|(?:^|[\s(!&|{])${ITEM_SIDE}\s*===\s*[\w$.]+\s*$`
+);
+
 function cyanIsSelectedState(lines, i) {
   if (cyanOnlyUnderStateVariant(lines[i])) return true;
   const cond = ternaryConditionFor(lines, i);
-  return Boolean(cond && STATE_WORD.test(cond) && !NOT_STATE.test(cond));
+  if (!cond) return false;
+  if (STATE_WORD.test(cond) && !NOT_STATE.test(cond)) return true;
+  return ITEM_EQ.test(cond.trim());
 }
 
 // ─── Exceção escrita ────────────────────────────────────────────────────────
@@ -207,7 +218,10 @@ if (FLAGS.has('--self-test')) {
     ['aria-selected: prefixo', ['className="aria-selected:bg-brand-cyan/10"'], 0, false],
     ['focus-visible: prefixo', ['className="focus-visible:ring-brand-cyan rounded"'], 0, false],
     ['peer-checked: prefixo', ['className="peer-checked:border-brand-cyan"'], 0, false],
+    ['ternário X === item.value', ["{sel === item.value ? 'text-brand-cyan' : ''}"], 0, false],
+    ['ternário item.id === X', ["{item.id === sel ? 'border-brand-cyan' : ''}"], 0, false],
     // verdadeiros: continuam acusando
+    ["status === 'error' não é seleção", ["{status === 'error' ? 'text-brand-cyan' : ''}"], 0, true],
     ['cyan estático em badge', ['<span className="text-brand-cyan text-xs">Novo</span>'], 0, true],
     ['ramo falso (: ) do selecionado', ['  isSelected', "    ? 'border-neutral-600'", "    : 'border-brand-cyan'"], 2, true],
     ['condição não-estado (isPrimary)', ["isPrimary ? 'fill-brand-cyan' : ''"], 0, true],

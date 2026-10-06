@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,6 +23,7 @@ interface StrategySectionProps {
 }
 
 export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onUpdate, span }) => {
+  const { t } = useTranslation();
   const local = guideline.strategy || {};
 
   const persist = useCallback(
@@ -69,13 +71,13 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
     <SectionBlock
       id="strategy"
       icon={<Compass size={14} />}
-      title="Brand Strategy"
+      title={t('brandEditor.brandStrategy')}
       span={span as any}
     >
       <div className="space-y-6">
         {/* Manifesto */}
         <div className="space-y-1.5">
-          <MicroTitle className="text-neutral-500">Manifesto</MicroTitle>
+          <MicroTitle className="text-muted-foreground">{t('brandView.manifesto')}</MicroTitle>
           <Textarea
             value={
               typeof local.manifesto === 'string'
@@ -83,18 +85,18 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                 : (local.manifesto as any)?.full || ''
             }
             onChange={(e) => update({ manifesto: e.target.value })}
-            className="border-neutral-800 min-h-[80px] text-xs resize-none"
-            placeholder="Brand manifesto..."
+            className="border-border min-h-[80px] text-xs resize-none"
+            placeholder={t('brandView.manifestoPlaceholder')}
           />
         </div>
 
         {/* Archetypes */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <MicroTitle className="text-neutral-500">Archetypes</MicroTitle>
+            <MicroTitle className="text-muted-foreground">{t('brandView.archetypes')}</MicroTitle>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-5 w-5" aria-label="Add archetype">
+                <Button variant="ghost" size="icon" className="h-5 w-5" aria-label={t('brandEditor.addArchetype')}>
                   <Plus size={11} />
                 </Button>
               </DropdownMenuTrigger>
@@ -123,15 +125,15 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                       className="w-7 h-9 object-cover rounded shrink-0"
                     />
                     <div className="min-w-0">
-                      <p className="text-xs font-medium text-neutral-200 truncate">{preset.nome}</p>
-                      <p className="text-2xs text-neutral-600 truncate">
+                      <p className="text-xs font-medium text-foreground truncate">{preset.nome}</p>
+                      <p className="text-2xs text-muted-foreground/70 truncate">
                         {preset.valores.slice(0, 2).join(', ')}
                       </p>
                     </div>
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuItem
-                  className="text-2xs text-neutral-600 border-t border-neutral-800 mt-1 pt-2"
+                  className="text-2xs text-muted-foreground/70 border-t border-border mt-1 pt-2"
                   onClick={() => addItem('archetype')}
                 >
                   + Custom
@@ -145,7 +147,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
             return (
               <div
                 key={i}
-                className="flex gap-3 items-start py-2 border-b border-neutral-800 last:border-0 group/item"
+                className="flex gap-3 items-start py-2 border-b border-border last:border-0 group/item"
               >
                 {img && (
                   <Thumb
@@ -163,8 +165,8 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                         a[i] = { ...a[i], name: e.target.value };
                         update({ archetypes: a });
                       }}
-                      className="h-6 bg-transparent border-none px-0 text-xs font-medium text-neutral-200 focus-visible:ring-0 placeholder:text-neutral-700 flex-1"
-                      placeholder="Name"
+                      className="h-6 bg-transparent border-none px-0 text-xs font-medium text-foreground focus-visible:ring-0 placeholder:text-muted-foreground/50 flex-1"
+                      placeholder={t('brandEditor.namePlaceholder')}
                     />
                     <button
                       type="button"
@@ -185,8 +187,8 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                       a[i] = { ...a[i], description: e.target.value };
                       update({ archetypes: a });
                     }}
-                    className="h-6 bg-transparent border-none px-0 text-xs text-neutral-500 focus-visible:ring-0 placeholder:text-neutral-700"
-                    placeholder="Objetivo..."
+                    className="h-6 bg-transparent border-none px-0 text-xs text-muted-foreground focus-visible:ring-0 placeholder:text-muted-foreground/50"
+                    placeholder={t('brandEditor.goalPlaceholder')}
                   />
                   {preset && (
                     <p className="text-2xs text-muted-foreground">{preset.valores.join(', ')}</p>
@@ -195,9 +197,9 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/item:opacity-100 shrink-0 mt-0.5"
+                  className="h-6 w-6 text-muted-foreground/50 hover:text-destructive opacity-0 group-hover/item:opacity-100 shrink-0 mt-0.5"
                   onClick={() => removeItem('archetype', i)}
-                  aria-label="Remove"
+                  aria-label={t('common.remove')}
                 >
                   <Trash2 size={10} />
                 </Button>
@@ -205,7 +207,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
             );
           })}
           {!local.archetypes?.length && (
-            <p className="text-2xs text-neutral-700 pl-0.5">No archetypes</p>
+            <p className="text-2xs text-muted-foreground/50 pl-0.5">{t('brandEditor.noArchetypes')}</p>
           )}
         </div>
       </div>

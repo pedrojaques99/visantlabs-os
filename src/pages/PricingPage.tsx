@@ -221,10 +221,7 @@ export const PricingPage: React.FC = () => {
               return (
                 <div
                   key={tier.id}
-                  className={cn(
-                    'relative flex flex-col rounded-xl border bg-card p-6',
-                    tier.recommended ? 'border-ring' : 'border-border'
-                  )}
+                  className="relative flex flex-col rounded-xl border border-border bg-card p-6"
                   data-vsn-region={`tier-${tier.id}`}
                 >
                   {/* Selo topo: recomendado ou early access */}

@@ -49,7 +49,7 @@ export const BrandSwitcher: React.FC<BrandSwitcherProps> = ({
       : []),
     ...brands.map((g) => ({
       value: g.id!,
-      label: g.identity?.name || g.name || 'Untitled',
+      label: g.identity?.name || g.name || t('brandGuidelines.untitled'),
       icon: <BrandAvatar brand={g} size={16} rounded="sm" />,
     })),
     {

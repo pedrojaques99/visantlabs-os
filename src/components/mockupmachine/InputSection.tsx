@@ -10,10 +10,7 @@ import { isSafeUrl } from '@/utils/imageUtils';
 import { cn } from '@/lib/utils';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { MicroTitle } from '../ui/MicroTitle';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { MessageSquare, Share2 } from '@/lib/ui/icons';
 import { BrandGuidelineSelector } from './BrandGuidelineSelector';
 import { useMockup } from '@/hooks/useMockup';
 import { MockupCard } from './MockupCard';
@@ -60,7 +57,6 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const supportsReferences = !selectedModel || isProModel || isHDModel; // Enable before model selection
   const [isLoadingImage, setIsLoadingImage] = useState(false);
   const [replacingRefIndex, setReplacingRefIndex] = useState<number | null>(null);
-  const [showInstructions, setShowInstructions] = useState(false);
   const mockupContext = useMockup();
 
   const handleSingleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -318,40 +314,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
             </div>
 
             {uploadedImage && <BrandGuidelineSelector asButton />}
-
-            {/* Instructions Toggle (Shared icon style as requested) */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowInstructions(!showInstructions)}
-              className={cn(
-                'w-10 h-10 rounded-xl border transition-colors',
-                showInstructions
-                  ? 'bg-brand-cyan/10 border-brand-cyan/40 text-foreground'
-                  : 'bg-neutral-900/50 border-neutral-800 text-neutral-500 hover:text-foreground'
-              )}
-              title={t('mockup.addInstructions')}
-              aria-label={t('mockup.addInstructions')}
-              aria-pressed={showInstructions}
-            >
-              <Share2 size={16} />
-            </Button>
           </div>
         )}
       </div>
-
-      {showInstructions && (
-        <div className="animate-in slide-in-from-top-2 duration-300">
-          <div className="relative">
-            <Textarea
-              placeholder={t('mockup.instructionsPlaceholder')}
-              className="relative min-h-[100px] bg-neutral-900/40 border-border rounded-xl text-sm focus:border-neutral-600 transition-colors placeholder:text-neutral-600 custom-scrollbar"
-              value={mockupContext.instructions}
-              onChange={(e) => mockupContext.setInstructions(e.target.value)}
-            />
-          </div>
-        </div>
-      )}
 
       {/* Standardized Files Grid */}
       <div

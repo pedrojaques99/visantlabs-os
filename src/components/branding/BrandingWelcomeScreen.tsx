@@ -6,7 +6,6 @@ import { getTotalBrandingCredits } from '@/utils/creditCalculator';
 import { toast } from 'sonner';
 import { AuthModal } from '../AuthModal';
 import { GlassPanel } from '@/components/ui/GlassPanel';
-import { MicroTitle } from '@/components/ui/MicroTitle';
 
 interface BrandingWelcomeScreenProps {
   prompt: string;
@@ -57,11 +56,8 @@ export const BrandingWelcomeScreen: React.FC<BrandingWelcomeScreenProps> = ({
       <div className="relative min-h-screen flex items-center justify-center p-6 overflow-hidden pt-16 md:pt-20">
         <div className="relative z-10 max-w-2xl w-full text-center space-y-8 animate-fade-in">
           <div className="space-y-4">
-            <h1 className="text-2xl md:text-3xl font-regular font-manrope flex items-center justify-center gap-2 text-foreground">
-              BRANDING MACHINE®{' '}
-              <MicroTitle as="span" className="text-foreground">
-                v1.0
-              </MicroTitle>
+            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
+              {t('branding.title')}
             </h1>
           </div>
 

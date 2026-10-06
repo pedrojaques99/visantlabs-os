@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -48,6 +49,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
   span,
   rowSpan,
 }) => {
+  const { t } = useTranslation();
   const local: IdentityFields = {
     name: guideline.identity?.name || guideline.name || '',
     tagline: guideline.identity?.tagline || guideline.tagline || '',
@@ -82,7 +84,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
     <SectionBlock
       id="identity"
       icon={<FileText size={14} />}
-      title="Identity"
+      title={t('brandView.identity')}
       span={span as any}
       rowSpan={rowSpan as any}
       actions={
@@ -91,10 +93,10 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-neutral-500 hover:text-white"
+              className="h-6 w-6 text-muted-foreground hover:text-foreground"
               onClick={onReIngest}
-              title="Re-ingest from website"
-              aria-label="Re-ingest"
+              title={t('brandEditor.reingestTitle')}
+              aria-label={t('brandEditor.reingest')}
             >
               <RefreshCw size={11} />
             </Button>
@@ -103,10 +105,10 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-neutral-600 hover:text-destructive"
+              className="h-6 w-6 text-muted-foreground/70 hover:text-destructive"
               onClick={onDelete}
               disabled={isDeleting}
-              aria-label="Delete guideline"
+              aria-label={t('brandEditor.deleteGuideline')}
             >
               <Trash2 size={11} />
             </Button>
@@ -116,9 +118,9 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
     >
       <div className="space-y-3 py-1">
         {/* Logo + Name */}
-        <div className="flex items-center gap-3 pb-2 border-b border-neutral-800">
+        <div className="flex items-center gap-3 pb-2 border-b border-border">
           {primaryLogo && (
-            <div className="w-9 h-9 shrink-0 flex items-center justify-center rounded overflow-hidden bg-neutral-900/60">
+            <div className="w-9 h-9 shrink-0 flex items-center justify-center rounded overflow-hidden bg-card/60">
               <img
                 src={primaryLogo.url}
                 alt="Logo"
@@ -130,25 +132,25 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
             value={local.name}
             onChange={(e) => update({ name: e.target.value })}
             className="h-7 text-sm font-medium bg-transparent border-none px-0 text-foreground focus-visible:ring-0 placeholder:text-muted-foreground"
-            placeholder="Name"
+            placeholder={t('brandEditor.namePlaceholder')}
           />
         </div>
 
         <Input
           value={local.tagline}
           onChange={(e) => update({ tagline: e.target.value })}
-          className="h-6 bg-transparent border-none px-0 text-xs text-neutral-400 focus-visible:ring-0 placeholder:text-neutral-700"
-          placeholder="Tagline"
+          className="h-6 bg-transparent border-none px-0 text-xs text-muted-foreground focus-visible:ring-0 placeholder:text-muted-foreground/50"
+          placeholder={t('brandView.tagline')}
         />
 
         <Textarea
           value={local.description}
           onChange={(e) => update({ description: e.target.value })}
-          className="border-neutral-800 text-xs min-h-[70px] resize-none text-neutral-400 placeholder:text-neutral-700 bg-transparent"
-          placeholder="What the brand does, for whom"
+          className="border-border text-xs min-h-[70px] resize-none text-muted-foreground placeholder:text-muted-foreground/50 bg-transparent"
+          placeholder={t('brandEditor.identityDescPlaceholder')}
         />
 
-        <div className="pt-1 border-t border-neutral-800 flex flex-wrap gap-x-3 gap-y-0">
+        <div className="pt-1 border-t border-border flex flex-wrap gap-x-3 gap-y-0">
           {[
             { key: 'website' as const, icon: <Globe size={10} />, placeholder: 'Website' },
             { key: 'portfolio' as const, icon: <Briefcase size={10} />, placeholder: 'Portfolio' },
@@ -162,15 +164,15 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
                 key={key}
                 className={cn(
                   'flex items-center gap-1.5 group/link',
-                  isEmpty ? 'w-fit py-0.5' : 'w-full py-1 border-b border-neutral-800 last:border-0'
+                  isEmpty ? 'w-fit py-0.5' : 'w-full py-1 border-b border-border last:border-0'
                 )}
               >
                 <span
                   className={cn(
                     'shrink-0 transition-colors',
                     isEmpty
-                      ? 'text-neutral-800 group-hover/link:text-neutral-600'
-                      : 'text-neutral-600'
+                      ? 'text-muted-foreground/50 group-hover/link:text-muted-foreground/70'
+                      : 'text-muted-foreground/70'
                   )}
                 >
                   {icon}
@@ -181,8 +183,8 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
                   className={cn(
                     'bg-transparent border-none px-0 text-xs font-mono focus-visible:ring-0',
                     isEmpty
-                      ? 'auto-input h-5 text-neutral-700 placeholder:text-neutral-800 hover:placeholder:text-neutral-600 cursor-text'
-                      : 'h-7 flex-1 text-neutral-400 placeholder:text-neutral-700'
+                      ? 'auto-input h-5 text-muted-foreground/50 placeholder:text-muted-foreground/50 hover:placeholder:text-muted-foreground/70 cursor-text'
+                      : 'h-7 flex-1 text-muted-foreground placeholder:text-muted-foreground/50'
                   )}
                   placeholder={isEmpty ? `+ ${placeholder}` : placeholder}
                 />

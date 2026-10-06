@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ const DEFAULT_BORDERS: Omit<BrandGuidelineBorder, 'id'>[] = [
 ];
 
 export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdate, span }) => {
+  const { t } = useTranslation();
   const items = guideline.borders || [];
 
   const persist = useCallback(
@@ -76,15 +78,15 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
     <SectionBlock
       id="borders"
       icon={<Frame size={14} />}
-      title="Borders"
+      title={t('brandEditor.borders')}
       span={span as any}
       actions={
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6 text-neutral-500 hover:text-white"
+          className="h-6 w-6 text-muted-foreground hover:text-foreground"
           onClick={addBorder}
-          aria-label="Add border"
+          aria-label={t('brandEditor.addBorder')}
         >
           <Plus size={12} />
         </Button>
@@ -93,49 +95,49 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
       <div className="space-y-1.5 py-1">
         {items.length === 0 && (
           <div className="space-y-2">
-            <p className="text-2xs text-neutral-700">No borders yet.</p>
+            <p className="text-2xs text-muted-foreground/50">{t('brandEditor.noBordersYet')}</p>
             <button
               type="button"
               onClick={seedDefaults}
-              className="text-2xs font-mono text-neutral-600 hover:text-neutral-400 transition-colors"
+              className="text-2xs font-mono text-muted-foreground/70 hover:text-muted-foreground transition-colors"
             >
-              Seed defaults
+              {t('brandEditor.seedDefaults')}
             </button>
           </div>
         )}
         {items.map((b, bi) => (
           <div
             key={b.id}
-            className="group/border border-b border-neutral-800 last:border-0 overflow-hidden"
+            className="group/border border-b border-border last:border-0 overflow-hidden"
           >
             {/* Always visible */}
             <div className="flex items-center gap-2 p-2">
               <div
-                className="w-10 h-6 rounded shrink-0 bg-neutral-900"
+                className="w-10 h-6 rounded shrink-0 bg-card"
                 style={{ border: buildBorderCss(b) }}
               />
               <Input
                 value={b.name}
                 onChange={(e) => update(bi, { name: e.target.value })}
-                className="h-6 flex-1 bg-transparent border-none p-0 text-xs text-neutral-300 focus-visible:ring-0 placeholder:text-neutral-700"
-                placeholder="Border name"
+                className="h-6 flex-1 bg-transparent border-none p-0 text-xs text-foreground focus-visible:ring-0 placeholder:text-muted-foreground/50"
+                placeholder={t('brandEditor.borderName')}
               />
-              <span className="text-2xs font-mono text-neutral-700">
+              <span className="text-2xs font-mono text-muted-foreground/50">
                 {b.width}px {b.style}
               </span>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-5 w-5 text-neutral-800 hover:text-destructive opacity-0 group-hover/border:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0"
+                className="h-5 w-5 text-muted-foreground/50 hover:text-destructive opacity-0 group-hover/border:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0"
                 onClick={() => removeBorder(bi)}
-                aria-label="Remove"
+                aria-label={t('common.remove')}
               >
                 <Trash2 size={10} />
               </Button>
             </div>
             {/* Hover-reveal */}
             <div className="hover-reveal group-hover/border:max-h-[200px] group-focus-within/border:max-h-[200px]">
-              <div className="px-2 pb-2 space-y-2 border-t border-neutral-800 pt-2">
+              <div className="px-2 pb-2 space-y-2 border-t border-border pt-2">
                 <div className="flex gap-1">
                   {(['solid', 'dashed', 'dotted'] as BorderStyle[]).map((s) => (
                     <button
@@ -167,18 +169,18 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
                     />
                   </div>
                   <div className="space-y-0.5 w-16">
-                    <MicroTitle className="text-neutral-700 text-2xs">Width</MicroTitle>
+                    <MicroTitle className="text-muted-foreground/50 text-2xs">{t('brandEditor.width')}</MicroTitle>
                     <Input
                       type="number"
                       step="0.5"
                       min="0.5"
                       value={b.width}
                       onChange={(e) => update(bi, { width: Number(e.target.value) })}
-                      className="h-6 border-neutral-800 text-2xs font-mono text-center"
+                      className="h-6 border-border text-2xs font-mono text-center"
                     />
                   </div>
                   <div className="flex-1 space-y-0.5">
-                    <MicroTitle className="text-neutral-700 text-2xs">Opacity</MicroTitle>
+                    <MicroTitle className="text-muted-foreground/50 text-2xs">{t('brandEditor.opacity')}</MicroTitle>
                     <input
                       type="range"
                       min={0}
@@ -186,10 +188,10 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
                       step={0.01}
                       value={b.opacity}
                       onChange={(e) => update(bi, { opacity: Number(e.target.value) })}
-                      className="w-full h-1 accent-white"
+                      className="w-full h-1 accent-foreground"
                     />
                   </div>
-                  <span className="text-2xs font-mono text-neutral-600 w-8 text-right">
+                  <span className="text-2xs font-mono text-muted-foreground/70 w-8 text-right">
                     {Math.round(b.opacity * 100)}%
                   </span>
                 </div>

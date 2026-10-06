@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, X, ImageIcon } from '@/lib/ui/icons';
+import { Search, X, ImageIcon, Tag } from '@/lib/ui/icons';
+import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { mockupApi, type Mockup } from '../services/mockupApi';
 import { FullScreenViewer } from '../components/FullScreenViewer';
@@ -30,6 +31,8 @@ export const MyOutputsPage: React.FC = () => {
   const [selectedMockup, setSelectedMockup] = useState<Mockup | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTag, setFilterTag] = useState<string | null>(null);
+  // Nuvem de tags escondida por padrão (tags livres do gerador ainda são ruidosas); abre sob demanda.
+  const [showTags, setShowTags] = useState(false);
   const inShell = useInAppShell();
   // Tag cloud vai pro rail (L2, SSoT igual /references) via RailSlot.
   const railSlot = useRailSlot()?.railSlot ?? null;
@@ -368,19 +371,36 @@ export const MyOutputsPage: React.FC = () => {
         {mockups.length > 0 && (
           <div className={cn('relative z-30 pb-4', inShell ? 'pt-4' : 'pt-16 md:pt-20')}>
             <div className="max-w-7xl mx-auto px-4 md:px-6">
-              <div className="relative max-w-md">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={t('myOutputs.searchPlaceholder')}
-                  className="h-9 max-w-md border-border bg-input pl-9 text-sm"
-                />
+              <div className="flex items-center gap-2">
+                <div className="relative w-full max-w-md">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={t('myOutputs.searchPlaceholder')}
+                    className="h-9 max-w-md border-border bg-input pl-9 text-sm"
+                  />
+                </div>
+                {allTags.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1.5 text-muted-foreground"
+                    aria-expanded={showTags}
+                    onClick={() => {
+                      if (showTags) setFilterTag(null);
+                      setShowTags((v) => !v);
+                    }}
+                  >
+                    <Tag className="h-3.5 w-3.5" aria-hidden />
+                    {showTags ? t('myOutputs.hideTags') : t('myOutputs.showTags')}
+                  </Button>
+                )}
               </div>
               {/* Tags = fallback do rail. Sem slot (rail recolhido, mobile ou fora
                   do shell) aparecem sempre; com slot, só abaixo de md (mesma
                   regra da AppsPage). */}
-              {allTags.length > 0 && (
+              {showTags && allTags.length > 0 && (
                 <div
                   className={cn(
                     '-mx-4 md:-mx-6 mt-3 overflow-x-auto px-4 md:px-6 scrollbar-none',
@@ -417,6 +437,7 @@ export const MyOutputsPage: React.FC = () => {
 
         {/* Tag cloud → rail (L2, SSoT igual /references) */}
         {railSlot &&
+          showTags &&
           allTags.length > 0 &&
           createPortal(
             <div className="px-2 pb-3">

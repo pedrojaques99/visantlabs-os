@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X, ArrowRight, FileText, Globe, Figma } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { onboardingApi } from '@/services/onboardingApi';
 import { FEATURE_ONBOARDING_V2 } from '@/config/featureFlags';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -121,8 +122,10 @@ export const GettingStartedChecklist: React.FC<GettingStartedChecklistProps> = (
     : LEGACY_STEPS.map((s) => ({ ...s }));
 
   const isDone = (s: Step) => (apiMode ? !!s.done : !!state.done[s.id]);
-  const completed = steps.filter(isDone).length;
-  const allDone = completed === steps.length;
+  // Na página o passo da marca vira o CTA principal e sai da lista.
+  const listSteps = isPage ? steps.filter((s) => s.id !== 'brand') : steps;
+  const completed = listSteps.filter(isDone).length;
+  const allDone = completed === listSteps.length;
 
   const dismiss = useCallback(() => {
     setState((prev) => {
@@ -170,19 +173,19 @@ export const GettingStartedChecklist: React.FC<GettingStartedChecklistProps> = (
         <motion.div
           className="h-full bg-foreground"
           initial={false}
-          animate={{ width: `${(completed / steps.length) * 100}%` }}
+          animate={{ width: `${(completed / listSteps.length) * 100}%` }}
           transition={{ duration: 0.4 }}
         />
       </div>
       <span className="text-xs tabular-nums text-muted-foreground">
-        {completed}/{steps.length}
+        {completed}/{listSteps.length}
       </span>
     </div>
   );
 
   const stepList = (
     <ul className="flex flex-col gap-1">
-      {steps.map((s) => {
+      {listSteps.map((s) => {
         const done = isDone(s);
         return (
           <li key={s.id}>
@@ -234,7 +237,7 @@ export const GettingStartedChecklist: React.FC<GettingStartedChecklistProps> = (
   ) : null;
 
   // ── Variant de página: a promessa ("traga sua marca") + o caminho (checklist).
-  // O passo 1 da checklist é a única ação de criar marca da tela.
+  // O CTA principal é a única ação de criar marca da tela (o passo 1 sai da lista).
   if (isPage) {
     return (
       <div
@@ -255,6 +258,13 @@ export const GettingStartedChecklist: React.FC<GettingStartedChecklistProps> = (
               {t('onboarding.step1Subtitle')}
             </p>
           </div>
+          <Button
+            size="lg"
+            className="w-full"
+            onClick={() => handleStep('brand', '/brand-guidelines')}
+          >
+            {t('onboarding.bringBrandCta')}
+          </Button>
           {/* De onde a marca pode vir. */}
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">

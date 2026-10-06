@@ -39,11 +39,11 @@ const getActionColor = (type: DetectedAction['type']) => {
     case 'prompt':
       return 'text-chart-4 border-chart-4/30 bg-chart-4/10 hover:bg-chart-4/20';
     case 'mockup':
-      return 'text-foreground border-brand-cyan/30 bg-brand-cyan/10 hover:bg-brand-cyan/20';
+      return 'text-chart-2 border-chart-2/30 bg-chart-2/10 hover:bg-chart-2/20';
     case 'strategy':
-      return 'text-warning border-warning/30 bg-warning/10 hover:bg-warning/20';
+      return 'text-chart-3 border-chart-3/30 bg-chart-3/10 hover:bg-chart-3/20';
     case 'text':
-      return 'text-success border-success/30 bg-success/10 hover:bg-success/20';
+      return 'text-chart-5 border-chart-5/30 bg-chart-5/10 hover:bg-chart-5/20';
     default:
       return 'text-muted-foreground border-border bg-muted hover:bg-accent';
   }

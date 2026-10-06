@@ -466,7 +466,9 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     try {
       await nodeData.onGenerate(id, strategyType, prompt);
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to generate strategy', { duration: 5000 });
+      toast.error(error?.message || t('canvasNodes.strategyNode.failedToGenerateStrategy'), {
+        duration: 5000,
+      });
     }
   }, [id, strategyType, prompt, nodeData, t]);
 
@@ -557,7 +559,9 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     try {
       nodeData.onGeneratePDF(id);
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to generate PDF', { duration: 5000 });
+      toast.error(error?.message || t('canvasNodes.strategyNode.failedToGeneratePdf'), {
+        duration: 5000,
+      });
     }
   }, [id, nodeData]);
 
@@ -568,7 +572,9 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
       toast.success(t('canvasNodes.strategyNode.strategySavedSuccessfully'));
       return projectId;
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to save strategy', { duration: 5000 });
+      toast.error(error?.message || t('canvasNodes.strategyNode.failedToSaveStrategy'), {
+        duration: 5000,
+      });
       return undefined;
     }
   }, [id, nodeData, t]);
@@ -589,7 +595,9 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         toast.error(t('canvasNodes.strategyNode.pleaseSaveProjectFirst'), { duration: 3000 });
       }
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to open project', { duration: 3000 });
+      toast.error(error?.message || t('canvasNodes.strategyNode.failedToOpenProject'), {
+        duration: 3000,
+      });
     }
   }, [nodeData, handleSave, t]);
 
@@ -1307,7 +1315,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         </NodeHeader>
         {projectName && (
           <span
-            className="text-2xs text-neutral-400 font-mono -mt-2 node-margin truncate max-w-[200px]"
+            className="text-2xs text-neutral-400 -mt-2 node-margin truncate max-w-[200px]"
             title={projectName}
           >
             {projectName}
@@ -1466,7 +1474,9 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                     devLog('Initial analysis failed', {
                       error: error?.message || error,
                     });
-                    toast.error(error?.message || 'Failed to analyze', { duration: 5000 });
+                    toast.error(error?.message || t('canvasNodes.strategyNode.failedToAnalyze'), {
+                      duration: 5000,
+                    });
                   }
                 }}
                 disabled={!prompt.trim() || isGenerating}
@@ -1547,7 +1557,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                         isBlocked
                       }
                       className={cn(
-                        'px-2.5 py-2 text-xs font-mono flex items-center gap-1.5 justify-center nodrag nopan relative',
+                        'px-2.5 py-2 text-xs flex items-center gap-1.5 justify-center nodrag nopan relative',
                         isBlocked && 'opacity-60 grayscale'
                       )}
                       title={isBlocked ? `Bloqueado: requer ${missingDepsLabels}` : section.label}
@@ -1620,7 +1630,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         {hasData && (
           <div className="border-t border-neutral-700/30 pt-4 flex flex-col flex-1 min-h-0">
             <div className="flex items-center justify-between mb-4 shrink-0 px-1">
-              <span className="text-xs font-mono text-neutral-300 font-medium">
+              <span className="text-xs text-neutral-300 font-medium">
                 {t('canvasNodes.strategyNode.generatedSections')}{' '}
                 <span className="text-neutral-400">
                   ({sections.filter((s) => hasSectionData(s.type)).length}/{sections.length})

@@ -169,7 +169,7 @@ export const DirectorNode = memo(
                 <span className="text-2xs font-medium text-foreground">
                   {activeGenerations} {activeGenerations === 1 ? 'mockup' : 'mockups'}
                 </span>
-                <span className="text-2xs font-mono text-neutral-500">
+                <span className="text-2xs text-neutral-500">
                   {t('canvasNodes.directorNode.generating')}
                 </span>
               </div>

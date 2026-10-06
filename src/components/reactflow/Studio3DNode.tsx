@@ -1,7 +1,6 @@
 import React, { useEffect, memo, useRef, useCallback, useState, Suspense } from 'react';
 import { type NodeProps, type Node, NodeResizer } from '@xyflow/react';
 import { Download, Maximize2, Box, Pencil, Image as ImageIcon } from '@/lib/ui/icons';
-import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { NodeHeader } from './shared/node-header';
 import type { Studio3DNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
@@ -15,8 +14,7 @@ import { NodeSlider } from './shared/node-slider';
 import { useStudio3DStore } from '@/stores/studio3dStore';
 import type { SceneHandle } from '@/components/3d-studio/engine/useSceneRef';
 import { toast } from 'sonner';
-import { Thumb } from '@/components/ui/Thumb';
-import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { NodeMediaDisplay } from './shared/NodeMediaDisplay';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const SceneCanvas = React.lazy(() =>
@@ -48,7 +46,6 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
   const hasResult = !!(data.resultImageUrl || data.resultImageBase64);
   const resultImageUrl = data.resultImageUrl || data.resultImageBase64;
   const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneHandleRef = useRef<SceneHandle | null>(null);
   const previousConnectedImageRef = useRef<string | undefined>(undefined);
@@ -238,76 +235,52 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
 
         {/* Result preview */}
         {hasResult && resultImageUrl && (
-          <div
-            className="mt-2 pt-2 border-t border-neutral-700/30 relative group flex-1 min-h-0 flex flex-col"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-          >
-            <div className="relative w-full h-full flex items-center justify-center">
-              <Thumb
-                src={resultImageUrl}
-                alt={t('canvasNodes.studio3dNode.resultAlt')}
-                className="w-full h-full object-contain rounded"
-                onLoad={(e) => {
-                  const img = e.target as HTMLImageElement;
-                  if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-                    data.onUpdateData?.(id, {
-                      imageWidth: img.naturalWidth,
-                      imageHeight: img.naturalHeight,
-                    });
-                  }
-                }}
-              />
-            </div>
-
-            {isLoading && (
-              <div className="absolute top-3 left-3 z-20">
-                <div className="p-1.5 rounded-md bg-neutral-950/80 border-node border-neutral-800 shadow-lg">
-                  <GlitchLoader size={14} />
-                </div>
-              </div>
-            )}
-
-            <div
-              className={cn(
-                'absolute top-3 right-3 flex gap-1.5 z-10',
-                selected ? 'opacity-100' : hoverReveal
-              )}
-            >
-              <NodeButton
-                variant="ghost"
-                size="xs"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openEditor();
-                }}
-                aria-label={t('canvasNodes.studio3dNode.openEditor')}
-              >
-                <Pencil size={14} />
-              </NodeButton>
-              {data.onViewFullscreen && (
+          <NodeMediaDisplay
+            variant="result"
+            url={resultImageUrl}
+            alt={t('canvasNodes.studio3dNode.resultAlt')}
+            isLoading={isLoading}
+            selected={selected}
+            onMediaLoad={(width, height) =>
+              data.onUpdateData?.(id, { imageWidth: width, imageHeight: height })
+            }
+            actions={
+              <>
                 <NodeButton
                   variant="ghost"
                   size="xs"
                   onClick={(e) => {
                     e.stopPropagation();
-                    data.onViewFullscreen!(resultImageUrl, data.resultImageBase64);
+                    openEditor();
                   }}
-                  aria-label={t('common.viewFullscreen')}
+                  aria-label={t('canvasNodes.studio3dNode.openEditor')}
                 >
-                  <Maximize2 size={14} />
+                  <Pencil size={14} />
                 </NodeButton>
-              )}
-              <NodeButton
-                variant="ghost"
-                size="xs"
-                onClick={handleDownload}
-                aria-label={t('common.download')}
-              >
-                <Download size={14} />
-              </NodeButton>
-            </div>
-          </div>
+                {data.onViewFullscreen && (
+                  <NodeButton
+                    variant="ghost"
+                    size="xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      data.onViewFullscreen!(resultImageUrl, data.resultImageBase64);
+                    }}
+                    aria-label={t('common.viewFullscreen')}
+                  >
+                    <Maximize2 size={14} />
+                  </NodeButton>
+                )}
+                <NodeButton
+                  variant="ghost"
+                  size="xs"
+                  onClick={handleDownload}
+                  aria-label={t('common.download')}
+                >
+                  <Download size={14} />
+                </NodeButton>
+              </>
+            }
+          />
         )}
 
         {/* Inline settings (compact) */}

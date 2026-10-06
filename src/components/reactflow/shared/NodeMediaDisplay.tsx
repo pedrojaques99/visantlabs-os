@@ -17,6 +17,9 @@ import { cn } from '@/lib/utils';
 import { isSafeUrl } from '@/utils/imageUtils';
 import { NodeImageContainer } from './NodeImageContainer';
 import { NodePlaceholder } from './NodePlaceholder';
+import { Thumb } from '@/components/ui/Thumb';
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 
 interface NodeMediaDisplayProps {
   /** URL da mídia (imagem ou vídeo) */
@@ -39,6 +42,15 @@ interface NodeMediaDisplayProps {
   className?: string;
   /** Style inline */
   style?: React.CSSProperties;
+  /**
+   * 'result' = bloco de resultado dentro do nó (borda superior, chip de loading e
+   * botões de overlay no canto). Usado por TextureFilter e Studio3D.
+   */
+  variant?: 'default' | 'result';
+  /** Só no variant 'result': botões de overlay (fullscreen, download...) */
+  actions?: React.ReactNode;
+  /** Só no variant 'result': nó selecionado mantém os botões visíveis */
+  selected?: boolean;
 }
 
 export const NodeMediaDisplay: React.FC<NodeMediaDisplayProps> = ({
@@ -52,6 +64,9 @@ export const NodeMediaDisplay: React.FC<NodeMediaDisplayProps> = ({
   onMediaLoad,
   className,
   style,
+  variant = 'default',
+  actions,
+  selected = false,
 }) => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const loadingStartTimeRef = useRef<number | null>(null);
@@ -113,6 +128,46 @@ export const NodeMediaDisplay: React.FC<NodeMediaDisplayProps> = ({
       target.style.display = 'none';
     }
   };
+
+  if (variant === 'result' && url) {
+    return (
+      <div
+        className={cn(
+          'mt-2 pt-2 border-t border-neutral-700/30 relative group flex-1 min-h-0 flex flex-col',
+          className
+        )}
+        style={style}
+      >
+        <div className="relative w-full h-full flex items-center justify-center">
+          <Thumb
+            src={url}
+            alt={alt}
+            className="w-full h-full object-contain rounded"
+            onLoad={handleImageLoad}
+          />
+        </div>
+
+        {isLoading && (
+          <div className="absolute top-3 left-3 z-20">
+            <div className="p-1.5 rounded-md bg-neutral-950/80 border-node border-neutral-800 shadow-lg">
+              <GlitchLoader size={14} />
+            </div>
+          </div>
+        )}
+
+        {actions && (
+          <div
+            className={cn(
+              'absolute top-3 right-3 flex gap-1.5 z-10',
+              selected ? 'opacity-100' : hoverReveal
+            )}
+          >
+            {actions}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <NodeImageContainer

@@ -48,7 +48,7 @@ export function TransformPanel({ config, description, onChange, disabled }: Prop
         disabled={disabled}
         placeholder={t(`canvasNodes.customNode.placeholder.${placeholderKey}`)}
         rows={2}
-        className="nodrag nopan w-full resize-none rounded-md border-node border-neutral-800 bg-neutral-950 px-2.5 py-1.5 text-2xs font-mono text-neutral-200 placeholder:text-neutral-600 focus:border-neutral-600 focus:outline-none transition-colors disabled:opacity-40"
+        className="nodrag nopan w-full resize-none rounded-md border-node border-neutral-800 bg-neutral-950 px-2.5 py-1.5 text-2xs text-neutral-200 placeholder:text-neutral-600 focus:border-neutral-600 focus:outline-none transition-colors disabled:opacity-40"
       />
     </div>
   );

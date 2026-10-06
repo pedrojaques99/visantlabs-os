@@ -3217,7 +3217,7 @@ export const AdminPage: React.FC = () => {
                                       <Badge
                                         className={`text-xs font-mono gap-1 ${
                                           t.category === 'branding'
-                                            ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
+                                            ? 'bg-muted text-muted-foreground border-border'
                                             : t.category === 'category'
                                               ? 'bg-purple-900/30 text-purple-300 border-purple-800/50'
                                               : 'bg-warning/30 text-warning border-warning/50'
@@ -3255,7 +3255,7 @@ export const AdminPage: React.FC = () => {
                                       <Badge
                                         className={`text-xs font-mono gap-1 ${
                                           t.category === 'branding'
-                                            ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
+                                            ? 'bg-muted text-muted-foreground border-border'
                                             : t.category === 'category'
                                               ? 'bg-purple-900/30 text-purple-300 border-purple-800/50'
                                               : 'bg-warning/30 text-warning border-warning/50'

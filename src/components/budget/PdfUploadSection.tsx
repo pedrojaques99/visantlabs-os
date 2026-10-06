@@ -1,11 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
-import { X, Upload, FileText, Save, RefreshCw } from '@/lib/ui/icons';
+import { X, Upload, FileText, RefreshCw } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { budgetApi } from '@/services/budgetApi';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
+import { SavePresetModal } from './SavePresetModal';
 
 interface PdfUploadSectionProps {
   customPdfUrl?: string;
@@ -50,16 +51,14 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
 
     // Validate file type
     if (file.type !== 'application/pdf') {
-      toast.error('Por favor, selecione um arquivo PDF');
+      toast.error(t('budget.pdf.selectPdf'));
       return;
     }
 
     // Validate file size
     if (file.size > MAX_PDF_SIZE_BYTES) {
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      toast.error(
-        `O arquivo PDF deve ter menos de ${MAX_PDF_SIZE_MB}MB (tamanho atual: ${fileSizeMB}MB)`
-      );
+      toast.error(t('budget.pdf.tooLarge', { max: MAX_PDF_SIZE_MB, size: fileSizeMB }));
       return;
     }
 
@@ -78,7 +77,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
       setShowSavePresetModal(true);
     } catch (error: any) {
       console.error('Error processing PDF:', error);
-      toast.error('Falha ao processar PDF');
+      toast.error(t('budget.pdf.processFailed'));
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -103,7 +102,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
         setIsSavingPreset(true);
         const preset = await budgetApi.createPdfPreset(base64Data, presetName.trim());
         pdfUrl = preset.pdfUrl;
-        toast.success('PDF salvo como preset com sucesso');
+        toast.success(t('budget.pdf.presetSaved'));
         setPresetName('');
         setShowSavePresetModal(false);
       } else {
@@ -116,14 +115,14 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
           const tempPreset = await budgetApi.createPdfPreset(base64Data, `Temp-${Date.now()}`);
           pdfUrl = tempPreset.pdfUrl;
         }
-        toast.success('PDF enviado com sucesso');
+        toast.success(t('budget.pdf.uploaded'));
       }
 
       onPdfUrlChange(pdfUrl);
       setPendingPdfBase64(null);
     } catch (error: any) {
       console.error('Error uploading PDF:', error);
-      toast.error(error.message || 'Falha ao enviar PDF');
+      toast.error(error.message || t('budget.pdf.uploadFailed'));
       // Fallback para base64 se upload falhar
       onPdfUrlChange(base64Data);
     } finally {
@@ -133,7 +132,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
 
   const handleSavePreset = async () => {
     if (!presetName.trim()) {
-      toast.error('Digite um nome para o preset');
+      toast.error(t('budget.pdf.presetNameRequired'));
       return;
     }
 
@@ -157,63 +156,28 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-medium text-foreground">PDF Customizado</h3>
+      <h3 className="text-lg font-medium text-foreground">{t('budget.pdf.sectionTitle')}</h3>
 
-      {/* Modal para salvar preset */}
       {showSavePresetModal && (
-        <div className="fixed inset-0 bg-neutral-950/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 sm:p-6 max-w-md w-full">
-            <h4 className="text-lg font-medium text-foreground mb-4">Salvar como Preset</h4>
-            <Input
-              type="text"
-              value={presetName}
-              onChange={(e) => setPresetName(e.target.value)}
-              placeholder="Nome do preset"
-              className="w-full px-4 py-2 bg-neutral-950/20 border border-neutral-800 rounded-md text-neutral-200 mb-4 focus:outline-none focus:border-neutral-600"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleSavePreset();
-                } else if (e.key === 'Escape') {
-                  setShowSavePresetModal(false);
-                  setPresetName('');
-                  setPendingPdfBase64(null);
-                }
-              }}
-              autoFocus
-            />
-            <div className="flex gap-2">
-              <Button
-                variant="brand"
-                onClick={handleSavePreset}
-                disabled={isSavingPreset || !presetName.trim()}
-                className="flex-1"
-              >
-                {isSavingPreset ? (
-                  <GlitchLoader size={16} />
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Salvar como Preset
-                  </>
-                )}
-              </Button>
-              <Button
-                onClick={handleSkipPreset}
-                variant="outline"
-                className="border border-neutral-800 bg-neutral-950/20 hover:bg-neutral-950/30 text-neutral-400"
-              >
-                Usar sem Salvar
-              </Button>
-            </div>
-          </div>
-        </div>
+        <SavePresetModal
+          presetName={presetName}
+          onPresetNameChange={setPresetName}
+          isSaving={isSavingPreset}
+          onSave={handleSavePreset}
+          onSkip={handleSkipPreset}
+          onCancel={() => {
+            setShowSavePresetModal(false);
+            setPresetName('');
+            setPendingPdfBase64(null);
+          }}
+        />
       )}
 
       {isUploading || isSavingPreset ? (
         <div className="flex items-center gap-2 p-4 border border-neutral-800 rounded-xl bg-neutral-950/20">
           <GlitchLoader size={16} />
           <span className="text-sm text-neutral-400">
-            {isSavingPreset ? 'Salvando preset...' : 'Enviando PDF...'}
+            {isSavingPreset ? t('budget.pdf.savingPreset') : t('budget.pdf.uploading')}
           </span>
         </div>
       ) : customPdfUrl ? (
@@ -221,7 +185,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
           <div className="flex items-center gap-3">
             <FileText className="h-8 w-8 text-foreground flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-neutral-300">PDF customizado carregado</p>
+              <p className="text-sm text-neutral-300">{t('budget.pdf.loaded')}</p>
               <p className="text-xs text-neutral-500 mt-1 truncate">
                 {customPdfUrl.length > 100 && !customPdfUrl.startsWith('http')
                   ? 'Base64 data'
@@ -245,17 +209,17 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
                 className="border border-neutral-800 bg-neutral-950/20 hover:bg-neutral-950/30 text-neutral-200 hover:text-foreground transition-colors"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Substituir PDF</span>
-                <span className="sm:hidden">Substituir</span>
+                <span className="hidden sm:inline">{t('budget.pdf.replaceLong')}</span>
+                <span className="sm:hidden">{t('budget.pdf.replaceShort')}</span>
               </Button>
               <Button
                 variant="destructive"
                 onClick={handleRemovePdf}
                 className="px-4 py-2 bg-destructive/20 hover:bg-destructive/30 border border-destructive/50 rounded-md text-destructive transition-colors text-sm whitespace-nowrap"
-                title="Remover PDF"
+                title={t('budget.pdf.removeTitle')}
               >
                 <X size={16} className="inline mr-1" />
-                <span className="hidden sm:inline">Remover</span>
+                <span className="hidden sm:inline">{t('common.remove')}</span>
                 <span className="sm:hidden">X</span>
               </Button>
             </div>
@@ -279,15 +243,12 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
             className="border border-neutral-800 bg-neutral-950/20 hover:bg-neutral-950/30 text-neutral-200 hover:text-foreground"
           >
             <Upload className="h-4 w-4" />
-            Enviar PDF Customizado
+            {t('budget.pdf.uploadCustom')}
           </Button>
         </div>
       )}
 
-      <p className="text-xs text-neutral-500">
-        Envie um PDF customizado e mapeie os campos do formulário para preenchê-lo automaticamente.
-        Você pode salvar como preset para reutilizar depois.
-      </p>
+      <p className="text-xs text-neutral-500">{t('budget.pdf.hint')}</p>
     </div>
   );
 };

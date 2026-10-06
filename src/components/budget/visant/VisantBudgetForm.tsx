@@ -5,7 +5,7 @@ import { FormTextarea } from '@/components/ui/form-textarea';
 import { DeliverablesSection } from '../DeliverablesSection';
 import { PaymentInfoSection } from '../PaymentInfoSection';
 import { SignaturesSection } from '../SignaturesSection';
-import { DateRangePicker } from '../DateRangePicker';
+import { BudgetBasicInfoFields, BudgetColorField } from '../BudgetBasicInfoFields';
 import type { BudgetData } from '@/types/types';
 
 import { DEFAULT_DOCUMENT_ACCENT } from './documentColors';
@@ -24,54 +24,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({ data, onChan
 
   return (
     <div className="space-y-6 w-full h-full min-h-full">
-      {/* Basic Info */}
-      <div className="space-y-4">
-        <h3 className="text-base sm:text-lg font-medium text-foreground">Informações Básicas</h3>
-
-        <div className="w-full">
-          <label className="block text-xs sm:text-sm text-neutral-400 mb-2">
-            {t('budget.clientName')} *
-          </label>
-          <FormInput
-            value={data.clientName}
-            onChange={(e) => updateField('clientName', e.target.value)}
-            placeholder={t('budget.placeholders.clientName')}
-            required
-          />
-        </div>
-
-        <div className="w-full">
-          <label className="block text-xs sm:text-sm text-neutral-400 mb-2">
-            {t('budget.projectName')} *
-          </label>
-          <FormInput
-            value={data.projectName}
-            onChange={(e) => updateField('projectName', e.target.value)}
-            placeholder={t('budget.placeholders.projectName')}
-            required
-          />
-        </div>
-
-        <div className="w-full">
-          <label className="block text-xs sm:text-sm text-neutral-400 mb-2">
-            {t('budget.projectDescription')} *
-          </label>
-          <FormTextarea
-            value={data.projectDescription}
-            onChange={(e) => updateField('projectDescription', e.target.value)}
-            placeholder={t('budget.placeholders.projectDescription')}
-            rows={4}
-            required
-          />
-        </div>
-
-        <DateRangePicker
-          startDate={data.startDate}
-          endDate={data.endDate}
-          onStartDateChange={(date) => updateField('startDate', date)}
-          onEndDateChange={(date) => updateField('endDate', date)}
-        />
-
+      <BudgetBasicInfoFields data={data} onFieldChange={updateField} responsive>
         <div className="w-full">
           <label className="block text-xs sm:text-sm text-neutral-400 mb-2">
             Título do Serviço (Capa)
@@ -87,92 +40,35 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({ data, onChan
         <div className="w-full">
           <label className="block text-xs sm:text-sm text-neutral-400 mb-3">Cores</label>
           <div className="grid grid-cols-2 gap-4">
-            {/* Cor de Fundo da Capa */}
-            <div>
-              <label className="block text-xs text-neutral-500 mb-2">Cor de Fundo da Capa</label>
-              <div className="flex gap-2 items-center">
-                <FormInput
-                  type="color"
-                  value={data.coverBackgroundColor || '#151515'}
-                  onChange={(e) => updateField('coverBackgroundColor', e.target.value)}
-                  className="w-10 h-10 cursor-pointer flex-shrink-0"
-                />
-                <FormInput
-                  type="text"
-                  value={data.coverBackgroundColor || '#151515'}
-                  onChange={(e) => updateField('coverBackgroundColor', e.target.value)}
-                  placeholder="#151515"
-                  className="flex-1"
-                />
-              </div>
-            </div>
-
-            {/* Cor do Texto da Capa */}
-            <div>
-              <label className="block text-xs text-neutral-500 mb-2">Cor do Texto da Capa</label>
-              <div className="flex gap-2 items-center">
-                <FormInput
-                  type="color"
-                  value={data.coverTextColor || '#f9f9f9'}
-                  onChange={(e) => updateField('coverTextColor', e.target.value)}
-                  className="w-10 h-10 cursor-pointer flex-shrink-0"
-                />
-                <FormInput
-                  type="text"
-                  value={data.coverTextColor || '#f9f9f9'}
-                  onChange={(e) => updateField('coverTextColor', e.target.value)}
-                  placeholder="#f9f9f9"
-                  className="flex-1"
-                />
-              </div>
-            </div>
-
-            {/* Cor de Fundo */}
-            <div>
-              <label className="block text-xs text-neutral-500 mb-2">
-                {t('budget.brandBackgroundColor')}
-              </label>
-              <div className="flex gap-2 items-center">
-                <FormInput
-                  type="color"
-                  value={data.brandBackgroundColor || '#000000'}
-                  onChange={(e) => updateField('brandBackgroundColor', e.target.value || undefined)}
-                  className="w-10 h-10 cursor-pointer flex-shrink-0"
-                />
-                <FormInput
-                  type="text"
-                  value={data.brandBackgroundColor || ''}
-                  onChange={(e) => updateField('brandBackgroundColor', e.target.value || undefined)}
-                  placeholder={t('budget.placeholders.brandBackgroundColor')}
-                  className="flex-1"
-                />
-              </div>
-            </div>
-
-            {/* Cor de Destaque */}
-            <div>
-              <label className="block text-xs text-neutral-500 mb-2">
-                {t('budget.brandAccentColor')}
-              </label>
-              <div className="flex gap-2 items-center">
-                <FormInput
-                  type="color"
-                  value={data.brandAccentColor || DEFAULT_DOCUMENT_ACCENT}
-                  onChange={(e) => updateField('brandAccentColor', e.target.value || undefined)}
-                  className="w-10 h-10 cursor-pointer flex-shrink-0"
-                />
-                <FormInput
-                  type="text"
-                  value={data.brandAccentColor || ''}
-                  onChange={(e) => updateField('brandAccentColor', e.target.value || undefined)}
-                  placeholder={t('budget.placeholders.brandAccentColor')}
-                  className="flex-1"
-                />
-              </div>
-            </div>
+            <BudgetColorField
+              label="Cor de Fundo da Capa"
+              value={data.coverBackgroundColor || '#151515'}
+              placeholder="#151515"
+              onChange={(v) => updateField('coverBackgroundColor', v)}
+            />
+            <BudgetColorField
+              label="Cor do Texto da Capa"
+              value={data.coverTextColor || '#f9f9f9'}
+              placeholder="#f9f9f9"
+              onChange={(v) => updateField('coverTextColor', v)}
+            />
+            <BudgetColorField
+              label={t('budget.brandBackgroundColor')}
+              value={data.brandBackgroundColor || '#000000'}
+              textValue={data.brandBackgroundColor || ''}
+              placeholder={t('budget.placeholders.brandBackgroundColor')}
+              onChange={(v) => updateField('brandBackgroundColor', v || undefined)}
+            />
+            <BudgetColorField
+              label={t('budget.brandAccentColor')}
+              value={data.brandAccentColor || DEFAULT_DOCUMENT_ACCENT}
+              textValue={data.brandAccentColor || ''}
+              placeholder={t('budget.placeholders.brandAccentColor')}
+              onChange={(v) => updateField('brandAccentColor', v || undefined)}
+            />
           </div>
         </div>
-      </div>
+      </BudgetBasicInfoFields>
 
       {/* Deliverables */}
       <DeliverablesSection

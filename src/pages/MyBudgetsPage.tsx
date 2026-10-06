@@ -11,7 +11,7 @@ import { MediaTile } from '../components/ui/MediaTile';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { toast } from 'sonner';
-import { FileText, Trash2, Pickaxe, Edit } from '@/lib/ui/icons';
+import { FileText, Trash2, Pickaxe } from '@/lib/ui/icons';
 import type { CustomPdfPreset } from '../types/types';
 import { SEO } from '../components/SEO';
 import { Button } from '@/components/ui/button';
@@ -247,29 +247,18 @@ export const MyBudgetsPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                   {presets.map((preset) => {
                     const presetId = preset._id || preset.id || '';
+                    const name = truncateText(preset.name, 60);
                     return (
-                      <GlassPanel
+                      <MediaTile
                         key={presetId}
-                        padding="none"
-                        className="p-5 bg-card hover:border-ring transition-colors"
-                      >
-                        <h3 className="font-medium text-foreground text-base line-clamp-2 mb-1">
-                          {truncateText(preset.name, 60)}
-                        </h3>
-                        <p className="text-xs text-muted-foreground mb-4">
-                          {formatDate(preset.createdAt)}
-                        </p>
-
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="surface"
-                            size="sm"
-                            onClick={() => handleEditPreset(presetId)}
-                            className="flex-1"
-                          >
-                            <Edit className="h-4 w-4" />
-                            {t('common.edit')}
-                          </Button>
+                        alt={name}
+                        aspectRatio="16 / 10"
+                        fallbackIcon={FileText}
+                        actionLabel={name}
+                        onClick={() => handleEditPreset(presetId)}
+                        title={name}
+                        subtitle={formatDate(preset.createdAt)}
+                        actions={
                           <Button
                             variant="danger"
                             size="icon-sm"
@@ -280,8 +269,8 @@ export const MyBudgetsPage: React.FC = () => {
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
-                        </div>
-                      </GlassPanel>
+                        }
+                      />
                     );
                   })}
                 </div>

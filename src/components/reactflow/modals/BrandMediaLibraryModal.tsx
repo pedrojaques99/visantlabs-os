@@ -4,6 +4,7 @@
  */
 import React from 'react';
 import { Modal } from '@/components/ui/Modal';
+import { useTranslation } from '@/hooks/useTranslation';
 import { BrandMediaLibraryPanel } from '@/components/canvas/BrandMediaLibraryPanel';
 
 interface BrandMediaLibraryModalProps {
@@ -20,20 +21,23 @@ export const BrandMediaLibraryModal: React.FC<BrandMediaLibraryModalProps> = ({
   onSelectAsset,
   onAddToBoard,
   guidelineId,
-}) => (
-  <Modal
-    isOpen={isOpen}
-    onClose={onClose}
-    title="Brand Media Library"
-    size="xl"
-    contentClassName="bg-neutral-950/98"
-  >
-    <div className="h-[600px]">
-      <BrandMediaLibraryPanel
-        guidelineId={guidelineId}
-        onSelectAsset={onSelectAsset}
-        onAddToBoard={onAddToBoard}
-      />
-    </div>
-  </Modal>
-);
+}) => {
+  const { t } = useTranslation();
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t('canvasNodes.shared.brandMediaLibrary')}
+      size="xl"
+      contentClassName="bg-neutral-950/98"
+    >
+      <div className="h-[600px]">
+        <BrandMediaLibraryPanel
+          guidelineId={guidelineId}
+          onSelectAsset={onSelectAsset}
+          onAddToBoard={onAddToBoard}
+        />
+      </div>
+    </Modal>
+  );
+};

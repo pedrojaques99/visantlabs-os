@@ -17,7 +17,7 @@ import type { FlowNode } from '@/types/reactFlow';
 import { getImageUrl } from '@/utils/imageUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Thumb } from '@/components/ui/Thumb';
+import { MediaTile } from '@/components/ui/MediaTile';
 import { useTranslation } from '@/hooks/useTranslation';
 
 interface MultiExportModalProps {
@@ -289,48 +289,24 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
           {filteredImages.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {filteredImages.map((img) => (
-                <div
+                <MediaTile
                   key={img.id}
+                  src={img.url}
+                  alt={img.name}
+                  title={img.name}
+                  subtitle={img.type}
+                  aspectRatio={1}
+                  density="compact"
+                  selected={selectedImages.has(img.id)}
+                  badge={
+                    selectedImages.has(img.id) ? (
+                      <span className="flex size-5 items-center justify-center rounded-full border border-transparent bg-foreground text-background">
+                        <Check size={12} strokeWidth={3} aria-hidden="true" />
+                      </span>
+                    ) : undefined
+                  }
                   onClick={() => toggleImage(img.id)}
-                  className={cn(
-                    'group relative aspect-square rounded-xl border transition-colors cursor-pointer overflow-hidden',
-                    selectedImages.has(img.id)
-                      ? 'border-ring ring-1 ring-ring/20'
-                      : 'border-border hover:border-border-hover bg-muted'
-                  )}
-                >
-                  <Thumb src={img.url} alt={img.name} className="w-full h-full object-cover" />
-
-                  {/* Overlay */}
-                  <div
-                    className={cn(
-                      'absolute inset-0 transition-opacity flex flex-col justify-between p-2',
-                      selectedImages.has(img.id)
-                        ? 'bg-black/10' // EXCEÇÃO ao lightmode/dark-surface-no-token: scrim sobre a miniatura da imagem
-                        : 'bg-black/0 group-hover:bg-black/70 opacity-0 group-hover:opacity-100'
-                    )}
-                  >
-                    <div className="flex justify-end">
-                      <div
-                        className={cn(
-                          'w-5 h-5 rounded-full flex items-center justify-center border transition-colors',
-                          selectedImages.has(img.id)
-                            ? 'bg-foreground border-transparent text-background'
-                            : 'bg-background/70 border-border-hover text-transparent'
-                        )}
-                      >
-                        <Check size={12} strokeWidth={3} />
-                      </div>
-                    </div>
-
-                    <div className="bg-background/80 rounded-md p-2">
-                      <p className="text-2xs text-foreground font-mono truncate" title={img.name}>
-                        {img.name}
-                      </p>
-                      <p className="text-2xs text-muted-foreground mt-0.5">{img.type}</p>
-                    </div>
-                  </div>
-                </div>
+                />
               ))}
             </div>
           ) : (

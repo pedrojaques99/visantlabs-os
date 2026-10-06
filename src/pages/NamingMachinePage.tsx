@@ -838,7 +838,7 @@ export const NamingMachinePage: React.FC = () => {
             )}
           </div>
 
-          {/* Botões: label embaixo, atalho no title; só "Salvar" carrega o acento */}
+          {/* Botões: label embaixo, atalho no title; os 3 verdicts são neutros */}
           {activeCard && (
             <div className="flex items-start justify-center gap-6">
               <div className="flex flex-col items-center gap-2">
@@ -866,7 +866,7 @@ export const NamingMachinePage: React.FC = () => {
               <div className="flex flex-col items-center gap-2">
                 <button
                   onClick={() => triggerVerdict('superlike')}
-                  className="flex h-14 w-14 items-center justify-center rounded-full border border-brand-cyan/30 bg-brand-cyan/[0.08] text-foreground transition-colors hover:bg-brand-cyan/15"
+                  className="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-muted/40 text-foreground transition-colors hover:border-ring"
                   aria-label={`${t('naming.verdict.save')} (S)`}
                   title={`${t('naming.verdict.save')} (S)`}
                 >

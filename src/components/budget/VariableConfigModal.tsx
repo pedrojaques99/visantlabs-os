@@ -5,6 +5,7 @@ import { FormInput } from '@/components/ui/form-input';
 import type { BudgetData } from '@/types/types';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/utils/localeUtils';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface VariableConfigModalProps {
   isOpen: boolean;
@@ -51,6 +52,7 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
   currentValue,
   onConfirm,
 }) => {
+  const { t } = useTranslation();
   useScrollLock(isOpen);
   const [customValue, setCustomValue] = useState(currentValue || '');
   const defaultValue = getDefaultValue(data, fieldId);
@@ -147,7 +149,9 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
           {/* Preview do valor atual */}
           {!showCustomInput && defaultValue && (
             <div>
-              <label className="block text-xs text-neutral-400 mb-2">Valor Atual</label>
+              <label className="block text-xs text-neutral-400 mb-2">
+                {t('budget.variableModal.currentValue')}
+              </label>
               <div className="p-3 bg-neutral-950/70 border border-neutral-800 rounded-md text-sm text-neutral-300">
                 {defaultValue}
               </div>
@@ -158,7 +162,9 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
           {showCustomInput && (
             <div>
               <label className="block text-xs text-neutral-400 mb-2">
-                {isCurrencyField ? 'Valor (R$)' : 'Valor'}
+                {isCurrencyField
+                  ? t('budget.variableModal.valueCurrency')
+                  : t('budget.variableModal.value')}
               </label>
               <FormInput
                 type="text"
@@ -168,14 +174,16 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
                 }
                 onKeyPress={handleKeyPress}
                 placeholder={
-                  isCurrencyField ? 'Digite o valor (ex: 1500,00 ou 1500.00)' : 'Digite o valor...'
+                  isCurrencyField
+                    ? t('budget.variableModal.currencyPlaceholder')
+                    : t('budget.variableModal.valuePlaceholder')
                 }
                 className="w-full"
                 autoFocus
               />
               {isCurrencyField && customValue && (
                 <p className="text-xs text-neutral-500 mt-1">
-                  Preview: R$ {formatCurrencyDisplay(customValue)}
+                  {t('budget.variableModal.preview', { value: formatCurrencyDisplay(customValue) })}
                 </p>
               )}
             </div>
@@ -184,7 +192,7 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
           {/* Botões */}
           <div className="flex gap-3 pt-2">
             <Button variant="outline" onClick={onClose} className="flex-1">
-              Cancelar
+              {t('budget.variableModal.cancel')}
             </Button>
             <Button
               variant="brand"
@@ -192,7 +200,7 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
               disabled={showCustomInput && !customValue.trim()}
               className="flex-1"
             >
-              Posicionar no PDF
+              {t('budget.variableModal.place')}
             </Button>
           </div>
         </div>

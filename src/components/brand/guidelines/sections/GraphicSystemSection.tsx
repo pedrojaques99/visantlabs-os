@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,6 +24,7 @@ export const GraphicSystemSection: React.FC<GraphicSystemSectionProps> = ({
   onUpdate,
   span,
 }) => {
+  const { t } = useTranslation();
   const gs = guideline.strategy?.graphicSystem || {};
 
   const persist = useCallback(
@@ -40,47 +42,45 @@ export const GraphicSystemSection: React.FC<GraphicSystemSectionProps> = ({
     <SectionBlock
       id="graphic_system"
       icon={<Shapes size={14} />}
-      title="Sistema Gráfico"
+      title={t('brandEditor.graphicSystem')}
       span={span as any}
     >
       <div className="space-y-4 py-1">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="space-y-1">
-            <MicroTitle className="text-neutral-600">Patterns</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">{t('brandEditor.patterns')}</MicroTitle>
             <Textarea
               value={toLines(gs.patterns)}
               onChange={(e) => update({ patterns: fromLines(e.target.value) })}
-              className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[70px] resize-none placeholder:text-neutral-700"
-              placeholder={'Lines de quadra\nPatterns orbitais\nTexturas geométricas'}
+              className="border-border bg-transparent text-xs text-muted-foreground min-h-[70px] resize-none placeholder:text-muted-foreground/50"
+              placeholder={t('brandEditor.patternsPlaceholder')}
             />
           </div>
           <div className="space-y-1">
-            <MicroTitle className="text-neutral-600">Grafismos</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">{t('brandEditor.graphics')}</MicroTitle>
             <Textarea
               value={toLines(gs.grafisms)}
               onChange={(e) => update({ grafisms: fromLines(e.target.value) })}
-              className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[70px] resize-none placeholder:text-neutral-700"
-              placeholder={'Elipses sobrepostas\nFormas com DNA da marca'}
+              className="border-border bg-transparent text-xs text-muted-foreground min-h-[70px] resize-none placeholder:text-muted-foreground/50"
+              placeholder={t('brandEditor.graphicsPlaceholder')}
             />
           </div>
           <div className="space-y-1">
-            <MicroTitle className="text-neutral-600">Regras de Imagem</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">{t('brandEditor.imageRules')}</MicroTitle>
             <Textarea
               value={toLines(gs.imageRules)}
               onChange={(e) => update({ imageRules: fromLines(e.target.value) })}
-              className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[70px] resize-none placeholder:text-neutral-700"
-              placeholder={
-                'Fotografia sempre com filtro quente\nCortes em diagonal\nSem fundos brancos puros'
-              }
+              className="border-border bg-transparent text-xs text-muted-foreground min-h-[70px] resize-none placeholder:text-muted-foreground/50"
+              placeholder={t('brandEditor.imageRulesPlaceholder')}
             />
           </div>
           <div className="space-y-1">
-            <MicroTitle className="text-neutral-600">Grid Editorial</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">{t('brandEditor.editorialGrid')}</MicroTitle>
             <Textarea
               value={gs.editorialGrid || ''}
               onChange={(e) => update({ editorialGrid: e.target.value })}
-              className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[70px] resize-none placeholder:text-neutral-700"
-              placeholder="Malha que organiza posts, páginas, apresentações..."
+              className="border-border bg-transparent text-xs text-muted-foreground min-h-[70px] resize-none placeholder:text-muted-foreground/50"
+              placeholder={t('brandEditor.editorialGridPlaceholder')}
             />
           </div>
         </div>

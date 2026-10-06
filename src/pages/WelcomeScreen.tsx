@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { ArrowRight, UploadCloud, BookOpen, Play, X, Layers, Gem } from '@/lib/ui/icons';
+import { ArrowRight, BookOpen, Play, X, Layers, Gem } from '@/lib/ui/icons';
 import { useLocation, Link } from 'react-router-dom';
 import { InteractiveASCII } from '../components/ui/InteractiveASCII';
 import { cn } from '@/lib/utils';
@@ -18,7 +18,6 @@ import type { UploadedImage } from '../types/types';
 import { toast } from 'sonner';
 import { branding, getYoutubeThumbnail } from '../config/branding';
 import AnimatedTitle from '../components/shared/AnimatedTitle';
-import { PremiumButton } from '../components/ui/PremiumButton';
 import { MicroTitle } from '../components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -278,61 +277,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
     }
   };
 
-  const handleUploadClick = async () => {
-    if (isDev) console.log('[WelcomeScreen] handleUploadClick: Upload image button clicked');
-    if (isDev)
-      console.log('[WelcomeScreen] handleUploadClick: Auth state', {
-        isAuthenticated,
-        isCheckingAuth,
-      });
-
-    // If still checking auth, verify with cache
-    if (isCheckingAuth || isAuthenticated === null) {
-      setIsVerifyingAuth(true);
-      if (isDev) console.log('[WelcomeScreen] handleUploadClick: Verifying authentication...');
-      try {
-        const user = await authService.verifyToken(); // Use verifyToken with cache
-        if (!user) {
-          if (isDev)
-            console.log(
-              '[WelcomeScreen] handleUploadClick: User not authenticated, showing auth modal'
-            );
-          setPendingAction('upload');
-          setShowAuthModal(true);
-          return;
-        }
-      } catch (error) {
-        if (isDev) console.error('[WelcomeScreen] handleUploadClick: Authentication error', error);
-        setPendingAction('upload');
-        setShowAuthModal(true);
-        return;
-      } finally {
-        setIsVerifyingAuth(false);
-      }
-    }
-
-    // Use context state - if not authenticated, show modal
-    if (isAuthenticated === false) {
-      if (isDev)
-        console.log(
-          '[WelcomeScreen] handleUploadClick: User not authenticated, showing auth modal'
-        );
-      setPendingAction('upload');
-      setShowAuthModal(true);
-      return;
-    }
-
-    // isAuthenticated === true, safe to proceed
-    if (isDev) console.log('[WelcomeScreen] handleUploadClick: User authenticated (from context)');
-    if (isDev) console.log('[WelcomeScreen] handleUploadClick: Triggering file input click');
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-      if (isDev) console.log('[WelcomeScreen] handleUploadClick: File input clicked successfully');
-    } else {
-      if (isDev) console.error('[WelcomeScreen] handleUploadClick: File input ref is null');
-    }
-  };
-
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -444,16 +388,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
             dismissible={showPasteTip}
           >
             <div className="w-full max-w-sm">
-              <PremiumButton
-                onClick={handleUploadClick}
-                disabled={isProcessing || isCheckingAuth || isVerifyingAuth}
-                isLoading={isProcessing}
-                loadingText={t('welcome.loadingImage')}
-                icon={UploadCloud}
-                className="w-full h-16 text-lg"
-              >
-                {t('welcome.sendImage')}
-              </PremiumButton>
+              <Button size="lg" asChild className="w-full">
+                <Link to="/welcome">{t('welcome.start')}</Link>
+              </Button>
             </div>
           </Tooltip>
 

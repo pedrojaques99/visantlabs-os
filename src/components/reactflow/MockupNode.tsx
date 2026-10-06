@@ -518,7 +518,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
           )}
           {/* Title with thumbnail in same div */}
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-mono truncate text-neutral-200">
+            <div className="text-xs truncate text-neutral-200">
               {selectedPreset?.name ||
                 selectedMockup?.prompt?.substring(0, 30) ||
                 t('canvasNodes.mockupNode.selectPreset')}
@@ -569,7 +569,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
         )}
         {connectedTextDirection && (
           <div className="p-2 rounded border-node border-neutral-800 bg-neutral-900/50">
-            <div className="text-xs font-mono text-neutral-400 mb-1">
+            <div className="text-xs text-neutral-400 mb-1">
               {t('canvasNodes.mockupNode.textDirectionFromBrandCore')}
             </div>
             <div className="text-xs text-neutral-400 line-clamp-3">{connectedTextDirection}</div>
@@ -620,7 +620,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
         >
           <div className="flex items-center gap-3">
             <FileText size={12} />
-            <span className="text-xs font-mono">{t('canvasNodes.mockupNode.editPrompt')}</span>
+            <span className="text-xs">{t('canvasNodes.mockupNode.editPrompt')}</span>
             {customPrompt && customPrompt.trim() && (
               <span className="text-2xs text-muted-foreground">(custom)</span>
             )}
@@ -646,7 +646,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
             className="text-xs nodrag nopan"
             rows={1}
           />
-          <p className="text-2xs font-mono text-neutral-500 mt-1">
+          <p className="text-2xs text-neutral-500 mt-1">
             {customPrompt && customPrompt.trim()
               ? t('canvasNodes.mockupNode.customPromptOverride')
               : t('canvasNodes.mockupNode.editPromptHint')}
@@ -673,9 +673,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
         >
           <div className="flex items-center gap-3">
             <Settings size={12} className="text-neutral-500" />
-            <span className="text-xs font-mono">
-              {t('canvasNodes.mockupNode.advancedControls')}
-            </span>
+            <span className="text-xs">{t('canvasNodes.mockupNode.advancedControls')}</span>
             {(selectedColors.length > 0 || withHuman) && (
               <span className="text-2xs text-foreground">
                 ({selectedColors.length}{' '}
@@ -751,7 +749,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
 
             {/* Color Picker */}
             <div>
-              <h4 className="text-xs font-mono mb-1.5 text-neutral-500">
+              <h4 className="text-xs mb-1.5 text-neutral-500">
                 {t('canvasNodes.mockupNode.colorPalette')}
               </h4>
               <div className="flex gap-3">
@@ -847,7 +845,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
                 >
                   {withHuman && <Check size={10} strokeWidth={3} className="text-black" />}
                 </div>
-                <label className="ml-2 text-xs select-none cursor-pointer text-neutral-400 font-mono">
+                <label className="ml-2 text-xs select-none cursor-pointer text-neutral-400">
                   {t('canvasNodes.mockupNode.includeHumanInteraction')}
                 </label>
               </div>
@@ -870,7 +868,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
             }
             isLoading={isLoading}
             dragging={dragging}
-            alt="Generation Result"
+            alt={t('canvasNodes.mockupNode.resultAlt')}
           />
         </div>
       )}

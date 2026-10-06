@@ -1,10 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Diamond, Pickaxe } from '@/lib/ui/icons';
 import { useActiveBrand } from '@/contexts/ActiveBrandContext';
 import { useCreativeProjects } from '@/hooks/queries/useCreativeProjects';
 import { useCreativeStore } from './store/creativeStore';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
+import { MediaTile } from '@/components/ui/MediaTile';
+import { Badge } from '@/components/ui/badge';
 import { glassSurface } from '@/lib/ui/glass';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -24,10 +26,6 @@ const STARTERS = ['feed', 'story', 'banner', 'launch'] as const;
 export const CreativeActivationCanvas: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  // A thumbnail that 404s should fall back to the same placeholder as a
-  // thumb-less project — hiding the <img> instead left a blank tile that read
-  // as "no image" rather than "broken image" (error ≠ empty).
-  const [failedThumbs, setFailedThumbs] = useState<Set<string>>(new Set());
   const { activeBrandId } = useActiveBrand();
   const setPrompt = useCreativeStore((s) => s.setPrompt);
   const { data: projects = [], isLoading } = useCreativeProjects(
@@ -79,46 +77,24 @@ export const CreativeActivationCanvas: React.FC = () => {
               {t('creativeSetup.activation.recentSubtitle')}
             </p>
             <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-5">
-              {recent.map((p) => {
-                const thumb = failedThumbs.has(p._id) ? null : p.thumbnailUrl || p.backgroundUrl;
-                return (
-                  <button
-                    key={p._id}
-                    type="button"
-                    onClick={() => navigate(`/create?project=${p._id}`)}
-                    className={cn(
-                      'group text-left rounded-xl overflow-hidden hover:border-neutral-700 transition-colors',
-                      glassSurface.tile
-                    )}
-                  >
-                    <div className="relative aspect-square bg-neutral-900/50 overflow-hidden">
-                      {thumb ? (
-                        <img
-                          src={thumb}
-                          alt={p.name || t('creative.projects.untitled')}
-                          className="w-full h-full object-cover"
-                          onError={() => setFailedThumbs((prev) => new Set(prev).add(p._id))}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Diamond size={32} className="text-neutral-800" strokeWidth={1} />
-                        </div>
-                      )}
-                      {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
-                      {p.format && (
-                        <span className="absolute top-2 left-2 px-2 py-1 rounded-md bg-black/70 border border-white/10 text-2xs font-mono tabular-nums text-neutral-200">
-                          {p.format}
-                        </span>
-                      )}
-                    </div>
-                    <div className="p-3">
-                      <p className="text-sm font-medium text-neutral-200 line-clamp-1 group-hover:text-white transition-colors">
-                        {p.name || t('creative.projects.untitled')}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
+              {recent.map((p) => (
+                <MediaTile
+                  key={p._id}
+                  src={p.thumbnailUrl || p.backgroundUrl || undefined}
+                  alt={p.name || t('creative.projects.untitled')}
+                  title={p.name || t('creative.projects.untitled')}
+                  aspectRatio={1}
+                  fallbackIcon={Diamond}
+                  badge={
+                    p.format ? (
+                      <Badge variant="neutral" className="font-mono tabular-nums">
+                        {p.format}
+                      </Badge>
+                    ) : undefined
+                  }
+                  onClick={() => navigate(`/create?project=${p._id}`)}
+                />
+              ))}
             </div>
           </>
         ) : (

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Button } from '@/components/ui/button';
 import { Dropzone } from '@/components/ui/Dropzone';
@@ -34,18 +35,21 @@ const sourceIcon = (source: BrandKnowledgeFile['source'], size = 14) => {
   }
 };
 
-const relativeDate = (iso: string) => {
+const relativeDate = (
+  iso: string,
+  t: (key: string, vars?: Record<string, string | number>) => string
+) => {
   try {
     const diff = Date.now() - new Date(iso).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return 'agora';
-    if (mins < 60) return `${mins}min atrás`;
+    if (mins < 1) return t('brandEditor.timeNow');
+    if (mins < 60) return t('brandEditor.timeMinAgo', { n: mins });
     const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h atrás`;
+    if (hours < 24) return t('brandEditor.timeHourAgo', { n: hours });
     const days = Math.floor(hours / 24);
-    if (days < 30) return `${days}d atrás`;
+    if (days < 30) return t('brandEditor.timeDayAgo', { n: days });
     const months = Math.floor(days / 30);
-    return `${months}m atrás`;
+    return t('brandEditor.timeMonthAgo', { n: months });
   } catch {
     return iso;
   }
@@ -60,6 +64,7 @@ const fileToBase64 = (file: File): Promise<string> =>
   });
 
 export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, span }) => {
+  const { t } = useTranslation();
   const [files, setFiles] = useState<BrandKnowledgeFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -77,7 +82,7 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
         const list = await brandGuidelineApi.listKnowledge(guideline.id);
         if (active) setFiles(list);
       } catch (err: any) {
-        if (active) toast.error(err?.message || 'Falha ao carregar arquivos');
+        if (active) toast.error(err?.message || t('brandEditor.knowledgeLoadFailed'));
       } finally {
         if (active) setLoading(false);
       }
@@ -104,12 +109,10 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
           setFiles((prev) => [result, ...prev]);
         }
         toast.success(
-          `${fileList.length} arquivo${fileList.length > 1 ? 's' : ''} enviado${
-            fileList.length > 1 ? 's' : ''
-          }`
+          t(fileList.length > 1 ? 'brandEditor.filesUploadedMany' : 'brandEditor.filesUploadedOne', { count: fileList.length })
         );
       } catch (err: any) {
-        toast.error(err?.message || 'Falha ao enviar arquivo');
+        toast.error(err?.message || t('brandEditor.knowledgeUploadFailed'));
       } finally {
         setUploading(false);
       }
@@ -119,14 +122,14 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
 
   const handleDelete = async (file: BrandKnowledgeFile) => {
     if (!guideline.id) return;
-    if (!confirm(`Remover "${file.fileName}" da memória da marca?`)) return;
+    if (!confirm(t('brandEditor.knowledgeConfirmRemove', { name: file.fileName }))) return;
     setDeletingId(file.id);
     try {
       await brandGuidelineApi.deleteKnowledge(guideline.id, file.id);
       setFiles((prev) => prev.filter((f) => f.id !== file.id));
-      toast.success('Arquivo removido');
+      toast.success(t('brandEditor.knowledgeRemoved'));
     } catch (err: any) {
-      toast.error(err?.message || 'Falha ao remover arquivo');
+      toast.error(err?.message || t('brandEditor.knowledgeRemoveFailed'));
     } finally {
       setDeletingId(null);
     }
@@ -171,18 +174,18 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
       id="knowledge"
       span={span as any}
       icon={<BookOpen size={14} />}
-      title="Brand Knowledge"
+      title={t('brandEditor.knowledge')}
       actions={
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6 text-neutral-500 hover:text-white"
+          className="h-6 w-6 text-muted-foreground hover:text-foreground"
           disabled={uploading}
           onClick={() => fileInputRef.current?.click()}
-          aria-label="Upload file"
+          aria-label={t('brandEditor.uploadFile')}
         >
           {uploading ? (
-            <span className="animate-spin inline-block w-3 h-3 border border-neutral-400 border-t-transparent rounded-full" />
+            <span className="animate-spin inline-block w-3 h-3 border border-border border-t-transparent rounded-full" />
           ) : (
             <Plus size={12} />
           )}
@@ -220,7 +223,7 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
             dropTarget={false}
             onFiles={handleUpload}
             label="PDF, PNG, JPG, WEBP"
-            hint="Arquivos alimentam a geração com IA da marca. Mais contexto, output mais no ponto."
+            hint={t('brandEditor.knowledgeHint')}
           />
         ) : (
           /* File cards grid */
@@ -258,15 +261,15 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
                       type="button"
                       onClick={() => handleDelete(file)}
                       disabled={deletingId === file.id}
-                      className="p-1 opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-destructive hover:bg-destructive/10 rounded-md transition-[color,background-color,border-color,opacity] h-auto"
-                      aria-label={`Remover ${file.fileName}`}
+                      className="p-1 opacity-0 group-hover:opacity-100 text-muted-foreground/70 hover:text-destructive hover:bg-destructive/10 rounded-md transition-[color,background-color,border-color,opacity] h-auto"
+                      aria-label={t('brandEditor.removeNamed', { name: file.fileName })}
                     >
                       <Trash2 size={12} />
                     </Button>
                   </div>
 
                   {/* Filename */}
-                  <p className="text-xs text-neutral-200 font-medium truncate leading-tight">
+                  <p className="text-xs text-foreground font-medium truncate leading-tight">
                     {file.fileName}
                   </p>
 
@@ -278,14 +281,14 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
                         style={{ width: `${barWidth}%` }}
                       />
                     </div>
-                    <span className="text-2xs font-mono text-neutral-500 whitespace-nowrap">
+                    <span className="text-2xs font-mono text-muted-foreground whitespace-nowrap">
                       {file.vectorIds.length} vec
                     </span>
                   </div>
 
                   {/* Date */}
-                  <p className="text-2xs text-neutral-600 font-mono">
-                    {relativeDate(file.addedAt)}
+                  <p className="text-2xs text-muted-foreground/70 font-mono">
+                    {relativeDate(file.addedAt, t)}
                   </p>
                 </div>
               );

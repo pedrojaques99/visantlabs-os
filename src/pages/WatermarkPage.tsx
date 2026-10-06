@@ -541,7 +541,7 @@ export const WatermarkPage: React.FC = () => {
                 <button
                   key={pos}
                   type="button"
-                  aria-label={pos}
+                  aria-label={t(`miniTools.watermark.positions.${pos}`)}
                   aria-pressed={position === pos}
                   onClick={() => setPosition(pos)}
                   disabled={isProcessing}

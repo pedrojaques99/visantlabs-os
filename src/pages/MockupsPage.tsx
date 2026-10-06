@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ImageIcon, Minus, Plus } from '@/lib/ui/icons';
+import { Search, ImageIcon } from '@/lib/ui/icons';
 import { SearchBar } from '../components/ui/SearchBar';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { mockupApi, type Mockup } from '../services/mockupApi';
@@ -11,9 +11,8 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { ErrorState } from '../components/ui/ErrorState';
 import { getImageUrl, isSafeUrl } from '@/utils/imageUtils';
 import { translateTag } from '@/utils/localeUtils';
-import { CollapsibleSidebar } from '../components/mockupmachine/CollapsibleSidebar';
+import { Select } from '../components/ui/select';
 import { PageShell } from '../components/ui/PageShell';
-import { GlassPanel } from '../components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -28,21 +27,6 @@ export const MockupsPage: React.FC = () => {
   const [filterTag, setFilterTag] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   const { isAuthenticated } = useLayout();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [columns, setColumns] = useState(() => {
-    const saved = localStorage.getItem('mockupsPageColumns');
-    return saved ? parseInt(saved, 10) : 4;
-  });
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 640);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Get all unique tags for filtering
   const allTags = useMemo(() => {
@@ -137,25 +121,6 @@ export const MockupsPage: React.FC = () => {
     }
   }, [hasNext, filteredMockups, currentIndex]);
 
-  const handleColumnsChange = useCallback((newColumns: number) => {
-    const clamped = Math.max(1, Math.min(6, newColumns));
-    setColumns(clamped);
-    localStorage.setItem('mockupsPageColumns', clamped.toString());
-  }, []);
-
-  const getGridClasses = useCallback(() => {
-    return 'grid gap-2 md:gap-3 lg:gap-4';
-  }, []);
-
-  const getGridStyle = useCallback(() => {
-    // Mobile sempre 1 coluna, a partir de 640px (sm) usa o número exato selecionado pelo usuário
-    return {
-      gridTemplateColumns: isMobile
-        ? 'repeat(1, minmax(0, 1fr))'
-        : `repeat(${columns}, minmax(0, 1fr))`,
-    };
-  }, [columns, isMobile]);
-
   useEffect(() => {
     loadMockups();
   }, []);
@@ -230,7 +195,18 @@ export const MockupsPage: React.FC = () => {
 
   // Mesma busca inline do /canvas: expande no header e colapsa ao sair vazia.
   const headerActions = (
-    <div className="flex items-center flex-shrink-0">
+    <div className="flex items-center gap-2 flex-shrink-0">
+      {allTags.length > 0 && (
+        <Select
+          className="w-[160px]"
+          value={filterTag ?? ''}
+          onChange={(v) => setFilterTag(v === '' ? null : v)}
+          options={[
+            { value: '', label: t('mockupsPage.allTags') },
+            ...allTags.map((tag) => ({ value: tag, label: translateTag(tag) })),
+          ]}
+        />
+      )}
       {showSearch ? (
         <SearchBar
           value={searchQuery}
@@ -274,56 +250,8 @@ export const MockupsPage: React.FC = () => {
       actions={headerActions}
     >
       <div className="relative z-10">
-        {/* Top Row: Sidebar */}
-        <div className="mb-8">
-          <CollapsibleSidebar
-            isCollapsed={isSidebarCollapsed}
-            onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            title={t('mockupsPage.filters')}
-            countText={t(
-              mockups.length === 1 ? 'mockupsPage.count_one' : 'mockupsPage.count_other',
-              { count: mockups.length }
-            )}
-            allTags={allTags}
-            filterTag={filterTag}
-            onFilterTagChange={setFilterTag}
-            translateTag={translateTag}
-          />
-        </div>
-
         {/* Grid Gallery */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 pb-12 md:pb-16">
-          {/* Floating Column Control */}
-          {filteredMockups.length > 0 && !isMobile && (
-            <div className="fixed bottom-4 md:bottom-6 left-4 md:left-6 z-30">
-              <GlassPanel padding="sm" className="flex-row items-center gap-1">
-                <Button
-                  variant="action"
-                  onClick={() => handleColumnsChange(columns - 1)}
-                  disabled={columns <= 1}
-                  aria-label={t('common.decreaseColumns')}
-                  title={t('common.decreaseColumns')}
-                >
-                  <Minus size={14} />
-                </Button>
-                <div className="px-2.5">
-                  <span className="text-xs font-mono text-muted-foreground min-w-[1.5rem] text-center">
-                    {columns}
-                  </span>
-                </div>
-                <Button
-                  variant="action"
-                  onClick={() => handleColumnsChange(columns + 1)}
-                  disabled={columns >= 6}
-                  aria-label={t('common.increaseColumns')}
-                  title={t('common.increaseColumns')}
-                >
-                  <Plus size={14} />
-                </Button>
-              </GlassPanel>
-            </div>
-          )}
-
           {/* A failed load is an error with retry, never the "no mockups yet" empty state. */}
           {/* While loading, never claim "no mockups yet". */}
           {isLoading && mockups.length === 0 ? (
@@ -354,7 +282,7 @@ export const MockupsPage: React.FC = () => {
               }
             />
           ) : (
-            <div className={getGridClasses()} style={getGridStyle()}>
+            <div className="grid gap-2 md:gap-3 lg:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredMockups.map((mockup) => {
                 const imageUrl = getImageUrl(mockup);
                 if (!imageUrl) return null;

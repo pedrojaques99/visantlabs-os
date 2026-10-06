@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export interface NodeSliderProps extends Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
@@ -32,6 +33,7 @@ const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
     },
     ref
   ) => {
+    const { t } = useTranslation();
     const percentage = ((value - min) / (max - min)) * 100;
     const scrubRef = React.useRef<{ startX: number; startValue: number } | null>(null);
 
@@ -86,14 +88,14 @@ const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
     return (
       <div className="space-y-2.5">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-mono text-neutral-400" title={hint}>
+          <label className="text-xs text-neutral-400" title={hint}>
             {label}
           </label>
           <span
             className="text-xs font-mono text-neutral-500 cursor-ew-resize select-none hover:text-neutral-300 transition-colors"
             onMouseDown={handleScrubDown}
             onTouchStart={handleScrubDown}
-            title="Drag to adjust"
+            title={t('canvasNodes.shared.dragToAdjust')}
           >
             {displayValue}
           </span>

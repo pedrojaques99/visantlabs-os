@@ -164,7 +164,7 @@ export const TextNode = memo(
                 'bg-neutral-900/60 border-neutral-700/40',
                 'focus:border-neutral-600 ',
                 'transition-[color,background-color,border-color,filter] duration-200',
-                'placeholder:text-neutral-500 placeholder:font-mono',
+                'placeholder:text-neutral-500',
                 'overflow-y-auto'
               )}
             />
@@ -219,7 +219,7 @@ export const TextNode = memo(
 
           {/* AI Enhancement Hint */}
           {text.trim() && !isImproving && (
-            <div className="mt-3 flex items-center gap-2 text-2xs text-neutral-500 font-mono animate-in fade-in duration-300">
+            <div className="mt-3 flex items-center gap-2 text-2xs text-neutral-500 animate-in fade-in duration-300">
               <Diamond size={10} className="text-neutral-500" />
               <span>{t('canvasNodes.textNode.aiHint')}</span>
             </div>

@@ -7,16 +7,16 @@ import { cn } from '@/lib/utils';
  * TurbulenceField — procedural organic-noise background for "generating" states.
  *
  * Pure SVG `feTurbulence` + slow `baseFrequency` animation → a soft, flowing
- * brand-cyan fog that entertains during long image generations. No WebGL context
+ * neutral fog that entertains during long image generations. No WebGL context
  * (so it scales to any number of concurrent tiles), no per-frame JS.
  *
- * Colour follows `currentColor` (default: brand-cyan) so it inherits the theme
+ * Colour follows `currentColor` (default: muted-foreground) so it inherits the theme
  * token. Respects `prefers-reduced-motion` by freezing the turbulence.
  */
 interface TurbulenceFieldProps {
   /** overall alpha of the fog (0–1). Keep it subtle. */
   intensity?: number;
-  /** CSS color for the fog; defaults to brand-cyan via currentColor. */
+  /** CSS color for the fog; defaults to muted-foreground. */
   color?: string;
   className?: string;
 }
@@ -36,7 +36,7 @@ function usePrefersReducedMotion(): boolean {
 
 export function TurbulenceField({
   intensity = 0.18,
-  color = 'var(--brand-cyan)',
+  color = 'var(--muted-foreground)',
   className,
 }: TurbulenceFieldProps) {
   // Unique filter id per instance so multiple fields don't collide in the DOM.

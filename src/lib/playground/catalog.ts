@@ -489,7 +489,7 @@ export const visantCatalog = schema.createCatalog({
         text: z.string(),
       }),
       slots: [],
-      description: 'Small uppercase section title. Visant signature style.',
+      description: 'Section title. 14px medium sans with tight tracking, foreground color.',
     },
   },
 
