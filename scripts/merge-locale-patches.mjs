@@ -77,6 +77,10 @@ for (const o of ops.filter(o => o.type === 'set')) {
 console.log(`\n${changed} mudanças, ${conflicts} conflitos.`);
 if (conflicts) process.exit(2);
 if (write) {
-  for (const l of LOCALES) fs.writeFileSync(path.join(dir, `${l}.json`), JSON.stringify(data[l], null, 2) + '\n');
+  const files = LOCALES.map(l => path.join('src', 'locales', `${l}.json`));
+  LOCALES.forEach((l, i) => fs.writeFileSync(files[i], JSON.stringify(data[l], null, 2) + '\n'));
+  // O repo formata os locales com prettier (arrays curtos inline). Sem isto o
+  // diff explode e o format:check do CI reprova.
+  execFileSync('npx', ['prettier', '--write', ...files], { stdio: 'inherit', shell: process.platform === 'win32' });
   console.log('gravado.');
 } else console.log('(prévia; rode com --write para gravar)');

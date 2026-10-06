@@ -55,8 +55,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ gu
             className="flex items-center gap-1.5 h-8 px-2.5 rounded-full border border-border bg-muted/40 text-2xs font-medium text-foreground transition-colors hover:bg-muted"
             aria-label={t('brandGuidelines.readiness.aria', { score: report.score })}
           >
-            <span className="tabular-nums">{report.score}%</span>
-            <span className="text-muted-foreground hidden sm:inline">
+            <span>
               {missingCount === 0
                 ? t('brandGuidelines.readiness.ready')
                 : t('brandGuidelines.readiness.pending', { count: missingCount })}

@@ -1470,7 +1470,6 @@
     "allFolders": "Todas",
     "sortRecent": "Recentes",
     "sortName": "Nome",
-    "sortCompleteness": "Prontidão",
     "countBrands": "{filtered} de {total} marcas",
     "noMatch": "Nenhuma marca corresponde a “{term}”",
     "completenessAllSet": "Tudo preenchido.",
@@ -3198,8 +3197,6 @@
     "title": "Cockpit da marca",
     "depth": {
       "title": "Profundidade da marca",
-      "toNext": "{n}% pro próximo nível",
-      "complete": "Marca no máximo",
       "level": {
         "sketch": "Esboço",
         "identity": "Identidade",

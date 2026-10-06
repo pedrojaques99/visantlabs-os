@@ -1470,7 +1470,6 @@
     "allFolders": "All",
     "sortRecent": "Recent",
     "sortName": "Name",
-    "sortCompleteness": "Readiness",
     "countBrands": "{filtered} of {total} brands",
     "noMatch": "No brands match “{term}”",
     "completenessAllSet": "All set.",
@@ -3198,8 +3197,6 @@
     "title": "Brand cockpit",
     "depth": {
       "title": "Brand depth",
-      "toNext": "{n}% to next level",
-      "complete": "Brand maxed out",
       "level": {
         "sketch": "Sketch",
         "identity": "Identity",

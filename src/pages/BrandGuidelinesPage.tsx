@@ -17,7 +17,8 @@ import { ErrorState } from '@/components/ui/ErrorState';
 import { Input } from '@/components/ui/input';
 import { MediaTile } from '@/components/ui/MediaTile';
 import { getProxiedUrl } from '@/utils/proxyUtils';
-import { computeBrandCompleteness } from '@/lib/brandCompleteness';
+import { getBrandLogoUrl } from '@/utils/brandLogo';
+import { useLatestMockupByBrand } from '@/hooks/queries/useBrandMockups';
 import {
   Layers,
   Plus,
@@ -78,18 +79,52 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
  * capa é o único identificador da marca numa lista de 24, e estava sendo
  * decidida pela ordem de upload.
  *
- * Sem match, a capa mostra o próprio logo (BrandAvatar) sobre bg-muted: dado
- * real da marca, em vez de um degradê inventado.
+ * Ordem da capa: imagem de marca escolhida > mockup mais recente da marca >
+ * foto de produto/stock da própria marca. `other` (print de guideline, referência
+ * de concorrente) nunca vira capa. Sem nada disso, a capa é o logo sobre a cor
+ * primária da marca: dado real, nunca um degradê inventado.
  */
 const COVER_CATEGORIES = ['background', 'graphic', 'texture'] as const;
+const ASSET_FALLBACK_CATEGORIES = ['product', 'stock'] as const;
 
-const getCoverUrl = (g: BrandGuideline): string | null => {
+const findMedia = (g: BrandGuideline, categories: readonly string[]): string | null => {
   const media = Array.isArray(g.media) ? g.media : [];
-  for (const category of COVER_CATEGORIES) {
+  for (const category of categories) {
     const hit = media.find((m) => m?.type === 'image' && m?.category === category && m?.url);
     if (hit) return hit.url;
   }
   return null;
+};
+
+const getCoverUrl = (g: BrandGuideline, latestMockup?: string): string | null =>
+  findMedia(g, COVER_CATEGORIES) ?? latestMockup ?? findMedia(g, ASSET_FALLBACK_CATEGORIES);
+
+const primaryHex = (g: BrandGuideline): string | undefined => {
+  const colors = Array.isArray(g.colors) ? g.colors : [];
+  const hex = (colors.find((c) => /primar/i.test(c?.role || '')) ?? colors[0])?.hex;
+  return hex && /^#?[0-9a-f]{3,8}$/i.test(hex)
+    ? hex.startsWith('#')
+      ? hex
+      : `#${hex}`
+    : undefined;
+};
+
+/** Logo solto como capa; se a imagem falhar, cai no avatar (inicial) da marca. */
+const CoverLogo = ({ guideline }: { guideline: BrandGuideline }) => {
+  const [failed, setFailed] = useState(false);
+  const logoUrl = getBrandLogoUrl(guideline, 'primary');
+  if (!logoUrl || failed) {
+    return <BrandAvatar brand={guideline} size={96} rounded="md" preference="primary" />;
+  }
+  return (
+    <img
+      src={getProxiedUrl(logoUrl)}
+      alt=""
+      className="max-h-[45%] max-w-[55%] object-contain"
+      loading="lazy"
+      onError={() => setFailed(true)}
+    />
+  );
 };
 
 const BrandCard = ({
@@ -99,16 +134,19 @@ const BrandCard = ({
   onArchive,
   onUnarchive,
   onQuickEdit,
+  latestMockup,
 }: {
   guideline: BrandGuideline;
   onSelect: (g: BrandGuideline) => void;
+  latestMockup?: string;
   archived?: boolean;
   onArchive?: (id: string) => void;
   onUnarchive?: (id: string) => void;
   onQuickEdit?: (g: BrandGuideline) => void;
 }) => {
   const { t } = useTranslation();
-  const coverUrl = getCoverUrl(guideline);
+  const coverUrl = getCoverUrl(guideline, latestMockup);
+  const brandHex = primaryHex(guideline);
   const brandName = guideline.identity?.name || guideline.name || t('brandGuidelines.untitled');
 
   const hasMenu = !!(onArchive || onUnarchive || onQuickEdit);
@@ -117,18 +155,25 @@ const BrandCard = ({
     <MediaTile
       src={coverUrl ? getProxiedUrl(coverUrl) : undefined}
       alt={brandName}
-      aspectRatio="16 / 7"
+      aspectRatio="16 / 10"
       onClick={() => onSelect(guideline)}
       actionLabel={brandName}
-      // Sem capa (ou capa que falha): o próprio logo, grande, no lugar da imagem.
-      // Dado real da marca, nunca um degradê inventado nem o ícone de imagem quebrada.
-      fallback={<BrandAvatar brand={guideline} size={64} rounded="md" preference="primary" />}
-      // Com capa real o logo vai ao lado do nome; sem capa ele já é a capa.
-      leading={
-        coverUrl ? (
-          <BrandAvatar brand={guideline} size={24} rounded="md" preference="primary" />
-        ) : undefined
+      // Sem capa (ou capa que falha): o logo solto, grande, sobre a cor primária da
+      // marca diluída no card. Dado real, nunca degradê inventado nem imagem quebrada.
+      fallback={
+        <div
+          className="flex h-full w-full items-center justify-center bg-muted p-10"
+          style={
+            brandHex
+              ? { backgroundColor: `color-mix(in oklab, ${brandHex} 22%, var(--card))` }
+              : undefined
+          }
+        >
+          <CoverLogo guideline={guideline} />
+        </div>
       }
+      // O logo sempre acompanha o nome, com ou sem capa.
+      leading={<BrandAvatar brand={guideline} size={24} rounded="md" preference="primary" />}
       className={cn(archived && 'opacity-60 grayscale-[0.6] hover:opacity-80')}
       title={brandName}
       subtitle={guideline.identity?.tagline || undefined}
@@ -199,7 +244,7 @@ const BrandCard = ({
   );
 };
 
-type SortMode = 'recent' | 'name' | 'completeness';
+type SortMode = 'recent' | 'name';
 
 /**
  * "X de Y marcas ativas" — meter discreto do plano; Y = ∞ para agency/ilimitado.
@@ -322,10 +367,7 @@ const BrandGrid = ({
     return Array.from(s).sort();
   }, [guidelines]);
 
-  const completenessScores = useMemo(
-    () => new Map(guidelines.map((g) => [g.id, computeBrandCompleteness(g).score])),
-    [guidelines]
-  );
+  const { data: latestMockupByBrand } = useLatestMockupByBrand(guidelines.length > 0);
 
   const filtered = useMemo(() => {
     let list = guidelines;
@@ -343,10 +385,6 @@ const BrandGrid = ({
       list = [...list].sort((a, b) =>
         (a.identity?.name || a.name || '').localeCompare(b.identity?.name || b.name || '')
       );
-    } else if (sort === 'completeness') {
-      list = [...list].sort(
-        (a, b) => (completenessScores.get(b.id) ?? 0) - (completenessScores.get(a.id) ?? 0)
-      );
     } else {
       // 'recent' is the default the UI advertises — sort explicitly rather than
       // trusting the API's array order, so the "Recent" label never lies.
@@ -355,7 +393,7 @@ const BrandGrid = ({
       );
     }
     return list;
-  }, [guidelines, search, folderFilter, sort, completenessScores]);
+  }, [guidelines, search, folderFilter, sort]);
 
   // Marcas arquivadas saem do grid principal e viram seção colapsável no fim
   // (billing por marca ativa). Sem a flag, tudo cai em `activeList` como antes.
@@ -418,9 +456,7 @@ const BrandGrid = ({
                 <ArrowUpDown size={11} />
                 {sort === 'recent'
                   ? t('brandGuidelines.sortRecent')
-                  : sort === 'name'
-                    ? t('brandGuidelines.sortName')
-                    : t('brandGuidelines.sortCompleteness')}
+                  : t('brandGuidelines.sortName')}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-[130px]">
@@ -438,13 +474,6 @@ const BrandGrid = ({
               >
                 {t('brandGuidelines.sortName')}
               </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                className="text-xs"
-                checked={sort === 'completeness'}
-                onCheckedChange={() => setSort('completeness')}
-              >
-                {t('brandGuidelines.sortCompleteness')}
-              </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -461,11 +490,12 @@ const BrandGrid = ({
       )}
 
       {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-5 gap-y-6">
         {activeList.map((g) => (
           <BrandCard
             key={g.id}
             guideline={g}
+            latestMockup={g.id ? latestMockupByBrand?.get(g.id) : undefined}
             onSelect={onSelect}
             onArchive={billingOn ? onArchive : undefined}
             onQuickEdit={setQuickEdit}
@@ -488,11 +518,12 @@ const BrandGrid = ({
             {t('brandQuota.archivedSection', { count: archivedList.length })}
           </button>
           {showArchived && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-5 gap-y-6">
               {archivedList.map((g) => (
                 <BrandCard
                   key={g.id}
                   guideline={g}
+                  latestMockup={g.id ? latestMockupByBrand?.get(g.id) : undefined}
                   onSelect={onSelect}
                   archived
                   onUnarchive={billingOn ? onUnarchive : undefined}
@@ -670,9 +701,9 @@ export const BrandGuidelinesPage: React.FC = () => {
 
             {/* Lista. A view por marca (PublicBrandGuideline) vem pelo early return acima. */}
             {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-5 gap-y-6">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <SkeletonLoader key={i} height="9rem" className="rounded-lg" />
+                  <SkeletonLoader key={i} height="16rem" className="rounded-xl" />
                 ))}
               </div>
             ) : isError ? (

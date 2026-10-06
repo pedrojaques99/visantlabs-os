@@ -18,3 +18,25 @@ export function useBrandMockups(brandId?: string, enabled = true) {
     enabled: enabled && !!brandId,
   });
 }
+
+/**
+ * Grid de marcas: o mockup mais recente de cada marca, numa chamada só (a lista
+ * do usuário vem ordenada por createdAt desc). brandId -> imageUrl.
+ */
+export function useLatestMockupByBrand(enabled = true) {
+  return useQuery<Mockup[], Error, Map<string, string>>({
+    queryKey: BRAND_MOCKUP_KEYS.list(),
+    queryFn: () => mockupApi.getAll(),
+    enabled,
+    staleTime: 5 * 60 * 1000,
+    select: (mockups) => {
+      const byBrand = new Map<string, string>();
+      for (const m of mockups) {
+        if (m.brandGuidelineId && m.imageUrl && !byBrand.has(m.brandGuidelineId)) {
+          byBrand.set(m.brandGuidelineId, m.imageUrl);
+        }
+      }
+      return byBrand;
+    },
+  });
+}
