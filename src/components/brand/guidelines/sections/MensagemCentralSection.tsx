@@ -105,18 +105,18 @@ export const MensagemCentralSection: React.FC<MensagemCentralSectionProps> = ({
           <div className="pt-3 border-t border-neutral-800">
             <p className="text-2xs text-muted-foreground mb-2">Preview</p>
             <p className="text-sm text-neutral-300 leading-relaxed">
-              {cm.product && <span className="font-semibold text-neutral-100">{cm.product}</span>}
+              {cm.product && <span className="font-medium text-foreground">{cm.product}</span>}
               {cm.product && cm.differential && (
                 <span className="text-neutral-500"> com o diferencial de </span>
               )}
               {cm.differential && (
-                <span className="font-semibold text-neutral-100">{cm.differential}</span>
+                <span className="font-medium text-foreground">{cm.differential}</span>
               )}
               {cm.differential && cm.emotionalBond && (
                 <span className="text-neutral-500"> que transmite o sentimento de </span>
               )}
               {cm.emotionalBond && (
-                <span className="font-semibold text-neutral-100">{cm.emotionalBond}.</span>
+                <span className="font-medium text-foreground">{cm.emotionalBond}.</span>
               )}
             </p>
           </div>

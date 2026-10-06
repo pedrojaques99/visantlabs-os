@@ -12,6 +12,7 @@ import { useTextureFilterStore } from '@/stores/textureFilterStore';
 import { useRisoStore } from '@/stores/risoStore';
 import { useShaderLabStore } from '@/stores/shaderLabStore';
 import { applyImageLabPreset } from '@/lib/imagelab/applyPreset';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface SavedPreset {
   id: string;
@@ -51,6 +52,7 @@ function applyPreset(preset: SavedPreset) {
 }
 
 export const ImageLabSavePreset: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [presets, setPresets] = useState<SavedPreset[]>([]);
   const [loading, setLoading] = useState(false);
@@ -104,25 +106,25 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
         }),
       });
       if (res.ok) {
-        toast.success('Preset saved');
+        toast.success(t('toolEditor.presets.saved'));
         setName('');
         fetchPresets();
       } else {
         const e = await res.json().catch(() => ({}));
-        toast.error(e.error || 'Failed to save');
+        toast.error(e.error || t('toolEditor.presets.saveFailed'));
       }
     } catch {
-      toast.error('Failed to save preset');
+      toast.error(t('toolEditor.presets.saveFailed'));
     }
-  }, [name, mode, fetchPresets]);
+  }, [name, mode, fetchPresets, t]);
 
   const handleDelete = useCallback(async (id: string) => {
     try {
       await fetch(`${API_BASE}/community/presets/${id}`, { method: 'DELETE', headers: headers() });
       setPresets((p) => p.filter((x) => x.id !== id));
-      toast.success('Preset deleted');
+      toast.success(t('toolEditor.presets.deleted'));
     } catch {
-      toast.error('Failed to delete');
+      toast.error(t('toolEditor.presets.deleteFailed'));
     }
   }, []);
 
@@ -134,9 +136,9 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Save preset..."
-          aria-label="Preset name"
-          className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/20"
+          placeholder={t('toolEditor.presets.namePlaceholder')}
+          aria-label={t('toolEditor.presets.namePlaceholder')}
+          className="flex-1 bg-muted border border-border rounded px-2 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring"
           onKeyDown={(e) => {
             if (e.key === 'Enter') handleSave();
           }}
@@ -146,7 +148,7 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
           size="sm"
           className="h-7 px-2 text-2xs"
           disabled={!name.trim()}
-          aria-label="Save preset"
+          aria-label={t('imagelab.savePreset')}
           onClick={handleSave}
         >
           <Save size={12} />
@@ -155,7 +157,7 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
 
       {/* Empty state hint */}
       {presets.length === 0 && !loading && (
-        <p className="text-2xs text-neutral-600 text-center py-0.5">
+        <p className="text-2xs text-muted-foreground text-center py-0.5">
           Name your settings and save for quick recall
         </p>
       )}
@@ -165,7 +167,7 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
         <>
           <button
             onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-1.5 w-full text-2xs text-neutral-500 hover:text-neutral-300 transition-colors"
+            className="flex items-center gap-1.5 w-full text-2xs text-muted-foreground hover:text-foreground transition-colors"
           >
             <ChevronDown
               size={10}
@@ -176,15 +178,15 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
           </button>
 
           {expanded && (
-            <div className="space-y-0.5 max-h-28 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700">
+            <div className="space-y-0.5 max-h-28 overflow-y-auto scrollbar-thin">
               {presets.map((p) => (
                 <div key={p.id} className="flex items-center gap-1 group">
                   <button
                     onClick={() => {
                       applyPreset(p);
-                      toast.success(`Loaded "${p.name}"`);
+                      toast.success(t('toolEditor.presets.loaded', { name: p.name }));
                     }}
-                    className="flex-1 flex items-center gap-1.5 text-left px-1.5 py-1 rounded text-2xs text-neutral-400 hover:bg-white/5 hover:text-white transition-colors min-w-0"
+                    className="flex-1 flex items-center gap-1.5 text-left px-1.5 py-1 rounded text-2xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors min-w-0"
                   >
                     <span className="truncate">{p.name}</span>
                     <span className={cn('text-2xs font-mono shrink-0 text-muted-foreground')}>
@@ -196,7 +198,7 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
                     aria-label={`Delete ${p.name}`}
                     className={cn(
                       hoverReveal,
-                      'p-0.5 text-neutral-600 hover:text-destructive transition-colors shrink-0'
+                      'p-0.5 text-muted-foreground hover:text-destructive transition-colors shrink-0'
                     )}
                   >
                     <Trash2 size={9} />

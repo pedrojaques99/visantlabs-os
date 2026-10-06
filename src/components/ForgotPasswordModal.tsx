@@ -86,12 +86,12 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-background/60 backdrop-blur-sm overflow-y-auto">
       <div className={cn(glassSurface.panelStrong, 'rounded-md p-6 w-full max-w-md mx-4')}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-neutral-200">{t('auth.forgotPassword')}</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t('auth.forgotPassword')}</h2>
           <Button
             variant="ghost"
             onClick={handleClose}
             aria-label={t('common.close')}
-            className="text-neutral-500 hover:text-neutral-300 transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <X size={20} />
           </Button>
@@ -99,13 +99,11 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
 
         {isSuccess ? (
           <div className="space-y-4">
-            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-md bg-neutral-800/60">
-              <Mail className="w-8 h-8 text-neutral-300" />
+            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-md bg-muted/60">
+              <Mail className="w-8 h-8 text-foreground" />
             </div>
-            <p className="text-sm text-neutral-300 text-center">
-              {t('auth.resetEmailSentMessage')}
-            </p>
-            <p className="text-xs text-neutral-500 text-center">
+            <p className="text-sm text-foreground text-center">{t('auth.resetEmailSentMessage')}</p>
+            <p className="text-xs text-muted-foreground text-center">
               {t('auth.checkEmailInstructions')}
             </p>
             {onBackToLogin && (
@@ -124,11 +122,15 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
           </div>
         ) : (
           <>
-            <p className="text-sm text-neutral-400 mb-4">{t('auth.forgotPasswordInstructions')}</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              {t('auth.forgotPasswordInstructions')}
+            </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs text-neutral-400 mb-1">{t('auth.email')}</label>
+                <label className="block text-xs text-muted-foreground mb-1">
+                  {t('auth.email')}
+                </label>
                 <Input
                   type="email"
                   value={email}
@@ -148,7 +150,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                 variant="brand"
                 type="submit"
                 disabled={isLoading || !email}
-                className="w-full font-semibold"
+                className="w-full"
               >
                 {isLoading ? (
                   <>
@@ -162,7 +164,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
             </form>
 
             {onBackToLogin && (
-              <div className="mt-4 pt-4 border-t border-neutral-800/50">
+              <div className="mt-4 pt-4 border-t border-border">
                 <PillButton
                   onClick={() => {
                     handleClose();

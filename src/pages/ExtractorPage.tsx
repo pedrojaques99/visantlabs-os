@@ -35,6 +35,10 @@ import { glassSurface } from '@/lib/ui/glass';
 import { hoverReveal } from '@/lib/ui/hoverReveal';
 type ExtractionMode = 'google' | 'url' | 'instagram' | 'document';
 
+// EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia (ações sobre a foto extraída)
+const OVERLAY_BTN =
+  'w-9 h-9 border border-white/10 bg-black/50 text-white rounded-xl flex items-center justify-center hover:bg-black/70 transition-colors';
+
 /**
  * Lazy-loaded image component with skeleton and error states
  */
@@ -115,7 +119,7 @@ const ImageCard = memo<ImageCardProps>(
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
         className={cn(
-          'group relative rounded-2xl overflow-hidden transition-colors duration-300',
+          'group relative rounded-xl overflow-hidden transition-colors duration-300',
           glassSurface.panel
         )}
       >
@@ -126,10 +130,10 @@ const ImageCard = memo<ImageCardProps>(
             else window.open(img.url, '_blank');
           }}
         >
-          {/* Technical Badges */}
+          {/* Technical Badges. EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
           <div className="absolute top-3 left-3 z-10 flex gap-1.5">
             {isHD && (
-              <div className="bg-white/90 text-2xs font-bold px-1.5 py-0.5 rounded text-black">
+              <div className="bg-white/90 text-2xs font-medium px-1.5 py-0.5 rounded text-black">
                 HD
               </div>
             )}
@@ -138,7 +142,7 @@ const ImageCard = memo<ImageCardProps>(
             </div>
           </div>
 
-          {/* Selection Checkbox */}
+          {/* Selection Checkbox. EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
           {batchSelecting && (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
               <div
@@ -159,7 +163,7 @@ const ImageCard = memo<ImageCardProps>(
           {/* Image Asset */}
           <StreamImage src={img.url} alt={img.title} onCrashed={onCrashed} />
 
-          {/* Subtle Hover Overlay */}
+          {/* Subtle Hover Overlay. EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
           {!batchSelecting && (
             <div
               className={cn(
@@ -175,7 +179,7 @@ const ImageCard = memo<ImageCardProps>(
                   href={imageApi.getProxiedDownloadUrl(img.url, `${img.title}.jpg`)}
                   download
                   onClick={(e) => e.stopPropagation()}
-                  className="w-9 h-9 border border-white/10 bg-white text-black rounded-lg flex items-center justify-center hover:bg-neutral-200 transition-colors"
+                  className="w-9 h-9 border border-white/10 bg-white text-black rounded-xl flex items-center justify-center hover:bg-neutral-200 transition-colors"
                   title={t('extractor.download_original')}
                   aria-label={t('extractor.download_original')}
                 >
@@ -183,7 +187,7 @@ const ImageCard = memo<ImageCardProps>(
                 </a>
                 <button
                   onClick={(e) => onCopy(e, img)}
-                  className="w-9 h-9 border border-white/10 bg-black/50 text-white rounded-lg flex items-center justify-center hover:bg-black/70 transition-colors"
+                  className={OVERLAY_BTN}
                   title={t('common.copyAsPng')}
                 >
                   <Copy size={14} />
@@ -191,7 +195,7 @@ const ImageCard = memo<ImageCardProps>(
                 <button
                   onClick={(e) => onUpscale(e, img)}
                   disabled={isUpscaling}
-                  className="w-9 h-9 border border-white/10 bg-black/50 text-white rounded-lg flex items-center justify-center hover:bg-black/70 transition-colors"
+                  className={OVERLAY_BTN}
                   title={t('extractor.upscale_to_ultra_hd')}
                 >
                   {isUpscaling ? <GlitchLoader size={14} /> : <Zap size={14} />}
@@ -204,7 +208,7 @@ const ImageCard = memo<ImageCardProps>(
                       '_blank'
                     );
                   }}
-                  className="w-9 h-9 border border-white/10 bg-black/50 text-white rounded-lg flex items-center justify-center hover:bg-black/70 transition-colors"
+                  className={OVERLAY_BTN}
                   title={t('extractor.search_with_google_lens')}
                 >
                   <Search size={14} />
@@ -214,7 +218,7 @@ const ImageCard = memo<ImageCardProps>(
                     e.stopPropagation();
                     window.open(img.url, '_blank');
                   }}
-                  className="w-9 h-9 border border-white/10 bg-black/50 text-white rounded-lg flex items-center justify-center hover:bg-black/70 transition-colors"
+                  className={OVERLAY_BTN}
                   title={t('extractor.viewOriginal')}
                 >
                   <Maximize2 size={14} />
@@ -657,9 +661,9 @@ export default function ExtractorPage() {
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t('extractor.encontre_qualquer_imagem')}
                 className="
-                  w-full bg-white/[0.03] border border-neutral-800 rounded-2xl py-4 px-6 pr-32
-                  text-base font-medium text-white/90 focus:outline-none focus:border-white/10
-                  transition-colors placeholder:text-neutral-600
+                  w-full bg-muted border border-border rounded-xl py-4 px-6 pr-32
+                  text-base font-medium text-foreground focus:outline-none focus:border-border-hover
+                  transition-colors placeholder:text-muted-foreground
                 "
               />
               <div className="absolute right-2 top-2 bottom-2 flex gap-1.5">
@@ -672,8 +676,8 @@ export default function ExtractorPage() {
                     aspect-square rounded-xl flex items-center justify-center transition-colors
                     ${
                       showFilters
-                        ? 'bg-white/10 text-white'
-                        : 'bg-white/[0.03] text-neutral-500 hover:bg-white/5 hover:text-neutral-300'
+                        ? 'bg-accent text-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
                     }
                   `}
                 >
@@ -685,8 +689,8 @@ export default function ExtractorPage() {
                   aria-label={t('extractor.fromPdf')}
                   title={t('extractor.fromPdf')}
                   className="
-                    aspect-square bg-white/[0.03] text-neutral-500 rounded-xl
-                    flex items-center justify-center hover:bg-white/5 hover:text-neutral-300 transition-[color,background-color,border-color,opacity]
+                    aspect-square bg-muted text-muted-foreground rounded-xl
+                    flex items-center justify-center hover:bg-accent hover:text-foreground transition-[color,background-color,border-color,opacity]
                   "
                 >
                   {extractingPdf ? <GlitchLoader size={16} /> : <FileText size={16} />}
@@ -696,8 +700,8 @@ export default function ExtractorPage() {
                   disabled={loading || !query.trim()}
                   aria-label={t('extractor.search')}
                   className="
-                    aspect-square bg-white/10 text-white rounded-xl
-                    flex items-center justify-center hover:bg-white/20 transition-[color,background-color,border-color,opacity] disabled:opacity-20
+                    aspect-square bg-accent text-foreground rounded-xl
+                    flex items-center justify-center hover:bg-accent transition-[color,background-color,border-color,opacity] disabled:opacity-20
                   "
                 >
                   {loading ? <GlitchLoader size={18} /> : <ArrowRight size={18} />}
@@ -719,12 +723,12 @@ export default function ExtractorPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   className={cn(
-                    'grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-2xl',
+                    'grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl',
                     glassSurface.panel
                   )}
                 >
                   <div className="space-y-2">
-                    <label className="text-xs font-medium text-neutral-500 pl-1">
+                    <label className="text-xs font-medium text-muted-foreground pl-1">
                       {t('extractor.columns', { count: columns })}
                     </label>
                     <div className="px-1 pt-2 pb-1">
@@ -735,13 +739,13 @@ export default function ExtractorPage() {
                         step="1"
                         value={columns}
                         onChange={(e) => setColumns(parseInt(e.target.value))}
-                        className="w-full h-1 bg-white/5 rounded-full appearance-none cursor-pointer accent-brand-cyan"
+                        className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-medium text-neutral-500 pl-1">
+                    <label className="text-xs font-medium text-muted-foreground pl-1">
                       {t('extractor.resolution')}
                     </label>
                     <div className="flex gap-1">
@@ -749,10 +753,10 @@ export default function ExtractorPage() {
                         <button
                           key={s}
                           onClick={() => setDesignerParams({ ...designerParams, size: s })}
-                          className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors border ${
+                          className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors border ${
                             designerParams.size === s
-                              ? 'bg-white/10 border-white/20 text-white'
-                              : 'bg-transparent border-neutral-800 text-neutral-600'
+                              ? 'bg-accent border-ring text-foreground'
+                              : 'bg-transparent border-border text-muted-foreground'
                           }`}
                         >
                           {s === 'large' ? 'HD+' : t('extractor.any')}
@@ -762,7 +766,7 @@ export default function ExtractorPage() {
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-xs font-medium text-neutral-500 pl-1">
+                    <label className="text-xs font-medium text-muted-foreground pl-1">
                       {t('extractor.contentTypeLabel')}
                     </label>
                     <div className="flex gap-1 flex-wrap">
@@ -782,10 +786,10 @@ export default function ExtractorPage() {
                           onClick={() =>
                             setDesignerParams({ ...designerParams, contentMode: value })
                           }
-                          className={`flex-none px-3 py-2 rounded-lg text-xs font-medium transition-colors border ${
+                          className={`flex-none px-3 py-2 rounded-xl text-xs font-medium transition-colors border ${
                             designerParams.contentMode === value
-                              ? 'bg-white/10 border-white/20 text-white'
-                              : 'bg-transparent border-neutral-800 text-neutral-600 hover:text-neutral-400'
+                              ? 'bg-accent border-ring text-foreground'
+                              : 'bg-transparent border-border text-muted-foreground hover:text-foreground'
                           }`}
                         >
                           {t(`extractor.contentModes.${value}.label`)}
@@ -795,7 +799,7 @@ export default function ExtractorPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-medium text-neutral-500 pl-1">
+                    <label className="text-xs font-medium text-muted-foreground pl-1">
                       {t('extractor.formatLabel')}
                     </label>
                     <div className="flex gap-1">
@@ -803,10 +807,10 @@ export default function ExtractorPage() {
                         <button
                           key={a}
                           onClick={() => setDesignerParams({ ...designerParams, aspect: a })}
-                          className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors border ${
+                          className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors border ${
                             designerParams.aspect === a
-                              ? 'bg-white/10 border-white/20 text-white'
-                              : 'bg-transparent border-neutral-800 text-neutral-600'
+                              ? 'bg-accent border-ring text-foreground'
+                              : 'bg-transparent border-border text-muted-foreground'
                           }`}
                         >
                           {t(`extractor.aspects.${a}`)}
@@ -840,7 +844,7 @@ export default function ExtractorPage() {
             {/* Minimal Toolbar */}
             <div className="flex items-center justify-between px-2">
               <div className="flex items-center gap-3">
-                <h2 className="text-xs font-medium text-neutral-400">
+                <h2 className="text-xs font-medium text-muted-foreground">
                   {t('extractor.foundCount', { count: images.length })}
                 </h2>
               </div>
@@ -851,11 +855,11 @@ export default function ExtractorPage() {
                     setSelectedImages(new Set());
                   }}
                   className={`
-                    px-4 py-1.5 rounded-lg text-xs font-medium transition-colors border
+                    px-4 py-1.5 rounded-xl text-xs font-medium transition-colors border
                     ${
                       batchSelecting
-                        ? 'bg-white/10 border-white/20 text-white'
-                        : 'bg-transparent border-neutral-800 text-neutral-500 hover:text-neutral-300 hover:border-white/10'
+                        ? 'bg-accent border-ring text-foreground'
+                        : 'bg-transparent border-border text-muted-foreground hover:text-foreground hover:border-border-hover'
                     }
                   `}
                 >
@@ -864,8 +868,8 @@ export default function ExtractorPage() {
                 <button
                   onClick={handleDownloadAll}
                   className="
-                    px-4 py-1.5 bg-white text-black text-xs font-semibold rounded-lg 
-                    hover:bg-neutral-200 transition-colors flex items-center gap-1.5
+                    px-4 py-1.5 bg-foreground text-background text-xs font-medium rounded-xl 
+                    hover:opacity-90 transition-opacity flex items-center gap-1.5
                   "
                 >
                   <CloudDownload size={12} />
@@ -909,7 +913,7 @@ export default function ExtractorPage() {
                 {[...Array(8)].map((_, i) => (
                   <div
                     key={i}
-                    className="aspect-square rounded-2xl overflow-hidden border border-neutral-800 opacity-40"
+                    className="aspect-square rounded-xl overflow-hidden border border-border opacity-40"
                   >
                     <SkeletonLoader width="100%" height="100%" variant="rectangular" />
                   </div>

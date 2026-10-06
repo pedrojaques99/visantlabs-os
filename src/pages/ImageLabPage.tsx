@@ -8,7 +8,6 @@ import React, {
 } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-  Upload,
   CircleDot,
   Paintbrush,
   Undo2,
@@ -31,6 +30,7 @@ import { cn } from '@/lib/utils';
 import { Thumb } from '@/components/ui/Thumb';
 import { API_BASE } from '@/config/api';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
+import { Dropzone } from '@/components/ui/Dropzone';
 import { HalftoneCanvas, type HalftoneCanvasHandle } from '@/components/halftone/HalftoneCanvas';
 import { generateHalftoneSvg } from '@/components/halftone/halftone-svg-export';
 import { HalftoneControls } from '@/components/halftone/HalftoneControls';
@@ -891,7 +891,7 @@ export const ImageLabPage: React.FC = () => {
       <div className="h-full flex flex-col">
         <div className="flex-1 overflow-hidden">{modeControls}</div>
         {/* Save preset — collapsed behind a button at the bottom, by the export actions */}
-        <div className="shrink-0 border-t border-white/10">
+        <div className="shrink-0 border-t border-border">
           {savePresetOpen && (
             <div className="px-4 pt-3 animate-fade-in">
               <ImageLabSavePreset />
@@ -899,7 +899,7 @@ export const ImageLabPage: React.FC = () => {
           )}
           <button
             onClick={() => setSavePresetOpen((v) => !v)}
-            className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-medium text-neutral-500 hover:text-neutral-200 transition-colors"
+            className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
             aria-expanded={savePresetOpen}
           >
             <Save size={12} />
@@ -926,13 +926,14 @@ export const ImageLabPage: React.FC = () => {
   );
 
   const tbBtn = cn(
-    'flex items-center justify-center rounded-lg transition-colors',
+    'flex items-center justify-center rounded-xl transition-colors',
     isMobile ? 'w-11 h-11' : 'w-9 h-9'
   );
   const tbIcon = isMobile ? 18 : 15;
 
+  // `dark contents`: os modais irmãos do shell (export, presets) ficam no escopo escuro do editor.
   return (
-    <>
+    <div className="dark contents text-foreground">
       <ToolEditorShell
         title={t('imagelab.title')}
         documentTitle={t('imagelab.documentTitle')}
@@ -961,7 +962,7 @@ export const ImageLabPage: React.FC = () => {
             bar é bottom-center) e acima do mobile sheet (~56px) no mobile. */}
         <BrandFunnelBanner
           toolId="image-lab"
-          className="fixed bottom-16 md:bottom-3 left-3 z-30 flex items-center gap-3 rounded-full border border-white/10 bg-neutral-950/80 backdrop-blur-xl pl-3 pr-1.5 py-1.5 max-w-[calc(100vw-2rem)]"
+          className="fixed bottom-16 md:bottom-3 left-3 z-30 flex items-center gap-3 rounded-full border border-border bg-popover/80 backdrop-blur-xl pl-3 pr-1.5 py-1.5 max-w-[calc(100vw-2rem)]"
         />
         {/* Proximity sensor for FX bar auto-hide (z-0: works when magic hand inactive) */}
         <div className="absolute inset-0 z-0" onPointerMove={handleCanvasPointerMove} />
@@ -976,7 +977,7 @@ export const ImageLabPage: React.FC = () => {
         {/* Floating tools — canvas-only actions */}
         <div
           className={cn(
-            'absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl shadow-black/50',
+            'absolute left-3 top-3 z-20 flex flex-col gap-1 bg-popover/90 backdrop-blur-xl border border-border rounded-xl p-1.5 shadow-2xl shadow-black/50',
             isMobile && 'left-2 top-2 p-1'
           )}
         >
@@ -990,8 +991,8 @@ export const ImageLabPage: React.FC = () => {
                 className={cn(
                   tbBtn,
                   !magicHandActive
-                    ? 'bg-white/10 text-white ring-1 ring-white/30 shadow-sm'
-                    : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
+                    ? 'bg-accent text-foreground ring-1 ring-ring shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                 )}
               >
                 <MousePointer2 size={tbIcon} />
@@ -1002,8 +1003,8 @@ export const ImageLabPage: React.FC = () => {
                 className={cn(
                   tbBtn,
                   magicHandActive
-                    ? 'bg-white/10 text-white ring-1 ring-white/30 shadow-sm'
-                    : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
+                    ? 'bg-accent text-foreground ring-1 ring-ring shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                 )}
               >
                 <Hand size={tbIcon} />
@@ -1012,7 +1013,7 @@ export const ImageLabPage: React.FC = () => {
           )}
           {hasImage && sourceMediaType === 'video' && (
             <>
-              <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
+              <div className="h-px bg-border mx-1 my-0.5" />
               <button
                 onClick={() => {
                   const vc = getActiveVideoControls();
@@ -1025,7 +1026,7 @@ export const ImageLabPage: React.FC = () => {
                   }
                 }}
                 title={videoIsPlaying ? t('imagelab.pause') : t('imagelab.play')}
-                className={cn(tbBtn, 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5')}
+                className={cn(tbBtn, 'text-muted-foreground hover:text-foreground hover:bg-accent')}
               >
                 {videoIsPlaying ? <Pause size={tbIcon} /> : <Play size={tbIcon} />}
               </button>
@@ -1044,7 +1045,7 @@ export const ImageLabPage: React.FC = () => {
                       const vc = getActiveVideoControls();
                       if (vc) vc.seek(parseFloat(e.target.value));
                     }}
-                    className="w-7 h-[2px] appearance-none bg-neutral-700 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                    className="w-7 h-[2px] appearance-none bg-border rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-foreground"
                     style={{
                       writingMode: 'vertical-lr',
                       direction: 'rtl',
@@ -1052,7 +1053,7 @@ export const ImageLabPage: React.FC = () => {
                       width: '12px',
                     }}
                   />
-                  <span className="text-2xs tabular-nums text-neutral-600">
+                  <span className="text-2xs tabular-nums text-muted-foreground">
                     {videoCurrentTime.toFixed(1)}s
                   </span>
                 </div>
@@ -1078,9 +1079,9 @@ export const ImageLabPage: React.FC = () => {
               title={t('imagelab.showFxBar')}
               aria-label={t('imagelab.showFxBar')}
               className={cn(
-                'flex items-center justify-center h-5 px-8 rounded-b-lg transition-[color,background-color,border-color,opacity,filter] duration-300',
-                'bg-neutral-900/60 backdrop-blur-xl border-b border-x border-neutral-800/60',
-                'text-neutral-600 hover:text-neutral-400 hover:bg-neutral-900/90',
+                'flex items-center justify-center h-5 px-8 rounded-b-xl transition-[color,background-color,border-color,opacity,filter] duration-300',
+                'bg-background/90 border-b border-x border-border',
+                'text-muted-foreground hover:text-foreground hover:bg-background',
                 fxBarVisible ? 'opacity-0 pointer-events-none' : 'opacity-100'
               )}
             >
@@ -1097,15 +1098,15 @@ export const ImageLabPage: React.FC = () => {
                 : 'opacity-0 -translate-y-2 pointer-events-none'
             )}
           >
-            <div className="flex items-center gap-1 px-1.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 shadow-2xl shadow-black/40">
+            <div className="flex items-center gap-1 px-1.5 py-1 rounded-full bg-background/95 border border-border shadow-lg">
               {/* Undo / Redo */}
-              <div className="flex items-center gap-0.5 pr-1 border-r border-neutral-800/60">
+              <div className="flex items-center gap-0.5 pr-1 border-r border-border">
                 <button
                   onClick={undo}
                   disabled={historyIndex < 0}
                   title={t('imagelab.undo')}
                   aria-label={t('imagelab.undo')}
-                  className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors disabled:opacity-25 disabled:pointer-events-none"
+                  className="flex items-center justify-center w-7 h-7 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-25 disabled:pointer-events-none"
                 >
                   <Undo2 size={14} />
                 </button>
@@ -1114,7 +1115,7 @@ export const ImageLabPage: React.FC = () => {
                   disabled={historyIndex >= historyLength - 1}
                   title={t('imagelab.redo')}
                   aria-label={t('imagelab.redo')}
-                  className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors disabled:opacity-25 disabled:pointer-events-none"
+                  className="flex items-center justify-center w-7 h-7 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-25 disabled:pointer-events-none"
                 >
                   <Redo2 size={14} />
                 </button>
@@ -1131,14 +1132,16 @@ export const ImageLabPage: React.FC = () => {
                     className={cn(
                       'group/fx relative flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-[color,background-color,border-color,box-shadow] duration-200 text-2xs font-medium whitespace-nowrap',
                       isActive
-                        ? 'bg-white/12 text-white shadow-sm'
-                        : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
+                        ? 'bg-accent text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                     )}
                   >
                     <span
                       className={cn(
                         'transition-colors',
-                        isActive ? 'text-white' : 'text-neutral-600 group-hover/fx:text-neutral-400'
+                        isActive
+                          ? 'text-foreground'
+                          : 'text-muted-foreground group-hover/fx:text-foreground'
                       )}
                     >
                       {m.icon}
@@ -1147,16 +1150,16 @@ export const ImageLabPage: React.FC = () => {
                     <span
                       className={cn(
                         'text-2xs font-mono tabular-nums transition-colors',
-                        isActive ? 'text-neutral-500' : 'text-neutral-700'
+                        isActive ? 'text-muted-foreground' : 'text-muted-foreground/60'
                       )}
                     >
                       {i + 1}
                     </span>
                     {thumb && !isActive && (
                       <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 opacity-0 group-hover/fx:opacity-100 transition-opacity duration-200 z-50">
-                        <div className="rounded-lg overflow-hidden border border-neutral-700/60 shadow-xl shadow-black/60 bg-neutral-900">
+                        <div className="rounded-xl overflow-hidden border border-border shadow-xl shadow-black/60 bg-card">
                           <Thumb src={thumb} alt="" className="w-28 h-28 object-cover" />
-                          <div className="px-2 py-1 text-2xs text-neutral-500 text-center bg-neutral-900/90">
+                          <div className="px-2 py-1 text-2xs text-muted-foreground text-center bg-popover/90">
                             {m.label}
                           </div>
                         </div>
@@ -1167,7 +1170,7 @@ export const ImageLabPage: React.FC = () => {
               })}
 
               {/* Help + Pin + Panel toggle */}
-              <div className="pl-1 border-l border-neutral-800/60 flex items-center gap-0.5">
+              <div className="pl-1 border-l border-border flex items-center gap-0.5">
                 {hasImage && (
                   <SendToButton
                     source="image-lab"
@@ -1183,7 +1186,7 @@ export const ImageLabPage: React.FC = () => {
                   onClick={() => setShortcutsOpen(true)}
                   title={t('imagelab.shortcuts')}
                   aria-label={t('imagelab.shortcuts')}
-                  className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors"
+                  className="flex items-center justify-center w-7 h-7 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 >
                   <HelpCircle size={12} />
                 </button>
@@ -1200,8 +1203,8 @@ export const ImageLabPage: React.FC = () => {
                       className={cn(
                         'flex items-center justify-center w-7 h-7 rounded-full transition-colors',
                         fxBarPinned
-                          ? 'text-neutral-300 bg-white/10'
-                          : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
+                          ? 'text-foreground bg-accent'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                       )}
                     >
                       <Pin size={12} className={cn(fxBarPinned && 'rotate-45')} />
@@ -1213,8 +1216,8 @@ export const ImageLabPage: React.FC = () => {
                       className={cn(
                         'flex items-center justify-center w-7 h-7 rounded-full transition-colors',
                         panelVisible
-                          ? 'text-neutral-400 hover:text-neutral-200'
-                          : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
+                          ? 'text-foreground'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                       )}
                     >
                       <PanelRightOpen size={14} />
@@ -1272,52 +1275,41 @@ export const ImageLabPage: React.FC = () => {
         <BeforeAfterOverlay sourceUrl={sourceUrl} />
 
         {!hasImage && (
-          <label className="absolute inset-0 flex items-center justify-center z-10 cursor-pointer">
-            <div className="flex flex-col items-center gap-4 text-neutral-500 group">
-              <div className="w-16 h-16 rounded-2xl border border-dashed border-neutral-700 group-hover:border-neutral-500 flex items-center justify-center transition-colors">
-                <Upload
-                  size={24}
-                  className="text-neutral-600 group-hover:text-neutral-400 transition-colors"
-                />
-              </div>
-              <p className="text-sm">{t('imagelab.dropPrompt')}</p>
-              <p className="text-xs opacity-60">{t('imagelab.shortcutsHint')}</p>
-            </div>
-            <input
-              type="file"
-              accept="image/*,video/*"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  const isVideo = file.type.startsWith('video/');
-                  const url = createTrackedObjectUrl(file);
-                  broadcastImage(url, file.name, isVideo ? 'video' : 'image');
-                  toast.success(t('imagelab.loaded', { name: file.name }));
-                }
-                e.target.value = '';
+          <div className="absolute inset-0 z-10 flex items-center justify-center px-4">
+            <Dropzone
+              onFiles={([file]) => {
+                if (!file) return;
+                const isVideo = file.type.startsWith('video/');
+                const url = createTrackedObjectUrl(file);
+                broadcastImage(url, file.name, isVideo ? 'video' : 'image');
+                toast.success(t('imagelab.loaded', { name: file.name }));
               }}
+              accept="image/*,video/*"
+              label={t('imagelab.dropPrompt')}
+              hint={t('imagelab.shortcutsHint')}
+              dropTarget={false}
+              className="max-w-md"
             />
-          </label>
+          </div>
         )}
         {/* Shortcuts help overlay */}
         {shortcutsOpen && (
           <div
-            className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
             onClick={() => setShortcutsOpen(false)}
           >
             <div
-              className="bg-neutral-950 border border-white/10 rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4"
+              className="bg-popover border border-border rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-semibold text-neutral-200">
+                <span className="text-sm font-semibold text-foreground">
                   {t('imagelab.shortcutsTitle')}
                 </span>
                 <button
                   onClick={() => setShortcutsOpen(false)}
                   aria-label={t('common.closeEsc')}
-                  className="text-neutral-600 hover:text-neutral-300 p-1"
+                  className="text-muted-foreground hover:text-foreground p-1"
                 >
                   <kbd className="text-xs font-mono">Esc</kbd>
                 </button>
@@ -1358,15 +1350,15 @@ export const ImageLabPage: React.FC = () => {
                   ] as [string, [string, string][]][]
                 ).map(([section, items]) => (
                   <div key={section}>
-                    <div className="text-xs font-medium text-neutral-500 mb-1.5">
+                    <div className="text-xs font-medium text-muted-foreground mb-1.5">
                       {t(`imagelab.shortcutSections.${section}`)}
                     </div>
                     {items.map(([key, desc]) => (
                       <div key={key} className="flex items-center justify-between py-0.5">
-                        <span className="text-neutral-400">
+                        <span className="text-muted-foreground">
                           {t(`imagelab.shortcutItems.${desc}`)}
                         </span>
-                        <kbd className="px-1.5 py-0.5 rounded bg-neutral-800/60 text-neutral-500 font-mono text-2xs">
+                        <kbd className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono text-2xs">
                           {key}
                         </kbd>
                       </div>
@@ -1437,7 +1429,7 @@ export const ImageLabPage: React.FC = () => {
         isOpen={presetLibraryOpen}
         onClose={() => setPresetLibraryOpen(false)}
       />
-    </>
+    </div>
   );
 };
 
@@ -1496,7 +1488,7 @@ function useStatusItems(mode: ImageLabMode) {
           { label: `freq ${hFrequency}` },
           { label: `dot ${hDotSize.toFixed(2)}` },
           { label: ['subtractive', 'additive', 'normal'][hBlendMode] },
-          ...(hShaderEnabled ? [{ label: hShaderType, color: 'text-neutral-400' }] : []),
+          ...(hShaderEnabled ? [{ label: hShaderType, color: 'text-muted-foreground' }] : []),
           ...extras,
         ];
       case 'texture':
@@ -1505,8 +1497,8 @@ function useStatusItems(mode: ImageLabMode) {
           { label: tBlendMode },
           { label: `${(tOpacity * 100).toFixed(0)}%` },
           { label: tTextureName },
-          ...(tMaskMode ? [{ label: 'mask', color: 'text-neutral-300' }] : []),
-          ...(tShaderEnabled ? [{ label: tShaderType, color: 'text-neutral-400' }] : []),
+          ...(tMaskMode ? [{ label: 'mask', color: 'text-foreground' }] : []),
+          ...(tShaderEnabled ? [{ label: tShaderType, color: 'text-muted-foreground' }] : []),
           ...extras,
         ];
       case 'riso':
@@ -1519,14 +1511,14 @@ function useStatusItems(mode: ImageLabMode) {
             ? [{ label: `${rLayers.filter((l) => l.visible).length} layers` }]
             : []),
           ...(rSoloLayer >= 0 ? [{ label: `solo L${rSoloLayer + 1}`, color: 'text-warning' }] : []),
-          ...(rShaderEnabled ? [{ label: rShaderType, color: 'text-neutral-400' }] : []),
+          ...(rShaderEnabled ? [{ label: rShaderType, color: 'text-muted-foreground' }] : []),
           ...extras,
         ];
       case 'shaders':
         return [
           { label: `${Math.round(sZoom * 100)}%` },
           ...(sShaderEnabled
-            ? [{ label: sShaderType, color: 'text-neutral-400' }]
+            ? [{ label: sShaderType, color: 'text-muted-foreground' }]
             : [{ label: 'off' }]),
           ...extras,
         ];
@@ -1588,17 +1580,17 @@ const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> 
         title={t('imagelab.effectOpacity', { value: Math.round(value * 100) })}
         aria-label={t('imagelab.effectOpacity', { value: Math.round(value * 100) })}
         className={cn(
-          'flex items-center justify-center w-9 h-9 rounded-lg transition-colors',
+          'flex items-center justify-center w-9 h-9 rounded-xl transition-colors',
           open
-            ? 'bg-white/10 text-white ring-1 ring-white/30'
-            : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
+            ? 'bg-accent text-foreground ring-1 ring-ring'
+            : 'text-muted-foreground hover:text-foreground hover:bg-accent'
         )}
       >
         <Blend size={15} />
       </button>
       {open && (
-        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 z-30 flex items-center gap-2 bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/60 rounded-lg px-3 py-2 shadow-2xl shadow-black/50 animate-fade-in">
-          <span className="text-2xs tabular-nums text-neutral-600 w-6 text-right shrink-0">
+        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 z-30 flex items-center gap-2 bg-popover/95 backdrop-blur-xl border border-border rounded-xl px-3 py-2 shadow-2xl shadow-black/50 animate-fade-in">
+          <span className="text-2xs tabular-nums text-muted-foreground w-6 text-right shrink-0">
             {Math.round(value * 100)}
           </span>
           <input
@@ -1608,7 +1600,7 @@ const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> 
             step={0.01}
             value={value}
             onChange={(e) => onChange(parseFloat(e.target.value))}
-            className="w-28 h-[2px] appearance-none bg-neutral-700 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+            className="w-28 h-[2px] appearance-none bg-border rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-foreground"
           />
         </div>
       )}

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { FileDown, Upload, X } from '@/lib/ui/icons';
+import { FileDown, X } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -10,6 +10,8 @@ import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
+import { Dropzone } from '@/components/ui/Dropzone';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { QuickActions } from '@/components/shared/QuickActions';
 import { useToolInput } from '@/hooks/useToolInput';
 import { formatBytes } from '@/utils/formatUtils';
@@ -106,7 +108,7 @@ export const PdfCompressPage: React.FC = () => {
     totalOriginal > 0 ? Math.round((1 - totalCompressed / totalOriginal) * 100) : 0;
 
   const handleFiles = useCallback(
-    (fileList: FileList) => {
+    (fileList: FileList | File[]) => {
       const valid: { url: string; name: string; size: number }[] = [];
       Array.from(fileList).forEach((file) => {
         if (file.type !== 'application/pdf') {
@@ -122,14 +124,6 @@ export const PdfCompressPage: React.FC = () => {
       if (valid.length) addFiles(valid);
     },
     [addFiles, t]
-  );
-
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files) handleFiles(e.target.files);
-      if (e.target) e.target.value = '';
-    },
-    [handleFiles]
   );
 
   const handleDrop = useCallback(
@@ -203,41 +197,31 @@ export const PdfCompressPage: React.FC = () => {
         <span className="text-xs font-medium text-muted-foreground">
           {t('miniTools.pdf.presetLabel')}
         </span>
-        <div className="flex gap-1 flex-wrap">
-          {PRESET_OPTIONS.map((value) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setPreset(value)}
-              className={cn(
-                'px-3 py-1.5 rounded border text-xs font-medium transition-colors',
-                preset === value
-                  ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
-                  : 'text-muted-foreground hover:text-foreground border-transparent'
-              )}
-              title={t(`miniTools.pdf.presetDesc.${value}`)}
-            >
-              {t(`miniTools.pdf.preset.${value}`)}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          aria-label={t('miniTools.pdf.presetLabel')}
+          size="sm"
+          fullWidth
+          value={preset}
+          onChange={setPreset}
+          options={PRESET_OPTIONS.map((value) => ({
+            value,
+            label: t(`miniTools.pdf.preset.${value}`),
+          }))}
+        />
         <p className="text-xs text-muted-foreground">{t(`miniTools.pdf.presetDesc.${preset}`)}</p>
       </div>
 
       <div className="h-px bg-border" />
 
       {/* Add more */}
-      <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
-        <Upload size={12} />
-        {t('miniTools.pdf.addPdfs')}
-        <input
-          type="file"
-          accept="application/pdf"
-          multiple
-          className="hidden"
-          onChange={handleInputChange}
-        />
-      </label>
+      <Dropzone
+        onFiles={handleFiles}
+        accept="application/pdf"
+        multiple
+        label={t('miniTools.pdf.addPdfs')}
+        size="sm"
+        dropTarget={false}
+      />
 
       <div className="h-px bg-border" />
 
@@ -249,7 +233,9 @@ export const PdfCompressPage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
+                variant="primary"
+                size="sm"
+                className="w-full text-xs"
               >
                 {isProcessing ? (
                   <>
@@ -327,18 +313,15 @@ export const PdfCompressPage: React.FC = () => {
         {!hasItems ? (
           /* ── Empty state (centered drop zone) ─────────── */
           <motion.div key="empty" {...fade} className="flex w-full justify-center py-8">
-            <label className="flex h-48 w-full max-w-md cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border px-4 text-center text-sm text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
-              <Upload size={20} />
-              {t('miniTools.pdf.drop')}
-              <span className="text-xs">{t('miniTools.pdf.limit')}</span>
-              <input
-                type="file"
-                accept="application/pdf"
-                multiple
-                onChange={handleInputChange}
-                className="hidden"
-              />
-            </label>
+            <Dropzone
+              onFiles={handleFiles}
+              accept="application/pdf"
+              multiple
+              label={t('miniTools.pdf.drop')}
+              hint={t('miniTools.pdf.limit')}
+              dropTarget={false}
+              className="max-w-md"
+            />
           </motion.div>
         ) : (
           /* ── Working state (file list, left-aligned) ───── */
@@ -350,7 +333,7 @@ export const PdfCompressPage: React.FC = () => {
                   layout
                   {...fade}
                   className={cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-lg',
+                    'flex items-center gap-3 px-3 py-2 rounded-xl',
                     glassSurface.surface
                   )}
                 >

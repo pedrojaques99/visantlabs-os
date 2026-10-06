@@ -56,7 +56,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
             onStartOver();
             if (onClose) onClose();
           }}
-          className="h-8 w-8 rounded-full text-neutral-500 hover:text-white hover:bg-neutral-800/50 transition-[color,background-color,border-color,filter] border border-transparent hover:border-white/10"
+          className="h-8 w-8 rounded-full text-neutral-500 hover:text-foreground hover:bg-neutral-800/50 transition-[color,background-color,border-color,filter] border border-transparent hover:border-border-hover"
           title={t('mockup.startOver')}
         >
           <X size={16} />
@@ -98,7 +98,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                   onStartOver();
                   onClose();
                 }}
-                className="h-12 px-6 text-neutral-500 hover:text-white hover:bg-white/5 text-2xs border border-transparent hover:border-white/10"
+                className="h-12 px-6 text-neutral-500 hover:text-foreground hover:bg-accent text-2xs border border-transparent hover:border-border-hover"
               >
                 {t('common.cancel')}
               </Button>
@@ -109,7 +109,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
               isLoading={isAnalyzing}
               loadingText="INITIALIZING..."
               icon={ArrowRight}
-              className="flex-1 h-12 text-2xs font-bold"
+              className="flex-1 h-12 text-2xs font-medium"
             >
               {t('mockup.continue')}
             </PremiumButton>

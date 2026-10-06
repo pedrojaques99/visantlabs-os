@@ -358,8 +358,8 @@ function ControlsContent({
   return (
     <>
       {/* Presets */}
-      <div className="p-3 space-y-2 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 text-2xs">Presets</MicroTitle>
+      <div className="p-3 space-y-2 border-b border-border">
+        <MicroTitle className="text-muted-foreground text-2xs">Presets</MicroTitle>
         <div className="flex flex-wrap gap-1">
           {BUILT_IN_PRESETS.map((p) => (
             <Button
@@ -367,7 +367,7 @@ function ControlsContent({
               variant="ghost"
               size="xs"
               onClick={() => onLoadPreset(p)}
-              className="text-2xs text-neutral-500 hover:text-white"
+              className="text-2xs text-muted-foreground hover:text-foreground"
             >
               {p.name}
             </Button>
@@ -381,13 +381,13 @@ function ControlsContent({
                   variant="ghost"
                   size="xs"
                   onClick={() => onLoadPreset(p)}
-                  className="text-2xs text-neutral-300 hover:text-white"
+                  className="text-2xs text-foreground"
                 >
                   {p.name}
                 </Button>
                 <button
                   onClick={() => onDeletePreset(i)}
-                  className="text-neutral-700 hover:text-destructive p-0.5"
+                  className="text-muted-foreground hover:text-destructive p-0.5"
                   aria-label={`Delete preset ${p.name}`}
                 >
                   <Trash2 size={8} />
@@ -400,15 +400,17 @@ function ControlsContent({
           variant="ghost"
           size="xs"
           onClick={onSavePreset}
-          className="text-2xs text-neutral-500 hover:text-white w-full flex items-center justify-center gap-1"
+          className="text-2xs text-muted-foreground hover:text-foreground w-full flex items-center justify-center gap-1"
         >
           <Save size={10} /> Save Current
         </Button>
       </div>
 
       {/* Obstacle Shape */}
-      <div className="p-3 space-y-2 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 text-2xs">{t('wind.tunnel.obstacle')}</MicroTitle>
+      <div className="p-3 space-y-2 border-b border-border">
+        <MicroTitle className="text-muted-foreground text-2xs">
+          {t('wind.tunnel.obstacle')}
+        </MicroTitle>
         <div className="grid grid-cols-3 gap-1">
           {OBSTACLE_SHAPES.map((s) => (
             <Button
@@ -418,8 +420,8 @@ function ControlsContent({
               onClick={() => update('obstacleType', s.key)}
               className={`text-2xs font-medium ${
                 config.obstacleType === s.key
-                  ? 'text-white bg-white/10'
-                  : 'text-neutral-500 hover:text-white'
+                  ? 'text-foreground bg-accent'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               {s.label}
@@ -430,8 +432,8 @@ function ControlsContent({
 
       {/* Image Upload */}
       {config.obstacleType === 'image' && (
-        <div className="p-3 space-y-2 border-b border-neutral-800">
-          <MicroTitle className="text-neutral-600 text-2xs">Image</MicroTitle>
+        <div className="p-3 space-y-2 border-b border-border">
+          <MicroTitle className="text-muted-foreground text-2xs">Image</MicroTitle>
           <input
             ref={fileInputRef}
             type="file"
@@ -445,12 +447,12 @@ function ControlsContent({
           />
           {imageName && (
             <div className="flex items-center gap-1.5">
-              <span className="text-2xs text-neutral-400 truncate flex-1">{imageName}</span>
+              <span className="text-2xs text-muted-foreground truncate flex-1">{imageName}</span>
               <Button
                 variant="ghost"
                 size="icon-sm"
                 onClick={handleClearImage}
-                className="text-neutral-500 hover:text-white shrink-0"
+                className="text-muted-foreground hover:text-foreground shrink-0"
                 aria-label={t('wind.tunnel.clear_image')}
               >
                 <X size={10} />
@@ -461,11 +463,11 @@ function ControlsContent({
             variant="ghost"
             size="xs"
             onClick={() => fileInputRef.current?.click()}
-            className="text-2xs text-neutral-500 hover:text-white w-full flex items-center justify-center gap-1"
+            className="text-2xs text-muted-foreground hover:text-foreground w-full flex items-center justify-center gap-1"
           >
             <Upload size={10} /> {imageName ? 'Replace' : 'Upload SVG / PNG'}
           </Button>
-          <p className="text-2xs text-neutral-700 text-center">
+          <p className="text-2xs text-muted-foreground text-center">
             {t('wind.tunnel.or_drag_drop_onto_canvas')}
           </p>
         </div>
@@ -473,14 +475,14 @@ function ControlsContent({
 
       {/* Text Controls */}
       {config.obstacleType === 'text' && (
-        <div className="p-3 space-y-2 border-b border-neutral-800">
-          <MicroTitle className="text-neutral-600 text-2xs">Text</MicroTitle>
+        <div className="p-3 space-y-2 border-b border-border">
+          <MicroTitle className="text-muted-foreground text-2xs">Text</MicroTitle>
           <Input
             value={config.text}
             onChange={(e) => update('text', e.target.value)}
             placeholder="VISANT"
             maxLength={24}
-            className="h-7 text-xs bg-transparent border-white/10"
+            className="h-7 text-xs bg-transparent border-border"
             aria-label={t('wind.tunnel.obstacle_text')}
           />
           <div className="flex items-center gap-1 flex-wrap">
@@ -492,8 +494,8 @@ function ControlsContent({
                 onClick={() => update('fontFamily', f)}
                 className={`text-2xs px-1.5 ${
                   config.fontFamily === f
-                    ? 'text-white bg-white/10'
-                    : 'text-neutral-600 hover:text-white'
+                    ? 'text-foreground bg-accent'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
                 style={{ fontFamily: f }}
               >
@@ -506,7 +508,7 @@ function ControlsContent({
             size="xs"
             onClick={() => update('bold', !config.bold)}
             className={`text-2xs font-bold ${
-              config.bold ? 'text-white bg-white/10' : 'text-neutral-600'
+              config.bold ? 'text-foreground bg-accent' : 'text-muted-foreground'
             }`}
             aria-label={t('wind.tunnel.toggle_bold')}
           >
@@ -516,8 +518,10 @@ function ControlsContent({
       )}
 
       {/* Transform (universal) */}
-      <div className="p-3 space-y-2 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 text-2xs">{t('wind.tunnel.transform')}</MicroTitle>
+      <div className="p-3 space-y-2 border-b border-border">
+        <MicroTitle className="text-muted-foreground text-2xs">
+          {t('wind.tunnel.transform')}
+        </MicroTitle>
         <NodeSlider
           label={t('wind.tunnel.scale')}
           value={config.obstacleScale}
@@ -548,8 +552,10 @@ function ControlsContent({
       </div>
 
       {/* Render Mode */}
-      <div className="p-3 space-y-2 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 text-2xs">{t('wind.tunnel.render')}</MicroTitle>
+      <div className="p-3 space-y-2 border-b border-border">
+        <MicroTitle className="text-muted-foreground text-2xs">
+          {t('wind.tunnel.render')}
+        </MicroTitle>
         <div className="flex gap-1">
           {RENDER_MODES.map((m) => (
             <Button
@@ -559,8 +565,8 @@ function ControlsContent({
               onClick={() => update('renderMode', m.key)}
               className={`text-2xs flex-1 ${
                 config.renderMode === m.key
-                  ? 'text-white bg-white/10'
-                  : 'text-neutral-500 hover:text-white'
+                  ? 'text-foreground bg-accent'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               {m.label}
@@ -570,8 +576,8 @@ function ControlsContent({
       </div>
 
       {/* Color Mode */}
-      <div className="p-3 space-y-2 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 text-2xs">Color</MicroTitle>
+      <div className="p-3 space-y-2 border-b border-border">
+        <MicroTitle className="text-muted-foreground text-2xs">Color</MicroTitle>
         <div className="grid grid-cols-2 gap-1">
           {COLOR_MODES.map((m) => (
             <Button
@@ -581,8 +587,8 @@ function ControlsContent({
               onClick={() => update('colorMode', m.key)}
               className={`text-2xs ${
                 config.colorMode === m.key
-                  ? 'text-white bg-white/10'
-                  : 'text-neutral-500 hover:text-white'
+                  ? 'text-foreground bg-accent'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               {m.label}
@@ -601,8 +607,10 @@ function ControlsContent({
       </div>
 
       {/* Simulation Sliders */}
-      <div className="p-3 space-y-3 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 text-2xs">{t('wind.tunnel.simulation')}</MicroTitle>
+      <div className="p-3 space-y-3 border-b border-border">
+        <MicroTitle className="text-muted-foreground text-2xs">
+          {t('wind.tunnel.simulation')}
+        </MicroTitle>
         <NodeSlider
           label={t('wind.tunnel.wind')}
           value={config.windSpeed}
@@ -669,8 +677,8 @@ function ControlsContent({
       </div>
 
       {/* Effects */}
-      <div className="p-3 space-y-3 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 text-2xs">Effects</MicroTitle>
+      <div className="p-3 space-y-3 border-b border-border">
+        <MicroTitle className="text-muted-foreground text-2xs">Effects</MicroTitle>
         <NodeSlider
           label={t('wind.tunnel.glow')}
           value={config.glowIntensity}
@@ -692,8 +700,8 @@ function ControlsContent({
       </div>
 
       {/* Field Overlay (CFD Visualization) */}
-      <div className="p-3 space-y-2 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 text-2xs">Field Overlay</MicroTitle>
+      <div className="p-3 space-y-2 border-b border-border">
+        <MicroTitle className="text-muted-foreground text-2xs">Field Overlay</MicroTitle>
         <div className="grid grid-cols-2 gap-1">
           {FIELD_OVERLAYS.map((f) => (
             <Button
@@ -703,8 +711,8 @@ function ControlsContent({
               onClick={() => update('fieldOverlay', f.key)}
               className={`text-2xs ${
                 config.fieldOverlay === f.key
-                  ? 'text-white bg-white/10'
-                  : 'text-neutral-500 hover:text-white'
+                  ? 'text-foreground bg-accent'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               {f.label}
@@ -723,12 +731,12 @@ function ControlsContent({
           />
         )}
         <div className="flex items-center justify-between">
-          <span className="text-2xs text-neutral-500">Vector Arrows</span>
+          <span className="text-2xs text-muted-foreground">Vector Arrows</span>
           <Button
             variant="ghost"
             size="xs"
             onClick={() => update('showArrows', !config.showArrows)}
-            className={`text-2xs ${config.showArrows ? 'text-white' : 'text-neutral-600'}`}
+            className={`text-2xs ${config.showArrows ? 'text-foreground' : 'text-muted-foreground'}`}
           >
             {config.showArrows ? 'ON' : 'OFF'}
           </Button>
@@ -736,44 +744,46 @@ function ControlsContent({
       </div>
 
       {/* Appearance */}
-      <div className="p-3 space-y-2 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 text-2xs">{t('wind.tunnel.appearance')}</MicroTitle>
+      <div className="p-3 space-y-2 border-b border-border">
+        <MicroTitle className="text-muted-foreground text-2xs">
+          {t('wind.tunnel.appearance')}
+        </MicroTitle>
         <InlineColorPicker
           value={config.bgColor}
           onChange={(hex) => update('bgColor', hex)}
           label={t('wind.tunnel.background')}
         />
         <div className="flex items-center justify-between">
-          <span className="text-2xs text-neutral-500">{t('wind.tunnel.show_obstacles')}</span>
+          <span className="text-2xs text-muted-foreground">{t('wind.tunnel.show_obstacles')}</span>
           <Button
             variant="ghost"
             size="xs"
             onClick={() => update('showObstacles', !config.showObstacles)}
-            className={`text-2xs ${config.showObstacles ? 'text-white' : 'text-neutral-600'}`}
+            className={`text-2xs ${config.showObstacles ? 'text-foreground' : 'text-muted-foreground'}`}
             aria-label={t('wind.tunnel.toggle_obstacle_visibility')}
           >
             {config.showObstacles ? 'ON' : 'OFF'}
           </Button>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-2xs text-neutral-500">{t('wind.tunnel.grid_overlay')}</span>
+          <span className="text-2xs text-muted-foreground">{t('wind.tunnel.grid_overlay')}</span>
           <Button
             variant="ghost"
             size="xs"
             onClick={() => update('showGrid', !config.showGrid)}
-            className={`text-2xs ${config.showGrid ? 'text-white' : 'text-neutral-600'}`}
+            className={`text-2xs ${config.showGrid ? 'text-foreground' : 'text-muted-foreground'}`}
             aria-label={t('wind.tunnel.toggle_grid')}
           >
             {config.showGrid ? 'ON' : 'OFF'}
           </Button>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-2xs text-neutral-500">Export Metadata</span>
+          <span className="text-2xs text-muted-foreground">Export Metadata</span>
           <Button
             variant="ghost"
             size="xs"
             onClick={() => update('exportMetadata', !config.exportMetadata)}
-            className={`text-2xs ${config.exportMetadata ? 'text-white' : 'text-neutral-600'}`}
+            className={`text-2xs ${config.exportMetadata ? 'text-foreground' : 'text-muted-foreground'}`}
           >
             {config.exportMetadata ? 'ON' : 'OFF'}
           </Button>
@@ -786,7 +796,7 @@ function ControlsContent({
           variant="ghost"
           size="xs"
           onClick={handleResetSim}
-          className="text-2xs text-neutral-500 hover:text-white w-full"
+          className="text-2xs text-muted-foreground hover:text-foreground w-full"
         >
           {t('wind.tunnel.restart_simulation')}
         </Button>
@@ -794,7 +804,7 @@ function ControlsContent({
           variant="ghost"
           size="xs"
           onClick={handleReset}
-          className="text-2xs text-neutral-500 hover:text-white w-full"
+          className="text-2xs text-muted-foreground hover:text-foreground w-full"
         >
           {t('wind.tunnel.reset_all')}
         </Button>
@@ -803,7 +813,7 @@ function ControlsContent({
             variant="ghost"
             size="xs"
             onClick={onCopyJson}
-            className="text-2xs text-neutral-500 hover:text-white flex-1 flex items-center justify-center gap-1"
+            className="text-2xs text-muted-foreground hover:text-foreground flex-1 flex items-center justify-center gap-1"
           >
             <ClipboardCopy size={9} /> Copy JSON
           </Button>
@@ -811,7 +821,7 @@ function ControlsContent({
             variant="ghost"
             size="xs"
             onClick={onPasteJson}
-            className="text-2xs text-neutral-500 hover:text-white flex-1 flex items-center justify-center gap-1"
+            className="text-2xs text-muted-foreground hover:text-foreground flex-1 flex items-center justify-center gap-1"
           >
             <ClipboardPaste size={9} /> Import JSON
           </Button>
@@ -820,7 +830,7 @@ function ControlsContent({
           variant="ghost"
           size="xs"
           onClick={onShareUrl}
-          className="text-2xs text-neutral-500 hover:text-white w-full flex items-center justify-center gap-1"
+          className="text-2xs text-muted-foreground hover:text-foreground w-full flex items-center justify-center gap-1"
         >
           <Share2 size={9} /> Share URL
         </Button>
@@ -828,7 +838,7 @@ function ControlsContent({
 
       {/* Shortcuts hint */}
       <div className="p-3 pt-0">
-        <p className="text-2xs text-neutral-700 leading-relaxed">
+        <p className="text-2xs text-muted-foreground leading-relaxed">
           Space: pause &middot; Tab: panel &middot; R: restart &middot; Ctrl+E: export &middot;
           Drag: inject &middot; Right-drag: walls &middot; Scroll: wind
         </p>
@@ -1113,8 +1123,9 @@ export function WindTunnelPage() {
     t,
   };
 
+  // Editor sempre escuro: `dark` escopa os tokens escuros (ver ToolEditorShell).
   return (
-    <AppShell>
+    <AppShell className="dark text-foreground">
       <div
         className="absolute inset-0"
         onDragOver={(e) => {
@@ -1145,7 +1156,7 @@ export function WindTunnelPage() {
                 <ChevronLeft size={14} />
               </Button>
             </Tooltip>
-            <div className="w-px h-4 bg-white/5 mx-1" />
+            <div className="w-px h-4 bg-border mx-1" />
             <MicroTitle>{t('wind.tunnel.wind_tunnel')}</MicroTitle>
           </>
         }
@@ -1183,12 +1194,12 @@ export function WindTunnelPage() {
                 </Button>
               </Tooltip>
               {showExportMenu && (
-                <div className="absolute right-0 top-full mt-1 bg-neutral-900/95 backdrop-blur-xl border border-white/10 rounded-lg overflow-hidden z-50 min-w-[120px]">
+                <div className="absolute right-0 top-full mt-1 bg-popover/95 backdrop-blur-xl border border-border rounded-xl overflow-hidden z-50 min-w-[120px]">
                   {[1, 2, 4].map((m) => (
                     <button
                       key={m}
                       onClick={() => handleExport(m)}
-                      className="w-full px-3 py-1.5 text-left text-2xs text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
+                      className="w-full px-3 py-1.5 text-left text-2xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                     >
                       {m}x {m === 1 ? '(Screen)' : m === 2 ? '(2x HD)' : '(4x Print)'}
                     </button>
@@ -1249,7 +1260,7 @@ export function WindTunnelPage() {
 
       {!isMobile && (
         <AppShellPanel visible={showPanel} width={300}>
-          <GlassPanel className="h-full overflow-y-auto backdrop-blur-xl bg-neutral-950/80 scrollbar-none rounded-xl">
+          <GlassPanel className="h-full overflow-y-auto bg-card scrollbar-none rounded-xl">
             <ControlsContent {...controlsProps} />
           </GlassPanel>
         </AppShellPanel>

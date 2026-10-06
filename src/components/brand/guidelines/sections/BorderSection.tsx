@@ -145,8 +145,8 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
                       className={cn(
                         'flex-1 h-6 rounded border text-2xs uppercase transition-colors',
                         b.style === s
-                          ? 'border-white/20 bg-white/5 text-neutral-200'
-                          : 'border-neutral-800 text-neutral-600 hover:border-white/10'
+                          ? 'border-border-hover bg-muted text-foreground'
+                          : 'border-border text-muted-foreground hover:border-border-hover'
                       )}
                     >
                       {s}
@@ -156,7 +156,7 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
                 <div className="flex items-center gap-2">
                   <div className="relative w-6 h-6 shrink-0">
                     <div
-                      className="w-full h-full rounded border border-white/10"
+                      className="w-full h-full rounded border border-border"
                       style={{ backgroundColor: b.color }}
                     />
                     <input
@@ -202,8 +202,8 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
                       className={cn(
                         'px-2 h-5 rounded border text-2xs font-mono transition-colors',
                         b.role === r
-                          ? 'border-white/20 bg-white/5 text-neutral-200'
-                          : 'border-neutral-800 text-neutral-600 hover:border-white/10'
+                          ? 'border-border-hover bg-muted text-foreground'
+                          : 'border-border text-muted-foreground hover:border-border-hover'
                       )}
                     >
                       {r}

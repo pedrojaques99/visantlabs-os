@@ -66,7 +66,7 @@ export function BrandIngestDropZone({ onFiles, disabled }: BrandIngestDropZonePr
         role="button"
         tabIndex={0}
         className={cn(
-          'relative rounded-2xl border-2 border-dashed cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          'relative rounded-xl border-2 border-dashed cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
           isDragOver ? 'border-ring bg-muted/60' : 'border-border hover:border-ring bg-muted/30',
           disabled && 'opacity-50 pointer-events-none'
         )}
@@ -83,7 +83,7 @@ export function BrandIngestDropZone({ onFiles, disabled }: BrandIngestDropZonePr
         onDrop={handleDrop}
       >
         <div className="flex flex-col items-center py-12 px-8 gap-6">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-muted">
+          <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-muted">
             <Upload size={28} className="text-muted-foreground" />
           </div>
 

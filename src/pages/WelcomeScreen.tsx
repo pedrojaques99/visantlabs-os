@@ -423,7 +423,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
       </div>
       <div className="relative z-10 max-w-2xl w-full text-center space-y-8 animate-fade-in">
         <div className="space-y-4">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+          <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-foreground">
             {t('welcome.title')}
           </h1>
           <MicroTitle className="text-muted-foreground">{t('welcome.magicHappens')}</MicroTitle>
@@ -467,7 +467,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
           {brandGuidelines.length > 0 && (
             <Link
               to="/brand-guidelines"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               <Gem size={14} className="text-foreground" />
               <span className="text-xs">{t('welcome.openBrandGuideline')}</span>

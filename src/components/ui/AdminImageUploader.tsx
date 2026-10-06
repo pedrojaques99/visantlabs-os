@@ -85,7 +85,7 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
       <div className="inline-block">
         <label
           htmlFor="admin-file-upload-compact"
-          className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 cursor-pointer transition-colors ${
+          className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs bg-muted hover:bg-accent border border-border rounded-md text-foreground cursor-pointer transition-colors ${
             isProcessing || disabled ? 'cursor-wait opacity-50' : ''
           }`}
         >
@@ -122,10 +122,10 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
         onDragOver={handleDragOver}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
-        className={`relative block w-full p-4 bg-neutral-900 border rounded-md cursor-pointer transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-300 ${
+        className={`relative block w-full p-4 bg-card border rounded-md cursor-pointer transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-300 ${
           isDragging
-            ? 'border-dashed border-2 border-neutral-600 bg-neutral-800/30 shadow-2xl shadow-black/10'
-            : 'border-neutral-800 hover:border-neutral-800/20'
+            ? 'border-dashed border-2 border-ring bg-muted/30 shadow-2xl shadow-black/10'
+            : 'border-border hover:border-border-hover'
         } ${isProcessing || disabled ? 'cursor-wait opacity-50' : ''}`}
       >
         <input
@@ -141,15 +141,18 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
             <>
               <GlitchLoader size={24} color="currentColor" />
               <div className="text-left min-w-0">
-                <p className="text-sm font-semibold text-neutral-400">Processando imagem...</p>
+                <p className="text-sm font-medium text-muted-foreground">Processando imagem...</p>
               </div>
             </>
           )}
           {!isProcessing && isDragging && (
             <>
-              <UploadCloud size={32} className="text-neutral-400 transition-colors flex-shrink-0" />
+              <UploadCloud
+                size={32}
+                className="text-muted-foreground transition-colors flex-shrink-0"
+              />
               <div className="text-left min-w-0">
-                <p className="text-sm font-semibold text-neutral-300">Enviar imagem</p>
+                <p className="text-sm font-medium text-foreground">Enviar imagem</p>
               </div>
             </>
           )}
@@ -157,11 +160,11 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
             <>
               <UploadCloud
                 size={32}
-                className="text-neutral-600 group-hover:text-neutral-400 transition-colors flex-shrink-0"
+                className="text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0"
               />
               <div className="text-left min-w-0">
-                <p className="text-sm font-semibold text-neutral-400">Enviar imagem</p>
-                <p className="text-xs text-neutral-500">
+                <p className="text-sm font-medium text-muted-foreground">Enviar imagem</p>
+                <p className="text-xs text-muted-foreground">
                   JPEG, PNG, WebP ou GIF (máx. {MAX_IMAGE_SIZE_MB}MB)
                 </p>
               </div>

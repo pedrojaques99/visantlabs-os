@@ -171,7 +171,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
             disabled={feedbackGiven !== null || isGenerating}
             className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-[color,background-color,border-color,opacity] duration-200 ${
               feedbackGiven === 'up'
-                ? 'text-brand-cyan'
+                ? 'text-foreground'
                 : theme === 'dark'
                   ? 'hover:bg-neutral-950/70 text-neutral-400 hover:text-foreground'
                   : 'hover:bg-neutral-200 text-neutral-600 hover:text-foreground'

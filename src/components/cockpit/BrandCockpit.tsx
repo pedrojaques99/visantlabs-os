@@ -71,7 +71,7 @@ const ChangeLogoDialog = lazyWithRetry(() =>
  * Shortcuts collapse into a compact footer row.
  */
 
-const cardCls = cn('rounded-2xl', glassSurface.panel);
+const cardCls = cn('rounded-xl', glassSurface.panel);
 
 /** Inner tile inside a bento card (one radius step down from the card). */
 const tileCls = cn('rounded-xl', glassSurface.tile);
@@ -567,7 +567,7 @@ export const BrandCockpit: React.FC = () => {
                     <button
                       onClick={() => setFreeMockupsOpen((v) => !v)}
                       aria-expanded={freeMockupsOpen}
-                      className="group flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted/40"
+                      className="group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-muted/40"
                     >
                       <span className="text-sm font-medium tracking-tight text-foreground">
                         {t('cockpit.surprise.title')}

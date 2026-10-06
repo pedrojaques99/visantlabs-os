@@ -320,8 +320,8 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                     className={cn(
                       'w-8 h-8 rounded-md text-2xs font-mono transition-colors duration-200 border',
                       store.colorCount === n
-                        ? 'bg-white/10 text-white border-white/20'
-                        : 'bg-neutral-900/50 text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'
+                        ? 'bg-accent text-foreground border-border'
+                        : 'bg-muted text-muted-foreground border-border hover:bg-accent'
                     )}
                   >
                     {n}
@@ -352,8 +352,8 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                         className={cn(
                           'transition-colors p-1 rounded-md',
                           store.soloLayer === i
-                            ? 'text-brand-cyan bg-brand-cyan/10'
-                            : 'text-neutral-600 hover:text-neutral-300'
+                            ? 'text-foreground bg-accent'
+                            : 'text-muted-foreground hover:text-muted-foreground'
                         )}
                       >
                         <Focus size={14} />
@@ -416,7 +416,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                         setInkSearch('');
                         setInkCategory(null);
                       }}
-                      className="flex items-center gap-1.5 text-2xs text-neutral-500 hover:text-neutral-300 transition-colors"
+                      className="flex items-center gap-1.5 text-2xs text-muted-foreground hover:text-muted-foreground transition-colors"
                     >
                       <Palette size={12} />
                       Riso Ink Catalog
@@ -433,14 +433,14 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                         <div className="relative">
                           <Search
                             size={10}
-                            className="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-600"
+                            className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
                           />
                           <input
                             type="text"
                             value={inkSearch}
                             onChange={(e) => setInkSearch(e.target.value)}
                             placeholder="Search inks..."
-                            className="w-full h-6 pl-6 pr-2 rounded-md bg-neutral-900/80 border border-neutral-800/50 text-2xs text-neutral-300 font-mono placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600"
+                            className="w-full h-6 pl-6 pr-2 rounded-md bg-muted border border-border text-2xs text-muted-foreground font-mono placeholder:text-muted-foreground focus:outline-none focus:border-ring"
                           />
                         </div>
                         <div className="flex gap-0.5 flex-wrap">
@@ -449,8 +449,8 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                             className={cn(
                               'px-1.5 h-4 rounded text-2xs font-mono border transition-colors',
                               !inkCategory
-                                ? 'bg-white/10 text-white border-white/20'
-                                : 'text-neutral-600 border-neutral-800/50 hover:text-neutral-400'
+                                ? 'bg-accent text-foreground border-border'
+                                : 'text-muted-foreground border-border hover:text-muted-foreground'
                             )}
                           >
                             All
@@ -462,8 +462,8 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                               className={cn(
                                 'px-1.5 h-4 rounded text-2xs font-mono border transition-colors',
                                 inkCategory === cat
-                                  ? 'bg-white/10 text-white border-white/20'
-                                  : 'text-neutral-600 border-neutral-800/50 hover:text-neutral-400'
+                                  ? 'bg-accent text-foreground border-border'
+                                  : 'text-muted-foreground border-border hover:text-muted-foreground'
                               )}
                             >
                               {cat}
@@ -480,16 +480,16 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                                 setInkCatalogLayer(null);
                               }}
                               className={cn(
-                                'w-6 h-6 rounded-md border transition-all hover:scale-110',
+                                'w-6 h-6 rounded-md border transition-colors',
                                 layer.hex.toLowerCase() === ink.hex.toLowerCase()
-                                  ? 'border-white ring-1 ring-white/30'
-                                  : 'border-neutral-700/50 hover:border-neutral-500'
+                                  ? 'border-ring ring-1 ring-ring/30'
+                                  : 'border-border hover:border-border-hover'
                               )}
                               style={{ backgroundColor: ink.hex }}
                             />
                           ))}
                           {filteredInks.length === 0 && (
-                            <span className="col-span-8 text-2xs text-neutral-600 font-mono py-2 text-center">
+                            <span className="col-span-8 text-2xs text-muted-foreground font-mono py-2 text-center">
                               No inks found
                             </span>
                           )}
@@ -500,7 +500,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                     {onExportLayer && (
                       <button
                         onClick={() => onExportLayer(i)}
-                        className="flex items-center gap-1.5 text-2xs text-neutral-500 hover:text-neutral-300 transition-colors"
+                        className="flex items-center gap-1.5 text-2xs text-muted-foreground hover:text-muted-foreground transition-colors"
                       >
                         <Layers size={12} />
                         Export Layer Separation
@@ -622,7 +622,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                 aria-label="Export"
                 onClick={onExport}
                 disabled={store.isExporting || !store.imageUrl}
-                className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2"
+                className="flex-1 bg-foreground hover:bg-foreground/90 text-background font-medium h-9 text-xs gap-2"
               >
                 <Download size={14} />
                 {store.isExporting ? 'Exporting...' : 'Export'}
@@ -632,7 +632,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                 onClick={() => setExportOpen(!exportOpen)}
                 disabled={!store.imageUrl}
                 variant="outline"
-                className="h-9 w-9 p-0 border-neutral-700 text-neutral-400 hover:text-white"
+                className="h-9 w-9 p-0 border-border text-muted-foreground hover:text-foreground"
               >
                 <ChevronDown
                   size={14}
@@ -646,7 +646,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                   variant="outline"
                   aria-label="Copy as PNG"
                   title="Copy as PNG"
-                  className="h-9 w-9 p-0 border-neutral-700 text-neutral-400 hover:text-white"
+                  className="h-9 w-9 p-0 border-border text-muted-foreground hover:text-foreground"
                 >
                   <Copy size={14} />
                 </Button>
@@ -654,16 +654,16 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
             </div>
 
             {exportOpen && (
-              <div className="absolute bottom-full left-0 right-0 mb-1 bg-neutral-900 border border-neutral-700 rounded-lg p-1 shadow-xl z-20 animate-fade-in">
+              <div className="absolute bottom-full left-0 right-0 mb-1 bg-popover border border-border rounded-xl p-1 shadow-xl z-20 animate-fade-in">
                 {onExportSvg && (
                   <button
                     onClick={() => {
                       onExportSvg();
                       setExportOpen(false);
                     }}
-                    className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-2xs text-neutral-300 hover:bg-neutral-800 transition-colors"
+                    className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-2xs text-muted-foreground hover:bg-accent transition-colors"
                   >
-                    <FileType size={14} className="text-neutral-500" />
+                    <FileType size={14} className="text-muted-foreground" />
                     Export SVG (Vector)
                   </button>
                 )}
@@ -673,9 +673,9 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                       onExportHiRes();
                       setExportOpen(false);
                     }}
-                    className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-2xs text-neutral-300 hover:bg-neutral-800 transition-colors"
+                    className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-2xs text-muted-foreground hover:bg-accent transition-colors"
                   >
-                    <FileImage size={14} className="text-neutral-500" />
+                    <FileImage size={14} className="text-muted-foreground" />
                     Export Hi-Res PNG (2x)
                   </button>
                 )}
@@ -693,7 +693,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
               onClick={onAiEnhance}
               disabled={isAiProcessing || !store.imageUrl}
               variant="ghost"
-              className="w-full text-neutral-400 hover:text-white h-9 text-xs gap-2"
+              className="w-full text-muted-foreground hover:text-foreground h-9 text-xs gap-2"
             >
               {isAiProcessing ? (
                 <>

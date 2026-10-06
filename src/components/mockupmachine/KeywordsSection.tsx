@@ -34,23 +34,14 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
     <div
       className={cn(
         'rounded-xl border p-3 transition-colors duration-200 cursor-pointer space-y-2',
-        theme === 'dark'
-          ? 'bg-neutral-900/30 border-neutral-800/50 hover:bg-neutral-900/50'
-          : 'bg-white/50 border-neutral-200 hover:bg-white/70'
+        'bg-card border-border hover:bg-accent'
       )}
       onClick={() => setIsSearchVisible(true)}
     >
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
-          <Grid3x3
-            size={12}
-            className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-          />
-          <span
-            className={cn('text-2xs', theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600')}
-          >
-            {t('mockup.tags')}
-          </span>
+          <Grid3x3 size={12} className="text-muted-foreground" />
+          <span className={cn('text-2xs', 'text-muted-foreground')}>{t('mockup.tags')}</span>
         </div>
         <Button
           variant="ghost"
@@ -62,7 +53,7 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
           className={cn(
             'p-1 rounded-md transition-colors',
             theme === 'dark'
-              ? 'hover:bg-white/10 text-neutral-500 hover:text-foreground'
+              ? 'hover:bg-accent text-neutral-500 hover:text-foreground'
               : 'hover:bg-neutral-100 text-neutral-500 hover:text-foreground'
           )}
         >
@@ -85,20 +76,13 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
             }}
             className={cn(
               'h-9 text-sm rounded-md border transition-[color,background-color,border-color,box-shadow] duration-200 focus:ring-1',
-              theme === 'dark'
-                ? 'bg-black/20 border-white/10 text-neutral-200 placeholder:text-neutral-600 focus:border-neutral-600 focus:ring-brand-cyan/20 shadow-inner'
-                : 'bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-600 focus:ring-brand-cyan/20 shadow-inner'
+              'bg-background border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-brand-cyan/20 shadow-inner'
             )}
           />
           {/* Smart Suggestions as Badges */}
           {displaySuggestedTags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-1">
-              <span
-                className={cn(
-                  'text-2xs self-center mr-1',
-                  theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-                )}
-              >
+              <span className={cn('text-2xs self-center mr-1', 'text-muted-foreground')}>
                 Sugestões:
               </span>
               {displaySuggestedTags.slice(0, 5).map((tag) => (

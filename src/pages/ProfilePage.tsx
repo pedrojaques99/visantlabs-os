@@ -317,8 +317,8 @@ export const ProfilePage: React.FC = () => {
 
             <SecuritySettings totpEnabled={user?.totpEnabled} />
 
-            <div className="p-5 border border-destructive/20 rounded-2xl bg-destructive/5">
-              <h3 className="text-sm font-semibold text-destructive mb-2 flex items-center gap-2">
+            <div className="p-5 border border-destructive/20 rounded-xl bg-destructive/5">
+              <h3 className="text-sm font-medium text-destructive mb-2 flex items-center gap-2">
                 <Trash2 size={14} /> {t('profile.danger.title')}
               </h3>
               <p className="text-xs text-muted-foreground mb-4 max-w-md">

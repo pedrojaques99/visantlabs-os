@@ -149,15 +149,15 @@ ${message}
       onClick={handleClose}
     >
       <div
-        className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 w-full max-w-lg mx-4 shadow-xl"
+        className="bg-card border border-border rounded-md p-6 w-full max-w-lg mx-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-neutral-200">{t('support.title')}</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t('support.title')}</h2>
           <Button
             variant="ghost"
             onClick={handleClose}
-            className="text-neutral-500 hover:text-neutral-300 transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
             aria-label={t('common.close')}
           >
             <X size={20} />
@@ -167,7 +167,7 @@ ${message}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Contact Type Selection */}
           <div>
-            <label className="block text-xs text-neutral-400 mb-2">
+            <label className="block text-xs text-muted-foreground mb-2">
               {t('support.contactType')}
             </label>
             <div className="flex gap-2">
@@ -177,8 +177,8 @@ ${message}
                 onClick={() => setContactType('customerService')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-colors text-sm ${
                   contactType === 'customerService'
-                    ? 'bg-brand-cyan/20 border-neutral-600/50 text-brand-cyan'
-                    : 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400 hover:border-neutral-600'
+                    ? 'bg-brand-cyan/20 border-ring text-brand-cyan'
+                    : 'bg-background/70 border-border text-muted-foreground hover:border-border-hover'
                 }`}
               >
                 <MessageCircle size={16} />
@@ -190,8 +190,8 @@ ${message}
                 onClick={() => setContactType('reportBug')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-colors text-sm ${
                   contactType === 'reportBug'
-                    ? 'bg-brand-cyan/20 border-neutral-600/50 text-brand-cyan'
-                    : 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400 hover:border-neutral-600'
+                    ? 'bg-brand-cyan/20 border-ring text-brand-cyan'
+                    : 'bg-background/70 border-border text-muted-foreground hover:border-border-hover'
                 }`}
               >
                 <Bug size={16} />
@@ -202,9 +202,11 @@ ${message}
 
           {/* Name Field */}
           <div>
-            <label className="block text-xs text-neutral-400 mb-1">
+            <label className="block text-xs text-muted-foreground mb-1">
               {t('support.name')}{' '}
-              {!userName && <span className="text-neutral-600">({t('support.optional')})</span>}
+              {!userName && (
+                <span className="text-muted-foreground">({t('support.optional')})</span>
+              )}
             </label>
             <Input
               type="text"
@@ -216,9 +218,11 @@ ${message}
 
           {/* Email Field */}
           <div>
-            <label className="block text-xs text-neutral-400 mb-1">
+            <label className="block text-xs text-muted-foreground mb-1">
               {t('support.email')}{' '}
-              {!userEmail && <span className="text-neutral-600">({t('support.optional')})</span>}
+              {!userEmail && (
+                <span className="text-muted-foreground">({t('support.optional')})</span>
+              )}
             </label>
             <Input
               type="email"
@@ -231,7 +235,7 @@ ${message}
 
           {/* Subject Field */}
           <div>
-            <label className="block text-xs text-neutral-400 mb-1">
+            <label className="block text-xs text-muted-foreground mb-1">
               {t('support.subject')} <span className="text-destructive">*</span>
             </label>
             <Input
@@ -245,7 +249,7 @@ ${message}
 
           {/* Message Field */}
           <div>
-            <label className="block text-xs text-neutral-400 mb-1">
+            <label className="block text-xs text-muted-foreground mb-1">
               {t('support.message')} <span className="text-destructive">*</span>
             </label>
             <Textarea
@@ -253,13 +257,13 @@ ${message}
               onChange={(e) => setMessage(e.target.value)}
               required
               rows={6}
-              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 resize-none"
+              className="w-full bg-background/70 p-2 rounded-md border border-border focus:outline-none focus:border-ring focus:ring-0 text-sm text-foreground resize-none"
               placeholder={t('support.messagePlaceholder')}
             />
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-800/50">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
             <Button variant="surface" type="button" onClick={handleClose} className="text-xs">
               {t('common.cancel')}
             </Button>
@@ -267,7 +271,7 @@ ${message}
               variant="brand"
               type="submit"
               disabled={isSubmitting || !subject.trim() || !message.trim()}
-              className="text-xs font-semibold"
+              className="text-xs"
             >
               {isSubmitting ? (
                 <>

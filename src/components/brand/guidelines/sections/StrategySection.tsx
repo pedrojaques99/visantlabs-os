@@ -13,6 +13,7 @@ import {
 import { Compass, Plus, Trash2 } from '@/lib/ui/icons';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { ARCHETYPE_PRESETS } from '@/constants/archetypeImages';
+import { Thumb } from '@/components/ui/Thumb';
 
 interface StrategySectionProps {
   guideline: BrandGuideline;
@@ -116,7 +117,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                       persist(next);
                     }}
                   >
-                    <img
+                    <Thumb
                       src={preset.image}
                       alt={preset.nome}
                       className="w-7 h-9 object-cover rounded shrink-0"
@@ -147,7 +148,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                 className="flex gap-3 items-start py-2 border-b border-neutral-800 last:border-0 group/item"
               >
                 {img && (
-                  <img
+                  <Thumb
                     src={img}
                     alt={arch.name}
                     className="w-8 h-10 object-cover rounded shrink-0 opacity-80"

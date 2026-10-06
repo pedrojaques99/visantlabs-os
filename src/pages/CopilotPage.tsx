@@ -46,17 +46,19 @@ const CopilotLockedPreview: React.FC = () => {
   return (
     <div className="flex-1 overflow-y-auto flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-2xl flex flex-col items-center gap-8 text-center">
-        <div className="w-16 h-16 rounded-2xl border border-neutral-800 bg-neutral-900 flex items-center justify-center">
-          <Zap size={28} className="text-neutral-400" />
+        <div className="w-16 h-16 rounded-xl border border-border bg-card flex items-center justify-center">
+          <Zap size={28} className="text-muted-foreground" />
         </div>
 
         <div className="space-y-3">
-          <span className="inline-flex items-center gap-1.5 text-2xs font-medium px-2.5 py-1 rounded-full bg-white/5 border border-neutral-800 text-neutral-400 uppercase tracking-wider">
+          <span className="inline-flex items-center gap-1.5 text-2xs font-medium px-2.5 py-1 rounded-full bg-muted border border-border text-muted-foreground">
             <Lock size={10} />
             {t('copilot.locked.badge')}
           </span>
-          <h1 className="text-2xl md:text-3xl font-bold text-white">{t('copilot.title')}</h1>
-          <p className="text-sm text-neutral-400 leading-relaxed max-w-md mx-auto">
+          <h1 className="text-2xl md:text-3xl font-semibold text-foreground">
+            {t('copilot.title')}
+          </h1>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
             {t('copilot.locked.subtitle')}
           </p>
         </div>
@@ -65,14 +67,14 @@ const CopilotLockedPreview: React.FC = () => {
           {capabilities.map(({ icon: Icon, title, desc }) => (
             <div
               key={title}
-              className={cn('rounded-2xl p-5 text-left space-y-3', glassSurface.panel)}
+              className={cn('rounded-xl p-5 text-left space-y-3', glassSurface.panel)}
             >
-              <div className="p-2 rounded-xl bg-white/5 border border-neutral-800 w-fit">
-                <Icon size={16} className="text-neutral-400" />
+              <div className="p-2 rounded-xl bg-muted border border-border w-fit">
+                <Icon size={16} className="text-muted-foreground" />
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-neutral-200">{title}</p>
-                <p className="text-xs text-neutral-500 leading-relaxed">{desc}</p>
+                <p className="text-sm font-medium text-foreground">{title}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
               </div>
             </div>
           ))}
@@ -172,7 +174,7 @@ export const CopilotPage: React.FC = () => {
             wsPath="/copilot/ws"
             sessionsQueryKey="copilot-sessions"
             feature="copilot"
-            sidebarIcon={<Zap className="h-4 w-4 text-neutral-400" />}
+            sidebarIcon={<Zap className="h-4 w-4 text-muted-foreground" />}
             strings={strings}
             suggestions={suggestions}
             initialInput={initialPrompt}

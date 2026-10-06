@@ -343,7 +343,7 @@ export const CreativeStudio: React.FC = () => {
                   'px-3 py-1.5 rounded-full border text-xs font-medium transition-colors flex items-center gap-2',
                   activeTool === 'lasso'
                     ? 'border-brand-cyan/60 bg-brand-cyan/20 text-brand-cyan'
-                    : 'border-white/10 bg-neutral-900/60 text-neutral-400 hover:text-white hover:border-white/20'
+                    : 'border-border bg-neutral-900/60 text-neutral-400 hover:text-white hover:border-border-hover'
                 )}
                 title="Laço: selecionar região para editar com IA"
               >
@@ -351,7 +351,7 @@ export const CreativeStudio: React.FC = () => {
               </button>
               <button
                 onClick={() => setStatus('setup')}
-                className="px-4 py-1.5 rounded-full border border-white/10 bg-neutral-900/60 text-xs font-medium text-neutral-300 hover:text-white hover:border-white/20 transition-colors flex items-center gap-2"
+                className="px-4 py-1.5 rounded-full border border-border bg-neutral-900/60 text-xs font-medium text-neutral-300 hover:text-white hover:border-border-hover transition-colors flex items-center gap-2"
               >
                 <Diamond size={12} /> Gerar novo
               </button>

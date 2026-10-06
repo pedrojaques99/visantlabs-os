@@ -33,7 +33,7 @@ export const ApplyBrandButton: React.FC<{
       onClick={() => onApply(presets)}
       title={presets.join(', ')}
       className={cn(
-        'flex items-center gap-1.5 text-2xs text-neutral-500 hover:text-foreground transition-colors',
+        'flex items-center gap-1.5 text-2xs text-muted-foreground hover:text-foreground transition-colors',
         className
       )}
     >
@@ -41,7 +41,7 @@ export const ApplyBrandButton: React.FC<{
         {presets.slice(0, 4).map((c, i) => (
           <span
             key={`${c}-${i}`}
-            className="w-2.5 h-2.5 rounded-full border border-neutral-950"
+            className="w-2.5 h-2.5 rounded-full border border-border"
             style={{ backgroundColor: c }}
           />
         ))}
@@ -67,7 +67,7 @@ export const BrandSwatchRow: React.FC<{
   if (!presets.length) return null;
   return (
     <div className={cn('space-y-1', className)}>
-      <span className="text-3xs text-neutral-600">{t('common.brand')}</span>
+      <span className="text-3xs text-muted-foreground">{t('common.brand')}</span>
       <div className="flex gap-1.5 flex-wrap">
         {presets.map((c, i) => (
           <button
@@ -82,8 +82,8 @@ export const BrandSwatchRow: React.FC<{
             className={cn(
               'w-5 h-5 rounded-full border transition-colors',
               current?.toLowerCase() === c.toLowerCase()
-                ? 'border-white/40 ring-1 ring-white/20'
-                : 'border-white/10 hover:border-white/20'
+                ? 'border-ring ring-1 ring-ring/50'
+                : 'border-border hover:border-border-hover'
             )}
             style={{ backgroundColor: c }}
           />

@@ -294,7 +294,7 @@ export const ShaderControlsSidebar = ({
               </div>
               {/* Shader Type Select */}
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-neutral-500">
+                <label className="text-xs font-medium text-neutral-500">
                   {t('shaderControls.shaderType')}
                 </label>
                 <Select
@@ -327,7 +327,7 @@ export const ShaderControlsSidebar = ({
               {/* Halftone Variant Select (only when halftone is selected) */}
               {shaderType === 'halftone' && (
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-neutral-500">
+                  <label className="text-xs font-medium text-neutral-500">
                     {t('shaderControls.halftoneVariant')}
                   </label>
                   <Select
@@ -442,19 +442,17 @@ export const ShaderControlsSidebar = ({
                 <>
                   {/* Animation Toggle Button */}
                   <div className="flex items-center justify-between py-1">
-                    <label className="text-xs font-semibold text-neutral-500">
+                    <label className="text-xs font-medium text-neutral-500">
                       {t('shaderControls.labels.animation')}
                     </label>
                     <Button
-                      variant="brand"
+                      variant="surface"
+                      size="xs"
                       onClick={toggleAnimation}
+                      aria-pressed={isAnimating}
                       className={cn(
-                        'flex items-center gap-2 px-3 py-1.5 rounded',
-                        'border transition-colors',
-                        'text-xs',
-                        isAnimating
-                          ? 'bg-neutral-700/50 border-neutral-600/50 text-neutral-300 hover:bg-neutral-600/50'
-                          : 'bg-neutral-800/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-700/50 hover:border-neutral-600/50'
+                        'gap-2 px-3 text-xs',
+                        isAnimating ? 'bg-muted text-foreground' : 'text-muted-foreground'
                       )}
                       title={
                         isAnimating
@@ -552,7 +550,7 @@ export const ShaderControlsSidebar = ({
               {shaderType === 'ascii' && (
                 <>
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-neutral-500">
+                    <label className="text-xs font-medium text-neutral-500">
                       {t('shaderControls.labels.characterSet')}
                     </label>
                     <Select
@@ -617,7 +615,7 @@ export const ShaderControlsSidebar = ({
                   />
 
                   <div className="flex items-center justify-between py-1">
-                    <label className="text-xs font-semibold text-neutral-500">
+                    <label className="text-xs font-medium text-neutral-500">
                       {t('shaderControls.labels.colored')}
                     </label>
                     <Button
@@ -641,7 +639,7 @@ export const ShaderControlsSidebar = ({
                   </div>
 
                   <div className="flex items-center justify-between py-1">
-                    <label className="text-xs font-semibold text-neutral-500">
+                    <label className="text-xs font-medium text-neutral-500">
                       {t('shaderControls.labels.invert')}
                     </label>
                     <Button
@@ -670,7 +668,7 @@ export const ShaderControlsSidebar = ({
               {shaderType === 'matrixDither' && (
                 <>
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-neutral-500">
+                    <label className="text-xs font-medium text-neutral-500">
                       {t('shaderControls.labels.matrixSize')}
                     </label>
                     <Select
@@ -765,7 +763,7 @@ export const ShaderControlsSidebar = ({
                   />
 
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-neutral-500">
+                    <label className="text-xs font-medium text-neutral-500">
                       {t('shaderControls.labels.palette')}
                     </label>
                     <Select
@@ -793,7 +791,7 @@ export const ShaderControlsSidebar = ({
                 <>
                   {/* Shadow Color Picker */}
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-neutral-500">
+                    <label className="text-xs font-medium text-neutral-500">
                       {t('shaderControls.labels.shadowColor')}
                     </label>
                     <div className="flex items-center gap-2">
@@ -853,7 +851,7 @@ export const ShaderControlsSidebar = ({
 
                   {/* Highlight Color Picker */}
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-neutral-500">
+                    <label className="text-xs font-medium text-neutral-500">
                       {t('shaderControls.labels.highlightColor')}
                     </label>
                     <div className="flex items-center gap-2">

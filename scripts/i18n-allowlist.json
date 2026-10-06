@@ -83,7 +83,10 @@
     "playground.suggestions.${key}.label",
     "playground.suggestions.${key}.prompt",
     "playground.tabs.${tab}",
-    "canvasNodes.customNode.placeholder.${placeholderKey}"
+    "canvasNodes.customNode.placeholder.${placeholderKey}",
+    "miniTools.og.templates.${tpl}",
+    "mockup.card.imageStep${n}",
+    "mockup.card.promptStep${n}"
   ],
   "comments": {
     "${...}": "All ${...} entries are dynamic key construction — t('prefix.' + var). Their resolved keys must be defined in the locale (we can't validate that statically).",

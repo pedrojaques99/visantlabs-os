@@ -126,7 +126,9 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
   );
 
   return (
-    <AppShell className={className}>
+    // AppShell's base surface is the always-dark editor canvas; mini-tools are
+    // tokenized, so they take the theme background.
+    <AppShell className={cn('bg-background', className)}>
       <AppShellTopBar
         left={
           inShell ? null : (
@@ -206,7 +208,7 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
         <AppShellPanel side="right" visible={panelVisible} width={panelWidth}>
           <div
             className={cn(
-              'h-full overflow-y-auto scrollbar-none rounded-2xl p-5',
+              'h-full overflow-y-auto scrollbar-none rounded-xl p-5',
               glassSurface.panel
             )}
           >

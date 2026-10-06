@@ -129,7 +129,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
           <Input
             value={local.name}
             onChange={(e) => update({ name: e.target.value })}
-            className="h-7 text-sm font-semibold bg-transparent border-none px-0 text-neutral-100 focus-visible:ring-0 placeholder:text-neutral-700"
+            className="h-7 text-sm font-medium bg-transparent border-none px-0 text-foreground focus-visible:ring-0 placeholder:text-muted-foreground"
             placeholder="Name"
           />
         </div>

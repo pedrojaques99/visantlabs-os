@@ -246,9 +246,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                       onKeyDown={handleNameKeyDown}
                       onFocus={(e) => e.target.select()}
                       placeholder={t('branding.projectNamePlaceholder')}
-                      className={`flex-1 text-xl md:text-2xl font-semibold font-manrope bg-transparent border-b-2 border-neutral-600/50 focus:border-neutral-600 focus:outline-none pb-1 transition-colors ${
-                        theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-                      }`}
+                      className="flex-1 text-xl md:text-2xl font-semibold font-manrope bg-transparent border-b-2 border-neutral-600/50 focus:border-neutral-600 focus:outline-none pb-1 transition-colors text-foreground"
                       autoFocus
                     />
                     <Button
@@ -277,9 +275,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                     {localProjectName ? (
                       <>
                         <h2
-                          className={`text-xl md:text-2xl font-semibold font-manrope cursor-pointer hover:text-foreground transition-colors truncate ${
-                            theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-                          }`}
+                          className="text-xl md:text-2xl font-semibold font-manrope cursor-pointer hover:text-foreground transition-colors truncate text-foreground"
                           onClick={() => setIsEditingName(true)}
                           title={localProjectName}
                         >
@@ -293,20 +289,14 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                           }`}
                           title={t('branding.editProjectName')}
                         >
-                          <Edit2
-                            className={`h-4 w-4 hover:text-foreground ${
-                              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                            }`}
-                          />
+                          <Edit2 className="h-4 w-4 hover:text-foreground text-muted-foreground" />
                         </Button>
                       </>
                     ) : (
                       <Button
                         variant="ghost"
                         onClick={() => setIsEditingName(true)}
-                        className={`text-xl md:text-2xl font-semibold font-manrope hover:text-foreground transition-colors ${
-                          theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
-                        }`}
+                        className="text-xl md:text-2xl font-semibold font-manrope hover:text-foreground transition-colors text-muted-foreground"
                       >
                         {t('branding.projectNamePlaceholder')}
                       </Button>
@@ -320,7 +310,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                     variant="ghost"
                     onClick={onGenerateAll}
                     disabled={generatingSteps.size > 0}
-                    className={`px-4 py-2 border rounded-xl text-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:border-neutral-600/50 hover:text-foreground ${
+                    className={`px-4 py-2 border rounded-xl text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:border-neutral-600/50 hover:text-foreground ${
                       theme === 'dark'
                         ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300 disabled:border-neutral-800/30 disabled:text-neutral-600'
                         : 'bg-neutral-100 border-neutral-300 text-neutral-800 disabled:border-neutral-200 disabled:text-neutral-400'
@@ -333,7 +323,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                 <Button
                   variant="ghost"
                   onClick={handleGeneratePDF}
-                  className={`px-4 py-2 border rounded-xl text-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 hover:border-neutral-600/50 hover:text-foreground ${
+                  className={`px-4 py-2 border rounded-xl text-sm transition-colors flex items-center gap-2 hover:border-neutral-600/50 hover:text-foreground ${
                     theme === 'dark'
                       ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
                       : 'bg-neutral-100 border-neutral-300 text-neutral-800'

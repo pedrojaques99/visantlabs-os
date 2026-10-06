@@ -112,7 +112,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
             {selectedBrandGuideline ? (
               <div className="flex items-center gap-2">
                 {selectedGuidelineObj?.logos?.[0]?.url && (
-                  <div className="w-4 h-4 rounded-sm overflow-hidden border border-white/10 shrink-0">
+                  <div className="w-4 h-4 rounded-md overflow-hidden border border-border shrink-0">
                     <Thumb
                       src={selectedGuidelineObj.logos[0].url}
                       alt=""
@@ -120,7 +120,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
                     />
                   </div>
                 )}
-                <span className="text-2xs text-foreground truncate max-w-[150px] font-semibold">
+                <span className="text-2xs text-foreground truncate max-w-[150px] font-medium">
                   {selectedGuidelineObj?.identity?.name || t('mockup.unnamedBrand')}
                 </span>
               </div>
@@ -219,7 +219,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
                         {/* Brand Thumbnail */}
                         <div
                           className={cn(
-                            'w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center border shrink-0 transition-[color,background-color,border-color,box-shadow,opacity] duration-300',
+                            'w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center border shrink-0 transition-[color,background-color,border-color,box-shadow,opacity] duration-300',
                             'border-neutral-800 bg-neutral-950/50'
                           )}
                         >
@@ -232,7 +232,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
                           ) : (
                             <span
                               className={cn(
-                                'text-lg font-bold',
+                                'text-lg font-medium',
                                 selectedBrandGuideline === g.id
                                   ? 'text-foreground'
                                   : 'text-neutral-600'
@@ -244,9 +244,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
                         </div>
 
                         <div className="flex flex-col truncate">
-                          <span className="truncate font-semibold text-2xs mb-0.5">
-                            {brandName}
-                          </span>
+                          <span className="truncate font-medium text-2xs mb-0.5">{brandName}</span>
                           {g.identity?.tagline && (
                             <span className="truncate text-2xs text-neutral-500">
                               {g.identity.tagline}
@@ -265,7 +263,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
                       onClick={(e) => handleEditGuideline(e, g)}
                       className={cn(
                         hoverReveal,
-                        'absolute right-4 top-1/2 -translate-y-1/2 p-2 text-neutral-600 hover:text-foreground bg-neutral-950/80 rounded-lg border border-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                        'absolute right-4 top-1/2 -translate-y-1/2 p-2 text-neutral-600 hover:text-foreground bg-neutral-950/80 rounded-xl border border-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
                       )}
                       title={t('common.edit')}
                       aria-label={t('common.edit')}
@@ -292,7 +290,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
           <div className="pt-2 border-t border-neutral-800">
             <button
               onClick={handleOpenCreate}
-              className="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-brand-cyan text-black hover:bg-brand-cyan/90 transition-colors text-xs font-semibold"
+              className="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-brand-cyan text-black hover:bg-brand-cyan/90 transition-colors text-xs font-medium"
             >
               <Plus size={16} strokeWidth={3} />
               {t('mockup.createNewBrandGuideline')}

@@ -99,7 +99,7 @@ export const PlaygroundSharedPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="h-[100dvh] flex items-center justify-center bg-neutral-950 pt-14">
+      <div className="h-[100dvh] flex items-center justify-center bg-background pt-14">
         <GlitchLoader size="md" />
       </div>
     );
@@ -107,8 +107,8 @@ export const PlaygroundSharedPage: React.FC = () => {
 
   if (error || !miniApp) {
     return (
-      <div className="h-[100dvh] flex flex-col items-center justify-center bg-neutral-950 pt-14 gap-4">
-        <p className="text-sm text-neutral-500">{error || 'Not found'}</p>
+      <div className="h-[100dvh] flex flex-col items-center justify-center bg-background pt-14 gap-4">
+        <p className="text-sm text-muted-foreground">{error || 'Not found'}</p>
         <Button variant="surface" size="sm" onClick={() => navigate('/playground/explore')}>
           Explore MiniApps
         </Button>
@@ -119,22 +119,22 @@ export const PlaygroundSharedPage: React.FC = () => {
   const spec = miniApp.spec as Spec;
 
   return (
-    <div className="h-[100dvh] w-full flex flex-col bg-neutral-950 pt-10 md:pt-14">
+    <div className="h-[100dvh] w-full flex flex-col bg-background pt-10 md:pt-14">
       {/* Top bar */}
-      <div className="shrink-0 flex items-center h-12 px-4 border-b border-white/10 gap-3">
+      <div className="shrink-0 flex items-center h-12 px-4 border-b border-border gap-3">
         <button
           onClick={() => navigate('/playground/explore')}
-          className="p-1.5 rounded-md text-neutral-500 hover:text-neutral-300 transition-colors"
+          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-sm font-semibold text-neutral-200 truncate">{miniApp.title}</h1>
+          <h1 className="text-sm font-semibold text-foreground truncate">{miniApp.title}</h1>
           {miniApp.author?.name && (
-            <span className="text-2xs text-neutral-600">by {miniApp.author.name}</span>
+            <span className="text-2xs text-muted-foreground">by {miniApp.author.name}</span>
           )}
         </div>
-        <div className="flex items-center gap-3 text-2xs text-neutral-600">
+        <div className="flex items-center gap-3 text-2xs text-muted-foreground">
           <span className="inline-flex items-center gap-1">
             <Eye className="w-3 h-3" /> {miniApp.viewsCount}
           </span>
@@ -142,10 +142,10 @@ export const PlaygroundSharedPage: React.FC = () => {
         <button
           onClick={handleLike}
           className={cn(
-            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-colors',
+            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs transition-colors',
             liked
               ? 'text-destructive bg-destructive/10'
-              : 'text-neutral-400 hover:text-destructive hover:bg-white/5'
+              : 'text-muted-foreground hover:text-destructive hover:bg-accent'
           )}
         >
           <Heart className="w-3.5 h-3.5" fill={liked ? 'currentColor' : 'none'} />

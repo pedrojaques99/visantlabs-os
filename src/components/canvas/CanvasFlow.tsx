@@ -903,20 +903,20 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
 
       {/* File processing overlay */}
       {isProcessingFiles && (
-        <div className="absolute inset-0 z-[9999] pointer-events-none flex items-center justify-center bg-neutral-950/80 backdrop-blur-md">
+        <div className="absolute inset-0 z-[9999] pointer-events-none flex items-center justify-center bg-background/80 backdrop-blur-md">
           <div className="text-center">
             <div className="w-20 h-20 mx-auto mb-4 rounded-full border-4 border-t-neutral-400 border-r-neutral-400 border-b-transparent border-l-transparent animate-spin" />
-            <h3 className="text-xl font-bold mb-2 text-neutral-200">
+            <h3 className="text-xl font-semibold mb-2 text-foreground">
               {t('canvas.processingFiles')}
             </h3>
-            <p className="text-white/80">
+            <p className="text-foreground">
               {t('canvas.processingProgress', {
                 current: processingProgress.current,
                 total: processingProgress.total,
               })}
             </p>
             {processingProgress.fileName && (
-              <p className="text-sm text-white/60 mt-1 truncate max-w-[200px] mx-auto">
+              <p className="text-sm text-muted-foreground mt-1 truncate max-w-[200px] mx-auto">
                 {processingProgress.fileName}
               </p>
             )}
@@ -1189,7 +1189,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
           }}
         >
           <div className="w-5 h-5 rounded-full flex items-center justify-center bg-neutral-700/50 border-[1.5px] border-neutral-500/60">
-            <span className="text-xs font-bold text-neutral-300 leading-none">+</span>
+            <span className="text-xs font-medium text-neutral-300 leading-none">+</span>
           </div>
         </div>
       )}

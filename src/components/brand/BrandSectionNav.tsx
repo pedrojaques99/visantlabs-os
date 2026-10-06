@@ -48,7 +48,7 @@ export const BrandSectionNav: React.FC<BrandSectionNavProps> = ({
       onClick={() => onTabChange(tab.id)}
       aria-current={activeTab === tab.id ? 'true' : undefined}
       className={cn(
-        'rounded-lg text-xs font-medium transition-colors',
+        'rounded-xl text-xs font-medium transition-colors',
         variant === 'mobile' ? 'px-3 py-1.5 whitespace-nowrap shrink-0' : 'px-4 py-2',
         activeTab === tab.id
           ? 'bg-[var(--accent)] text-[var(--accent-text)]'

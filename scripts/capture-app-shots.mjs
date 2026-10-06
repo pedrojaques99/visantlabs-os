@@ -1,18 +1,28 @@
 #!/usr/bin/env node
 /**
- * capture-app-shots — prints reais dos apps pra landing, em vez de thumb gerada por IA.
+ * capture-app-shots — prints reais dos apps (landing + capas da /apps), em vez
+ * de thumb gerada por IA ou ilustração geométrica.
  *
  * Por que existe: capturar pelo browser do usuário amarra o print à resolução
  * física do monitor (1366x768 aqui) e ainda deixa nome e créditos do dono na
  * tela. Headless resolve os dois: viewport arbitrário, escala 2x, e o recorte
  * por rota tira o chrome do app junto com o dado pessoal.
  *
- *   node scripts/capture-app-shots.mjs                  # tudo, pro scratchpad
+ *   node scripts/capture-app-shots.mjs                  # tudo, pro .tmp-shots
  *   node scripts/capture-app-shots.mjs --only=canvas,3d-studio
  *   node scripts/capture-app-shots.mjs --out=public/tools --webp   # publica
+ *   node scripts/capture-app-shots.mjs --full           # viewport inteiro, sem recorte (depurar)
  *   node scripts/capture-app-shots.mjs --headed         # pra depurar seletor
+ *   node scripts/capture-app-shots.mjs --list           # lista os prints disponíveis
+ *
+ *   CAPTURE_BASE=http://localhost:5199 node scripts/capture-app-shots.mjs ...
  *
  * Sem --out ele NÃO toca em public/. Publicar é passo explícito.
+ *
+ * Portão de custo (LEI: toda chamada de IA contabiliza): durante a captura,
+ * toda requisição /api que não seja GET é ABORTADA no browser. O print é de
+ * leitura: não gera, não salva, não cobra. O que foi barrado sai no log da
+ * rota, pra ninguém confundir tela vazia com bug.
  */
 import { chromium } from 'playwright';
 import sharp from 'sharp';
@@ -25,41 +35,87 @@ const flag = (name) => argv.find((a) => a.startsWith(`--${name}=`))?.split('=')[
 const has = (name) => argv.includes(`--${name}`);
 
 const OUT = flag('out') || path.join(process.cwd(), '.tmp-shots');
-const ONLY = flag('only')?.split(',').map((s) => s.trim());
+const ONLY = flag('only')
+  ?.split(',')
+  .map((s) => s.trim());
 const AS_WEBP = has('webp');
+const FULL = has('full');
 const SCALE = Number(flag('scale') || 2);
 const MAX_W = Number(flag('max') || 1400);
 
-// Viewport de captura. Grande de propósito: o recorte de cada rota é um
-// pedaço disto, e sobra resolução pra tela retina depois do downscale.
-const VIEWPORT = { width: 1680, height: 1050 };
+// Recorte: IGUAL pra todas as capas. A área útil do app (sem topbar, onde
+// moram nome, avatar e créditos, e sem o rail da esquerda) sai sempre com
+// 1680x1050 CSS px, que já é 16:10 — a proporção da capa na /apps
+// (MediaTile aspectRatio={16/10}). Mesmo tamanho = mesma escala de UI no
+// card, que é o que fazia as capas antigas não conversarem entre si.
+const AREA = { width: 1680, height: 1050 };
+// Topbar mede 48px (shell) ou 56px (mini-app): +57 cobre as duas.
+const TOP = 57;
+// Viewport base. Tela COM rail ganha a largura do rail (medida em runtime)
+// antes do print, então o conteúdo fica com os mesmos 1680px das sem rail.
+const VIEWPORT = { width: AREA.width, height: AREA.height + TOP };
+
+// Arquivos de exemplo pros mini-tools. Neutros e do próprio repo: a foto é a
+// cena genérica de prova (sem marca de cliente, sem rosto em foco), o SVG é a
+// textura da própria Visant e o PNG é o ícone do Labs (com transparência, que
+// é o que favicon/watermark/remove-bg precisam pra mostrar resultado).
+const SAMPLE = {
+  photo: 'public/proof/generic.jpg',
+  svg: 'public/textures/visant-grid.svg',
+  icon: 'public/logo-vsn-labs.png',
+};
+
+// Botão primário "processar" da sidebar do MiniAppShell: w-full text-xs com
+// o rótulo em <span class="ml-2">. Só "w-full" pegava "Marcar foco" no
+// remove-bg e "Repetir em mosaico" no watermark.
+const PROCESS_BTN = 'button.w-full.text-xs:has(> span.ml-2):not([disabled])';
 
 /**
- * Uma entrada por thumb da landing. `file` casa com /tools/<file>.webp.
+ * Uma entrada por capa. `file` casa com /tools/<file>.webp, que é o nome que
+ * a AppsPage (e a landing) já referenciam.
  *
- * clip: fração do viewport (0..1), não pixel — assim mexer no VIEWPORT não
- * quebra todos os recortes de uma vez.
- * ratio: proporção alvo do card na landing (o bento é ~3:2, o marquee ~16:10).
+ * O recorte não é por rota: mede topbar e rail no DOM (ver chromeBox).
+ * upload: arquivo carregado pelo input file real do Dropzone.
+ * process: seletor clicado depois do upload. SÓ em ferramenta que roda no
+ *   browser (canvas/shader/wasm). Rota que chama IA paga não tem `process`.
+ * mock: { caminho: json } — resposta GET fixa, pra pular estado que
+ *   dispararia geração ao montar.
+ * type: [{ sel, text, enter }] — preenche campo antes do print (ferramenta
+ *   que sem entrada é tela vazia: qrcode, color-converter).
+ * draw: traça pinceladas no <canvas> (grid-paint não tem upload).
  */
 const SHOTS = [
+  // ── Pro ────────────────────────────────────────────────────────────────
+  {
+    file: 'mockup-machine',
+    route: '/mockupmachine',
+    // SEM upload: o upload dispara aiApi.analyzeSetup (Gemini, pago) sozinho.
+    // A capa é a ferramenta em repouso.
+    settle: 3500,
+  },
+  {
+    file: 'branding-machine',
+    resolve: async (api) => {
+      // O mais completo, não o mais recente: projeto com etapa faltando mostra
+      // fileira de pílulas vermelhas "Bloqueado", que lê como erro na capa.
+      const { projects = [] } = await api('/api/branding?limit=30');
+      const filled = (d = {}) =>
+        Object.values(d).filter((v) => v && (typeof v !== 'object' || Object.keys(v).length))
+          .length;
+      const best = projects.sort((a, b) => filled(b.data) - filled(a.data))[0];
+      if (!best) throw new Error('nenhum projeto de branding');
+      return `/branding-machine?projectId=${best.id}`;
+    },
+    settle: 3500,
+    // O projeto abre com um modal de etapa por cima. Escape antes do print.
+    escape: true,
+    dismiss: ['[aria-label*="fechar" i]', '[aria-label*="close" i]'],
+  },
   {
     file: 'brand-guidelines',
     route: '/brand-guidelines',
     waitFor: '[class*="grid"] a, [class*="grid"] button',
     settle: 2500,
-    // Corta a sidebar (esquerda) e a topbar (onde moram nome e créditos).
-    // y começa abaixo do botão "Nova marca", senão sobra um toco de pílula
-    // branca no canto superior direito.
-    clip: { x: 0.16, y: 0.135, w: 0.84, h: 0.6 },
-  },
-  {
-    file: '3d-studio',
-    route: '/3d-studio',
-    waitFor: 'canvas',
-    settle: 4000, // WebGL precisa de frame pintado, não só de DOM
-    // x=0 de propósito: o rail de ferramentas inteiro lê como app, meio rail
-    // cortado lê como print mal tirado.
-    clip: { x: 0.0, y: 0.085, w: 1.0, h: 0.8 },
   },
   {
     file: 'canvas',
@@ -76,31 +132,132 @@ const SHOTS = [
     waitFor: '.react-flow, canvas',
     settle: 4000,
     fitView: true,
-    clipTo: { selector: '.react-flow__node', pad: 70 },
   },
   {
-    file: 'mockup-machine',
-    route: '/mockupmachine',
-    // Upload não cobra crédito (a geração é que cobra) e já tira a tela do
-    // estado 'dropzone vazia' pro estado 'ferramenta com arte dentro'.
-    upload: 'public/proof/generic.jpg',
-    // A analise do upload leva ~20s. Print antes disso pega o 'ANALISANDO'.
-    settle: 28000,
-    clip: { x: 0.0, y: 0.06, w: 0.62, h: 0.78 },
+    file: 'instagram-extractor',
+    route: '/extractor',
+    settle: 2500,
   },
   {
-    file: 'branding-machine',
-    resolve: async (api) => {
-      const { projects = [] } = await api('/api/branding?limit=10');
-      if (!projects.length) throw new Error('nenhum projeto de branding');
-      return `/branding-machine?projectId=${projects[0].id}`;
-    },
+    file: 'moodboard-studio',
+    route: '/moodboard',
+    // Upload só vira sourceImage; a detecção (IA) é botão manual.
+    upload: SAMPLE.photo,
+    settle: 4500,
+  },
+  {
+    file: 'budget-machine',
+    route: '/budget-machine',
+    settle: 2500,
+  },
+  {
+    file: 'content-studio',
+    route: '/content-studio',
+    settle: 2500,
+  },
+  {
+    file: 'naming-machine',
+    route: '/naming',
+    // Sessão salva em fase 'deck' com o baralho vazio dispara fetchBatch (IA)
+    // ao montar. Lista de sessões vazia => abre no briefing, sem gerar nada.
+    mock: { '/api/naming-sessions': { sessions: [] } },
+    settle: 3000,
+  },
+  {
+    file: 'copilot',
+    // Atrás de VITE_FEATURE_COPILOT: rodar contra um vite com a flag ligada.
+    route: '/copilot',
+    // A lista de sessões é o histórico de conversa do dono ("opa blz?",
+    // nome de cliente). Capa sai com a lista vazia.
+    mock: { '/api/copilot/sessions': { sessions: [] } },
+    settle: 3000,
+  },
+
+  // ── Creative ───────────────────────────────────────────────────────────
+  {
+    file: 'grid-machine',
+    route: '/grid-machine',
+    upload: SAMPLE.svg,
+    settle: 3000,
+  },
+  {
+    file: '3d-studio',
+    route: '/3d-studio',
+    waitFor: 'canvas',
+    settle: 4000, // WebGL precisa de frame pintado, não só de DOM
+  },
+  {
+    // Stateless: sem upload a tela é um dropzone vazio. O halftone roda no
+    // cliente, então subir um arquivo aqui não gasta crédito nem chama IA.
+    // Arquivo é cmyk-halftone porque é o que a AppsPage E o banco apontam.
+    file: 'cmyk-halftone',
+    route: '/image-lab',
+    upload: SAMPLE.photo,
+    settle: 4500,
+  },
+  {
+    file: 'gridpaint',
+    route: '/grid-paint',
+    draw: true,
+    settle: 2000,
+  },
+  {
+    file: 'labs',
+    route: '/labs',
+    settle: 3000,
+  },
+
+  // ── Mini-tools: todos rodam no browser (canvas, shader, wasm/onnx) ─────
+  { file: 'compress', route: '/compress', upload: SAMPLE.photo, process: PROCESS_BTN, settle: 3000 },
+  // Upscale = shader bicúbico local (applyShaderEffect), não IA.
+  { file: 'upscale', route: '/upscale', upload: SAMPLE.photo, process: PROCESS_BTN, settle: 5000 },
+  // Remove-bg = @imgly/background-removal no browser (baixa o modelo do CDN).
+  { file: 'remove-bg', route: '/remove-bg', upload: SAMPLE.photo, process: PROCESS_BTN, settle: 45000 },
+  { file: 'watermark', route: '/watermark', upload: SAMPLE.photo, process: PROCESS_BTN, settle: 3000 },
+  { file: 'file-converter', route: '/converter', upload: SAMPLE.photo, process: PROCESS_BTN, settle: 3000 },
+  { file: 'svg-optimizer', route: '/svg-optimizer', upload: SAMPLE.svg, settle: 3000 },
+  { file: 'favicon', route: '/favicon', upload: SAMPLE.icon, process: PROCESS_BTN, settle: 3000 },
+  {
+    file: 'og-image',
+    route: '/og-image',
+    upload: SAMPLE.icon,
+    type: [{ sel: '#og-title', text: 'Visant Labs' }],
+    settle: 3000,
+  },
+  {
+    file: 'color-converter',
+    route: '/color-converter',
+    // Paleta da própria Visant: três cores dão grade de conversão de verdade.
+    type: [
+      { sel: '#color-converter-input', text: '#00D9FF', enter: true },
+      // 2ª cor escura: o contraste WCAG compara as duas primeiras, e um par
+      // reprovado pinta pílulas vermelhas que leem como erro na capa.
+      { sel: '#color-converter-input', text: '#0A0A0A', enter: true },
+      { sel: '#color-converter-input', text: '#FF6038', enter: true },
+    ],
+    settle: 2000,
+  },
+  {
+    file: 'qrcode',
+    route: '/qrcode',
+    type: [{ sel: 'aside input[type=text], input[type=text]', text: 'https://visantlabs.com' }],
+    settle: 2000,
+  },
+  {
+    file: 'visual-search',
+    route: '/visual-search',
+    // Buscar = embedding da consulta (IA). A capa é a busca em repouso.
     settle: 3500,
-    // O projeto abre com um modal de etapa por cima. Escape antes do print.
-    escape: true,
-    dismiss: ['[aria-label*="fechar" i]', '[aria-label*="close" i]'],
-    clip: { x: 0.16, y: 0.1, w: 0.84, h: 0.62 },
   },
+
+  // ── Admin ──────────────────────────────────────────────────────────────
+  {
+    file: 'smart-analyzer',
+    route: '/admin/smart-analyzer',
+    settle: 3000,
+  },
+
+  // ── Landing (bento): mantidos com o recorte próprio ────────────────────
   {
     file: 'playground',
     resolve: async (api) => {
@@ -110,24 +267,6 @@ const SHOTS = [
     },
     waitFor: 'iframe, canvas',
     settle: 5000,
-    clipTo: { selector: 'iframe', pad: 56 },
-    clip: { x: 0.02, y: 0.09, w: 0.72, h: 0.7 },
-  },
-  {
-    // Stateless: sem upload a tela é um dropzone vazio. O halftone roda no
-    // cliente, então subir um arquivo aqui não gasta crédito nem chama IA.
-    file: 'image-lab',
-    route: '/image-lab',
-    upload: 'public/proof/generic.jpg',
-    settle: 4500,
-    clip: { x: 0.0, y: 0.085, w: 1.0, h: 0.82 },
-  },
-  {
-    file: 'moodboard-studio',
-    route: '/moodboard',
-    upload: 'public/proof/generic.jpg',
-    settle: 4500,
-    clipTo: { selector: 'main img, [class*="oodboard"] img, canvas', pad: 110 },
   },
 ];
 
@@ -169,6 +308,23 @@ const SANITIZE = `(() => {
   return leaked;
 })()`;
 
+// Chave i18n crua na tela (ex.: "apps.naming.title") = tradução faltando.
+// Não esconde: o print com chave crua não pode ser publicado, então avisa.
+const RAW_KEYS = `(() => {
+  const out = new Set();
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  let n;
+  while ((n = walker.nextNode())) {
+    const el = n.parentElement;
+    if (!el || el.closest('script,style,code,pre')) continue;
+    const r = el.getBoundingClientRect();
+    if (!r.width || !r.height || r.bottom < 0 || r.top > innerHeight) continue;
+    const txt = (n.textContent || '').trim();
+    if (/^[a-z][a-zA-Z0-9_]*(\\.[a-zA-Z0-9_]+){1,}$/.test(txt) && !/\\.(com|br|io|ai|app|png|jpg|svg|webp)$/.test(txt)) out.add(txt);
+  }
+  return [...out].slice(0, 8);
+})()`;
+
 const login = async (page) => {
   // `tsx watch` derruba a conexão do Prisma quando recarrega, e o dev-login
   // devolve 500 por alguns segundos. Não é motivo pra perder a rodada inteira.
@@ -196,9 +352,44 @@ const login = async (page) => {
   return token;
 };
 
+/**
+ * Mede o chrome do app: rail = <aside> colado no canto esquerdo, da altura da
+ * tela; topbar = <header> no topo. Devolve onde a área útil começa.
+ */
+const CHROME = `(() => {
+  let rail = 0, top = 0;
+  for (const e of document.querySelectorAll('aside')) {
+    const r = e.getBoundingClientRect();
+    if (r.left <= 1 && r.top <= 1 && r.width >= 160 && r.width <= 320 && r.height >= innerHeight * 0.8)
+      rail = Math.max(rail, Math.round(r.right));
+  }
+  for (const e of document.querySelectorAll('header')) {
+    const r = e.getBoundingClientRect();
+    if (r.top <= 1 && r.height > 0 && r.height <= 80) top = Math.max(top, Math.round(r.bottom));
+  }
+  return { rail, top };
+})()`;
+
+// Estado por rota que o route handler lê (o handler é do contexto inteiro).
+const net = { blocked: [], mock: null };
+
 const capture = async (page, shot, api) => {
+  net.blocked = [];
+  net.mock = shot.mock || null;
   const route = shot.resolve ? await shot.resolve(api) : shot.route;
+  await page.setViewportSize(VIEWPORT);
   await page.goto(`${BASE}${route}`, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await page.waitForTimeout(1500);
+
+  // Tela com rail: alarga o viewport pela largura do rail, assim a área útil
+  // continua com AREA.width e a UI sai na mesma escala das telas sem rail.
+  let chrome = await page.evaluate(CHROME);
+  if (chrome.rail) {
+    await page.setViewportSize({ width: AREA.width + chrome.rail, height: VIEWPORT.height });
+    await page.waitForTimeout(1000);
+    chrome = await page.evaluate(CHROME);
+  }
+  if (chrome.top > TOP) throw new Error(`topbar com ${chrome.top}px, maior que TOP=${TOP}`);
 
   if (shot.upload) {
     const file = path.resolve(process.cwd(), shot.upload);
@@ -206,8 +397,44 @@ const capture = async (page, shot, api) => {
     // O input costuma ser hidden atrás de um dropzone; setInputFiles não
     // precisa dele visível, e é o caminho que não dispara diálogo do SO.
     const input = page.locator('input[type=file]').first();
-    await input.waitFor({ state: 'attached', timeout: 10000 });
+    await input.waitFor({ state: 'attached', timeout: 15000 });
     await input.setInputFiles(file);
+    await page.waitForTimeout(1200);
+  }
+
+  for (const step of shot.type ?? []) {
+    const el = page.locator(step.sel).first();
+    await el.waitFor({ state: 'visible', timeout: 10000 });
+    await el.fill(step.text);
+    if (step.enter) await el.press('Enter');
+    await page.waitForTimeout(400);
+  }
+
+  if (shot.draw) {
+    // Pinceladas em onda atravessando o canvas: mostra a grade pintada sem
+    // depender de arquivo. Coordenadas relativas ao bbox do canvas.
+    const box = await page.locator('canvas').first().boundingBox();
+    if (!box) throw new Error('draw: canvas não encontrado');
+    for (let k = 0; k < 5; k++) {
+      const y0 = box.y + box.height * (0.2 + k * 0.15);
+      await page.mouse.move(box.x + box.width * 0.1, y0);
+      await page.mouse.down();
+      for (let i = 0; i <= 40; i++) {
+        const t = i / 40;
+        await page.mouse.move(
+          box.x + box.width * (0.1 + 0.8 * t),
+          y0 + Math.sin(t * Math.PI * 2 + k) * box.height * 0.06
+        );
+      }
+      await page.mouse.up();
+    }
+  }
+
+  if (shot.process) {
+    const btn = page.locator(shot.process).first();
+    await btn.click({ timeout: 8000 }).catch(() => {
+      throw new Error(`botão de processar não encontrado (${shot.process})`);
+    });
   }
 
   if (shot.waitFor) {
@@ -238,59 +465,16 @@ const capture = async (page, shot, api) => {
     await page.waitForTimeout(500);
   }
 
+  // Tira foco/hover de onde o clique de processar deixou o mouse.
+  const vp = page.viewportSize();
+  await page.mouse.move(vp.width - 2, vp.height - 2);
   const leaked = await page.evaluate(SANITIZE);
+  const rawKeys = await page.evaluate(RAW_KEYS);
   await page.waitForTimeout(400);
 
-  let clip;
-  let clipNote = null;
-  if (shot.clipTo) {
-    // Recorte medido sobre o conteúdo, não sobre o viewport. Telas de canvas
-    // e de mini-app posicionam o conteúdo em runtime, então fração fixa erra
-    // e sobra tela preta em volta do que interessa.
-    const { selector, pad = 60, minH = 0.35 } = shot.clipTo;
-    const box = await page.evaluate(
-      ([sel, p]) => {
-        const els = [...document.querySelectorAll(sel)].filter((e) => {
-          const r = e.getBoundingClientRect();
-          return r.width > 8 && r.height > 8 && r.bottom > 0 && r.top < innerHeight;
-        });
-        if (!els.length) return null;
-        const r = els.map((e) => e.getBoundingClientRect());
-        const x = Math.max(0, Math.min(...r.map((b) => b.left)) - p);
-        const y = Math.max(0, Math.min(...r.map((b) => b.top)) - p);
-        const x2 = Math.min(innerWidth, Math.max(...r.map((b) => b.right)) + p);
-        const y2 = Math.min(innerHeight, Math.max(...r.map((b) => b.bottom)) + p);
-        return { x, y, width: x2 - x, height: y2 - y };
-      },
-      [selector, pad]
-    );
-    const tooSmall = box && box.height < minH * VIEWPORT.height;
-    if (!box || tooSmall) {
-      // Sem fallback o print some da rodada, que é pior que um enquadramento
-      // mediano. Cai pro recorte por fração e avisa.
-      if (!shot.clip)
-        throw new Error(
-          !box ? `clipTo não achou "${selector}" e não há clip de reserva` : `clipTo achou área pequena demais e não há clip de reserva`
-        );
-      clipNote = !box ? `clipTo falhou (${selector}), usou clip fixo` : 'clipTo pequeno demais, usou clip fixo';
-    } else {
-      clip = {
-        x: Math.round(box.x),
-        y: Math.round(box.y),
-        width: Math.round(box.width),
-        height: Math.round(box.height),
-      };
-    }
-  }
-  if (!clip) {
-    const c = shot.clip;
-    clip = {
-      x: Math.round(c.x * VIEWPORT.width),
-      y: Math.round(c.y * VIEWPORT.height),
-      width: Math.round(c.w * VIEWPORT.width),
-      height: Math.round(c.h * VIEWPORT.height),
-    };
-  }
+  const clip = FULL
+    ? { x: 0, y: 0, width: vp.width, height: vp.height }
+    : { x: chrome.rail, y: TOP, width: AREA.width, height: AREA.height };
 
   const png = await page.screenshot({ clip, type: 'png' });
   const target = path.join(OUT, `${shot.file}.${AS_WEBP ? 'webp' : 'png'}`);
@@ -309,22 +493,63 @@ const capture = async (page, shot, api) => {
   const { size } = await fs.stat(target);
   if (AS_WEBP && size > 320_000)
     console.warn(`\n    aviso: ${shot.file}.webp ficou com ${Math.round(size / 1024)}KB`);
-  return { file: target, w: meta.width, h: meta.height, route, leaked, clipNote };
+  return { file: target, w: meta.width, h: meta.height, route, leaked, rawKeys, blocked: [...net.blocked] };
 };
 
 const main = async () => {
+  if (has('list')) {
+    console.log(SHOTS.map((s) => `${s.file.padEnd(20)} ${s.route || '(resolve)'}`).join('\n'));
+    return;
+  }
   await fs.mkdir(OUT, { recursive: true });
   const list = ONLY ? SHOTS.filter((s) => ONLY.includes(s.file)) : SHOTS;
-  if (!list.length) throw new Error(`--only não casou com nenhuma rota. Disponíveis: ${SHOTS.map((s) => s.file).join(', ')}`);
+  if (!list.length)
+    throw new Error(
+      `--only não casou com nenhuma rota. Disponíveis: ${SHOTS.map((s) => s.file).join(', ')}`
+    );
 
-  const browser = await chromium.launch({ headless: !has('headed') });
+  // WebGL em headless: sem SwiftShader o 3D Studio cai no ErrorBoundary
+  // ("Essa área travou") e o print sai com estado de erro.
+  const browser = await chromium.launch({
+    headless: !has('headed'),
+    args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
+  });
   const ctx = await browser.newContext({
     viewport: VIEWPORT,
-    deviceScaleFactor: SCALE,
+    deviceScaleFactor: FULL ? 1 : SCALE,
     colorScheme: 'dark',
     locale: 'pt-BR',
     reducedMotion: 'reduce', // congela animação de entrada, senão o print pega meio-fade
   });
+
+  // Portão de custo: /api só lê. Ver cabeçalho.
+  await ctx.route('**/api/**', async (r) => {
+    const req = r.request();
+    const url = new URL(req.url());
+    if (req.method() === 'GET' && net.mock) {
+      const hit = Object.keys(net.mock).find((p) => url.pathname === p);
+      if (hit) return r.fulfill({ json: net.mock[hit] });
+    }
+    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method())) return r.continue();
+    net.blocked.push(`${req.method()} ${url.pathname}`);
+    return r.abort('blockedbyclient');
+  });
+
+  // O bucket R2 (HDRI do 3D Studio) só libera CORS pras origens conhecidas.
+  // Vite em porta alternativa (5199) leva CORS bloqueado e o 3D Studio cai
+  // no ErrorBoundary. Busca pelo lado do Playwright e devolve com ACAO.
+  await ctx.route('https://*.r2.dev/**', async (r) => {
+    try {
+      const resp = await r.fetch();
+      await r.fulfill({
+        response: resp,
+        headers: { ...resp.headers(), 'access-control-allow-origin': '*' },
+      });
+    } catch {
+      await r.continue();
+    }
+  });
+
   const page = await ctx.newPage();
   page.on('pageerror', () => {});
 
@@ -339,11 +564,17 @@ const main = async () => {
 
   const results = [];
   for (const shot of list) {
-    process.stdout.write(`  ${shot.file.padEnd(18)}`);
+    process.stdout.write(`  ${shot.file.padEnd(20)}`);
     try {
       const r = await capture(page, shot, api);
-      const warn = [r.leaked?.length ? `⚠ PII: ${r.leaked.join(' / ')}` : '', r.clipNote ? `⚠ ${r.clipNote}` : ''].filter(Boolean).join('  ');
-      console.log(`ok  ${r.w}x${r.h}  ${r.route}${warn}`);
+      const warn = [
+        r.leaked?.length ? `PII escondido: ${r.leaked.join(' / ')}` : '',
+        r.rawKeys?.length ? `CHAVE i18n CRUA: ${r.rawKeys.join(', ')}` : '',
+        r.blocked?.length ? `barrado: ${[...new Set(r.blocked)].join(', ')}` : '',
+      ]
+        .filter(Boolean)
+        .join('  |  ');
+      console.log(`ok  ${r.w}x${r.h}  ${r.route}${warn ? `\n      ${warn}` : ''}`);
       results.push({ ...shot, ok: true, ...r });
     } catch (err) {
       console.log(`FALHOU  ${err.message.split('\n')[0]}`);
@@ -355,14 +586,16 @@ const main = async () => {
 
   const ok = results.filter((r) => r.ok).length;
   const pii = results.filter((r) => r.leaked?.length);
+  const raw = results.filter((r) => r.rawKeys?.length);
   console.log(`\n${ok}/${results.length} capturados em ${OUT}`);
   if (pii.length) {
     console.log(`${pii.length} rota(s) tinham dado pessoal na tela. Foi escondido antes do print,`);
     console.log('mas vale conferir o PNG antes de publicar.');
   }
+  if (raw.length) console.log(`${raw.length} rota(s) com chave i18n crua na tela: NÃO publicar sem corrigir.`);
   if (!AS_WEBP)
     console.log('PNG. Rode com --webp --out=public/tools quando os recortes estiverem bons.');
-  process.exitCode = ok === results.length ? 0 : 1;
+  process.exitCode = ok === results.length && !raw.length ? 0 : 1;
 };
 
 main().catch((e) => {

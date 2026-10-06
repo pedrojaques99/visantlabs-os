@@ -61,6 +61,8 @@ export const ToolDock = React.forwardRef<HTMLDivElement, ToolDockProps>(
       <div ref={ref} className={cn('z-50', className)}>
         <div
           className={cn(
+            // EXCEÇÃO ao ruido-scan/blur-em-card: dock fixo flutuando sobre o canvas
+            // (o caller posiciona com `fixed`); o blur separa o dock do conteúdo de baixo.
             'flex items-center gap-1 backdrop-blur-xl border rounded-xl px-2 py-1.5 shadow-lg',
             theme.isLight ? 'border-neutral-300/50' : 'border-neutral-800/50'
           )}
@@ -128,7 +130,7 @@ export const ToolButton: React.FC<ToolButtonProps> = ({
           aria-label={ariaLabel || tooltip}
           className={cn(
             'relative w-10 h-10 flex items-center justify-center rounded-md transition-colors duration-150',
-            'focus:outline-none focus:ring-1 focus:ring-neutral-500/50',
+            'focus:outline-none focus:ring-1 focus:ring-ring/50',
             disabled && 'opacity-40 pointer-events-none',
             active
               ? 'bg-brand-cyan/20'
@@ -147,7 +149,7 @@ export const ToolButton: React.FC<ToolButtonProps> = ({
           <Icon size={18} strokeWidth={2} className={iconClassName} />
           {badgeColor && (
             <div
-              className="absolute bottom-1 left-1 w-2.5 h-2.5 rounded-full border border-neutral-700"
+              className="absolute bottom-1 left-1 w-2.5 h-2.5 rounded-full border border-border"
               style={{ backgroundColor: badgeColor }}
             />
           )}

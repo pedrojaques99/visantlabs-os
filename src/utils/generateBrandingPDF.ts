@@ -425,7 +425,7 @@ export const generateBrandingPDF = (
       };
 
       if (swot.strengths && swot.strengths.length > 0) {
-        addText(t('branding.strengths') || 'Forças', 12, true, [34, 197, 94]);
+        addText(t('branding.strengths'), 12, true, [34, 197, 94]);
         swot.strengths.forEach((item: string) => {
           addText(`• ${item}`, 10);
         });
@@ -433,7 +433,7 @@ export const generateBrandingPDF = (
       }
 
       if (swot.weaknesses && swot.weaknesses.length > 0) {
-        addText(t('branding.weaknesses') || 'Fraquezas', 12, true, [239, 68, 68]);
+        addText(t('branding.weaknesses'), 12, true, [239, 68, 68]);
         swot.weaknesses.forEach((item: string) => {
           addText(`• ${item}`, 10);
         });
@@ -441,7 +441,7 @@ export const generateBrandingPDF = (
       }
 
       if (swot.opportunities && swot.opportunities.length > 0) {
-        addText(t('branding.opportunities') || 'Oportunidades', 12, true, [59, 130, 246]);
+        addText(t('branding.opportunities'), 12, true, [59, 130, 246]);
         swot.opportunities.forEach((item: string) => {
           addText(`• ${item}`, 10);
         });
@@ -449,7 +449,7 @@ export const generateBrandingPDF = (
       }
 
       if (swot.threats && swot.threats.length > 0) {
-        addText(t('branding.threats') || 'Ameaças', 12, true, [249, 115, 22]);
+        addText(t('branding.threats'), 12, true, [249, 115, 22]);
         swot.threats.forEach((item: string) => {
           addText(`• ${item}`, 10);
         });
@@ -490,13 +490,13 @@ export const generateBrandingPDF = (
       };
 
       if (persona.demographics) {
-        addText(t('branding.demographics') || 'Demografia', 12, true);
+        addText(t('branding.demographics'), 12, true);
         addFormattedContent(persona.demographics, 10);
         yPosition += 5;
       }
 
       if (persona.desires && persona.desires.length > 0) {
-        addText(t('branding.desires') || 'Desejos', 12, true);
+        addText(t('branding.desires'), 12, true);
         persona.desires.forEach((item: string) => {
           addText(`• ${item}`, 10);
         });
@@ -504,7 +504,7 @@ export const generateBrandingPDF = (
       }
 
       if (persona.pains && persona.pains.length > 0) {
-        addText(t('branding.painPoints') || 'Pontos de Dor', 12, true);
+        addText(t('branding.painPoints'), 12, true);
         persona.pains.forEach((item: string) => {
           addText(`• ${item}`, 10);
         });
@@ -526,19 +526,19 @@ export const generateBrandingPDF = (
       };
 
       if (moodboard.summary) {
-        addText(t('branding.summary') || 'Resumo', 12, true);
+        addText(t('branding.summary'), 12, true);
         addFormattedContent(moodboard.summary, 10);
         yPosition += 5;
       }
 
       if (moodboard.visualDirection) {
-        addText(t('branding.visualDirection') || 'Direção Visual', 12, true);
+        addText(t('branding.visualDirection'), 12, true);
         addFormattedContent(moodboard.visualDirection, 10);
         yPosition += 5;
       }
 
       if (moodboard.keyElements && moodboard.keyElements.length > 0) {
-        addText(t('branding.keyElements') || 'Elementos Chave', 12, true);
+        addText(t('branding.keyElements'), 12, true);
         moodboard.keyElements.forEach((item: string) => {
           addText(`• ${item}`, 10);
         });

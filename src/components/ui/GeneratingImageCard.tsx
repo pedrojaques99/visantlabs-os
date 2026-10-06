@@ -76,7 +76,7 @@ export function GeneratingImageCard({
     return (
       <div className={cn('absolute inset-0 z-10 flex items-center justify-center', className)}>
         <div className="absolute inset-0 bg-neutral-900/40 pointer-events-none" />
-        <div className="relative flex flex-col items-center gap-3 overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 p-6 backdrop-blur-xl">
+        <div className="relative flex flex-col items-center gap-3 overflow-hidden rounded-xl border border-white/10 bg-neutral-900/80 p-6 backdrop-blur-xl">
           <TurbulenceField intensity={intensity} />
           <GlitchPickaxe size={28} className="relative z-10" />
           <PremiumGlitchLoader
@@ -88,7 +88,7 @@ export function GeneratingImageCard({
             <button
               type="button"
               onClick={onCancel}
-              className="relative z-10 mt-1 rounded-lg border border-neutral-700 px-3 py-1 text-2xs text-neutral-500 transition-colors hover:border-neutral-500 hover:text-neutral-300"
+              className="relative z-10 mt-1 rounded-xl border border-neutral-700 px-3 py-1 text-2xs text-neutral-500 transition-colors hover:border-neutral-500 hover:text-neutral-300"
             >
               Cancel
             </button>

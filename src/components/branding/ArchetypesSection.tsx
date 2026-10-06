@@ -150,11 +150,7 @@ const ArchetypeCard: React.FC<{
               ? t('branding.visant.primaryArchetype')
               : t('branding.visant.secondaryArchetype')}
           </span>
-          <h3
-            className={`text-xl font-semibold font-manrope mt-1 ${
-              theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-            }`}
-          >
+          <h3 className="text-xl font-semibold font-manrope mt-1 text-foreground">
             {localArchetype.title}
           </h3>
         </div>
@@ -162,13 +158,7 @@ const ArchetypeCard: React.FC<{
         {isEditing ? (
           <div className="space-y-4">
             <div>
-              <label
-                className={`block text-sm font-medium mb-2 ${
-                  theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
-                }`}
-              >
-                Descrição
-              </label>
+              <label className="block text-sm font-medium mb-2 text-foreground">Descrição</label>
               <Textarea
                 value={localArchetype.description}
                 onChange={(e) => handleDescriptionChange(e.target.value)}
@@ -180,13 +170,7 @@ const ArchetypeCard: React.FC<{
               />
             </div>
             <div>
-              <label
-                className={`block text-sm font-medium mb-2 ${
-                  theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
-                }`}
-              >
-                Exemplos
-              </label>
+              <label className="block text-sm font-medium mb-2 text-foreground">Exemplos</label>
               <div className="space-y-2">
                 {localArchetype.examples.map((example, index) => (
                   <div key={index} className="flex gap-2">
@@ -232,21 +216,11 @@ const ArchetypeCard: React.FC<{
           </div>
         ) : (
           <div className="space-y-4">
-            <p
-              className={`text-sm font-manrope leading-relaxed ${
-                theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-              }`}
-            >
+            <p className="text-sm font-manrope leading-relaxed text-muted-foreground">
               {localArchetype.description}
             </p>
             <div>
-              <h4
-                className={`text-sm font-semibold font-manrope mb-2 ${
-                  theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
-                }`}
-              >
-                Exemplos:
-              </h4>
+              <h4 className="text-sm font-medium font-manrope mb-2 text-foreground">Exemplos:</h4>
               <div className="flex flex-wrap gap-2">
                 {localArchetype.examples.map((example, index) => (
                   <span
@@ -359,11 +333,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
         }
       >
         <CardContent className="p-4">
-          <h4
-            className={`text-xs font-semibold font-manrope mb-2 ${
-              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-            }`}
-          >
+          <h4 className="text-xs font-medium font-manrope mb-2 text-muted-foreground">
             Justificativa
           </h4>
           {isEditing ? (
@@ -374,11 +344,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
               minHeight="80px"
             />
           ) : (
-            <p
-              className={`text-xs font-manrope leading-snug whitespace-pre-wrap ${
-                theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-              }`}
-            >
+            <p className="text-xs font-manrope leading-snug whitespace-pre-wrap text-muted-foreground">
               {localArchetypes.reasoning}
             </p>
           )}

@@ -162,7 +162,7 @@ export const PageShell: React.FC<PageShellProps> = ({
                   {microTitle && (
                     <MicroTitle className="text-muted-foreground">{microTitle}</MicroTitle>
                   )}
-                  <h2 className="font-bold text-foreground tracking-tight text-2xl lg:text-3xl">
+                  <h2 className="font-semibold text-foreground tracking-tight text-2xl lg:text-3xl">
                     {title}
                   </h2>
                   {description && (

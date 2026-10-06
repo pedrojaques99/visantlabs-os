@@ -170,7 +170,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
           <Dialog.Portal forceMount>
             <Dialog.Overlay asChild forceMount>
               <motion.div
-                className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+                className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -195,7 +195,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 className={cn(
                   'fixed z-50 mx-auto w-full overflow-hidden',
                   // mobile: bottom-sheet full-width; desktop: caixa centralizada
-                  'inset-x-0 bottom-0 max-w-full rounded-t-2xl',
+                  'inset-x-0 bottom-0 max-w-full rounded-t-xl',
                   'sm:inset-x-0 sm:bottom-auto sm:top-[18vh] sm:max-w-xl sm:rounded-xl sm:px-0',
                   'border border-border bg-popover/90 shadow-2xl backdrop-blur-xl'
                 )}
@@ -297,7 +297,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                               value={`__more__${category}`}
                               onSelect={() => setExpanded((prev) => new Set(prev).add(category))}
                               className={cn(
-                                'flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs text-muted-foreground',
+                                'flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-xs text-muted-foreground',
                                 'transition-colors data-[selected=true]:bg-accent/60 data-[selected=true]:text-foreground'
                               )}
                             >
@@ -357,7 +357,7 @@ const FallbackRow: React.FC<{ fb: SearchResult | null; onRun: () => void }> = ({
     <button
       type="button"
       onClick={onRun}
-      className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-foreground/80 transition-colors hover:bg-accent hover:text-accent-foreground"
+      className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
     >
       {fb.icon && (
         <span className="flex h-5 w-5 shrink-0 items-center justify-center text-muted-foreground">
@@ -396,7 +396,7 @@ const PaletteItem: React.FC<{
       keywords={[item.category]}
       onSelect={onSelect}
       className={cn(
-        'cursor-pointer rounded-lg text-sm text-foreground/80',
+        'cursor-pointer rounded-xl text-sm text-foreground',
         'transition-colors data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground'
       )}
     >

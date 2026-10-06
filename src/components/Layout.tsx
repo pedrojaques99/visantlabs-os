@@ -620,9 +620,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       gap={12}
       toastOptions={{
         className:
-          theme === 'dark'
-            ? 'bg-neutral-950/70 backdrop-blur-[2px] border border-neutral-800 !text-white/70 shadow-sm cursor-pointer hover:bg-neutral-950/50 transition-[color,background-color,border-color,box-shadow,filter] duration-150 margin-2'
-            : 'bg-white/40 backdrop-blur-[2px] border border-neutral-200/10 text-neutral-800/70 shadow-sm cursor-pointer hover:bg-white/50 transition-[color,background-color,border-color,box-shadow,filter] duration-150 margin-2',
+          'bg-popover/70 backdrop-blur-[2px] border border-border !text-muted-foreground shadow-sm cursor-pointer hover:bg-popover/50 transition-[color,background-color,border-color,box-shadow,filter] duration-150 margin-2',
         style: {
           background: theme === 'dark' ? 'rgba(18, 18, 18, 0.4)' : 'rgba(255, 255, 255, 0.4)',
           padding: '12px 16px',
@@ -632,34 +630,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
         },
         classNames: {
-          toast:
-            theme === 'dark'
-              ? 'bg-neutral-950/70 border-neutral-800 !text-white/70 !shadow-sm !p-2 !text-2xs'
-              : 'bg-white/40 border-neutral-200/10 text-neutral-800/70 !shadow-sm !p-2 !text-2xs',
-          title:
-            theme === 'dark'
-              ? '!text-white/70 !text-2xs !font-normal !leading-tight'
-              : 'text-neutral-900/70 !text-2xs !font-normal !leading-tight',
-          description:
-            theme === 'dark'
-              ? '!text-white/60 !text-2xs !leading-tight'
-              : 'text-neutral-600/60 !text-2xs !leading-tight',
-          success:
-            theme === 'dark'
-              ? 'bg-neutral-950/70 border-success/15 text-success/70'
-              : 'bg-white/40 border-success/15 text-success/70',
-          error:
-            theme === 'dark'
-              ? 'bg-neutral-950/70 border-destructive/15 text-destructive/70'
-              : 'bg-white/40 border-destructive/15 text-destructive/70',
-          info:
-            theme === 'dark'
-              ? 'bg-neutral-950/70 border-blue-500/15 text-blue-400/70'
-              : 'bg-white/40 border-blue-500/15 text-blue-600/70',
-          closeButton:
-            theme === 'dark'
-              ? 'text-neutral-500/30 hover:text-neutral-400/50 opacity-30 hover:opacity-50 !w-3 !h-3'
-              : 'text-neutral-400/30 hover:text-neutral-500/50 opacity-30 hover:opacity-50 !w-3 !h-3',
+          toast: 'bg-popover/70 border-border !text-muted-foreground !shadow-sm !p-2 !text-2xs',
+          title: '!text-muted-foreground !text-2xs !font-normal !leading-tight',
+          description: '!text-muted-foreground !text-2xs !leading-tight',
+          success: 'bg-popover/70 border-success/15 text-success/70',
+          error: 'bg-popover/70 border-destructive/15 text-destructive/70',
+          info: 'bg-popover/70 border-border text-muted-foreground',
+          closeButton: 'text-muted-foreground opacity-30 hover:opacity-50 !w-3 !h-3',
         },
       }}
     />

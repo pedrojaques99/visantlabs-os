@@ -517,7 +517,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
                 <Maximize2 size={14} />
                 {t('canvasNodes.upscaleBicubicNode.connect')}
               </div>
-              <label className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-800 border-node border-neutral-800 hover:border-neutral-700 rounded-md text-2xs font-semibold text-foreground flex items-center justify-center gap-2 cursor-pointer transition-colors nodrag">
+              <label className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-800 border-node border-neutral-800 hover:border-neutral-700 rounded-md text-2xs font-medium text-foreground flex items-center justify-center gap-2 cursor-pointer transition-colors nodrag">
                 <Upload size={14} />
                 {t('canvasNodes.upscaleBicubicNode.upload')}
                 <Input

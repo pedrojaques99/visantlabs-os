@@ -33,7 +33,9 @@ import { copyToClipboard } from '@/utils/clipboard';
 import { glassSurface } from '@/lib/ui/glass';
 import { cn } from '@/lib/utils';
 import { Thumb } from '@/components/ui/Thumb';
-import { SegmentedControl } from '@/components/shared/ToolPanel';
+import { MediaTile } from '@/components/ui/MediaTile';
+import { Dropzone } from '@/components/ui/Dropzone';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useTranslation } from '@/hooks/useTranslation';
 import { hoverReveal } from '@/lib/ui/hoverReveal';
 
@@ -90,15 +92,13 @@ export const CreativeSetupSidebar: React.FC = () => {
   // Use either explicitly selected brand or context-active brand
   const selectedGuideline = guidelines.find((g) => g.id === brandId) ?? activeGuideline ?? null;
 
-  const handleLocalUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleLocalFile = (file: File | undefined) => {
     if (!file) return;
     const url = URL.createObjectURL(file);
     setUploadedBackgroundUrl(url);
   };
 
-  const handleVaultUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleVaultUpload = async (file: File | undefined) => {
     if (!file || !selectedGuideline?.id) return;
 
     setIsUploading(true);
@@ -185,64 +185,52 @@ export const CreativeSetupSidebar: React.FC = () => {
 
   if (showVault && selectedGuideline) {
     return (
-      <aside className="w-[420px] h-full bg-neutral-950 border-r border-neutral-800 flex flex-col p-6 gap-6 overflow-y-auto custom-scrollbar anim-fade-in">
+      <aside className="w-[420px] h-full bg-background border-r border-border flex flex-col p-6 gap-6 overflow-y-auto custom-scrollbar anim-fade-in">
         <header className="flex items-center justify-between">
           <button
             onClick={() => setShowVault(false)}
-            className="flex items-center gap-2 text-xs font-medium text-neutral-500 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft size={14} /> {t('common.back')}
           </button>
-          <span className="text-xs font-medium text-neutral-400">{t('creativeSetup.vault')}</span>
+          <span className="text-xs font-medium text-muted-foreground">
+            {t('creativeSetup.vault')}
+          </span>
         </header>
 
-        <label className="cursor-pointer group">
-          <input
-            type="file"
-            className="hidden"
-            accept="image/*"
-            onChange={handleVaultUpload}
-            disabled={isUploading}
-          />
-          <div className="w-full h-32 rounded-2xl border border-dashed border-white/10 flex flex-col items-center justify-center gap-3 bg-neutral-900/20 group-hover:bg-neutral-900/40 group-hover:border-neutral-700 transition-colors">
-            {isUploading ? (
-              <GlitchLoader size={24} />
-            ) : (
-              <>
-                <Plus size={20} className="text-neutral-500 group-hover:text-neutral-300" />
-                <span className="text-xs font-medium text-neutral-500 group-hover:text-neutral-300">
-                  {t('creativeSetup.addAssetToBrand')}
-                </span>
-              </>
-            )}
+        {isUploading ? (
+          <div className="flex h-32 w-full items-center justify-center rounded-xl border border-border">
+            <GlitchLoader size={24} />
           </div>
-        </label>
+        ) : (
+          <Dropzone
+            accept="image/*"
+            icon={Plus}
+            label={t('creativeSetup.addAssetToBrand')}
+            onFiles={(files) => handleVaultUpload(files[0])}
+            className="h-32"
+          />
+        )}
 
         <section className="flex flex-col gap-6">
           {(selectedGuideline.logos?.length ?? 0) > 0 && (
             <div className="flex flex-col gap-3">
-              <h3 className="text-xs font-medium text-neutral-500 px-1">
+              <h3 className="text-xs font-medium text-muted-foreground px-1">
                 {t('creativeSetup.logos')}
               </h3>
               <div className="grid grid-cols-3 gap-2">
                 {selectedGuideline.logos?.map((logo, i) => (
-                  <button
+                  <MediaTile
                     key={i}
+                    layout="overlay"
+                    src={getProxiedUrl(logo.url)}
+                    alt={logo.label || t('creativeSetup.logos')}
+                    imageClassName="object-contain p-2"
                     onClick={() => {
                       setUploadedBackgroundUrl(logo.url!);
                       setShowVault(false);
                     }}
-                    className={cn(
-                      'aspect-square rounded-xl p-2 hover:border-neutral-700 transition-colors overflow-hidden',
-                      glassSurface.tile
-                    )}
-                  >
-                    <Thumb
-                      src={getProxiedUrl(logo.url)}
-                      alt={t('creativeSetup.logos')}
-                      className="w-full h-full object-contain"
-                    />
-                  </button>
+                  />
                 ))}
               </div>
             </div>
@@ -250,29 +238,22 @@ export const CreativeSetupSidebar: React.FC = () => {
 
           {(selectedGuideline.media?.length ?? 0) > 0 && (
             <div className="flex flex-col gap-3">
-              <h3 className="text-xs font-medium text-neutral-500 px-1">
+              <h3 className="text-xs font-medium text-muted-foreground px-1">
                 {t('creativeSetup.media')}
               </h3>
               <div className="grid grid-cols-2 gap-2">
                 {selectedGuideline.media?.map((media, i) => (
-                  <button
+                  <MediaTile
                     key={i}
+                    layout="overlay"
+                    src={getProxiedUrl(media.url)}
+                    alt={media.label || t('creativeSetup.media')}
+                    aspectRatio="16 / 9"
                     onClick={() => {
                       setUploadedBackgroundUrl(media.url!);
                       setShowVault(false);
                     }}
-                    className={cn(
-                      'aspect-video rounded-xl p-1.5 hover:border-neutral-700 transition-colors overflow-hidden',
-                      glassSurface.tile
-                    )}
-                  >
-                    <Thumb
-                      src={getProxiedUrl(media.url)}
-                      alt={t('creativeSetup.media')}
-                      aspectRatio="16 / 9"
-                      className="w-full h-full object-cover rounded-lg"
-                    />
-                  </button>
+                  />
                 ))}
               </div>
             </div>
@@ -280,7 +261,7 @@ export const CreativeSetupSidebar: React.FC = () => {
 
           {(selectedGuideline.colors?.length ?? 0) > 0 && (
             <div className="flex flex-col gap-3">
-              <h3 className="text-xs font-medium text-neutral-500 px-1">
+              <h3 className="text-xs font-medium text-muted-foreground px-1">
                 {t('creativeSetup.colors')}
               </h3>
               <div className="flex flex-wrap gap-2 px-1">
@@ -292,7 +273,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                       toast.success(t('creativeSetup.colorCopied', { hex: color.hex || '' }));
                     }}
                     style={{ backgroundColor: color.hex }}
-                    className="w-8 h-8 rounded-lg border border-white/10"
+                    className="w-8 h-8 rounded-md border border-border"
                     title={color.hex}
                   />
                 ))}
@@ -304,23 +285,23 @@ export const CreativeSetupSidebar: React.FC = () => {
     );
   }
 
-  const fieldLabel = 'text-xs font-medium text-neutral-500 px-1';
+  const fieldLabel = 'text-xs font-medium text-muted-foreground px-1';
 
   return (
     <aside
       role="region"
       aria-label={t('creativeSetup.newCreative')}
-      className="w-[420px] h-full bg-neutral-950 border-r border-neutral-800 flex flex-col p-5 gap-5 overflow-y-auto"
+      className="w-[420px] h-full bg-background border-r border-border flex flex-col p-5 gap-5 overflow-y-auto"
       data-vsn-section="setup"
     >
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-neutral-500">
+        <span className="text-xs font-medium text-muted-foreground">
           {t('creativeSetup.newCreative')}
         </span>
         <button
           onClick={() => navigate('/create/projects')}
           className={cn(
-            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md hover:border-neutral-700 text-xs text-neutral-400 hover:text-foreground',
+            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs text-muted-foreground hover:text-foreground',
             glassSurface.control
           )}
           data-vsn-action="open-projects"
@@ -350,7 +331,7 @@ export const CreativeSetupSidebar: React.FC = () => {
             onClick={() => setWizardOpen(true)}
             disabled={status !== 'setup'}
             className={cn(
-              'w-12 h-12 shrink-0 rounded-xl flex items-center justify-center text-neutral-500 hover:text-foreground hover:border-neutral-700 transition-colors hover:bg-neutral-900/60 disabled:opacity-50',
+              'w-12 h-12 shrink-0 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50',
               glassSurface.tile
             )}
             title={t('creativeSetup.newBrand')}
@@ -362,7 +343,7 @@ export const CreativeSetupSidebar: React.FC = () => {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="creative-idea" className="text-base font-semibold text-neutral-100 px-1">
+        <label htmlFor="creative-idea" className="text-base font-medium text-foreground px-1">
           {t('creativeSetup.idea')}
         </label>
         <textarea
@@ -374,8 +355,8 @@ export const CreativeSetupSidebar: React.FC = () => {
           placeholder={t('creativeSetup.ideaPlaceholder')}
           rows={4}
           className={cn(
-            'w-full rounded-2xl px-4 py-4 text-sm leading-relaxed text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 focus:bg-neutral-900/60 transition-colors resize-none disabled:opacity-50',
-            glassSurface.panel
+            'w-full rounded-xl px-4 py-4 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-colors resize-none disabled:opacity-50',
+            glassSurface.surface
           )}
           data-vsn-input="prompt"
         />
@@ -391,7 +372,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                   promptRef.current?.focus();
                 }}
                 className={cn(
-                  'px-3 py-1.5 rounded-full text-2xs font-medium text-neutral-400 hover:text-foreground hover:border-neutral-700 transition-colors',
+                  'px-3 py-1.5 rounded-full text-2xs font-medium text-muted-foreground hover:text-foreground transition-colors',
                   glassSurface.control
                 )}
               >
@@ -422,7 +403,7 @@ export const CreativeSetupSidebar: React.FC = () => {
           disabled={status !== 'setup'}
           aria-expanded={advancedOpen}
           className={cn(
-            'flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-medium text-neutral-500 hover:text-neutral-300 transition-colors disabled:opacity-50',
+            'flex items-center justify-between px-4 py-3 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50',
             glassSurface.control
           )}
         >
@@ -437,6 +418,9 @@ export const CreativeSetupSidebar: React.FC = () => {
             <div className="flex flex-col gap-2">
               <span className={fieldLabel}>{t('creativeSetup.background')}</span>
               <SegmentedControl
+                size="sm"
+                fullWidth
+                aria-label={t('creativeSetup.background')}
                 value={backgroundMode}
                 onChange={(v) => {
                   if (v !== 'brand') {
@@ -456,28 +440,30 @@ export const CreativeSetupSidebar: React.FC = () => {
                   { value: 'upload', label: t('creativeSetup.bgLocal') },
                 ]}
               />
-              {backgroundMode === 'upload' && (
-                <label className="mt-2 cursor-pointer block relative group">
-                  <input
-                    type="file"
+              {backgroundMode === 'upload' &&
+                (!uploadedBackgroundUrl ? (
+                  <Dropzone
                     accept="image/*"
-                    className="hidden"
-                    onChange={handleLocalUpload}
+                    icon={Upload}
+                    label={t('creativeSetup.uploadLocal')}
+                    onFiles={(files) => handleLocalFile(files[0])}
+                    className="mt-2"
                   />
-                  {!uploadedBackgroundUrl ? (
-                    <div className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-xs font-medium text-neutral-500 group-hover:text-white group-hover:border-neutral-700 group-hover:bg-neutral-900/60 transition-colors flex flex-col items-center gap-2">
-                      <Upload size={16} className="opacity-60" />
-                      {t('creativeSetup.uploadLocal')}
-                    </div>
-                  ) : (
+                ) : (
+                  <label className="group relative mt-2 block cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={(e) => handleLocalFile(e.target.files?.[0])}
+                    />
                     <BackgroundPreview
                       url={uploadedBackgroundUrl}
                       icon={Upload}
                       action={t('creativeSetup.replaceFile')}
                     />
-                  )}
-                </label>
-              )}
+                  </label>
+                ))}
 
               {backgroundMode === 'brand' && (
                 <button
@@ -486,8 +472,8 @@ export const CreativeSetupSidebar: React.FC = () => {
                   className="mt-2 block w-full text-left group"
                 >
                   {!uploadedBackgroundUrl ? (
-                    <div className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-xs font-medium text-neutral-500 group-hover:text-white group-hover:border-neutral-700 group-hover:bg-neutral-900/60 transition-colors flex flex-col items-center gap-2">
-                      <Briefcase size={16} className="opacity-60" />
+                    <div className="flex w-full flex-col items-center gap-2 rounded-xl border border-border px-4 py-8 text-xs font-medium text-muted-foreground transition-colors group-hover:border-border-hover group-hover:text-foreground">
+                      <Briefcase size={16} />
                       {t('creativeSetup.pickFromVault')}
                     </div>
                   ) : (
@@ -519,9 +505,10 @@ export const CreativeSetupSidebar: React.FC = () => {
 
       <div className="mt-auto pt-4">
         <Button
-          variant="brand"
+          variant="primary"
+          size="lg"
           onClick={handleIgnite}
-          className="w-full py-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2.5 transition-colors overflow-hidden relative"
+          className="relative w-full gap-2.5 overflow-hidden px-4 text-sm font-medium"
         >
           {status === 'generating' ? (
             <div className="flex flex-col items-center gap-1 w-full scale-75">
@@ -534,7 +521,7 @@ export const CreativeSetupSidebar: React.FC = () => {
               {/* Custo dobrado dentro do CTA (valor antes do preço) — não mais
                   uma linha de fricção depois do botão. */}
               {canGenerate && (
-                <span className="text-black/60 text-2xs">
+                <span className="text-2xs text-muted-foreground">
                   {t(
                     creditsRequired === 1 ? 'creativeSetup.creditOne' : 'creativeSetup.creditMany',
                     {
@@ -568,7 +555,7 @@ const BackgroundPreview: React.FC<{
 }> = ({ url, icon: Icon, action }) => (
   <div
     className={cn(
-      'relative w-full aspect-video rounded-2xl overflow-hidden group-hover:border-neutral-700 transition-colors',
+      'relative w-full aspect-video rounded-xl overflow-hidden group-hover:border-border-hover transition-colors',
       glassSurface.tile
     )}
   >

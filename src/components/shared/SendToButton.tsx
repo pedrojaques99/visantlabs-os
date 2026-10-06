@@ -138,7 +138,7 @@ export const SendToButton: React.FC<SendToButtonProps> = ({
       </button>
 
       {open && (
-        <div className="absolute right-0 bottom-full mb-1 z-50 bg-neutral-900 border border-neutral-700/50 rounded-lg shadow-xl py-1 min-w-[160px] max-h-[240px] overflow-y-auto">
+        <div className="absolute right-0 bottom-full mb-1 z-50 bg-neutral-900 border border-neutral-700/50 rounded-xl shadow-xl py-1 min-w-[160px] max-h-[240px] overflow-y-auto">
           {targets.map((target) => (
             <button
               key={target.id}

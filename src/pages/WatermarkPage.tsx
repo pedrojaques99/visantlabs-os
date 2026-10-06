@@ -16,6 +16,8 @@ import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
+import { Dropzone } from '@/components/ui/Dropzone';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Input } from '@/components/ui/input';
 import JSZip from 'jszip';
 import { QuickActions } from '@/components/shared/QuickActions';
@@ -241,7 +243,7 @@ export const WatermarkPage: React.FC = () => {
   /* --- File handling --- */
 
   const handleFiles = useCallback(
-    (fileList: FileList) => {
+    (fileList: FileList | File[]) => {
       const valid: { url: string; name: string }[] = [];
       Array.from(fileList).forEach((file) => {
         const error = validateFile(file, 'image');
@@ -254,14 +256,6 @@ export const WatermarkPage: React.FC = () => {
       if (valid.length) addFiles(valid);
     },
     [addFiles]
-  );
-
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files) handleFiles(e.target.files);
-      if (e.target) e.target.value = '';
-    },
-    [handleFiles]
   );
 
   const handleDrop = useCallback(
@@ -391,28 +385,17 @@ export const WatermarkPage: React.FC = () => {
   /*  Panel content                                                      */
   /* ------------------------------------------------------------------ */
 
-  const chipClass = (selected: boolean) =>
-    cn(
-      'rounded border text-xs transition-colors duration-200',
-      selected
-        ? 'border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan'
-        : 'border-border bg-muted/40 text-muted-foreground hover:border-ring hover:text-foreground'
-    );
-
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Add more */}
-      <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
-        <Upload size={12} />
-        {t('miniTools.addImages')}
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          multiple
-          className="hidden"
-          onChange={handleInputChange}
-        />
-      </label>
+      <Dropzone
+        onFiles={handleFiles}
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        label={t('miniTools.addImages')}
+        size="sm"
+        dropTarget={false}
+      />
 
       {/* Thumbnail queue */}
       <div className="max-h-[32vh] overflow-y-auto space-y-1.5 pr-1">
@@ -423,7 +406,7 @@ export const WatermarkPage: React.FC = () => {
             {...fade}
             layout
             className={cn(
-              'group flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors duration-200',
+              'group flex items-center gap-2 p-1.5 rounded-xl cursor-pointer transition-colors duration-200',
               previewItem?.id === item.id ? 'bg-muted ring-1 ring-border' : 'hover:bg-muted/60'
             )}
           >
@@ -465,23 +448,17 @@ export const WatermarkPage: React.FC = () => {
           <span className="text-xs font-medium text-muted-foreground">
             {t('miniTools.watermark.type')}
           </span>
-          <div className="flex gap-1">
-            {(['text', 'logo'] as const).map((wmType) => (
-              <button
-                key={wmType}
-                type="button"
-                onClick={() => setWatermarkType(wmType)}
-                disabled={isProcessing}
-                className={cn(
-                  'flex items-center gap-1 px-2.5 py-0.5',
-                  chipClass(watermarkType === wmType)
-                )}
-              >
-                {wmType === 'text' ? <Type size={10} /> : <Image size={10} />}
-                {wmType === 'text' ? t('miniTools.watermark.text') : t('miniTools.watermark.logo')}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            aria-label={t('miniTools.watermark.type')}
+            size="sm"
+            value={watermarkType}
+            onChange={setWatermarkType}
+            disabled={isProcessing}
+            options={[
+              { value: 'text', label: t('miniTools.watermark.text'), icon: Type },
+              { value: 'logo', label: t('miniTools.watermark.logo'), icon: Image },
+            ]}
+          />
         </div>
 
         {/* Text input + color OR logo upload */}
@@ -569,9 +546,9 @@ export const WatermarkPage: React.FC = () => {
                   onClick={() => setPosition(pos)}
                   disabled={isProcessing}
                   className={cn(
-                    'w-5 h-5 rounded-sm border transition-colors duration-200 flex items-center justify-center',
+                    'w-5 h-5 rounded-md border transition-colors duration-200 flex items-center justify-center',
                     position === pos
-                      ? 'bg-brand-cyan border-brand-cyan'
+                      ? 'bg-foreground border-foreground'
                       : 'bg-muted/40 border-border hover:border-ring'
                   )}
                 >
@@ -591,7 +568,13 @@ export const WatermarkPage: React.FC = () => {
                 if (rotation === 0) setRotation(-45);
               }}
               disabled={isProcessing}
-              className={cn('w-full px-2 py-0.5', chipClass(position === 'tile'))}
+              aria-pressed={position === 'tile'}
+              className={cn(
+                'w-full rounded border px-2 py-0.5 text-xs transition-colors duration-200',
+                position === 'tile'
+                  ? 'border-ring bg-muted text-foreground'
+                  : 'border-border bg-muted/40 text-muted-foreground hover:border-ring hover:text-foreground'
+              )}
             >
               {t('miniTools.watermark.tile')}
             </button>
@@ -673,7 +656,9 @@ export const WatermarkPage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
+                variant="primary"
+                size="sm"
+                className="w-full text-xs"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -749,17 +734,14 @@ export const WatermarkPage: React.FC = () => {
       <AnimatePresence mode="wait">
         {!hasItems ? (
           <motion.div key="upload" {...fade} className="flex w-full justify-center py-8">
-            <label className="flex h-48 w-full max-w-md cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border px-4 text-center text-sm text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
-              <Upload size={20} />
-              {t('miniTools.dropImages')}
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                multiple
-                className="hidden"
-                onChange={handleInputChange}
-              />
-            </label>
+            <Dropzone
+              onFiles={handleFiles}
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              label={t('miniTools.dropImages')}
+              dropTarget={false}
+              className="max-w-md"
+            />
           </motion.div>
         ) : (
           /* Working state — preview centered in canvas */
@@ -767,7 +749,7 @@ export const WatermarkPage: React.FC = () => {
             key="workspace"
             {...fadeScale}
             className={cn(
-              'relative w-full max-w-3xl rounded-2xl overflow-hidden min-h-[300px] flex items-center justify-center',
+              'relative w-full max-w-3xl rounded-xl overflow-hidden min-h-[300px] flex items-center justify-center',
               glassSurface.surface
             )}
           >

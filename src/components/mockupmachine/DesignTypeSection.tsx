@@ -47,7 +47,7 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
                 : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50 hover:bg-neutral-800/40'
             )}
           >
-            <span className="font-semibold text-sm">{t('mockup.itsALogo')}</span>
+            <span className="font-medium text-sm">{t('mockup.itsALogo')}</span>
           </Button>
           <Button
             onClick={() => {
@@ -62,7 +62,7 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
                 : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50 hover:bg-neutral-800/40'
             )}
           >
-            <span className="font-semibold text-sm">{t('mockup.itsALayout')}</span>
+            <span className="font-medium text-sm">{t('mockup.itsALayout')}</span>
           </Button>
         </div>
       </div>

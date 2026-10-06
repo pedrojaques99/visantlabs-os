@@ -443,10 +443,13 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   const navBtnClass =
     'bg-[var(--brand-text)]/5 border-[var(--brand-text)]/10 text-[var(--brand-text)] hover:bg-[var(--brand-text)]/10';
   // Unified top-right control pill — same design system as HOME/VOLTAR (contrast-safe hover).
-  const ctrlBtnClass = cn(
-    'h-9 px-4 rounded-full text-xs font-medium gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
+  // EXCEÇÃO ao ruido-scan/blur-em-card: pílulas em toolbar `fixed` sobre o conteúdo que rola;
+  // o fundo é 5% da cor da marca, sem o blur o texto da seção some atrás do botão.
+  const navPillClass = cn(
+    'h-9 px-4 text-xs font-medium gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
     navBtnClass
   );
+  const ctrlBtnClass = cn(navPillClass, 'rounded-full');
   // In admin context (idOverride) the global app Header (h-10 md:h-14) is present,
   // Admin view covers the whole viewport (incl. native header), so toolbars sit at top-5.
   const toolbarTop = 'top-5';
@@ -487,23 +490,13 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
 
       {/* Top-left nav buttons */}
       <div className={cn('flex gap-2 fixed left-5 z-40', toolbarTop)}>
-        <Button
-          onClick={() => navigate('/')}
-          variant="ghost"
-          className={cn(
-            'h-9 px-4 text-xs font-medium gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
-            navBtnClass
-          )}
-        >
+        <Button onClick={() => navigate('/')} variant="ghost" className={navPillClass}>
           <Home size={14} /> <span className="hidden sm:inline">{t('common.home')}</span>
         </Button>
         <Button
           onClick={() => (onBack ? onBack() : navigate(-1))}
           variant="ghost"
-          className={cn(
-            'h-9 px-4 text-xs font-medium gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
-            navBtnClass
-          )}
+          className={navPillClass}
         >
           <ChevronLeft size={14} /> <span className="hidden sm:inline">{t('common.back')}</span>
         </Button>
@@ -579,7 +572,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           <DropdownMenuContent
             align="end"
             style={themeVars}
-            className="w-auto min-w-0 p-2 rounded-2xl border border-[var(--brand-text)]/10 bg-[var(--brand-bg)]/70 backdrop-blur-2xl shadow-lg text-[var(--brand-text)]"
+            className="w-auto min-w-0 p-2 rounded-xl border border-[var(--brand-text)]/10 bg-[var(--brand-bg)]/70 backdrop-blur-2xl shadow-lg text-[var(--brand-text)]"
           >
             {/* Mobile-only: primary actions that live inline on ≥sm screens. */}
             {canEdit && (
@@ -703,7 +696,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                   aria-label={label}
                   aria-pressed={theme === k}
                   className={cn(
-                    'w-9 h-9 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center transition-colors',
+                    'w-9 h-9 sm:w-7 sm:h-7 rounded-xl flex items-center justify-center transition-colors',
                     theme === k
                       ? 'bg-[var(--accent)] text-[var(--accent-text)]'
                       : 'text-[var(--brand-text)]/60 hover:text-[var(--brand-text)] hover:bg-[var(--brand-text)]/10'
@@ -787,7 +780,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                       aria-label={[t('brandView.copyHex', { hex: c.hex }), c.name]
                         .filter(Boolean)
                         .join(', ')}
-                      className="w-8 h-8 rounded-lg border border-[var(--brand-text)]/10 transition-colors hover:border-[var(--brand-text)]/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
+                      className="w-8 h-8 rounded-xl border border-[var(--brand-text)]/10 transition-colors hover:border-[var(--brand-text)]/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
                       style={{ backgroundColor: c.hex }}
                     />
                   ))}
@@ -853,13 +846,14 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                     />
                   ) : (
                     <span
-                      className="flex items-center justify-center w-24 h-24 md:w-28 md:h-28 rounded-2xl text-5xl md:text-6xl font-semibold"
+                      className="flex items-center justify-center w-24 h-24 md:w-28 md:h-28 rounded-xl text-5xl md:text-6xl font-semibold"
                       style={{ backgroundColor: avatar.bg, color: avatar.fg }}
                     >
                       {avatar.initial}
                     </span>
                   )}
                 </div>
+                {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia (logo da marca) */}
                 {canEdit && (
                   <span className="absolute inset-0 flex items-center justify-center rounded-3xl bg-black/40 opacity-0 group-hover/logo:opacity-100 group-focus-visible/logo:opacity-100 transition-opacity">
                     <span className="text-xs font-medium text-white">
@@ -978,7 +972,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                         type="button"
                         aria-label={`${t('public.brand.guideline.edit_section')}: ${SECTION_LABELS[section]}`}
                         onClick={() => setActiveEditSection(section)}
-                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-transparent border border-[var(--brand-text)]/15 text-[var(--brand-text)]/60 text-xs hover:border-warning/40 hover:text-warning hover:bg-warning/5 transition-colors"
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-transparent border border-[var(--brand-text)]/15 text-[var(--brand-text)]/60 text-xs hover:border-warning/40 hover:text-warning hover:bg-warning/5 transition-colors"
                       >
                         <Pencil size={10} />
                         {SECTION_LABELS[section]}
@@ -1015,7 +1009,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         >
           <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
             <SheetHeader className="mb-6">
-              <SheetTitle className="text-base font-semibold">
+              <SheetTitle className="text-base font-medium">
                 {t('public.brand.guideline.editing_section')}
                 {activeEditSection && (
                   <span className="text-muted-foreground ml-2">
@@ -1050,7 +1044,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             className="w-full sm:max-w-3xl lg:max-w-4xl overflow-y-auto z-[1100]"
           >
             <SheetHeader className="mb-6">
-              <SheetTitle className="text-base font-semibold flex items-center gap-2">
+              <SheetTitle className="text-base font-medium flex items-center gap-2">
                 <SlidersHorizontal size={14} /> {t('publicBrand.advancedEditor')}
               </SheetTitle>
             </SheetHeader>

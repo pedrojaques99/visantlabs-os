@@ -369,7 +369,7 @@ const AppList: React.FC<AppListProps> = ({
       <div className="border-t border-neutral-900 pt-3 mt-3 flex items-center gap-8 w-max">
         <button
           onClick={() => navigate('/apps')}
-          className="px-4 py-1.5 rounded-lg bg-neutral-900 border border-neutral-800 font-mono text-2xs uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-neutral-800 hover:border-neutral-700 transition-colors"
+          className="px-4 py-1.5 rounded-xl bg-neutral-900 border border-neutral-800 text-xs text-neutral-400 hover:text-white hover:bg-neutral-800 hover:border-neutral-700 transition-colors"
         >
           {t('home.ver_todos_os_apps')}
         </button>
@@ -377,28 +377,28 @@ const AppList: React.FC<AppListProps> = ({
         <div className="flex items-center gap-6">
           <button
             onClick={() => navigate('/about')}
-            className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+            className="text-xs text-neutral-700 hover:text-neutral-400 transition-colors"
           >
             {t('home.info')}
           </button>
           {!isMobile ? (
             <button
               onClick={() => navigate('/community')}
-              className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+              className="text-xs text-neutral-700 hover:text-neutral-400 transition-colors"
             >
               {t('home.community')}
             </button>
           ) : (
             <a
               href="mailto:contato@visant.co"
-              className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+              className="text-xs text-neutral-700 hover:text-neutral-400 transition-colors"
             >
               {t('home.contact')}
             </a>
           )}
           <button
             onClick={() => navigate('/docs')}
-            className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+            className="text-xs text-neutral-700 hover:text-neutral-400 transition-colors"
           >
             {t('home.docs')}
           </button>
@@ -552,12 +552,12 @@ export const HomePage: React.FC = () => {
                     exit={{ opacity: 0 }}
                     className="flex flex-col items-center gap-5 mt-4"
                   >
-                    <p className="font-mono text-2xs uppercase tracking-widest text-neutral-500 select-none text-center">
+                    <p className="text-xs text-neutral-500 select-none text-center">
                       {t('home.tagline')}
                     </p>
                     <button
                       onClick={() => setShowAuthModal(true)}
-                      className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-sm font-mono text-2xs uppercase tracking-widest text-neutral-400 hover:text-white transition-colors duration-200"
+                      className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-md text-xs text-neutral-400 hover:text-white transition-colors duration-200"
                     >
                       <LogIn size={12} />
                       <span>{t('home.sign_in')}</span>
@@ -565,13 +565,13 @@ export const HomePage: React.FC = () => {
                     <div className="flex items-center gap-6 mt-2">
                       <button
                         onClick={() => navigate('/about')}
-                        className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+                        className="text-xs text-neutral-700 hover:text-neutral-400 transition-colors"
                       >
                         {t('home.info')}
                       </button>
                       <a
                         href="mailto:contato@visant.co"
-                        className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+                        className="text-xs text-neutral-700 hover:text-neutral-400 transition-colors"
                       >
                         {t('home.contact')}
                       </a>
@@ -602,12 +602,10 @@ export const HomePage: React.FC = () => {
                       exit={{ opacity: 0 }}
                       className="flex flex-col gap-5"
                     >
-                      <p className="font-mono text-2xs uppercase tracking-widest text-neutral-500 select-none">
-                        {t('home.tagline')}
-                      </p>
+                      <p className="text-xs text-neutral-500 select-none">{t('home.tagline')}</p>
                       <button
                         onClick={() => setShowAuthModal(true)}
-                        className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-sm font-mono text-2xs uppercase tracking-widest text-neutral-400 hover:text-white transition-colors duration-200 w-fit"
+                        className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-md text-xs text-neutral-400 hover:text-white transition-colors duration-200 w-fit"
                       >
                         <LogIn size={12} />
                         <span>{t('home.sign_in_2')}</span>
@@ -615,13 +613,13 @@ export const HomePage: React.FC = () => {
                       <div className="flex items-center gap-6">
                         <button
                           onClick={() => navigate('/about')}
-                          className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+                          className="text-xs text-neutral-700 hover:text-neutral-400 transition-colors"
                         >
                           {t('home.info_2')}
                         </button>
                         <button
                           onClick={() => navigate('/community')}
-                          className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+                          className="text-xs text-neutral-700 hover:text-neutral-400 transition-colors"
                         >
                           {t('home.community')}
                         </button>

@@ -10,7 +10,6 @@ import {
   Diamond,
   Edit,
   Workflow,
-  Play,
   Heart,
   Share2,
 } from '@/lib/ui/icons';
@@ -36,12 +35,12 @@ import { BackButton } from '../components/ui/BackButton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { CardContent } from '../components/ui/card';
 import { cn } from '../lib/utils';
-import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { workflowApi } from '../services/workflowApi';
 import { MicroTitle } from '../components/ui/MicroTitle';
 import { GlassPanel } from '../components/ui/GlassPanel';
+import { MediaTile } from '../components/ui/MediaTile';
+import { Thumb } from '../components/ui/Thumb';
 
 /**
  * Empty state das abas do perfil. Helper local (não é componente de DS): as três
@@ -59,9 +58,9 @@ const renderEmptyTab = ({
   body: string;
   action?: React.ReactNode;
 }) => (
-  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-card border border-dashed border-border rounded-2xl">
+  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-card border border-dashed border-border rounded-xl">
     <div className="mb-4">{icon}</div>
-    <h2 className="text-lg font-semibold text-foreground mb-2">{title}</h2>
+    <h2 className="text-lg font-medium text-foreground mb-2">{title}</h2>
     <p className="text-sm text-muted-foreground max-w-sm">{body}</p>
     {action && <div className="mt-6">{action}</div>}
   </div>
@@ -298,7 +297,7 @@ export const CommunityProfilePage: React.FC = () => {
           )}`
         );
       } else {
-        toast.success(t('common.presetSelected') || 'Preset selected');
+        toast.success(t('common.presetSelected'));
       }
       handleClosePresetModal();
     },
@@ -326,7 +325,7 @@ export const CommunityProfilePage: React.FC = () => {
     e.stopPropagation();
 
     if (!isAuthenticated) {
-      toast.error(t('auth.loginRequired') || 'Please login to like workflows');
+      toast.error(t('auth.loginRequired'));
       return;
     }
 
@@ -355,7 +354,7 @@ export const CommunityProfilePage: React.FC = () => {
       console.error('Failed to toggle like:', err);
       // Revert the optimistic state so the UI matches the DB.
       applyLike(!newLikedState);
-      toast.error(t('community.failedToUpdateLike') || 'Failed to update like');
+      toast.error(t('community.failedToUpdateLike'));
     }
   };
 
@@ -364,17 +363,17 @@ export const CommunityProfilePage: React.FC = () => {
     e.stopPropagation();
 
     if (!isAuthenticated) {
-      toast.error(t('auth.loginRequired') || 'Please login to duplicate workflows');
+      toast.error(t('auth.loginRequired'));
       return;
     }
 
     try {
       await workflowApi.duplicate(workflow._id);
-      toast.success(t('community.workflowDuplicated') || 'Workflow duplicated to your library');
+      toast.success(t('community.workflowDuplicated'));
       // Could redirect to canvas with new ID if desired
     } catch (err) {
       console.error('Failed to duplicate workflow:', err);
-      toast.error(t('community.failedToDuplicateWorkflow') || 'Failed to duplicate workflow');
+      toast.error(t('community.failedToDuplicateWorkflow'));
     }
   };
 
@@ -385,7 +384,7 @@ export const CommunityProfilePage: React.FC = () => {
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="p-2 bg-muted border border-border rounded-lg text-muted-foreground hover:border-border-hover hover:text-foreground transition-colors duration-200"
+        className="p-2 bg-muted border border-border rounded-xl text-muted-foreground hover:border-border-hover hover:text-foreground transition-colors duration-200"
         aria-label={label}
         title={label}
       >
@@ -476,15 +475,16 @@ export const CommunityProfilePage: React.FC = () => {
     >
       <div>
         {/* Profile Header Card */}
-        <div className="relative mb-8 rounded-2xl overflow-hidden bg-card border border-border">
+        <div className="relative mb-8 rounded-xl overflow-hidden bg-card border border-border">
           {/* Cover Image */}
           <div className="h-48 md:h-64 relative w-full bg-muted overflow-hidden">
             {profile.coverImageUrl ? (
               <>
-                <img
+                <Thumb
                   src={profile.coverImageUrl}
                   alt={t('common.cover')}
                   className="w-full h-full object-cover"
+                  fallbackIcon={ImageIcon}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-90" />
               </>
@@ -502,13 +502,14 @@ export const CommunityProfilePage: React.FC = () => {
           <div className="px-6 pb-6 relative z-10 -mt-16 md:-mt-20">
             <div className="flex flex-col md:flex-row items-center md:items-end gap-6">
               {/* Avatar */}
-              <div className="relative group">
-                <div className="w-32 h-32 md:w-36 md:h-36 rounded-2xl bg-muted border-4 border-card overflow-hidden flex items-center justify-center shadow-xl">
+              <div className="relative">
+                <div className="w-32 h-32 md:w-36 md:h-36 rounded-xl bg-muted border-4 border-card overflow-hidden flex items-center justify-center shadow-xl">
                   {profile.picture ? (
-                    <img
+                    <Thumb
                       src={profile.picture}
                       alt={profile.name || t('common.profile')}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      className="w-full h-full object-cover"
+                      fallbackIcon={User}
                     />
                   ) : (
                     <User size={64} className="text-muted-foreground" />
@@ -518,7 +519,7 @@ export const CommunityProfilePage: React.FC = () => {
 
               {/* Info */}
               <div className="flex-1 text-center md:text-left min-w-0">
-                <h1 className="text-3xl md:text-4xl font-bold text-foreground font-manrope mb-2 tracking-tight">
+                <h1 className="text-3xl md:text-4xl font-semibold text-foreground font-manrope mb-2 tracking-tight">
                   {profileName}
                 </h1>
 
@@ -552,21 +553,21 @@ export const CommunityProfilePage: React.FC = () => {
               {/* Stats */}
               <GlassPanel padding="sm" className="flex-row gap-4 md:gap-8 mt-4 md:mt-0 shrink-0">
                 <div className="text-center">
-                  <div className="text-xl md:text-2xl font-bold font-manrope text-foreground tabular-nums">
+                  <div className="text-xl md:text-2xl font-medium font-manrope text-foreground tabular-nums">
                     {mockups.length}
                   </div>
                   <MicroTitle>{t('community.profile.mockups')}</MicroTitle>
                 </div>
                 <div className="w-px bg-border" />
                 <div className="text-center">
-                  <div className="text-xl md:text-2xl font-bold font-manrope text-foreground tabular-nums">
+                  <div className="text-xl md:text-2xl font-medium font-manrope text-foreground tabular-nums">
                     {workflows.length}
                   </div>
                   <MicroTitle>{t('community.profile.workflows')}</MicroTitle>
                 </div>
                 <div className="w-px bg-border" />
                 <div className="text-center">
-                  <div className="text-xl md:text-2xl font-bold font-manrope text-foreground tabular-nums">
+                  <div className="text-xl md:text-2xl font-medium font-manrope text-foreground tabular-nums">
                     {allPresets.length}
                   </div>
                   <MicroTitle>{t('community.profile.presets')}</MicroTitle>
@@ -629,40 +630,24 @@ export const CommunityProfilePage: React.FC = () => {
                   if (!imageUrl) return null;
 
                   return (
-                    <button
-                      type="button"
+                    <MediaTile
                       key={mockup._id}
-                      className="group relative bg-card border border-border rounded-2xl overflow-hidden hover:border-border-hover focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring hover:shadow-lg transition-all duration-300 aspect-square"
+                      src={imageUrl}
+                      alt={mockup.prompt || t('mockup.title')}
+                      layout="overlay"
                       onClick={() => handleView(mockup)}
-                    >
-                      <img
-                        src={imageUrl}
-                        alt={mockup.prompt || t('mockup.title')}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                      />
-                      {/* Contagem de likes é informação, não controle: sem hover
-                              (touch) ela some. hoverReveal mantém visível onde não
-                              há ponteiro fino e revela no foco de teclado. */}
-                      <div
-                        className={cn(
-                          hoverReveal,
-                          'absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4'
-                        )}
-                      >
-                        <div className="flex items-center gap-2 text-white">
+                      // Contagem de likes é informação, não controle: badge estático,
+                      // sempre visível (inclusive no touch).
+                      badge={
+                        <Badge variant="neutral" className="gap-1 px-1.5 tabular-nums">
                           <Heart
-                            size={14}
-                            className={cn(
-                              mockup.isLiked ? 'fill-current text-destructive' : 'text-white'
-                            )}
+                            size={12}
+                            className={cn(mockup.isLiked && 'fill-current text-destructive')}
                           />
-                          <span className="text-xs font-mono tabular-nums">
-                            {mockup.likesCount || 0}
-                          </span>
-                        </div>
-                      </div>
-                    </button>
+                          {mockup.likesCount || 0}
+                        </Badge>
+                      }
+                    />
                   );
                 })}
               </div>
@@ -690,103 +675,49 @@ export const CommunityProfilePage: React.FC = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {workflows.map((workflow) => (
-                  <GlassPanel
+                  <MediaTile
                     key={workflow._id}
-                    className="group overflow-hidden hover:border-border-hover transition-all duration-300 flex flex-col h-full"
-                  >
-                    <div className="aspect-video w-full bg-muted relative overflow-hidden">
-                      {workflow.thumbnailUrl ? (
-                        <img
-                          src={workflow.thumbnailUrl}
-                          alt={workflow.name}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                          <Workflow size={48} strokeWidth={1} />
-                        </div>
-                      )}
-
-                      {/* Overlay Actions */}
-                      <div
-                        className={cn(
-                          hoverReveal,
-                          'absolute inset-0 bg-background/70 duration-200 flex items-center justify-center gap-2'
-                        )}
+                    src={workflow.thumbnailUrl || undefined}
+                    alt={workflow.name}
+                    aspectRatio={16 / 9}
+                    href={`/canvas/${workflow._id}`}
+                    title={workflow.name}
+                    subtitle={workflow.description}
+                    fallbackIcon={Workflow}
+                    className="h-full"
+                    // Só o curtir (toggle com contagem) fica visível; duplicar volta pro hover.
+                    // Categoria é metadado, não ação: badge sempre visível.
+                    badge={<Badge variant="neutral">{workflow.category}</Badge>}
+                    meta={
+                      <span className="tabular-nums">
+                        {t('community.nodesCount', { count: workflow.nodes?.length || 0 })}
+                      </span>
+                    }
+                    actions={
+                      <Button
+                        variant="surface"
+                        size="icon-sm"
+                        onClick={(e) => handleDuplicateWorkflow(e, workflow)}
+                        aria-label={t('community.profile.duplicate_to_my_library')}
+                        title={t('community.profile.duplicate_to_my_library')}
                       >
-                        <Button variant="brand" size="sm" className="gap-2" asChild>
-                          <Link to={`/canvas/${workflow._id}`}>
-                            <Play size={14} className="fill-current" />
-                            {t('community.profile.run')}
-                          </Link>
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="secondary"
-                          onClick={(e) => handleDuplicateWorkflow(e, workflow)}
-                          aria-label={t('community.profile.duplicate_to_my_library')}
-                          title={t('community.profile.duplicate_to_my_library')}
-                        >
-                          <Share2 size={14} />
-                        </Button>
-                      </div>
-
-                      {/* Categoria é metadado, não ação: fica sempre visível.
-                              Antes só aparecia no hover — invisível no touch. */}
-                      <div className="absolute top-2 right-2">
-                        <Badge
-                          variant="secondary"
-                          className="bg-background/70 backdrop-blur-sm text-xs"
-                        >
-                          {workflow.category}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <CardContent className="p-4 flex flex-col flex-1">
-                      <h3 className="font-semibold text-foreground line-clamp-1 mb-2">
-                        <Link
-                          to={`/canvas/${workflow._id}`}
-                          className="hover:underline underline-offset-2 focus-visible:outline-none focus-visible:underline"
-                        >
-                          {workflow.name}
-                        </Link>
-                      </h3>
-
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
-                        {workflow.description}
-                      </p>
-
-                      <div className="flex items-center justify-between pt-3 border-t border-border mt-auto">
-                        <div className="flex items-center gap-1 text-muted-foreground text-xs font-mono">
-                          <span>
-                            {t('community.nodesCount', { count: workflow.nodes?.length || 0 })}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <Button
-                            variant="ghost"
-                            onClick={(e) => handleToggleWorkflowLike(e, workflow)}
-                            aria-pressed={!!workflow.isLikedByUser}
-                            className={cn(
-                              'flex items-center gap-1.5 text-xs font-mono transition-colors',
-                              workflow.isLikedByUser
-                                ? 'text-destructive hover:text-destructive'
-                                : 'text-muted-foreground hover:text-foreground'
-                            )}
-                          >
-                            <Heart
-                              size={14}
-                              className={cn(workflow.isLikedByUser && 'fill-current')}
-                            />
-                            {workflow.likesCount || 0}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </GlassPanel>
+                        <Share2 />
+                      </Button>
+                    }
+                    persistentActions={
+                      <Button
+                        variant="surface"
+                        size="xs"
+                        onClick={(e) => handleToggleWorkflowLike(e, workflow)}
+                        aria-pressed={!!workflow.isLikedByUser}
+                        aria-label={t('workflows.actions.like')}
+                        className={cn('tabular-nums', workflow.isLikedByUser && 'text-destructive')}
+                      >
+                        <Heart className={cn(workflow.isLikedByUser && 'fill-current')} />
+                        {workflow.likesCount || 0}
+                      </Button>
+                    }
+                  />
                 ))}
               </div>
             )}
@@ -815,46 +746,18 @@ export const CommunityProfilePage: React.FC = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {allPresets.map((preset) => (
-                  <GlassPanel
-                    asChild
+                  <MediaTile
                     key={preset._id || preset.id}
-                    className="group flex flex-col text-left h-full p-0 overflow-hidden hover:border-border-hover transition-all duration-300"
-                  >
-                    <button type="button" onClick={() => handlePresetClick(preset)}>
-                      <div className="aspect-[3/2] w-full bg-muted relative overflow-hidden">
-                        {preset.referenceImageUrl ? (
-                          <img
-                            src={preset.referenceImageUrl}
-                            alt={preset.name}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <Diamond size={32} className="text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="absolute bottom-2 right-2">
-                          <Badge
-                            variant="secondary"
-                            className="bg-background/70 backdrop-blur-sm text-2xs uppercase"
-                          >
-                            {preset.presetType}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="p-4 flex flex-col flex-1 w-full">
-                        <h3 className="font-semibold text-foreground text-sm mb-1 line-clamp-1">
-                          {preset.name}
-                        </h3>
-                        {preset.description && (
-                          <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                            {preset.description}
-                          </p>
-                        )}
-                      </div>
-                    </button>
-                  </GlassPanel>
+                    src={preset.referenceImageUrl || undefined}
+                    alt={preset.name}
+                    aspectRatio={3 / 2}
+                    onClick={() => handlePresetClick(preset)}
+                    title={preset.name}
+                    subtitle={preset.description || undefined}
+                    fallbackIcon={Diamond}
+                    className="h-full"
+                    badge={<Badge variant="neutral">{preset.presetType}</Badge>}
+                  />
                 ))}
               </div>
             )}
@@ -914,7 +817,7 @@ export const CommunityProfilePage: React.FC = () => {
                     setSelectedMockup((prev) =>
                       prev ? { ...prev, isLiked: prevLiked, likesCount: prevCount } : null
                     );
-                    toast.error(t('community.failedToUpdateLike') || 'Failed to update like');
+                    toast.error(t('community.failedToUpdateLike'));
                   }
                 }
               : undefined

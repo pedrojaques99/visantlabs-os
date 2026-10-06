@@ -135,16 +135,16 @@ function ContrastPanel({ colors }: { colors: ConvertedColor[] }) {
         </label>
       </div>
 
-      {/* Preview */}
+      {/* Preview. EXCEÇÃO ao ui-scale/peso-pesado: espécime de contraste (texto grosso é o caso testado) */}
       <div className="flex gap-2">
         <div
-          className="flex items-center justify-center rounded-lg px-4 py-2 text-sm font-bold"
+          className="flex items-center justify-center rounded-xl px-4 py-2 text-sm font-bold"
           style={{ backgroundColor: colors[a].hex, color: colors[b].hex }}
         >
           Aa
         </div>
         <div
-          className="flex items-center justify-center rounded-lg px-4 py-2 text-sm font-bold"
+          className="flex items-center justify-center rounded-xl px-4 py-2 text-sm font-bold"
           style={{ backgroundColor: colors[b].hex, color: colors[a].hex }}
         >
           Aa
@@ -273,7 +273,7 @@ export const ColorConverterPage: React.FC = () => {
         <div className="flex gap-2 items-center">
           {livePreview && (
             <div
-              className="w-9 h-9 rounded-lg border border-border flex-shrink-0"
+              className="w-9 h-9 rounded-xl border border-border flex-shrink-0"
               style={{ backgroundColor: livePreview }}
             />
           )}
@@ -296,7 +296,9 @@ export const ColorConverterPage: React.FC = () => {
       <Button
         onClick={() => inputColor.trim() && addColor(inputColor)}
         disabled={!inputColor.trim()}
-        className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
+        variant="primary"
+        size="sm"
+        className="w-full text-xs"
       >
         {t('common.addColor')}
       </Button>
@@ -398,7 +400,7 @@ function ColorRow({
       <div className="flex items-center gap-3 p-3">
         {/* Swatch */}
         <div
-          className="w-10 h-10 rounded-lg border border-border flex-shrink-0"
+          className="w-10 h-10 rounded-xl border border-border flex-shrink-0"
           style={{ backgroundColor: hex }}
         />
 

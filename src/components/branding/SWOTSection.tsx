@@ -87,7 +87,7 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
             : 'bg-neutral-100 border-neutral-300'
         }`}
       >
-        <h4 className={`font-semibold ${colorClass} mb-3 font-manrope text-base`}>{title}</h4>
+        <h4 className={`font-medium ${colorClass} mb-3 font-manrope text-base`}>{title}</h4>
         <div className="space-y-2">
           {items.map((item, index) => (
             <div key={index} className="relative">
@@ -105,22 +105,14 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
                   <Button
                     variant="ghost"
                     onClick={() => handleRemoveItem(category, index)}
-                    className={`p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive self-start mt-2 ${
-                      theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                    }`}
+                    className="p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive self-start mt-2 text-muted-foreground"
                     title="Remover item"
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
               ) : (
-                <div
-                  className={`text-sm font-manrope leading-relaxed ${
-                    theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
-                  }`}
-                >
-                  {item}
-                </div>
+                <div className="text-sm font-manrope leading-relaxed text-foreground">{item}</div>
               )}
             </div>
           ))}
@@ -160,15 +152,10 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
       {renderCategory(
         'opportunities',
         t('branding.opportunities'),
-        'text-blue-400',
-        'hover:border-blue-400/30'
+        'text-chart-2',
+        'hover:border-chart-2/30'
       )}
-      {renderCategory(
-        'threats',
-        t('branding.threats'),
-        'text-orange-400',
-        'hover:border-orange-400/30'
-      )}
+      {renderCategory('threats', t('branding.threats'), 'text-warning', 'hover:border-warning/30')}
     </div>
   );
 };

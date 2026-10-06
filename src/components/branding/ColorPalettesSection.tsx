@@ -98,9 +98,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
               <Button
                 variant="ghost"
                 onClick={() => handleRemovePalette(index)}
-                className={`absolute top-2 right-2 p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive ${
-                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                }`}
+                className="absolute top-2 right-2 p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive text-muted-foreground"
                 title="Remover paleta"
               >
                 <X className="h-4 w-4" />
@@ -113,18 +111,14 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                 value={palette.name}
                 onChange={(e) => handleNameChange(index, e.target.value)}
                 placeholder="Nome da paleta"
-                className={`font-semibold mb-4 font-manrope text-lg bg-transparent border-b-2 focus:border-neutral-600 focus:outline-none pb-1 w-full ${
+                className={`font-medium mb-4 font-manrope text-lg bg-transparent border-b-2 focus:border-neutral-600 focus:outline-none pb-1 w-full ${
                   theme === 'dark'
                     ? 'text-neutral-200 border-neutral-700/50'
                     : 'text-neutral-800 border-neutral-400/50'
                 }`}
               />
             ) : (
-              <h4
-                className={`font-semibold mb-4 font-manrope text-lg ${
-                  theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-                }`}
-              >
+              <h4 className="font-medium mb-4 font-manrope text-lg text-foreground">
                 {palette.name}
               </h4>
             )}
@@ -156,9 +150,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                       <Button
                         variant="ghost"
                         onClick={() => handleRemoveColor(index, colorIndex)}
-                        className={`w-full p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive text-xs ${
-                          theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                        }`}
+                        className="w-full p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive text-xs text-muted-foreground"
                         title="Remover cor"
                       >
                         <X className="h-3 w-3 mx-auto" />
@@ -182,11 +174,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                         style={{ backgroundColor: color }}
                         title={color}
                       />
-                      <span
-                        className={`text-xs font-mono font-medium ${
-                          theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-                        }`}
-                      >
+                      <span className="text-xs font-mono font-medium text-muted-foreground">
                         {color.toUpperCase()}
                       </span>
                     </>
@@ -227,11 +215,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                   }`}
                 />
               ) : (
-                <p
-                  className={`text-sm font-manrope leading-relaxed ${
-                    theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                  }`}
-                >
+                <p className="text-sm font-manrope leading-relaxed text-muted-foreground">
                   {palette.psychology}
                 </p>
               )}

@@ -42,7 +42,7 @@ export const PanelSectionTabs: React.FC<PanelSectionTabsProps> = ({
   >
     <TabsPrimitive.List
       aria-label={ariaLabel}
-      className="shrink-0 flex flex-col items-center gap-1 py-3 px-1.5 border-r border-neutral-800 bg-neutral-950/50"
+      className="shrink-0 flex flex-col items-center gap-1 py-3 px-1.5 border-r border-border bg-background/50"
     >
       {tabs.map((t) => (
         <TabsPrimitive.Trigger
@@ -51,9 +51,9 @@ export const PanelSectionTabs: React.FC<PanelSectionTabsProps> = ({
           title={t.label}
           aria-label={t.label}
           className={cn(
-            'w-8 h-8 flex items-center justify-center rounded-lg transition-colors',
-            'text-neutral-600 hover:text-neutral-300 hover:bg-white/5',
-            'data-[state=active]:bg-white/10 data-[state=active]:text-white',
+            'w-8 h-8 flex items-center justify-center rounded-xl transition-colors',
+            'text-muted-foreground hover:text-foreground hover:bg-accent',
+            'data-[state=active]:bg-accent data-[state=active]:text-foreground',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan/60'
           )}
         >
@@ -66,10 +66,10 @@ export const PanelSectionTabs: React.FC<PanelSectionTabsProps> = ({
       <TabsPrimitive.Content
         key={t.id}
         value={t.id}
-        className="flex-1 min-w-0 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent focus-visible:outline-none"
+        className="flex-1 min-w-0 overflow-y-auto scrollbar-thin focus-visible:outline-none"
       >
-        <div className="px-4 pt-3 pb-2 border-b border-neutral-800/50 flex items-center justify-between gap-2">
-          <span className="text-2xs text-neutral-400">{t.label}</span>
+        <div className="px-4 pt-3 pb-2 border-b border-border flex items-center justify-between gap-2">
+          <span className="text-2xs text-muted-foreground">{t.label}</span>
           {t.action}
         </div>
         <div className="px-4 py-4 space-y-4">{t.content}</div>

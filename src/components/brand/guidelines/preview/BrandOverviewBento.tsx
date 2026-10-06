@@ -138,7 +138,7 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
           viewLabel={t('brandView.viewAll')}
           className="md:col-span-2"
         >
-          <div className="h-full min-h-[140px] rounded-2xl bg-[var(--brand-surface)]/40 border border-[var(--brand-text)]/5 flex items-center justify-center p-6">
+          <div className="h-full min-h-[140px] rounded-xl bg-[var(--brand-surface)]/40 border border-[var(--brand-text)]/5 flex items-center justify-center p-6">
             {tokens.primaryLogo?.url ? (
               <Thumb
                 src={tokens.primaryLogo.url}
@@ -235,7 +235,7 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
           type="button"
           onClick={() => onOpenTab('preview')}
           aria-label={t('brandView.mockups')}
-          className="block w-full rounded-2xl overflow-hidden border border-[var(--brand-text)]/8 transition-colors hover:border-[var(--brand-text)]/25 focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/40"
+          className="block w-full rounded-xl overflow-hidden border border-[var(--brand-text)]/8 transition-colors hover:border-[var(--brand-text)]/25 focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/40"
         >
           {hasAssets ? (
             <WebsiteHeroMock tokens={tokens} />

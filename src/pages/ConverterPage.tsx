@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Upload, ArrowLeftRight, X, ArrowRight } from '@/lib/ui/icons';
+import { ArrowLeftRight, X, ArrowRight } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,8 @@ import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
+import { Dropzone } from '@/components/ui/Dropzone';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { formatBytes } from '@/utils/formatUtils';
 import { useToolInput } from '@/hooks/useToolInput';
 import JSZip from 'jszip';
@@ -145,7 +147,7 @@ export const ConverterPage: React.FC = () => {
     items.find((i) => i.id === previewId) || items.find((i) => i.status === 'done') || items[0];
 
   const handleFiles = useCallback(
-    async (fileList: FileList) => {
+    async (fileList: FileList | File[]) => {
       const valid: File[] = [];
       const pdfFiles: File[] = [];
       Array.from(fileList).forEach((file) => {
@@ -192,14 +194,6 @@ export const ConverterPage: React.FC = () => {
       }
     },
     [addFiles, t]
-  );
-
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files) handleFiles(e.target.files);
-      if (e.target) e.target.value = '';
-    },
-    [handleFiles]
   );
 
   const handleDrop = useCallback(
@@ -274,17 +268,14 @@ export const ConverterPage: React.FC = () => {
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Add more */}
-      <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
-        <Upload size={12} />
-        {t('miniTools.converter.addImagesPdf')}
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/svg+xml,image/gif,image/bmp,application/pdf"
-          multiple
-          className="hidden"
-          onChange={handleInputChange}
-        />
-      </label>
+      <Dropzone
+        onFiles={handleFiles}
+        accept="image/jpeg,image/png,image/webp,image/svg+xml,image/gif,image/bmp,application/pdf"
+        multiple
+        label={t('miniTools.converter.addImagesPdf')}
+        size="sm"
+        dropTarget={false}
+      />
 
       {/* Thumbnail queue */}
       <div className="max-h-[32vh] overflow-y-auto space-y-1.5 pr-1">
@@ -295,7 +286,7 @@ export const ConverterPage: React.FC = () => {
             {...fade}
             onClick={() => setPreviewId(item.id)}
             className={cn(
-              'group flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors duration-200',
+              'group flex items-center gap-2 p-1.5 rounded-xl cursor-pointer transition-colors duration-200',
               previewItem?.id === item.id ? 'bg-muted ring-1 ring-border' : 'hover:bg-muted/60'
             )}
           >
@@ -347,24 +338,15 @@ export const ConverterPage: React.FC = () => {
         {/* Format */}
         <div className="space-y-1.5">
           <span className="text-xs font-medium text-muted-foreground">{t('miniTools.format')}</span>
-          <div className="flex gap-1 flex-wrap">
-            {OUTPUT_FORMATS.map((f) => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => setOutputFormat(f)}
-                disabled={isProcessing}
-                className={cn(
-                  'px-2.5 py-0.5 rounded border text-xs font-mono transition-colors duration-200',
-                  outputFormat === f
-                    ? 'border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan'
-                    : 'border-border bg-muted/40 text-muted-foreground hover:border-ring hover:text-foreground'
-                )}
-              >
-                {f.toUpperCase()}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            aria-label={t('miniTools.format')}
+            size="sm"
+            fullWidth
+            value={outputFormat}
+            onChange={setOutputFormat}
+            disabled={isProcessing}
+            options={OUTPUT_FORMATS.map((f) => ({ value: f, label: f.toUpperCase() }))}
+          />
         </div>
 
         {/* Quality slider — only for JPG */}
@@ -402,7 +384,9 @@ export const ConverterPage: React.FC = () => {
               <Button
                 onClick={handleConvertAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
+                variant="primary"
+                size="sm"
+                className="w-full text-xs"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -476,17 +460,14 @@ export const ConverterPage: React.FC = () => {
       <AnimatePresence mode="wait">
         {!hasItems ? (
           <motion.div key="upload" {...fade} className="flex w-full justify-center py-8">
-            <label className="flex h-48 w-full max-w-md cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border px-4 text-center text-sm text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
-              <Upload size={20} />
-              {t('miniTools.converter.dropImagesPdf')}
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/svg+xml,image/gif,image/bmp,application/pdf"
-                multiple
-                className="hidden"
-                onChange={handleInputChange}
-              />
-            </label>
+            <Dropzone
+              onFiles={handleFiles}
+              accept="image/jpeg,image/png,image/webp,image/svg+xml,image/gif,image/bmp,application/pdf"
+              multiple
+              label={t('miniTools.converter.dropImagesPdf')}
+              dropTarget={false}
+              className="max-w-md"
+            />
           </motion.div>
         ) : (
           /* ── Working state — preview centered ── */
@@ -494,7 +475,7 @@ export const ConverterPage: React.FC = () => {
             key="workspace"
             {...fadeScale}
             className={cn(
-              'relative w-full max-w-3xl rounded-2xl overflow-hidden min-h-[300px] flex items-center justify-center',
+              'relative w-full max-w-3xl rounded-xl overflow-hidden min-h-[300px] flex items-center justify-center',
               glassSurface.surface
             )}
           >

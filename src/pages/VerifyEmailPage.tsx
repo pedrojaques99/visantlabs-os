@@ -39,15 +39,19 @@ export const VerifyEmailPage: React.FC = () => {
           {status === 'loading' && (
             <>
               <GlitchLoader />
-              <p className="text-neutral-400 font-mono text-sm mt-4">Verificando seu email...</p>
+              <p className="text-muted-foreground font-mono text-sm mt-4">
+                Verificando seu email...
+              </p>
             </>
           )}
 
           {status === 'success' && (
             <>
               <CheckCircle2 className="w-12 h-12 text-success mx-auto mb-4" />
-              <h2 className="text-lg font-semibold text-white font-mono mb-2">Email verificado!</h2>
-              <p className="text-neutral-400 text-sm font-mono mb-6">
+              <h2 className="text-lg font-semibold text-foreground font-mono mb-2">
+                Email verificado!
+              </h2>
+              <p className="text-muted-foreground text-sm font-mono mb-6">
                 Sua conta foi verificada com sucesso.
               </p>
               <Button onClick={() => navigate('/')} className="w-full">
@@ -59,10 +63,10 @@ export const VerifyEmailPage: React.FC = () => {
           {status === 'error' && (
             <>
               <XCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
-              <h2 className="text-lg font-semibold text-white font-mono mb-2">
+              <h2 className="text-lg font-semibold text-foreground font-mono mb-2">
                 Erro na verificacao
               </h2>
-              <p className="text-neutral-400 text-sm font-mono mb-6">{errorMessage}</p>
+              <p className="text-muted-foreground text-sm font-mono mb-6">{errorMessage}</p>
               <Button onClick={() => navigate('/')} variant="outline" className="w-full">
                 Voltar ao inicio
               </Button>

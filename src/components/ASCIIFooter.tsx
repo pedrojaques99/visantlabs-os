@@ -144,7 +144,7 @@ export default function ASCIIFooter({
                   onClick={() => setIsPoliciesMenuOpen(!isPoliciesMenuOpen)}
                   className={`flex items-center gap-1.5 px-2 py-1 ${
                     isDarkMode ? 'hover:bg-neutral-900/50' : 'hover:bg-neutral-900/20'
-                  } rounded-sm transition-colors hover:text-foreground`}
+                  } rounded-md transition-colors hover:text-foreground`}
                 >
                   <Scale size={10} />
                   <span>{t('footer.legal')}</span>
@@ -162,7 +162,7 @@ export default function ASCIIFooter({
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute bottom-full right-0 mb-3 bg-popover backdrop-blur-xl border border-border rounded-sm shadow-2xl z-50 min-w-[140px] overflow-hidden"
+                      className="absolute bottom-full right-0 mb-3 bg-popover backdrop-blur-xl border border-border rounded-md shadow-2xl z-50 min-w-[140px] overflow-hidden"
                     >
                       <div className="p-1 flex flex-col gap-1">
                         {onTermsClick && (
@@ -211,7 +211,7 @@ export default function ASCIIFooter({
                 onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
                 className={`flex items-center gap-1.5 px-2 py-1 ${
                   isDarkMode ? 'hover:bg-neutral-900/50' : 'hover:bg-neutral-900/20'
-                } rounded-sm transition-colors hover:text-foreground`}
+                } rounded-md transition-colors hover:text-foreground`}
               >
                 <Globe size={10} className={textColor} />
                 <span className="uppercase">{locale?.split('-')[0] || 'EN'}</span>
@@ -229,7 +229,7 @@ export default function ASCIIFooter({
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute bottom-full right-0 mb-3 bg-popover backdrop-blur-xl border border-border rounded-sm shadow-2xl z-50 min-w-[120px] overflow-hidden"
+                    className="absolute bottom-full right-0 mb-3 bg-popover backdrop-blur-xl border border-border rounded-md shadow-2xl z-50 min-w-[120px] overflow-hidden"
                   >
                     <div className="p-1 flex flex-col gap-1">
                       <Button

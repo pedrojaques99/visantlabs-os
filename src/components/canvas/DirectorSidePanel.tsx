@@ -435,7 +435,7 @@ const ColorSection: React.FC<ColorSectionProps> = ({
               {selectedColors.slice(0, 5).map((color) => (
                 <div
                   key={color}
-                  className="w-3 h-3 rounded-full border border-white/20"
+                  className="w-3 h-3 rounded-full border border-border-hover"
                   style={{ backgroundColor: color }}
                 />
               ))}
@@ -577,17 +577,11 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
 
             {!hasAnalyzed && (
               <Button
-                variant="brand"
+                variant="primary"
+                size="lg"
                 onClick={onAnalyze}
                 disabled={isAnalyzing}
-                className={cn(
-                  'w-full px-4 py-3 rounded-md border transition-colors duration-200',
-                  'flex items-center justify-center gap-2',
-                  'text-sm',
-                  isAnalyzing
-                    ? 'bg-neutral-800/50 border-neutral-700/50 text-neutral-400 cursor-not-allowed'
-                    : 'bg-brand-cyan/10 border-neutral-600/30 text-foreground hover:bg-brand-cyan/20'
-                )}
+                className="w-full gap-2 px-4 text-sm"
               >
                 {isAnalyzing ? (
                   <>

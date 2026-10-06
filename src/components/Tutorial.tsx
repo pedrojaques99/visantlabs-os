@@ -173,7 +173,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                 onCreateMockup();
                 onClose();
               }}
-              className="font-semibold"
+              className="font-medium"
             >
               <span>{t('tutorial.createMockup')}</span>
             </Button>

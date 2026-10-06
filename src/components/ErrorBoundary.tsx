@@ -206,7 +206,7 @@ export class ErrorBoundary extends Component<Props, State> {
       if (isChunkError && this.state.isRetrying) {
         return (
           <div className="min-h-screen bg-black text-neutral-300 flex items-center justify-center p-4">
-            <div className="max-w-md w-full bg-neutral-950/95 backdrop-blur-xl border border-neutral-800 rounded-xl p-6 md:p-8 space-y-4 text-center">
+            <div className="max-w-md w-full bg-neutral-950 border border-neutral-800 rounded-xl p-6 md:p-8 space-y-4 text-center">
               <div className="flex justify-center">
                 <RefreshCw className="h-8 w-8 text-foreground animate-spin" />
               </div>
@@ -220,7 +220,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="min-h-screen bg-black text-neutral-300 flex items-center justify-center p-4">
-          <div className="max-w-2xl w-full bg-neutral-950/95 backdrop-blur-xl border border-neutral-800 rounded-xl p-6 md:p-8 space-y-6">
+          <div className="max-w-2xl w-full bg-neutral-950 border border-neutral-800 rounded-xl p-6 md:p-8 space-y-6">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-destructive/20 rounded-md">
                 <AlertTriangle className="h-6 w-6 text-destructive" />
@@ -241,7 +241,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
             <div className="bg-neutral-950/70 border border-neutral-800 rounded-md p-4 space-y-2">
               {!isChunkError && (
-                <p className="text-sm font-mono text-destructive font-semibold">{errorMessage}</p>
+                <p className="text-sm font-mono text-destructive font-medium">{errorMessage}</p>
               )}
               {isChunkError && (
                 <div className="space-y-2">

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Upload, Minimize2, X, ArrowRight } from '@/lib/ui/icons';
+import { Minimize2, X, ArrowRight } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,8 @@ import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
+import { Dropzone } from '@/components/ui/Dropzone';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { QuickActions } from '@/components/shared/QuickActions';
 import { BrandToolSelect } from '@/components/shared/BrandToolSelect';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -137,7 +139,7 @@ export const CompressPage: React.FC = () => {
   const totalPercent = totalOriginal > 0 ? Math.round((totalSaved / totalOriginal) * 100) : 0;
 
   const handleFiles = useCallback(
-    (fileList: FileList) => {
+    (fileList: FileList | File[]) => {
       const valid: { url: string; name: string; size: number }[] = [];
       Array.from(fileList).forEach((file) => {
         const error = validateFile(file, 'image');
@@ -150,14 +152,6 @@ export const CompressPage: React.FC = () => {
       if (valid.length) addFiles(valid);
     },
     [addFiles]
-  );
-
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files) handleFiles(e.target.files);
-      if (e.target) e.target.value = '';
-    },
-    [handleFiles]
   );
 
   const handleDrop = useCallback(
@@ -226,28 +220,17 @@ export const CompressPage: React.FC = () => {
     else toast.error(result.error || t('miniTools.copyFailed'));
   }, [previewItem, t]);
 
-  const chipClass = (selected: boolean) =>
-    cn(
-      'flex-1 rounded border px-2 py-1 text-xs font-mono tabular-nums transition-colors duration-200',
-      selected
-        ? 'border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan'
-        : 'border-border bg-muted/40 text-muted-foreground hover:border-ring hover:text-foreground'
-    );
-
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Add more */}
-      <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
-        <Upload size={12} />
-        {t('miniTools.addImages')}
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          multiple
-          className="hidden"
-          onChange={handleInputChange}
-        />
-      </label>
+      <Dropzone
+        onFiles={handleFiles}
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        label={t('miniTools.addImages')}
+        size="sm"
+        dropTarget={false}
+      />
 
       {/* Thumbnail queue */}
       <div className="max-h-[32vh] overflow-y-auto space-y-1.5 pr-1">
@@ -258,7 +241,7 @@ export const CompressPage: React.FC = () => {
             {...fade}
             layout
             className={cn(
-              'group flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors duration-200',
+              'group flex items-center gap-2 p-1.5 rounded-xl cursor-pointer transition-colors duration-200',
               previewItem?.id === item.id ? 'bg-muted ring-1 ring-border' : 'hover:bg-muted/60'
             )}
           >
@@ -333,37 +316,29 @@ export const CompressPage: React.FC = () => {
           <span className="text-xs font-medium text-muted-foreground">
             {t('miniTools.maxDimension')}
           </span>
-          <div className="flex gap-1">
-            {DIMENSION_OPTIONS.map((d) => (
-              <button
-                key={d}
-                type="button"
-                onClick={() => setMaxDimension(d)}
-                disabled={isProcessing}
-                className={chipClass(maxDimension === d)}
-              >
-                {d}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            aria-label={t('miniTools.maxDimension')}
+            size="sm"
+            fullWidth
+            value={String(maxDimension)}
+            onChange={(v) => setMaxDimension(Number(v))}
+            disabled={isProcessing}
+            options={DIMENSION_OPTIONS.map((d) => ({ value: String(d), label: d }))}
+          />
         </div>
 
         {/* Format */}
         <div className="space-y-1.5">
           <span className="text-xs font-medium text-muted-foreground">{t('miniTools.format')}</span>
-          <div className="flex gap-1">
-            {FORMAT_OPTIONS.map((f) => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => setOutputFormat(f)}
-                disabled={isProcessing}
-                className={chipClass(outputFormat === f)}
-              >
-                {f.toUpperCase()}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            aria-label={t('miniTools.format')}
+            size="sm"
+            fullWidth
+            value={outputFormat}
+            onChange={setOutputFormat}
+            disabled={isProcessing}
+            options={FORMAT_OPTIONS.map((f) => ({ value: f, label: f.toUpperCase() }))}
+          />
         </div>
       </div>
 
@@ -377,7 +352,9 @@ export const CompressPage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
+                variant="primary"
+                size="sm"
+                className="w-full text-xs"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -457,24 +434,21 @@ export const CompressPage: React.FC = () => {
       <AnimatePresence mode="wait">
         {!hasItems ? (
           <motion.div key="upload" {...fade} className="flex w-full justify-center py-8">
-            <label className="flex h-48 w-full max-w-md cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border px-4 text-center text-sm text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
-              <Upload size={20} />
-              {t('miniTools.dropImages')}
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                multiple
-                className="hidden"
-                onChange={handleInputChange}
-              />
-            </label>
+            <Dropzone
+              onFiles={handleFiles}
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              label={t('miniTools.dropImages')}
+              dropTarget={false}
+              className="max-w-md"
+            />
           </motion.div>
         ) : (
           <motion.div
             key="workspace"
             {...fadeScale}
             className={cn(
-              'relative w-full max-w-3xl rounded-2xl overflow-hidden min-h-[300px] flex items-center justify-center',
+              'relative w-full max-w-3xl rounded-xl overflow-hidden min-h-[300px] flex items-center justify-center',
               glassSurface.surface
             )}
           >

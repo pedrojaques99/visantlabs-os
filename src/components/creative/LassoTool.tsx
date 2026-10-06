@@ -7,6 +7,7 @@ import { canvasApi } from '@/services/canvasApi';
 import { toast } from 'sonner';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { BRAND_CYAN } from './lib/editorTokens';
 interface Props {
   canvasWidth: number;
   canvasHeight: number;
@@ -160,6 +161,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
         {/* Dimmed overlay outside selection */}
         {selRect && (
           <div className="absolute inset-0 pointer-events-none">
+            {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
             {/* Dark overlay with cutout */}
             <div
               className="absolute inset-0 bg-black/50 transition-opacity duration-200"
@@ -177,7 +179,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
             />
             {/* Selection border */}
             <div
-              className="absolute border-2 border-border rounded-sm shadow-[0_0_20px_rgba(0,229,255,0.15)]"
+              className="absolute border-2 border-border rounded-md shadow-[0_0_20px_rgba(0,229,255,0.15)]"
               style={{
                 left: selRect.left,
                 top: selRect.top,
@@ -189,15 +191,16 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
               {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map((pos) => (
                 <div
                   key={pos}
-                  className="absolute w-2 h-2 bg-brand-cyan rounded-full border border-white shadow-lg"
+                  className="absolute w-2 h-2 rounded-full border border-white shadow-lg"
                   style={{
+                    backgroundColor: BRAND_CYAN,
                     ...(pos.includes('top') ? { top: -4 } : { bottom: -4 }),
                     ...(pos.includes('left') ? { left: -4 } : { right: -4 }),
                   }}
                 />
               ))}
               {/* Size label */}
-              <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-neutral-900/90 border border-white/10 rounded text-2xs font-mono text-neutral-400 whitespace-nowrap">
+              <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-neutral-900/90 border border-border rounded text-2xs font-mono text-neutral-400 whitespace-nowrap">
                 {Math.round(selRect.width)}x{Math.round(selRect.height)}px
               </div>
             </div>
@@ -215,17 +218,17 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="w-[280px] bg-neutral-900/95 border border-white/10 rounded-xl p-4 backdrop-blur-xl shadow-2xl flex flex-col gap-3">
+          <div className="w-[280px] bg-neutral-900/95 border border-border rounded-xl p-4 backdrop-blur-xl shadow-2xl flex flex-col gap-3">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Diamond size={14} className="text-neutral-400" />
-                <span className="text-xs font-semibold text-white">Editar região</span>
+                <span className="text-xs font-medium text-white">Editar região</span>
               </div>
               <button
                 onClick={handleClose}
                 aria-label="Fechar"
-                className="p-1 rounded text-neutral-500 hover:text-white hover:bg-white/5 transition-colors"
+                className="p-1 rounded text-neutral-500 hover:text-white hover:bg-accent transition-colors"
               >
                 <X size={14} />
               </button>
@@ -236,7 +239,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setActionMode('layer')}
-                  className="flex flex-col items-center gap-2 p-3 rounded-lg border border-neutral-800 bg-neutral-800/50 hover:border-neutral-700 hover:bg-neutral-800 transition-colors group"
+                  className="flex flex-col items-center gap-2 p-3 rounded-xl border border-neutral-800 bg-neutral-800/50 hover:border-neutral-700 hover:bg-neutral-800 transition-colors group"
                 >
                   <Plus
                     size={18}
@@ -249,7 +252,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                 </button>
                 <button
                   onClick={() => setActionMode('edit')}
-                  className="flex flex-col items-center gap-2 p-3 rounded-lg border border-neutral-800 bg-neutral-800/50 hover:border-neutral-700 hover:bg-neutral-800 transition-colors group"
+                  className="flex flex-col items-center gap-2 p-3 rounded-xl border border-neutral-800 bg-neutral-800/50 hover:border-neutral-700 hover:bg-neutral-800 transition-colors group"
                 >
                   <Diamond
                     size={18}
@@ -285,13 +288,13 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                     actionMode === 'layer' ? 'O que criar nesta área?' : 'Como editar esta região?'
                   }
                   rows={2}
-                  className="w-full bg-neutral-800/60 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 resize-none"
+                  className="w-full bg-neutral-800/60 border border-neutral-800 rounded-xl px-3 py-2 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 resize-none"
                 />
                 <Button
-                  variant="brand"
+                  variant="primary"
                   onClick={handleGenerate}
                   disabled={!aiPrompt.trim() || isGenerating}
-                  className="w-full py-2.5 text-xs font-semibold flex items-center justify-center gap-2"
+                  className="w-full gap-2 text-xs font-medium"
                 >
                   {isGenerating ? (
                     <GlitchLoader size={14} />

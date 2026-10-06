@@ -76,14 +76,14 @@ export const PillarsSection: React.FC<PillarsSectionProps> = ({ guideline, onUpd
             key={i}
             className="group/pillar flex items-start gap-3 border-b border-neutral-800 last:border-0 pb-3 last:pb-0"
           >
-            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-white/5 text-neutral-500 text-2xs font-bold shrink-0 mt-0.5">
+            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-muted text-muted-foreground text-2xs font-medium shrink-0 mt-0.5">
               {i + 1}
             </div>
             <div className="flex-1 space-y-1.5">
               <Input
                 value={p.value}
                 onChange={(e) => set(i, { value: e.target.value })}
-                className="h-7 bg-transparent border-neutral-800 text-sm font-semibold text-neutral-200 placeholder:text-neutral-700"
+                className="h-7 bg-transparent border-border text-sm font-medium text-foreground placeholder:text-muted-foreground"
                 placeholder="Ex: Pertencimento"
               />
               <Input

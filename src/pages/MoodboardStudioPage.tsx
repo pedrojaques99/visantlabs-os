@@ -631,14 +631,14 @@ function MoodboardStudio() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="aspect-video w-full max-w-lg rounded-2xl border-2 border-dashed border-border hover:border-neutral-600 flex flex-col items-center justify-center gap-6 transition-colors duration-300 cursor-pointer bg-neutral-950/40 px-8 py-10"
+              className="aspect-video w-full max-w-lg rounded-xl border-2 border-dashed border-border hover:border-border-hover flex flex-col items-center justify-center gap-6 transition-colors duration-300 cursor-pointer bg-muted/40 px-8 py-10"
             >
-              <Upload size={28} className="text-neutral-600" strokeWidth={1} />
+              <Upload size={28} className="text-muted-foreground" strokeWidth={1} />
               <div className="text-center">
-                <p className="text-sm font-medium text-neutral-400">
+                <p className="text-sm font-medium text-muted-foreground">
                   {t('moodboard.studio.upload_or_drop_moodboard')}
                 </p>
-                <p className="text-xs text-neutral-600 mt-2">
+                <p className="text-xs text-muted-foreground mt-2">
                   {t('moodboard.studio.single_image_for_ai_grid_detectio')}
                 </p>
               </div>
@@ -655,16 +655,17 @@ function MoodboardStudio() {
             exit={{ opacity: 0 }}
             className="flex flex-col items-center gap-6 max-w-2xl mx-auto"
           >
-            <div className="relative w-full rounded-2xl overflow-hidden border border-border bg-neutral-950 group">
+            <div className="relative w-full rounded-xl overflow-hidden border border-border bg-muted group">
               <img
                 src={sourceImage}
                 alt="Source"
                 className="w-full h-auto object-contain max-h-[500px]"
               />
+              {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia (fechar sobre a imagem-fonte) */}
               <button
                 onClick={handleReset}
                 aria-label={t('common.close')}
-                className="absolute top-4 right-4 p-2 rounded-lg bg-black/50 text-neutral-400 hover:text-white transition-colors border border-white/10"
+                className="absolute top-4 right-4 p-2 rounded-xl bg-black/50 text-neutral-400 hover:text-white transition-colors border border-white/10"
               >
                 <X size={16} />
               </button>
@@ -696,7 +697,7 @@ function MoodboardStudio() {
           <motion.div key="grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <span className="text-sm font-bold text-white">
+                <span className="text-sm font-medium text-foreground">
                   {t('moodboard.studio.imageCount', { count: croppedImages.length })}
                 </span>
                 {croppedImages.length > 0 && (
@@ -805,6 +806,7 @@ function MoodboardStudio() {
 
       {/* Modals */}
       <AnimatePresence>
+        {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia (lightbox de imagem e vídeo) */}
         {fullscreenUrl && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -901,10 +903,10 @@ function MoodboardStudio() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-24 right-6 z-40 bg-neutral-950/90 backdrop-blur-xl border border-border px-4 py-3 rounded-2xl flex items-center gap-3 shadow-2xl"
+            className="fixed bottom-24 right-6 z-40 bg-popover/90 backdrop-blur-xl border border-border px-4 py-3 rounded-xl flex items-center gap-3 shadow-2xl"
           >
             <GlitchLoader size={14} />
-            <span className="text-xs font-medium text-neutral-400">
+            <span className="text-xs font-medium text-muted-foreground">
               {t('moodboard.studio.analyzing')}
             </span>
           </motion.div>

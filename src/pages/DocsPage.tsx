@@ -15,6 +15,7 @@ import {
   Bot,
   Coins,
   Zap,
+  ArrowRight,
 } from '@/lib/ui/icons';
 import { SEO } from '../components/SEO';
 import { BreadcrumbWithBack } from '../components/ui/BreadcrumbWithBack';
@@ -270,7 +271,7 @@ export const DocsPage: React.FC = () => {
     let className = 'bg-muted text-muted-foreground';
     if (method === 'GET') className = 'bg-success/10 text-success border-success/20';
     if (method === 'POST') className = 'bg-warning/10 text-warning border-warning/20';
-    if (method === 'PUT') className = 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+    if (method === 'PUT') className = 'bg-chart-1/10 text-foreground border-chart-1/20';
     if (method === 'DELETE') className = 'bg-destructive/10 text-destructive border-destructive/20';
 
     return (
@@ -454,11 +455,9 @@ export const DocsPage: React.FC = () => {
                 <div className="mb-6 flex items-start gap-3 bg-secondary/40 border border-border rounded-md px-4 py-3">
                   <FileText className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    <span className="text-foreground font-medium">LLM and agent tip:</span> use the{' '}
-                    <span className="font-medium text-foreground">Copy as Markdown</span> button
-                    above to get the current section as clean, structured markdown. Paste it
-                    directly into your agent's context window or system prompt for accurate API
-                    usage.
+                    <span className="text-foreground font-medium">For agents:</span>{' '}
+                    <span className="font-medium text-foreground">Copy as Markdown</span> exports
+                    this section as clean markdown, ready for a context window or system prompt.
                   </p>
                 </div>
 
@@ -648,7 +647,7 @@ export const DocsPage: React.FC = () => {
 
                   <TabsContent value="api" className="space-y-10 mt-0">
                     <div>
-                      <h2 className="text-3xl font-semibold tracking-tight mb-2">
+                      <h2 className="text-3xl font-medium tracking-tight mb-2">
                         REST API Reference
                       </h2>
                       <p className="text-muted-foreground">
@@ -672,7 +671,7 @@ export const DocsPage: React.FC = () => {
 
                   <TabsContent value="mcp" className="space-y-8 mt-0">
                     <div>
-                      <h2 className="text-3xl font-semibold tracking-tight mb-2">MCP Tools</h2>
+                      <h2 className="text-3xl font-medium tracking-tight mb-2">MCP Tools</h2>
                       <p className="text-muted-foreground">
                         Integrate Visant Labs directly into AI agents via the Model Context
                         Protocol. Two servers available: <strong>Platform MCP</strong> (HTTP/SSE)
@@ -696,10 +695,10 @@ export const DocsPage: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="bg-secondary/40 border border-border rounded-md p-5">
                             <div className="flex items-center gap-2 mb-2">
-                              <Badge className="bg-white/5 text-neutral-400 border border-white/10 text-xs">
+                              <Badge className="bg-muted text-muted-foreground border border-border text-xs">
                                 HTTP/SSE
                               </Badge>
-                              <span className="font-semibold text-foreground text-sm">
+                              <span className="font-medium text-foreground text-sm">
                                 Platform MCP
                               </span>
                             </div>
@@ -725,12 +724,10 @@ export const DocsPage: React.FC = () => {
                           </div>
                           <div className="bg-secondary/40 border border-border rounded-md p-5">
                             <div className="flex items-center gap-2 mb-2">
-                              <Badge className="bg-purple-500/20 text-purple-400 border border-purple-500/30 text-xs">
+                              <Badge className="bg-chart-4/20 text-foreground border border-chart-4/30 text-xs">
                                 stdio
                               </Badge>
-                              <span className="font-semibold text-foreground text-sm">
-                                Figma MCP
-                              </span>
+                              <span className="font-medium text-foreground text-sm">Figma MCP</span>
                             </div>
                             <p className="text-muted-foreground text-xs mb-3">
                               Create frames, rectangles, text, and send AI commands directly to the
@@ -811,7 +808,7 @@ export const DocsPage: React.FC = () => {
                             },
                           ].map(({ n, title, desc }) => (
                             <div key={n} className="flex gap-3">
-                              <div className="w-6 h-6 rounded-full bg-secondary text-foreground flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
+                              <div className="w-6 h-6 rounded-full bg-secondary text-foreground flex items-center justify-center text-xs font-medium shrink-0 mt-0.5">
                                 {n}
                               </div>
                               <div>
@@ -997,13 +994,13 @@ const result = await client.callTool({
                           </p>
                           <p>
                             2. Select scopes:{' '}
-                            <Badge className="bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs mx-1">
+                            <Badge className="bg-chart-1/20 text-foreground border border-chart-1/30 text-xs mx-1">
                               read
                             </Badge>{' '}
                             <Badge className="bg-warning/20 text-warning border border-warning/30 text-xs mx-1">
                               write
                             </Badge>{' '}
-                            <Badge className="bg-purple-500/20 text-purple-400 border border-purple-500/30 text-xs mx-1">
+                            <Badge className="bg-chart-4/20 text-foreground border border-chart-4/30 text-xs mx-1">
                               generate
                             </Badge>
                           </p>
@@ -1023,7 +1020,7 @@ const result = await client.callTool({
 
                     {/* Figma MCP Tools */}
                     <div id="mcp-figma-tools">
-                      <h3 className="text-2xl font-semibold tracking-tight mb-2">
+                      <h3 className="text-2xl font-medium tracking-tight mb-2">
                         Figma MCP &mdash; Tool Reference
                       </h3>
                       <p className="text-muted-foreground mb-6 text-sm">
@@ -1045,7 +1042,7 @@ const result = await client.callTool({
                             <CardHeader className="border-b border-border/50 bg-secondary/20 pb-4">
                               <div className="flex items-center gap-3">
                                 <Code className="w-5 h-5 text-foreground" />
-                                <h3 className="text-xl font-redhatmono font-semibold text-foreground m-0">
+                                <h3 className="text-xl font-redhatmono font-medium text-foreground m-0">
                                   {tool.name}
                                 </h3>
                               </div>
@@ -1088,7 +1085,7 @@ const result = await client.callTool({
                                             </td>
                                             <td className="px-4 py-3">
                                               {tool.inputSchema.required?.includes(name) ? (
-                                                <span className="text-destructive text-xs font-semibold uppercase ">
+                                                <span className="text-destructive text-xs font-medium uppercase ">
                                                   Yes
                                                 </span>
                                               ) : (
@@ -1286,7 +1283,7 @@ const result = await client.callTool({
                           },
                           {
                             label: 'Advanced',
-                            color: 'text-purple-400',
+                            color: 'text-foreground',
                             ops: [
                               'CREATE_COMPONENT',
                               'CREATE_SVG',
@@ -1298,9 +1295,7 @@ const result = await client.callTool({
                           },
                         ].map((cat) => (
                           <div key={cat.label}>
-                            <h4 className={`text-sm font-semibold mb-2 ${cat.color}`}>
-                              {cat.label}
-                            </h4>
+                            <h4 className={`text-sm font-medium mb-2 ${cat.color}`}>{cat.label}</h4>
                             <div className="flex flex-wrap gap-1.5">
                               {cat.ops.map((op) => (
                                 <Badge
@@ -1379,17 +1374,16 @@ const result = await client.callTool({
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div>
-                          <h4 className="text-sm font-semibold text-foreground mb-2">
-                            Architecture
-                          </h4>
+                          <h4 className="text-sm font-medium text-foreground mb-2">Architecture</h4>
                           <div className="bg-secondary/60 rounded p-4 font-redhatmono text-xs text-foreground">
+                            {/* EXCEÇÃO ao ruido-scan/seta-glifo: diagrama ASCII dentro de <pre>, é texto de código e não navegação. */}
                             <pre className="whitespace-pre">{`Figma Sandbox (code.ts) ⇄ UI iframe (React) ─fetch─▶ POST /api/plugin (Gemini)
                        ◀── APPLY_OPERATIONS ──────────`}</pre>
                           </div>
                         </div>
                         <Separator />
                         <div>
-                          <h4 className="text-sm font-semibold text-foreground mb-2">
+                          <h4 className="text-sm font-medium text-foreground mb-2">
                             POST /api/plugin
                           </h4>
                           <p className="text-muted-foreground text-sm mb-3">
@@ -1403,7 +1397,7 @@ const result = await client.callTool({
                         </div>
                         <Separator />
                         <div>
-                          <h4 className="text-sm font-semibold text-foreground mb-2">
+                          <h4 className="text-sm font-medium text-foreground mb-2">
                             Operation JSON Format
                           </h4>
                           <div className="bg-secondary/60 rounded p-4 font-redhatmono text-xs text-foreground">
@@ -1430,7 +1424,7 @@ const result = await client.callTool({
                   </TabsContent>
                   <TabsContent value="figma-nodes" className="space-y-8 mt-0">
                     <div>
-                      <h2 className="text-3xl font-semibold tracking-tight mb-2">
+                      <h2 className="text-3xl font-medium tracking-tight mb-2">
                         Figma Node JSON Spec
                       </h2>
                       <p className="text-muted-foreground">
@@ -1452,6 +1446,7 @@ const result = await client.callTool({
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="bg-secondary/30 rounded-md border border-border p-4">
+                          {/* EXCEÇÃO ao ruido-scan/seta-glifo: pipeline em <pre> de código, é texto e não navegação. */}
                           <pre className="text-sm font-redhatmono text-foreground m-0">{`JSON spec  →  buildNode(spec, parent)  →  Figma nodes
 
 1. Define the layout tree in JSON (NodeSpec)
@@ -1486,7 +1481,7 @@ const result = await client.callTool({
                               key={n.type}
                               className="bg-card border border-border rounded-md p-3"
                             >
-                              <code className="text-foreground font-redhatmono font-semibold text-sm">
+                              <code className="text-foreground font-redhatmono font-medium text-sm">
                                 {n.type}
                               </code>
                               <p className="text-muted-foreground text-xs mt-1">{n.desc}</p>
@@ -1731,7 +1726,7 @@ const result = await client.callTool({
                                 ],
                               ].map(([rule, detail]) => (
                                 <tr key={rule} className="bg-card">
-                                  <td className="px-4 py-3 font-redhatmono text-foreground text-xs font-semibold">
+                                  <td className="px-4 py-3 font-redhatmono text-foreground text-xs font-medium">
                                     {rule}
                                   </td>
                                   <td className="px-4 py-3 text-muted-foreground text-sm">
@@ -1774,7 +1769,7 @@ const result = await client.callTool({
                             },
                           ].map(({ fn, desc }) => (
                             <div key={fn} className="bg-card border border-border rounded-md p-4">
-                              <code className="text-foreground font-redhatmono text-xs font-semibold block mb-2">
+                              <code className="text-foreground font-redhatmono text-xs font-medium block mb-2">
                                 {fn}
                               </code>
                               <p className="text-muted-foreground text-sm">{desc}</p>
@@ -1828,8 +1823,8 @@ figma.ui.onmessage = async (msg) => {
 │   └── Hashtags            (TEXT, Inter Regular 22, blue #738CFF)
 └── Footer                  (FRAME, HORIZONTAL, SPACE_BETWEEN, padding H:32 V:16)
     ├── ActionsLeft         (FRAME, HORIZONTAL, gap:24)
-    │   ├── LikeAction      (FRAME, HORIZONTAL, gap:8 → "♥" + "4,291")
-    │   └── CommentAction   (FRAME, HORIZONTAL, gap:8 → "💬" + "318")
+    │   ├── LikeAction      (FRAME, HORIZONTAL, gap:8, "♥" + "4,291")
+    │   └── CommentAction   (FRAME, HORIZONTAL, gap:8, "💬" + "318")
     └── SaveIcon            (TEXT, "🔖")`}</pre>
                           </div>
                         </div>
@@ -1945,7 +1940,7 @@ figma.ui.onmessage = async (msg) => {
 
                   <TabsContent value="canvas-api" className="space-y-8 mt-0">
                     <div>
-                      <h2 className="text-3xl font-semibold tracking-tight mb-2">Canvas API</h2>
+                      <h2 className="text-3xl font-medium tracking-tight mb-2">Canvas API</h2>
                       <p className="text-muted-foreground">
                         REST API for programmatic creation, editing, and manipulation of canvas
                         projects and their nodes. Designed for LLM agents and external integrations.
@@ -2118,7 +2113,7 @@ Content-Type: application/json`}</pre>
                                 className={cn('font-redhatmono uppercase', {
                                   'bg-success/10 text-success border-success/20': method === 'GET',
                                   'bg-warning/10 text-warning border-warning/20': method === 'POST',
-                                  'bg-blue-500/10 text-blue-500 border-blue-500/20':
+                                  'bg-chart-1/10 text-foreground border-chart-1/20':
                                     method === 'PUT',
                                   'bg-destructive/10 text-destructive border-destructive/20':
                                     method === 'DELETE',
@@ -2417,63 +2412,80 @@ Content-Type: application/json`}</pre>
                             <tbody className="divide-y divide-border">
                               {[
                                 [
-                                  'image → merge',
+                                  'image',
+                                  'merge',
                                   'output',
                                   'input-1 / input-2',
                                   'Feeds source image into merge generation',
                                 ],
                                 [
-                                  'prompt → output',
+                                  'prompt',
+                                  'output',
                                   'output',
                                   'input',
                                   'Generated image flows to output display',
                                 ],
                                 [
-                                  'text → prompt',
+                                  'text',
+                                  'prompt',
                                   'output',
                                   'text-input',
                                   'Text node content syncs to prompt',
                                 ],
                                 [
-                                  'logo → brandCore',
+                                  'logo',
+                                  'brandCore',
                                   'output',
                                   'logo-input',
                                   'Logo base64 fed to brand core',
                                 ],
                                 [
-                                  'pdf → brandCore',
+                                  'pdf',
+                                  'brandCore',
                                   'output',
                                   'identity-input',
                                   'PDF identity guide fed to brand core',
                                 ],
                                 [
-                                  'brandCore → mockup',
+                                  'brandCore',
+                                  'mockup',
                                   'output',
                                   'brand-input',
                                   'Brand prompts and colors fed to mockup',
                                 ],
                                 [
-                                  'image → colorExtractor',
+                                  'image',
+                                  'colorExtractor',
                                   'output',
                                   'input',
                                   'Image fed to color extraction',
                                 ],
                                 [
-                                  'strategy → brandCore',
+                                  'strategy',
+                                  'brandCore',
                                   'output',
                                   'strategy-input',
                                   'Strategy data consolidated in brand core',
                                 ],
                                 [
-                                  'image/prompt → chat',
+                                  'image/prompt',
+                                  'chat',
                                   'output',
                                   'input-1..input-4',
                                   'Visual context provided to chat node',
                                 ],
-                              ].map(([conn, src, tgt, effect]) => (
-                                <tr key={conn} className="bg-card">
+                              ].map(([from, to, src, tgt, effect]) => (
+                                <tr key={`${from}-${to}`} className="bg-card">
                                   <td className="px-4 py-2.5 font-redhatmono text-foreground text-xs">
-                                    {conn}
+                                    <span className="inline-flex items-center gap-1.5">
+                                      {from}
+                                      <ArrowRight
+                                        size={12}
+                                        aria-label="to"
+                                        className="text-muted-foreground"
+                                      />
+                                      {to}
+                                    </span>
                                   </td>
                                   <td className="px-4 py-2.5 text-muted-foreground text-xs font-redhatmono">
                                     {src}
@@ -2662,7 +2674,7 @@ Content-Type: application/json`}</pre>
                                 className={cn('font-redhatmono uppercase', {
                                   'bg-success/10 text-success border-success/20': method === 'GET',
                                   'bg-warning/10 text-warning border-warning/20': method === 'POST',
-                                  'bg-blue-500/10 text-blue-500 border-blue-500/20':
+                                  'bg-chart-1/10 text-foreground border-chart-1/20':
                                     method === 'PUT',
                                   'bg-destructive/10 text-destructive border-destructive/20':
                                     method === 'DELETE',
@@ -3088,7 +3100,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                         <Separator />
 
                         <div id="bg-rest" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             REST Endpoints
                           </h3>
                           <div className="bg-secondary/40 border border-border rounded-md p-4">
@@ -3108,7 +3120,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                                 </span>
                               </p>
                               <p className="flex justify-between border-b border-border/30 pb-1.5">
-                                <span className="text-blue-400">POST</span>{' '}
+                                <span className="text-warning">POST</span>{' '}
                                 <span className="text-foreground">/api/brand-guidelines</span>{' '}
                                 <span className="text-muted-foreground">
                                   Create new identity vault
@@ -3135,10 +3147,9 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                         <Separator />
 
                         <div id="bg-schema" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
-                            Data Schema
-                          </h3>
+                          <h3 className="text-lg font-medium text-foreground mb-3">Data Schema</h3>
                           <div className="bg-secondary/60 rounded p-4 font-redhatmono text-xs overflow-x-auto text-foreground">
+                            {/* EXCEÇÃO ao audit:design/hardcoded-hex-color: payload de exemplo da API, o hex é dado do JSON e não cor de UI. */}
                             <pre className="whitespace-pre">{`{
   "identity": { "name": "Brand", "tagline": "...", "description": "Story..." },
   "colors": [{ "hex": "#00E5CC", "name": "Primary", "role": "primary" }],
@@ -3156,7 +3167,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                         <Separator />
 
                         <div id="bg-sharing" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Public Sharing
                           </h3>
                           <p className="text-muted-foreground text-sm mb-4">
@@ -3167,7 +3178,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                           <div className="bg-secondary/40 border border-border rounded-md p-4">
                             <div className="font-redhatmono text-xs space-y-2">
                               <p>
-                                <span className="text-blue-400">POST</span>{' '}
+                                <span className="text-warning">POST</span>{' '}
                                 <span className="text-foreground">
                                   /api/brand-guidelines/:id/share
                                 </span>{' '}
@@ -3194,7 +3205,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                         <Separator />
 
                         <div id="bg-context" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             LLM Context Endpoint
                           </h3>
                           <p className="text-muted-foreground text-sm mb-4">
@@ -3237,16 +3248,14 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                       </CardHeader>
                       <CardContent className="space-y-6">
                         <div id="ag-overview" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">Overview</h3>
+                          <h3 className="text-lg font-medium text-foreground mb-3">Overview</h3>
                           <p className="text-muted-foreground text-sm leading-relaxed mb-4">
                             Visant Labs provides three ways for AI agents to interact with the
                             platform:
                           </p>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="bg-secondary/40 border border-border rounded-md p-4">
-                              <p className="text-foreground font-semibold text-sm mb-1">
-                                Discovery
-                              </p>
+                              <p className="text-foreground font-medium text-sm mb-1">Discovery</p>
                               <div className="space-y-1.5">
                                 <p className="text-muted-foreground text-xs">
                                   <code className="font-redhatmono bg-secondary px-1 rounded text-2xs">
@@ -3269,9 +3278,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                               </div>
                             </div>
                             <div className="bg-secondary/40 border border-border rounded-md p-4">
-                              <p className="text-foreground font-semibold text-sm mb-1">
-                                MCP Tools
-                              </p>
+                              <p className="text-foreground font-medium text-sm mb-1">MCP Tools</p>
                               <p className="text-muted-foreground text-xs">
                                 Connect via SSE to{' '}
                                 <code className="font-redhatmono bg-secondary px-1 rounded">
@@ -3281,7 +3288,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                               </p>
                             </div>
                             <div className="bg-secondary/40 border border-border rounded-md p-4">
-                              <p className="text-foreground font-semibold text-sm mb-1">REST API</p>
+                              <p className="text-foreground font-medium text-sm mb-1">REST API</p>
                               <p className="text-muted-foreground text-xs">
                                 Full HTTP API with JSON responses for all platform features
                               </p>
@@ -3292,7 +3299,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="ag-auth" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Authentication
                           </h3>
                           <p className="text-muted-foreground text-sm mb-3">
@@ -3318,7 +3325,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="ag-mcp" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             MCP Connection
                           </h3>
                           <div className="bg-secondary/60 border border-border rounded-md p-4 font-redhatmono text-sm space-y-2">
@@ -3330,7 +3337,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="ag-tools" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Available MCP Tools
                             {platformToolCount > 0 && (
                               <span className="text-muted-foreground text-sm font-normal ml-2">
@@ -3360,7 +3367,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                               };
                               return Object.entries(categories).map(([cat, tools]) => (
                                 <div key={cat} className="mb-4">
-                                  <p className="text-xs font-semibold text-muted-foreground mb-1.5 px-1">
+                                  <p className="text-xs font-medium text-muted-foreground mb-1.5 px-1">
                                     {categoryLabels[cat] ?? cat}
                                   </p>
                                   <div className="overflow-x-auto border border-border rounded-md">
@@ -3379,7 +3386,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                                                 className={
                                                   tool['x-cost'] === 'free'
                                                     ? 'bg-success/20 text-success text-xs'
-                                                    : 'bg-purple-500/20 text-purple-400 text-xs'
+                                                    : 'bg-chart-4/20 text-foreground text-xs'
                                                 }
                                               >
                                                 {tool['x-cost'] === 'free' ? 'Free' : 'Credits'}
@@ -3409,7 +3416,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         </div>
 
                         <div id="ag-brand-guidelines" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Brand Guidelines API
                           </h3>
                           <p className="text-muted-foreground text-sm mb-3">
@@ -3439,7 +3446,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="ag-credits" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Credits & Limits
                           </h3>
                           <p className="text-muted-foreground text-sm mb-3">
@@ -3455,9 +3462,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="ag-example" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
-                            Example Flow
-                          </h3>
+                          <h3 className="text-lg font-medium text-foreground mb-3">Example Flow</h3>
                           <div className="space-y-3 text-sm">
                             {[
                               {
@@ -3495,7 +3500,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                                 key={step}
                                 className="flex items-start gap-3 bg-secondary/40 border border-border rounded-md p-3"
                               >
-                                <span className="bg-secondary text-foreground text-xs font-bold px-2 py-1 rounded shrink-0">
+                                <span className="bg-secondary text-foreground text-xs font-medium px-2 py-1 rounded shrink-0">
                                   {step}
                                 </span>
                                 <div>
@@ -3515,17 +3520,12 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                       <CardHeader>
                         <div className="flex items-center gap-3">
                           <Coins className="h-8 w-8 text-foreground" />
-                          <div>
-                            <CardTitle className="text-2xl">Pricing & Credits</CardTitle>
-                            <CardDescription>
-                              Transparent pricing based on official Google API costs
-                            </CardDescription>
-                          </div>
+                          <CardTitle className="text-2xl">Pricing & Credits</CardTitle>
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-6">
                         <div id="pr-google" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Official Google API Pricing
                           </h3>
                           <p className="text-muted-foreground text-sm mb-4">
@@ -3541,7 +3541,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                             . Updated March 2026.
                           </p>
 
-                          <h4 className="text-sm font-semibold text-foreground mb-2">
+                          <h4 className="text-sm font-medium text-foreground mb-2">
                             Image Generation
                           </h4>
                           <div className="overflow-x-auto mb-4">
@@ -3593,7 +3593,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                             </table>
                           </div>
 
-                          <h4 className="text-sm font-semibold text-foreground mb-2">
+                          <h4 className="text-sm font-medium text-foreground mb-2">
                             Video Generation (Veo 3.1)
                           </h4>
                           <div className="overflow-x-auto">
@@ -3639,7 +3639,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="pr-credits" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Visant Credit System
                           </h3>
                           <p className="text-muted-foreground text-sm mb-4">
@@ -3649,7 +3649,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                              <h4 className="text-sm font-semibold text-foreground mb-2">
+                              <h4 className="text-sm font-medium text-foreground mb-2">
                                 Image Generation
                               </h4>
                               <div className="space-y-1.5 text-sm">
@@ -3671,7 +3671,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                               </div>
                             </div>
                             <div>
-                              <h4 className="text-sm font-semibold text-foreground mb-2">
+                              <h4 className="text-sm font-medium text-foreground mb-2">
                                 Video Generation
                               </h4>
                               <div className="space-y-1.5 text-sm">
@@ -3691,7 +3691,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                                     </div>
                                   ))}
                               </div>
-                              <h4 className="text-sm font-semibold text-foreground mt-4 mb-2">
+                              <h4 className="text-sm font-medium text-foreground mt-4 mb-2">
                                 Other Operations
                               </h4>
                               <div className="space-y-1.5 text-sm">
@@ -3730,7 +3730,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="pr-packages" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Credit Packages
                           </h3>
                           <p className="text-muted-foreground text-sm mb-4">
@@ -3776,7 +3776,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="pr-byok" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             BYOK (Bring Your Own Key)
                           </h3>
                           <div className="bg-secondary/40 border border-border rounded-md p-4">
@@ -3795,7 +3795,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="pr-transparency" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Build in Public
                           </h3>
                           <p className="text-muted-foreground text-sm mb-3">

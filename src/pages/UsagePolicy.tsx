@@ -43,7 +43,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
           <p dangerouslySetInnerHTML={{ __html: t('usage.overview') }} />
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('usage.sections.aiTechnology.title')}
             </h2>
             <p className="text-muted-foreground mb-3">{t('usage.sections.aiTechnology.intro')}</p>
@@ -74,7 +74,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('usage.sections.serviceProvider.title')}
             </h2>
             <p className="text-muted-foreground mb-3">
@@ -89,11 +89,11 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('usage.sections.capabilities.title')}
             </h2>
 
-            <h3 className="text-lg font-semibold text-muted-foreground mt-6 mb-3">
+            <h3 className="text-lg font-medium text-muted-foreground mt-6 mb-3">
               {t('usage.sections.capabilities.resolution.title')}
             </h3>
             <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
@@ -102,7 +102,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
               ))}
             </ul>
 
-            <h3 className="text-lg font-semibold text-muted-foreground mt-6 mb-3">
+            <h3 className="text-lg font-medium text-muted-foreground mt-6 mb-3">
               {t('usage.sections.capabilities.processingTimes.title')}
             </h3>
             <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
@@ -111,7 +111,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
               ))}
             </ul>
 
-            <h3 className="text-lg font-semibold text-muted-foreground mt-6 mb-3">
+            <h3 className="text-lg font-medium text-muted-foreground mt-6 mb-3">
               {t('usage.sections.capabilities.features.title')}
             </h3>
             <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
@@ -122,7 +122,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('usage.sections.dataUsage.title')}
             </h2>
             <p className="text-muted-foreground mb-3">{t('usage.sections.dataUsage.intro')}</p>
@@ -141,7 +141,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('usage.sections.rateLimits.title')}
             </h2>
             <p className="text-muted-foreground mb-3">{t('usage.sections.rateLimits.intro')}</p>
@@ -153,11 +153,11 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('usage.sections.technicalSpecs.title')}
             </h2>
 
-            <h3 className="text-lg font-semibold text-muted-foreground mt-6 mb-3">
+            <h3 className="text-lg font-medium text-muted-foreground mt-6 mb-3">
               {t('usage.sections.technicalSpecs.creditCosts.title')}
             </h3>
             <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
@@ -166,7 +166,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
               ))}
             </ul>
 
-            <h3 className="text-lg font-semibold text-muted-foreground mt-6 mb-3">
+            <h3 className="text-lg font-medium text-muted-foreground mt-6 mb-3">
               {t('usage.sections.technicalSpecs.inputRequirements.title')}
             </h3>
             <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
@@ -177,7 +177,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
               )}
             </ul>
 
-            <h3 className="text-lg font-semibold text-muted-foreground mt-6 mb-3">
+            <h3 className="text-lg font-medium text-muted-foreground mt-6 mb-3">
               {t('usage.sections.technicalSpecs.outputFormats.title')}
             </h3>
             <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
@@ -188,7 +188,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('usage.sections.userResponsibilities.title')}
             </h2>
             <p className="text-muted-foreground mb-3">
@@ -202,7 +202,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('usage.sections.serviceAvailability.title')}
             </h2>
             <p className="text-muted-foreground mb-3">
@@ -219,7 +219,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('usage.sections.modelChanges.title')}
             </h2>
             <p className="text-muted-foreground mb-3">{t('usage.sections.modelChanges.intro')}</p>
@@ -231,7 +231,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('usage.sections.contentPolicies.title')}
             </h2>
             <p className="text-muted-foreground mb-3">
@@ -246,7 +246,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('usage.sections.disclaimers.title')}
             </h2>
             <p className="text-muted-foreground mb-3">{t('usage.sections.disclaimers.intro')}</p>
@@ -258,7 +258,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('usage.sections.contact.title')}
             </h2>
             <p

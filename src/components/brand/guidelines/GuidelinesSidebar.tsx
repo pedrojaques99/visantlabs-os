@@ -39,6 +39,7 @@ import {
 import { FEATURE_BRAND_BILLING } from '@/config/featureFlags';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { useBrandArchiveActions, isArchived } from '@/components/brand/useBrandArchiveActions';
+import { Thumb } from '@/components/ui/Thumb';
 interface GuidelinesSidebarProps {
   guidelines: BrandGuideline[];
   selectedId: string | null;
@@ -212,13 +213,13 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                   )}
                 >
                   {brandLogo?.url ? (
-                    <img
+                    <Thumb
                       src={brandLogo.url}
                       alt=""
                       className="w-full h-full object-cover opacity-60 group-hover/item:opacity-100 transition-opacity"
                     />
                   ) : (
-                    <span className="text-2xs font-bold opacity-30">{initials}</span>
+                    <span className="text-2xs font-medium opacity-30">{initials}</span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0 text-left">
@@ -247,7 +248,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                     <DropdownMenuTrigger asChild>
                       <div
                         role="button"
-                        className="p-1 rounded hover:bg-white/10 transition-colors opacity-0 group-hover/item:opacity-100"
+                        className="p-1 rounded hover:bg-accent transition-colors opacity-0 group-hover/item:opacity-100"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <MoreVertical size={12} className="text-neutral-600" />
@@ -266,12 +267,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                         }}
                         className="text-xs gap-2"
                       >
-                        <Star
-                          size={12}
-                          className={
-                            isPinned('brand', g.id!) ? 'fill-brand-cyan text-brand-cyan' : ''
-                          }
-                        />
+                        <Star size={12} weight={isPinned('brand', g.id!) ? 'fill' : 'regular'} />
                         {isPinned('brand', g.id!) ? t('nav.unpin') : t('nav.pin')}
                       </DropdownMenuItem>
                       <DropdownMenuItem
@@ -344,7 +340,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 
           <button
             onClick={onCreate}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-neutral-600 border border-dashed border-neutral-800 text-xs hover:border-white/10 hover:text-neutral-400 transition-colors mt-1"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-muted-foreground border border-dashed border-border text-xs hover:border-border-hover hover:text-foreground transition-colors mt-1"
           >
             <Plus size={12} />
             <span>New Design System</span>
@@ -354,7 +350,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 
       {/* Recent generations for selected brand */}
       {selectedId && recentProjects.length > 0 && (
-        <div className="px-1 border-t border-white/[0.03] pt-4 space-y-2">
+        <div className="px-1 border-t border-border pt-4 space-y-2">
           <div className="flex items-center justify-between px-1">
             <p className="text-2xs font-medium text-neutral-600">Recent</p>
             <Link
@@ -367,9 +363,13 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
           <div className="grid grid-cols-4 gap-1">
             {recentProjects.map((p) => (
               <Link key={p.id} to={`/create?project=${p.id}`} title={p.name}>
-                <div className="aspect-square rounded overflow-hidden border border-neutral-800 bg-neutral-900/60 hover:border-white/15 transition-colors">
+                <div className="aspect-square rounded overflow-hidden border border-border bg-card/60 hover:border-border-hover transition-colors">
                   {p.thumbnailUrl ? (
-                    <img src={p.thumbnailUrl} alt={p.name} className="w-full h-full object-cover" />
+                    <Thumb
+                      src={p.thumbnailUrl}
+                      alt={p.name}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <Zap size={10} className="text-neutral-700" />
@@ -383,7 +383,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
       )}
 
       <div className="mt-auto space-y-4 pt-4 pb-2">
-        <div className="px-1 border-t border-white/[0.03] pt-4 space-y-2">
+        <div className="px-1 border-t border-border pt-4 space-y-2">
           <p className="text-2xs font-medium text-neutral-700">Sync from Branding Machine</p>
           <Button
             variant="subtle"
@@ -397,7 +397,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
             Sync Project
           </Button>
         </div>
-        <div className="px-1 border-t border-white/[0.03] pt-3">
+        <div className="px-1 border-t border-border pt-3">
           <div className="flex items-center gap-2 text-2xs text-neutral-600 px-1">
             <Settings size={11} className="opacity-60" />
             Settings

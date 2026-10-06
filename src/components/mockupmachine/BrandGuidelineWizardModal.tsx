@@ -553,7 +553,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
   const identityFields = (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <label htmlFor="brand-wizard-name" className="text-sm font-medium text-neutral-300">
+        <label htmlFor="brand-wizard-name" className="text-sm font-medium text-foreground">
           {t('mockup.brandWizardNameLabel')}
         </label>
         <Input
@@ -564,12 +564,12 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
           onChange={(e) => setName(e.target.value)}
           placeholder={t('mockup.brandNamePlaceholder')}
           disabled={isProcessing}
-          className="w-full bg-neutral-900/60 border border-white/10 rounded-lg px-3.5 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
+          className="w-full bg-background border border-border rounded-xl px-3.5 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-colors disabled:opacity-50"
         />
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="brand-wizard-url" className="text-sm font-medium text-neutral-300">
+        <label htmlFor="brand-wizard-url" className="text-sm font-medium text-foreground">
           {t('mockup.brandWizardUrlLabel')}
         </label>
         <Input
@@ -579,10 +579,10 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
           onChange={(e) => setUrl(e.target.value)}
           placeholder={t('mockup.brandWizardUrlPlaceholder')}
           disabled={isProcessing}
-          className="w-full bg-neutral-900/60 border border-white/10 rounded-lg px-3.5 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
+          className="w-full bg-background border border-border rounded-xl px-3.5 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-colors disabled:opacity-50"
         />
         {hasUrl && (
-          <p className="text-xs text-neutral-500 mt-0.5">{t('mockup.brandWizardUrlHint')}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{t('mockup.brandWizardUrlHint')}</p>
         )}
       </div>
     </div>
@@ -621,20 +621,20 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
           'relative cursor-pointer rounded-xl border-2 border-dashed transition-[color,background-color,border-color,opacity,transform,filter] duration-200 px-6 flex flex-col items-center justify-center text-center select-none focus:outline-none',
           isDragging
             ? 'border-brand-cyan/60 bg-brand-cyan/[0.06] py-6'
-            : 'border-white/10 hover:border-neutral-600 bg-neutral-900/40 py-8'
+            : 'border-border hover:border-border-hover bg-card py-8'
         )}
       >
         {isDragging ? (
           <FlyingPaperLoader label={t('mockup.brandWizardDropActive')} />
         ) : (
           <>
-            <div className="flex items-center gap-3 mb-3 text-neutral-500">
+            <div className="flex items-center gap-3 mb-3 text-muted-foreground">
               <FileText size={20} />
               <ImageIcon size={20} />
               <Figma size={20} />
             </div>
-            <p className="text-sm text-neutral-300">{t('mockup.brandWizardDropTitle')}</p>
-            <p className="text-xs text-neutral-600 mt-1">{t('mockup.brandWizardDropHint')}</p>
+            <p className="text-sm text-foreground">{t('mockup.brandWizardDropTitle')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('mockup.brandWizardDropHint')}</p>
           </>
         )}
       </div>
@@ -644,26 +644,30 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap gap-2">
             {pdfFile && (
-              <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 max-w-full">
-                <FileText size={14} className="text-neutral-300 shrink-0" />
-                <span className="text-xs text-white truncate max-w-[140px]">{pdfFile.name}</span>
+              <div className="flex items-center gap-2 bg-muted border border-border rounded-xl px-3 py-1.5 max-w-full">
+                <FileText size={14} className="text-foreground shrink-0" />
+                <span className="text-xs text-foreground truncate max-w-[140px]">
+                  {pdfFile.name}
+                </span>
                 <button
                   type="button"
                   onClick={removePdf}
-                  className="p-0.5 rounded-full hover:bg-white/5 text-neutral-600 hover:text-white transition-colors"
+                  className="p-0.5 rounded-full hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <X size={12} />
                 </button>
               </div>
             )}
             {figFile && (
-              <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 max-w-full">
-                <Figma size={14} className="text-neutral-300 shrink-0" />
-                <span className="text-xs text-white truncate max-w-[140px]">{figFile.name}</span>
+              <div className="flex items-center gap-2 bg-muted border border-border rounded-xl px-3 py-1.5 max-w-full">
+                <Figma size={14} className="text-foreground shrink-0" />
+                <span className="text-xs text-foreground truncate max-w-[140px]">
+                  {figFile.name}
+                </span>
                 <button
                   type="button"
                   onClick={removeFig}
-                  className="p-0.5 rounded-full hover:bg-white/5 text-neutral-600 hover:text-white transition-colors"
+                  className="p-0.5 rounded-full hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <X size={12} />
                 </button>
@@ -676,19 +680,20 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
               {imagePreviews.map((preview, index) => (
                 <div
                   key={index}
-                  className="relative group aspect-square rounded bg-neutral-900 border border-neutral-800 overflow-hidden"
+                  className="relative group aspect-square rounded bg-muted border border-border overflow-hidden"
                 >
                   <Thumb
                     src={sanitizePreviewUrl(preview)}
                     alt=""
                     className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
                   />
+                  {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
                     className={cn(
                       hoverReveal,
-                      'absolute top-0.5 right-0.5 p-1 bg-black/60 rounded-full text-white/60 hover:text-white'
+                      'absolute top-0.5 right-0.5 p-1 bg-black/60 rounded-full text-white opacity-80 hover:opacity-100'
                     )}
                     aria-label={t('mockup.removeImage')}
                   >
@@ -705,7 +710,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="brand-wizard-figma"
-          className="flex items-center gap-1.5 text-xs text-neutral-400"
+          className="flex items-center gap-1.5 text-xs text-muted-foreground"
         >
           <Figma size={12} className="shrink-0" />
           {t('mockup.brandWizardFigmaLabel')}
@@ -717,23 +722,23 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
           onChange={(e) => setFigmaUrl(e.target.value)}
           placeholder={t('mockup.brandWizardFigmaPlaceholder')}
           disabled={isProcessing}
-          className="w-full bg-neutral-900/60 border border-white/10 rounded-lg px-3.5 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
+          className="w-full bg-background border border-border rounded-xl px-3.5 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-colors disabled:opacity-50"
         />
         {hasFigma && (
-          <p className="text-xs text-neutral-500 mt-0.5">{t('mockup.brandWizardFigmaHint')}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{t('mockup.brandWizardFigmaHint')}</p>
         )}
       </div>
 
-      <p className="text-xs text-neutral-600">{t('mockup.brandWizardExtractionHint')}</p>
+      <p className="text-xs text-muted-foreground">{t('mockup.brandWizardExtractionHint')}</p>
     </div>
   );
 
   // ── Footer (depends on mode / step / processing) ──────────────────────────
   const ghostBtn =
-    'px-4 py-2 text-sm text-neutral-400 hover:text-white transition-colors disabled:opacity-50';
+    'px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50';
   const brandBtn = (enabled: boolean) =>
     cn(
-      'flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md text-sm font-bold transition-[color,background-color,border-color,opacity]',
+      'flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md text-sm font-medium transition-[color,background-color,border-color,opacity]',
       enabled
         ? 'bg-brand-cyan text-black hover:bg-brand-cyan/80'
         : 'bg-neutral-800/60 text-neutral-600 cursor-not-allowed'

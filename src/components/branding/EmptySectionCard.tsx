@@ -1,7 +1,6 @@
 import React from 'react';
 import { Pickaxe, Lock, RotateCw } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useTheme } from '@/hooks/useTheme';
 import { getBrandingStepCredits } from '@/utils/creditCalculator';
 import { getSectionEmoji } from '@/utils/brandingHelpers';
 import { GlassPanel } from '@/components/ui/GlassPanel';
@@ -77,7 +76,6 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
   steps = [],
 }) => {
   const { t } = useTranslation();
-  const { theme } = useTheme();
   const creditsRequired = getBrandingStepCredits(stepNumber);
   const emoji = getSectionEmoji(stepNumber);
   const errored = useStepErrored(stepNumber);
@@ -102,7 +100,7 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
           : isBlocked
             ? // Blocked = missing deps. Clickable so the click routes into the dep-generation flow.
               'opacity-80 cursor-pointer border-destructive/20 hover:border-destructive/40'
-            : 'border-white/10 hover:border-white/20 hover:bg-white/5 cursor-pointer group',
+            : 'border-border hover:border-border-hover hover:bg-accent cursor-pointer group',
         isGenerating && 'opacity-50 cursor-not-allowed'
       )}
       padding="none"
@@ -135,11 +133,7 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
         </div>
 
         {/* Label */}
-        <h3
-          className={`font-semibold font-manrope text-xs md:text-sm text-center leading-tight max-w-full truncate px-2 ${
-            theme === 'dark' ? 'text-white' : 'text-neutral-800'
-          }`}
-        >
+        <h3 className="font-medium font-manrope text-xs md:text-sm text-center leading-tight max-w-full truncate px-2 text-foreground">
           {stepTitle}
         </h3>
 
@@ -147,28 +141,15 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
         {showError && (
           <div className="absolute top-3 right-3 px-2 py-1 border rounded-md flex items-center gap-1.5 bg-destructive/10 border-destructive/30 text-destructive">
             <RotateCw size={12} />
-            <span className="text-xs font-semibold">{t('common.retry')}</span>
+            <span className="text-xs font-medium">{t('common.retry')}</span>
           </div>
         )}
 
         {/* Credits Badge - Pilula style */}
         {!isBlocked && !showError && (
-          <div
-            className={`absolute top-3 right-3 px-2 py-1 border rounded-md flex items-center gap-1.5 transition-colors duration-200 ${
-              theme === 'dark'
-                ? 'bg-white/10 border-white/20 group-hover:bg-white/15'
-                : 'bg-neutral-200 border-neutral-300 group-hover:bg-neutral-300'
-            }`}
-          >
-            <Pickaxe
-              size={12}
-              className={theme === 'dark' ? 'text-white/80' : 'text-neutral-700'}
-            />
-            <span
-              className={`text-xs font-semibold tabular-nums ${
-                theme === 'dark' ? 'text-white/90' : 'text-neutral-800'
-              }`}
-            >
+          <div className="absolute top-3 right-3 px-2 py-1 border rounded-md flex items-center gap-1.5 transition-colors duration-200 bg-muted border-border-hover group-hover:bg-accent">
+            <Pickaxe size={12} className="text-muted-foreground" />
+            <span className="text-xs font-medium tabular-nums text-foreground">
               {creditsRequired}
             </span>
           </div>
@@ -178,24 +159,14 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
         {isBlocked && (
           <div className="absolute top-3 right-3 px-2 py-1 border rounded-md flex items-center gap-1.5 bg-destructive/10 border-destructive/30 text-destructive">
             <Lock size={12} />
-            <span className="text-xs font-semibold">{t('branding.blocked')}</span>
+            <span className="text-xs font-medium">{t('branding.blocked')}</span>
           </div>
         )}
 
         {/* Loading overlay */}
         {isGenerating && (
-          <div
-            className={`absolute inset-0 rounded-xl flex items-center justify-center z-10 ${
-              theme === 'dark' ? 'bg-neutral-950/80' : 'bg-white/90'
-            }`}
-          >
-            <div
-              className={`w-6 h-6 border-2 rounded-md animate-spin ${
-                theme === 'dark'
-                  ? 'border-white/30 border-t-white'
-                  : 'border-neutral-400 border-t-neutral-600'
-              }`}
-            />
+          <div className="absolute inset-0 rounded-xl flex items-center justify-center z-10 bg-background/80">
+            <div className="w-6 h-6 border-2 rounded-md animate-spin border-border-hover border-t-foreground" />
           </div>
         )}
       </Button>

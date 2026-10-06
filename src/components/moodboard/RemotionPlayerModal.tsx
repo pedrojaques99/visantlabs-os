@@ -123,7 +123,7 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+          className="absolute inset-0 bg-background/80 backdrop-blur-sm"
           onClick={onClose}
         />
         <motion.div
@@ -132,11 +132,11 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 16 }}
-          className="relative w-full max-w-6xl bg-neutral-950 rounded-2xl overflow-hidden flex flex-col md:flex-row shadow-2xl border border-border"
+          className="relative w-full max-w-6xl bg-popover rounded-xl overflow-hidden flex flex-col md:flex-row shadow-2xl border border-border"
         >
           <div className="flex-1 flex flex-col overflow-hidden border-r border-border">
-            <div className="p-5 border-b border-border flex items-center justify-between bg-neutral-900/50">
-              <h2 className="text-sm font-semibold text-white">
+            <div className="p-5 border-b border-border flex items-center justify-between bg-muted">
+              <h2 className="text-sm font-semibold text-foreground">
                 {isMulti
                   ? t('moodboard.render.slides', { count: slides.length })
                   : t(`moodboard.item.presets.${slides[0].preset}`)}
@@ -144,7 +144,7 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
               <button
                 onClick={onClose}
                 aria-label={t('common.close')}
-                className="p-2 hover:bg-neutral-800 rounded-full transition-colors md:hidden text-white"
+                className="p-2 hover:bg-accent rounded-full transition-colors md:hidden text-foreground"
               >
                 <X size={20} />
               </button>
@@ -188,9 +188,9 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
               )}
             </div>
 
-            <div className="p-5 bg-neutral-900/50 border-t border-border flex items-center justify-between">
+            <div className="p-5 bg-muted border-t border-border flex items-center justify-between">
               {/* EXCEÇÃO ao ruido-scan/mono: spec técnica do arquivo (formato, px, fps, s) */}
-              <p className="text-2xs font-mono tabular-nums text-neutral-500">
+              <p className="text-2xs font-mono tabular-nums text-muted-foreground">
                 MP4, {outputWidth}x{outputHeight}, {fps} fps, {(totalFrames / fps).toFixed(1)}s
               </p>
               {isMulti ? (
@@ -213,16 +213,16 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
             </div>
           </div>
 
-          <div className="w-full md:w-[300px] bg-neutral-950 flex flex-col">
+          <div className="w-full md:w-[300px] bg-popover flex flex-col">
             <div className="p-5 border-b border-border flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-medium text-neutral-400">
+              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                 <Settings2 size={14} />
                 {t('moodboard.render.settings')}
               </div>
               <button
                 onClick={onClose}
                 aria-label={t('common.close')}
-                className="hidden md:flex p-2 hover:bg-neutral-800 rounded-full transition-colors text-white"
+                className="hidden md:flex p-2 hover:bg-accent rounded-full transition-colors text-foreground"
               >
                 <X size={18} />
               </button>
@@ -274,14 +274,14 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
               ].map(({ label, icon, value, min, max, step, unit, setter, display }) => (
                 <label
                   key={label}
-                  className="flex flex-col gap-3 p-4 rounded-2xl bg-neutral-900/60 border border-border"
+                  className="flex flex-col gap-3 p-4 rounded-xl bg-muted border border-border"
                 >
-                  <span className="flex items-center justify-between gap-2 text-xs font-medium text-neutral-400">
+                  <span className="flex items-center justify-between gap-2 text-xs font-medium text-muted-foreground">
                     <span className="flex items-center gap-2">
                       {icon}
                       {label}
                     </span>
-                    <span className="text-2xs font-mono tabular-nums text-white bg-neutral-800 px-2 py-0.5 rounded-lg border border-border/70">
+                    <span className="text-2xs font-mono tabular-nums text-foreground bg-muted px-2 py-0.5 rounded-xl border border-border/70">
                       {display ? display(value) : value}
                       {unit}
                     </span>
@@ -305,7 +305,7 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
                   setSpeed(1);
                   setDurationPerSlide(5);
                 }}
-                className="w-full py-3 text-xs font-medium text-neutral-500 hover:text-white transition-colors mt-auto"
+                className="w-full py-3 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mt-auto"
               >
                 {t('common.reset')}
               </button>

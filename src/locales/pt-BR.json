@@ -1188,7 +1188,8 @@
       "name": "A-Z",
       "hintDefault": "Ordenar",
       "hintRecent": "Mais usados primeiro",
-      "hintName": "Ordenado A-Z"
+      "hintName": "Ordenado A-Z",
+      "default": "Por categoria"
     },
     "empty": {
       "noResultsTitle": "Nenhum resultado",
@@ -1298,7 +1299,13 @@
     "smartAnalyzer": {
       "name": "Smart Analyzer",
       "description": "Lê a imagem, detecta o tipo e gera prompts prontos pro plugin do Figma ou pra geração de imagem."
-    }
+    },
+    "hide": "Esconder da página de apps",
+    "show": "Mostrar na página de apps",
+    "hiddenToast": "App escondido. Só admin vê.",
+    "shownToast": "App visível pra todo mundo.",
+    "undo": "Desfazer",
+    "visibilityFailed": "Não deu pra mudar a visibilidade. Tente de novo."
   },
   "auth": {
     "accountCreatedSuccess": "Conta criada com sucesso!",
@@ -2212,7 +2219,43 @@
     "noMediaInNode": "Nenhuma mídia neste node.",
     "imageFetchHttpError": "Não conseguimos baixar a imagem (erro {status}). Tente de novo.",
     "imageProcessUnknownError": "Algo travou ao processar a imagem.",
-    "imported": "Importado \"{name}\": {nodes} nodes, {edges} conexões"
+    "imported": "Importado \"{name}\": {nodes} nodes, {edges} conexões",
+    "renameProject": "Renomear projeto",
+    "mediaLibrary": {
+      "tabsLabel": "Seções da biblioteca",
+      "viewModeLabel": "Modo de visualização",
+      "viewGrid": "Grade",
+      "viewList": "Lista",
+      "addReference": "Adicionar {name} ao board",
+      "referenceAdded": "Referência adicionada",
+      "match": "Match",
+      "sanitize": "Sanitizar: remover branding do estúdio",
+      "addToBoard": "Adicionar ao board",
+      "typeLogo": "Logo",
+      "typeImage": "Imagem",
+      "noReferences": "Nenhuma referência encontrada",
+      "noAssets": "Nenhum asset encontrado",
+      "assetReferenced": "Asset referenciado",
+      "assetAdded": "Asset adicionado ao board",
+      "backgroundUpdated": "Fundo do canvas atualizado",
+      "primaryUpdated": "Cor primária da marca atualizada",
+      "sanitizing": "Sanitizando referência...",
+      "sanitized": "Referência sanitizada",
+      "sanitizeFailed": "Não foi possível sanitizar a referência",
+      "noBrandTitle": "Nenhuma marca selecionada",
+      "noBrandBody": "Escolha uma marca ou navegue pelas referências.",
+      "searchReferences": "Buscar referências...",
+      "searchAssets": "Buscar assets...",
+      "sectionLogos": "Logotipos",
+      "sectionMedia": "Assets da marca",
+      "sectionPalette": "Paleta",
+      "copiedHex": "{hex} copiado",
+      "applyAsBackground": "Usar como fundo",
+      "setAsPrimary": "Usar como primária",
+      "smartReferences": "Referências sugeridas",
+      "curatedReferences": "Referências curadas",
+      "clearFilters": "Limpar"
+    }
   },
   "canvasBottomToolbar": {
     "color": "Cor",
@@ -2383,7 +2426,8 @@
       "thinking": "Pensando...",
       "title": "Chat Node",
       "typeYourMessage": "Digite sua mensagem...",
-      "openAsPanel": "Abrir como painel"
+      "openAsPanel": "Abrir como painel",
+      "replyingInPanel": "Esse chat está aberto no painel lateral. Responda por lá."
     },
     "colorExtractorNode": {
       "clickToCopy": "Clique para copiar o código hexadecimal",
@@ -3729,7 +3773,8 @@
       },
       "buttons": {
         "description": "Variantes e tamanhos do componente de botão",
-        "title": "Botões"
+        "title": "Botões",
+        "ctaNote": "CTA ciano: primary é a ação principal da ferramenta; brand (preenchido) só em momento de vitrine. Nunca os dois no mesmo painel."
       },
       "canvasFlow": {
         "description": "Componente principal do canvas React Flow com arrastar e soltar, gerenciamento de nós e manipulação de imagens",
@@ -3818,6 +3863,18 @@
       "microTitle": {
         "title": "Micro Title",
         "description": "Rótulo técnico em mono, caixa alta e espaçado"
+      },
+      "mediaTile": {
+        "title": "Media Tile",
+        "description": "Card de mídia único: capa com proporção reservada, ação principal esticada e ações que aparecem no hover, no foco e no toque."
+      },
+      "segmentedControl": {
+        "title": "Segmented Control",
+        "description": "Escolha única entre poucas opções. Setas navegam, espaço seleciona; o ciano fica só na variante accent."
+      },
+      "dropzone": {
+        "title": "Dropzone",
+        "description": "Zona de upload com input de arquivo real: clique, teclado ou arrastar. Dentro de um shell que já cuida do arrastar, desligue com dropTarget={false}."
       }
     },
     "deleteConfirmation": {
@@ -4545,7 +4602,24 @@
     },
     "removeColor": "Remover {color}",
     "selectModelToCompare": "Escolha pelo menos um modelo pra comparar",
-    "userApiKeyInUse": "Usando a sua chave de API"
+    "userApiKeyInUse": "Usando a sua chave de API",
+    "card": {
+      "feedbackUp": "Gostei (melhora o modelo)",
+      "feedbackUpRemove": "Remover feedback positivo",
+      "feedbackDown": "Não gostei (reportar ruído)",
+      "feedbackDownRemove": "Remover feedback negativo",
+      "promptStep1": "Preparando",
+      "promptStep2": "Analisando",
+      "promptStep3": "Compondo",
+      "promptStep4": "Conceituando",
+      "promptStep5": "Sintetizando",
+      "imageStep1": "Criando",
+      "imageStep2": "Desenhando",
+      "imageStep3": "Esculpindo",
+      "imageStep4": "Refinando",
+      "imageStep5": "Moldando",
+      "imageStep6": "Lapidando"
+    }
   },
   "mockupsPage": {
     "cannotConnectServer": "Não foi possível conectar ao servidor. Por favor, verifique sua conexão e tente novamente.",
@@ -5884,7 +5958,8 @@
     "releaseToUpload": "Solte para enviar",
     "startBlankMockup": "Começar com um Mockup Vazio",
     "supportedFormats": "PNG, JPG, WEBP",
-    "unsupportedFileType": "Tipo de arquivo não suportado. Por favor, envie um PNG, JPG, WEBP ou GIF."
+    "unsupportedFileType": "Tipo de arquivo não suportado. Por favor, envie um PNG, JPG, WEBP ou GIF.",
+    "dropOrClick": "Arraste ou clique para enviar"
   },
   "usage": {
     "lastUpdated": "Última atualização: {date}",
@@ -6264,6 +6339,14 @@
       "createFirst": "Criar o primeiro criativo",
       "untitled": "Criativo sem título",
       "loadFailed": "Não foi possível carregar os criativos"
+    },
+    "pages": {
+      "defaultName": "Página {n}",
+      "duplicate": "Duplicar (Ctrl+Shift+D)",
+      "remove": "Remover página",
+      "rename": "Nome da página",
+      "doubleClickRename": "Duplo-clique pra renomear",
+      "add": "Adicionar página"
     }
   },
   "mockups": {
@@ -6310,7 +6393,8 @@
       "textPlaceholder": "Digite seu texto...",
       "loaded": "{fileName} carregado",
       "converted": "{fileName} convertido para SVG",
-      "processFailed": "Falha ao processar imagem"
+      "processFailed": "Falha ao processar imagem",
+      "dropModel": "Clique ou arraste GLB / GLTF"
     },
     "geometry": {
       "title": "Geometria",
@@ -6355,7 +6439,11 @@
       "qualityHigh": "Qualidade"
     },
     "scenePresets": {
-      "title": "Presets de cena"
+      "title": "Presets de cena",
+      "surprise": "Cena sorteada",
+      "random": "Aleatório",
+      "brandScenes": "Cenas de {name}",
+      "brand": "Marca"
     },
     "material": {
       "title": "Material",
@@ -6412,7 +6500,11 @@
       },
       "angle": "Ângulo",
       "color1": "Cor 1",
-      "color2": "Cor 2"
+      "color2": "Cor 2",
+      "uploadImage": "Enviar imagem",
+      "maxSize": "Máximo de 10MB",
+      "image": "Imagem de fundo",
+      "removeImage": "Remover imagem de fundo"
     },
     "animation": {
       "type": "Tipo",
@@ -6634,7 +6726,13 @@
       "png_exported_2x": "PNG exportado (2x)",
       "only_svg_files_are_supported": "Só arquivos SVG são aceitos",
       "please_upload_an_svg_file": "Envie um arquivo SVG",
-      "loaded_name_anchors_anchors_handles_h": "${name} carregado, ${anchors} âncoras, ${handles} alças"
+      "loaded_name_anchors_anchors_handles_h": "${name} carregado, ${anchors} âncoras, ${handles} alças",
+      "loaded": "{name} carregado: {anchors} âncoras, {handles} alças",
+      "anchorsCount": "{count} âncoras",
+      "handlesCount": "{count} alças",
+      "clear": "Limpar",
+      "openSvg": "Abrir SVG",
+      "openSvgShortcut": "Abrir SVG (Ctrl+O)"
     }
   },
   "extractor": {
@@ -6811,7 +6909,8 @@
       "animationPrompt": "Descreva o movimento",
       "animate": "Animar",
       "regenerate": "Regenerar com IA",
-      "ready4k": "4K pronto"
+      "ready4k": "4K pronto",
+      "fullscreen": "Ver em tela cheia"
     },
     "frame": {
       "title": "Animar entre quadros",
@@ -7328,7 +7427,8 @@
       "original": "Original",
       "result": "Resultado",
       "showOriginal": "Ver original",
-      "showResult": "Ver resultado"
+      "showResult": "Ver resultado",
+      "mode": "Modo"
     },
     "converter": {
       "addImagesPdf": "Adicionar imagens ou PDF",
@@ -7403,7 +7503,8 @@
       "optimize": "Otimizar",
       "preview": "Prévia",
       "code": "Código",
-      "summary": "Otimizados: {count} · {saved} a menos ({percent}%)"
+      "summary": "Otimizados: {count} · {saved} a menos ({percent}%)",
+      "viewMode": "Visualização"
     },
     "pdf": {
       "presetLabel": "Preset",
@@ -7458,6 +7559,36 @@
       "details": "Detalhes",
       "nearestRal": "RAL mais próximo:",
       "nearestPantone": "Pantone mais próximo:"
+    },
+    "og": {
+      "template": "Modelo",
+      "templates": {
+        "minimal": "Mínimo",
+        "gradient": "Degradê",
+        "photo": "Foto",
+        "split": "Dividido"
+      },
+      "title": "Título",
+      "titlePlaceholder": "Título do seu post",
+      "subtitle": "Subtítulo",
+      "subtitlePlaceholder": "Do que a página trata",
+      "author": "Autor",
+      "authorPlaceholder": "Nome do autor",
+      "logo": "Logo",
+      "upload": "Enviar imagem",
+      "backgroundImage": "Imagem de fundo",
+      "colors": "Cores",
+      "colorBg": "Fundo",
+      "colorAccent": "Destaque",
+      "colorText": "Texto",
+      "generated": "OG image pronta",
+      "downloadPng": "Baixar PNG",
+      "copyImage": "Copiar imagem",
+      "copyMeta": "Copiar meta tags",
+      "metaCopied": "Meta tags copiadas",
+      "configure": "Ajuste a sua OG image no painel",
+      "preview": "Prévia",
+      "previewAlt": "Prévia da OG image"
     }
   },
   "fullScreenViewer": {
@@ -7930,6 +8061,13 @@
         "description": "Mede a completude do guideline com gráficos",
         "prompt": "Um painel de auditoria da marca que carrega meu guideline e mostra a completude de cores, tipografia, voz, imagens e logos num gráfico de pizza, um gráfico de barras com a contagem de assets por categoria, um card com a nota de conformidade e dicas de melhoria numa seção recolhível"
       }
+    },
+    "card": {
+      "like": "Curtir",
+      "fork": "Fazer fork",
+      "likeFailed": "Não deu pra curtir",
+      "forked": "Fork criado",
+      "forkFailed": "Não deu pra fazer o fork"
     }
   },
   "imageEditor": {
@@ -7971,7 +8109,10 @@
     "removeBgInfo": "Remove o fundo com IA num clique.",
     "generating": "Gerando",
     "generate": "Gerar",
-    "selectionTooSmall": "Seleção pequena demais. Tente uma área maior."
+    "selectionTooSmall": "Seleção pequena demais. Tente uma área maior.",
+    "result": "Resultado",
+    "rejectRetry": "Descartar e refazer",
+    "acceptApply": "Aceitar e aplicar"
   },
   "canvasChat": {
     "toggleDetails": "Mostrar ou ocultar detalhes",
@@ -8012,12 +8153,152 @@
     "yieldImages": "Imagens",
     "videoCount": "{count} vídeos",
     "openSource": "Código aberto",
-    "community": "Comunidade"
+    "community": "Comunidade",
+    "tabsLabel": "Seções de créditos"
   },
   "byok": {
     "activeCharges": "BYOK ativo: a cobrança vai pra sua conta Google"
   },
   "modelSelector": {
     "unstable": "{provider} (instável agora)"
+  },
+  "storageLimitModal": {
+    "title": "Limite de armazenamento excedido",
+    "usage": "Você excedeu seu limite de armazenamento ({used} MB de {limit} MB).",
+    "body": "Suba de plano pra ter mais espaço e continuar enviando imagens.",
+    "upgrade": "Fazer upgrade"
+  },
+  "toolEditor": {
+    "export": {
+      "title": "Exportar",
+      "scale": "Escala",
+      "quality": "Qualidade",
+      "duration": "Duração",
+      "output": "Saída",
+      "copy": "Copiar para a área de transferência",
+      "copied": "Copiado",
+      "copyFailed": "Não deu pra copiar. Baixe o arquivo.",
+      "exported": "{format} exportado",
+      "exportedSvg": "SVG exportado (vetor)",
+      "exportedDims": "{format} exportado ({dims})",
+      "failed": "A exportação falhou. Tente de novo.",
+      "presets": {
+        "productShot": "Foto de produto",
+        "socialPost": "Post social",
+        "instagramReel": "Reels do Instagram",
+        "webPreview": "Prévia web"
+      }
+    },
+    "presets": {
+      "empty": "Nenhum preset encontrado",
+      "emptyHint": "Seja o primeiro a compartilhar um.",
+      "saveHint": "Salve presets pelo painel da direita",
+      "by": "por {name}",
+      "applied": "\"{name}\" aplicado",
+      "loaded": "\"{name}\" carregado",
+      "namePlaceholder": "Nome do preset",
+      "saved": "Preset salvo",
+      "saveFailed": "Não deu pra salvar o preset",
+      "deleted": "Preset excluído",
+      "deleteFailed": "Não deu pra excluir"
+    },
+    "compare": {
+      "original": "Original",
+      "processed": "Processada"
+    },
+    "undo": "Desfazer",
+    "redo": "Refazer",
+    "undoHint": "Desfazer (Ctrl+Z)",
+    "redoHint": "Refazer (Ctrl+Shift+Z)",
+    "resetHint": "Redefinir ajustes (R)",
+    "hidePanelHint": "Esconder painel (Tab)",
+    "showPanelHint": "Mostrar painel (Tab)",
+    "uploadImage": "Enviar imagem",
+    "loadedFile": "{name} carregado",
+    "parameters": "Parâmetros",
+    "eyedropper": "Conta-gotas",
+    "eyedropperHint": "Pegar cor da tela"
+  },
+  "smartAnalyzerPage": {
+    "toast": {
+      "adminRequired": "Acesso restrito a admin",
+      "invalidType": "Formato inválido. Use PNG, JPG ou WebP.",
+      "tooLarge": "Arquivo grande demais. Máximo de 5MB.",
+      "analyzeFirst": "Analise a imagem primeiro",
+      "generationFailed": "A geração falhou",
+      "generated": "Imagem gerada",
+      "noImage": "O servidor não devolveu imagem",
+      "generateFailed": "Não deu pra gerar a imagem",
+      "variationsLoading": "Gerando variações…",
+      "variationsDone": "{count} variações geradas",
+      "variationsAllFailed": "A geração falhou em todas as variações",
+      "variationsFailed": "Não deu pra gerar as variações",
+      "saved": "Salvo na sua biblioteca",
+      "saveFailed": "Não deu pra salvar a mídia",
+      "favAdded": "Adicionado aos favoritos",
+      "favRemoved": "Removido dos favoritos",
+      "favFailed": "Não deu pra atualizar o favorito",
+      "pasted": "Imagem colada da área de transferência",
+      "refining": "Refinando o prompt…",
+      "analysisFailed": "A análise falhou",
+      "refined": "Prompt refinado",
+      "analysisDone": "Análise concluída",
+      "opsCopied": "JSON de operações copiado",
+      "promptCopied": "Prompt copiado",
+      "nameRequired": "Dê um nome",
+      "publishFailed": "Não deu pra publicar",
+      "published": "Publicado na Comunidade"
+    },
+    "reset": "Recomeçar",
+    "seoDescription": "Análise de imagem e geração de prompt com IA",
+    "title": "Analisador de imagem",
+    "description": "Extraia um prompt reutilizável de qualquer imagem.",
+    "breadcrumb": "Smart Analyzer",
+    "idle": {
+      "title": "Analise uma imagem",
+      "paste": "Ou cole uma com"
+    },
+    "analyzing": {
+      "title": "Extraindo o prompt",
+      "subtitle": "Analisando padrões visuais…"
+    },
+    "result": {
+      "variations": "Variações",
+      "result": "Resultado",
+      "variationsCount": "{count} variações"
+    },
+    "prompt": {
+      "save": "Salvar",
+      "edit": "Editar",
+      "editPlaceholder": "Edite seu prompt…",
+      "copied": "Copiado",
+      "copy": "Copiar prompt",
+      "generating": "Gerando…",
+      "generate": "Gerar",
+      "variations4x": "4 variações"
+    },
+    "refinements": {
+      "title": "Refinamentos",
+      "custom": "Personalizado…"
+    },
+    "sidebar": {
+      "source": "Origem",
+      "analyzeAnother": "Analisar outra",
+      "keywords": "Palavras-chave visuais",
+      "palette": "Paleta extraída"
+    },
+    "publish": {
+      "title": "Salvar na Comunidade",
+      "name": "Título",
+      "namePlaceholder": "Ex.: Dashboard profissional escuro",
+      "tags": "Tags",
+      "noTags": "Nenhuma tag ainda",
+      "tagPlaceholder": "Adicionar tag…",
+      "cancel": "Cancelar",
+      "submit": "Publicar"
+    },
+    "preview": {
+      "alt": "Prévia"
+    }
   }
 }

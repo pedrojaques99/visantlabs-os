@@ -40,7 +40,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
     <div className={cn('animate-fade-in-fast', className)}>
       {/* Billing Cycle Toggle */}
       <div className="flex justify-center mb-10">
-        <div className="bg-neutral-900/50 p-1 rounded-full border border-neutral-800 inline-flex relative">
+        <div className="bg-muted p-1 rounded-full border border-border inline-flex relative">
           <div
             className={cn(
               // GPU-only: fixed width + translateX. Displacement is exactly the
@@ -57,8 +57,8 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
             className={cn(
               'relative z-10 px-6 py-2 text-sm font-medium rounded-full transition-colors duration-200 min-w-[100px]',
               billingCycle === 'monthly'
-                ? 'text-black font-bold'
-                : 'text-neutral-400 hover:text-neutral-200'
+                ? 'text-black'
+                : 'text-muted-foreground hover:text-foreground'
             )}
           >
             {t('pricing.monthly')}
@@ -69,17 +69,15 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
             className={cn(
               'relative z-10 px-6 py-2 text-sm font-medium rounded-full transition-colors duration-200 min-w-[100px] flex items-center justify-center gap-2',
               billingCycle === 'yearly'
-                ? 'text-black font-bold'
-                : 'text-neutral-400 hover:text-neutral-200'
+                ? 'text-black'
+                : 'text-muted-foreground hover:text-foreground'
             )}
           >
             {t('pricing.yearly')}
             <span
               className={cn(
-                'text-2xs px-1.5 py-0.5 rounded-full font-bold',
-                billingCycle === 'yearly'
-                  ? 'bg-neutral-950/20 text-black'
-                  : 'bg-success/10 text-success'
+                'text-2xs px-1.5 py-0.5 rounded-full font-medium',
+                billingCycle === 'yearly' ? 'bg-black/15 text-black' : 'bg-success/10 text-success'
               )}
             >
               {t('pricing.yearlyDiscount')}
@@ -104,7 +102,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
             {filteredPlans.map((plan) => (
               <Card
                 key={plan.id}
-                className="bg-neutral-900/40 border-neutral-800/50 hover:border-neutral-700 transition-colors duration-300 flex flex-col group relative overflow-hidden"
+                className="bg-card border-border hover:border-border-hover transition-colors duration-300 flex flex-col group relative overflow-hidden"
               >
                 <CardHeader className="text-center pb-2 relative z-10">
                   {plan.displayOrder === 1 && (
@@ -114,13 +112,13 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                       </Badge>
                     </div>
                   )}
-                  <h3 className="text-2xl font-bold text-neutral-100 mt-2">{plan.name}</h3>
+                  <h3 className="text-2xl font-medium text-foreground mt-2">{plan.name}</h3>
                 </CardHeader>
 
                 <CardContent className="flex-1 flex flex-col p-6 pt-2 relative z-10">
                   <div className="text-center mb-6">
                     <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-4xl font-bold text-neutral-100 tabular-nums">
+                      <span className="text-4xl font-semibold text-foreground tabular-nums">
                         {formatPrice(
                           currencyInfo?.currency === 'USD' && plan.priceUSD
                             ? plan.priceUSD
@@ -129,12 +127,12 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                           currencyInfo?.locale || 'pt-BR'
                         )}
                       </span>
-                      <span className="text-neutral-500 text-sm">
+                      <span className="text-muted-foreground text-sm">
                         {billingCycle === 'yearly' ? t('pricing.perYear') : t('pricing.perMonth')}
                       </span>
                     </div>
-                    <div className="flex items-center justify-center gap-1.5 text-xs text-neutral-400 mt-2">
-                      <Pickaxe size={12} className="text-neutral-500" />
+                    <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mt-2">
+                      <Pickaxe size={12} className="text-muted-foreground" />
                       <span>
                         {plan.credits} {t('pricing.creditsLabel')}
                       </span>
@@ -143,18 +141,18 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                     {(() => {
                       const estimate = getCreditsEstimate(plan.credits || 0);
                       return (
-                        <div className="flex items-center justify-center gap-3 mt-2 text-2xs text-neutral-500">
+                        <div className="flex items-center justify-center gap-3 mt-2 text-2xs text-muted-foreground">
                           <div className="flex items-center gap-1">
-                            <Image size={10} className="text-neutral-500" />
+                            <Image size={10} className="text-muted-foreground" />
                             <span>~{estimate.imagesHD} HD</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <Image size={10} className="text-neutral-500" />
+                            <Image size={10} className="text-muted-foreground" />
                             <span>~{estimate.images4K} 4K</span>
                           </div>
                           {estimate.videosFast > 0 && (
                             <div className="flex items-center gap-1">
-                              <Video size={10} className="text-neutral-500" />
+                              <Video size={10} className="text-muted-foreground" />
                               <span>
                                 ~{t('creditsModal.videoCount', { count: estimate.videosFast })}
                               </span>
@@ -171,11 +169,11 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                       ? plan.metadata.features.map((benefit: string, idx: number) => (
                           <div
                             key={idx}
-                            className="flex items-start gap-3 text-sm text-neutral-400"
+                            className="flex items-start gap-3 text-sm text-muted-foreground"
                           >
                             <CheckCircle2
                               size={16}
-                              className="text-neutral-500 mt-0.5 flex-shrink-0"
+                              className="text-muted-foreground mt-0.5 flex-shrink-0"
                             />
                             <span>{benefit.trim()}</span>
                           </div>
@@ -184,11 +182,11 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                         ? plan.description.split(',').map((benefit: string, idx: number) => (
                             <div
                               key={idx}
-                              className="flex items-start gap-3 text-sm text-neutral-400"
+                              className="flex items-start gap-3 text-sm text-muted-foreground"
                             >
                               <CheckCircle2
                                 size={16}
-                                className="text-neutral-500 mt-0.5 flex-shrink-0"
+                                className="text-muted-foreground mt-0.5 flex-shrink-0"
                               />
                               <span>{benefit.trim()}</span>
                             </div>

@@ -157,13 +157,13 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-neutral-200">PDF Customizado</h3>
+      <h3 className="text-lg font-medium text-foreground">PDF Customizado</h3>
 
       {/* Modal para salvar preset */}
       {showSavePresetModal && (
         <div className="fixed inset-0 bg-neutral-950/50 flex items-center justify-center z-50 p-4">
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 sm:p-6 max-w-md w-full">
-            <h4 className="text-lg font-semibold text-neutral-200 mb-4">Salvar como Preset</h4>
+            <h4 className="text-lg font-medium text-foreground mb-4">Salvar como Preset</h4>
             <Input
               type="text"
               value={presetName}

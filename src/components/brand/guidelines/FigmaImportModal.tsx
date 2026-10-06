@@ -69,7 +69,7 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px] bg-neutral-900 border-neutral-800 text-neutral-200 p-0 overflow-hidden">
         <DialogHeader className="p-6 pb-2 border-b border-neutral-800/50">
-          <DialogTitle className="text-xl font-bold font-manrope flex items-center gap-2">
+          <DialogTitle className="text-xl font-semibold font-manrope flex items-center gap-2">
             <Palette className="text-neutral-400" size={20} />
             Importar do Figma
           </DialogTitle>
@@ -99,7 +99,7 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
                 {previewData.colors.slice(0, 12).map((color, idx) => (
                   <div
                     key={idx}
-                    className="w-8 h-8 rounded-md border border-white/10 shadow-sm"
+                    className="w-8 h-8 rounded-md border border-border shadow-sm"
                     style={{ backgroundColor: color.hex }}
                     title={color.name}
                   />
@@ -195,7 +195,7 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
                       {comp.name}
                     </span>
                     {selectedLogos.includes(comp.key) && (
-                      <div className="absolute top-2 right-2 bg-brand-cyan text-black rounded-full p-0.5">
+                      <div className="absolute top-2 right-2 bg-foreground text-background rounded-full p-0.5">
                         <Check size={8} strokeWidth={4} />
                       </div>
                     )}

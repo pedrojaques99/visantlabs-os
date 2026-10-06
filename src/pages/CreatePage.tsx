@@ -82,7 +82,8 @@ export const CreatePage: React.FC = () => {
       // (sm:px-6 lg:px-8 sm:pt-8 sm:pb-16 vencem um p-0 base) → sobra 32px de
       // margem/topo e o rodapé corta. O Creative Studio é full-bleed e gere a
       // própria altura, então zeramos em todos os breakpoints.
-      contentClassName="p-0 sm:p-0 lg:p-0"
+      // `dark`: o Creative Studio é sempre escuro; escopa os tokens escuros na subárvore.
+      contentClassName="p-0 sm:p-0 lg:p-0 dark text-foreground"
     >
       <CreativeStudio />
     </PageShell>

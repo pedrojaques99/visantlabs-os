@@ -822,10 +822,10 @@ export const VideoNode = memo(
             ) : (
               <div className="flex items-center justify-center gap-2">
                 <VideoIcon size={14} className="group-hover/gen:rotate-12 transition-transform" />
-                <span className="font-semibold tracking-tight">
+                <span className="font-medium tracking-tight">
                   {t('canvasNodes.videoNode.generateVideo')}
                 </span>
-                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-2xs text-foreground/80">
+                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-background/50 text-2xs text-foreground">
                   <Diamond size={10} className="opacity-50 fill-current" />
                   {creditsRequired}
                 </div>

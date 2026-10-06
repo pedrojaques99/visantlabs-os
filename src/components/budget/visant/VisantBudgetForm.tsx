@@ -26,7 +26,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({ data, onChan
     <div className="space-y-6 w-full h-full min-h-full">
       {/* Basic Info */}
       <div className="space-y-4">
-        <h3 className="text-base sm:text-lg font-semibold text-neutral-200">Informações Básicas</h3>
+        <h3 className="text-base sm:text-lg font-medium text-foreground">Informações Básicas</h3>
 
         <div className="w-full">
           <label className="block text-xs sm:text-sm text-neutral-400 mb-2">

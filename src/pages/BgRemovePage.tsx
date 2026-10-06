@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Eraser, Upload, X, Eye, EyeOff, Cpu, Zap, Crosshair } from '@/lib/ui/icons';
+import { Eraser, X, Eye, EyeOff, Cpu, Zap, Crosshair } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -13,6 +13,8 @@ import { validateFile } from '@/utils/fileUtils';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Button } from '@/components/ui/button';
+import { Dropzone } from '@/components/ui/Dropzone';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToolInput } from '@/hooks/useToolInput';
 import { QuickActions } from '@/components/shared/QuickActions';
@@ -120,7 +122,7 @@ function FocusSelector({ region, onChange, disabled }: FocusSelectorProps) {
             }}
           />
           <div
-            className="absolute border-2 border-ring rounded-sm"
+            className="absolute border-2 border-ring rounded-md"
             style={{
               left: `${sel.x * 100}%`,
               top: `${sel.y * 100}%`,
@@ -249,7 +251,7 @@ export const BgRemovePage: React.FC = () => {
     items.find((i) => i.id === previewId) || items.find((i) => i.status === 'done') || items[0];
 
   const handleFiles = useCallback(
-    (fileList: FileList) => {
+    (fileList: FileList | File[]) => {
       const valid: { url: string; name: string }[] = [];
       Array.from(fileList).forEach((file) => {
         const error = validateFile(file, 'image');
@@ -262,14 +264,6 @@ export const BgRemovePage: React.FC = () => {
       if (valid.length) addFiles(valid);
     },
     [addFiles]
-  );
-
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files) handleFiles(e.target.files);
-      if (e.target) e.target.value = '';
-    },
-    [handleFiles]
   );
 
   const handleDrop = useCallback(
@@ -381,53 +375,36 @@ export const BgRemovePage: React.FC = () => {
 
   // ─── Panel ────────────────────────────────────────────────────────────────
 
-  const modeClass = (selected: boolean) =>
-    cn(
-      'flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors duration-200',
-      selected
-        ? 'border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan'
-        : 'border-transparent text-muted-foreground hover:text-foreground'
-    );
-
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Mode toggle — top of panel */}
-      <div className={cn('flex items-center gap-1 p-1 rounded-xl', glassSurface.surface)}>
-        <button
-          type="button"
-          onClick={() => setMode('ai')}
-          disabled={isProcessing}
-          className={modeClass(mode === 'ai')}
-        >
-          <Zap size={12} /> {t('miniTools.bgRemove.modeAi')}
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode('simple')}
-          disabled={isProcessing}
-          className={modeClass(mode === 'simple')}
-        >
-          <Cpu size={12} /> {t('miniTools.bgRemove.modeSimple')}
-        </button>
-      </div>
+      <SegmentedControl
+        aria-label={t('miniTools.bgRemove.mode')}
+        size="sm"
+        fullWidth
+        value={mode}
+        onChange={setMode}
+        disabled={isProcessing}
+        options={[
+          { value: 'ai', label: t('miniTools.bgRemove.modeAi'), icon: Zap },
+          { value: 'simple', label: t('miniTools.bgRemove.modeSimple'), icon: Cpu },
+        ]}
+      />
 
       {/* Add more + thumbnail queue */}
-      <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
-        <Upload size={12} />
-        {t('miniTools.addImages')}
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          multiple
-          className="hidden"
-          onChange={handleInputChange}
-        />
-      </label>
+      <Dropzone
+        onFiles={handleFiles}
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        label={t('miniTools.addImages')}
+        size="sm"
+        dropTarget={false}
+      />
 
       <AnimatePresence>
         {processingItem && (
           <motion.div
-            className={cn('px-3 py-2 rounded-lg', glassSurface.surface)}
+            className={cn('px-3 py-2 rounded-xl', glassSurface.surface)}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -446,7 +423,7 @@ export const BgRemovePage: React.FC = () => {
             {...fade}
             layout
             className={cn(
-              'group flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors duration-200',
+              'group flex items-center gap-2 p-1.5 rounded-xl cursor-pointer transition-colors duration-200',
               previewItem?.id === item.id ? 'bg-muted ring-1 ring-border' : 'hover:bg-muted/60'
             )}
           >
@@ -499,7 +476,7 @@ export const BgRemovePage: React.FC = () => {
                 }}
                 disabled={isProcessing}
                 className={cn(
-                  'w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-colors duration-200',
+                  'w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-medium transition-colors duration-200',
                   focusActive
                     ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
                     : 'text-muted-foreground border-border hover:border-ring hover:text-foreground'
@@ -595,7 +572,9 @@ export const BgRemovePage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium transition-colors duration-200"
+                variant="primary"
+                size="sm"
+                className="w-full text-xs"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -673,24 +652,21 @@ export const BgRemovePage: React.FC = () => {
       <AnimatePresence mode="wait">
         {!hasItems ? (
           <motion.div key="upload" {...fade} className="flex w-full justify-center py-8">
-            <label className="flex h-48 w-full max-w-md cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border px-4 text-center text-sm text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
-              <Upload size={20} />
-              {t('miniTools.dropImages')}
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                multiple
-                className="hidden"
-                onChange={handleInputChange}
-              />
-            </label>
+            <Dropzone
+              onFiles={handleFiles}
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              label={t('miniTools.dropImages')}
+              dropTarget={false}
+              className="max-w-md"
+            />
           </motion.div>
         ) : (
           /* ─── Working state — preview centered in children ─── */
           <motion.div
             key="workspace"
             {...fadeScale}
-            className="relative w-full max-w-3xl rounded-2xl overflow-hidden border border-border min-h-[300px] flex items-center justify-center"
+            className="relative w-full max-w-3xl rounded-xl overflow-hidden border border-border min-h-[300px] flex items-center justify-center"
             style={{
               background:
                 showOriginal || !previewItem?.resultBase64
@@ -749,7 +725,7 @@ export const BgRemovePage: React.FC = () => {
                     <motion.button
                       type="button"
                       onClick={toggleOriginal}
-                      className="absolute top-3 right-3 flex items-center gap-1.5 rounded-lg border border-border bg-background/80 px-2.5 py-1 text-xs text-foreground transition-colors hover:bg-background"
+                      className="absolute top-3 right-3 flex items-center gap-1.5 rounded-xl border border-border bg-background/80 px-2.5 py-1 text-xs text-foreground transition-colors hover:bg-background"
                       title={
                         showOriginal
                           ? t('miniTools.bgRemove.showResult')
@@ -769,7 +745,7 @@ export const BgRemovePage: React.FC = () => {
                 <AnimatePresence>
                   {previewItem.status === 'error' && (
                     <motion.div
-                      className="absolute bottom-3 left-3 right-3 px-3 py-2 rounded-lg bg-destructive/10 border border-destructive/20 text-xs text-destructive"
+                      className="absolute bottom-3 left-3 right-3 px-3 py-2 rounded-xl bg-destructive/10 border border-destructive/20 text-xs text-destructive"
                       {...fade}
                     >
                       {previewItem.error || t('miniTools.processFailed')}

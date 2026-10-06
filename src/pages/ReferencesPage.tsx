@@ -40,7 +40,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge, badgeVariants } from '@/components/ui/badge';
 import { Thumb } from '@/components/ui/Thumb';
-import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { MediaTile } from '@/components/ui/MediaTile';
+import { Dropzone } from '@/components/ui/Dropzone';
 import { Select } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Modal } from '@/components/ui/Modal';
@@ -1058,14 +1059,14 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
               <span className="inline-flex items-center gap-1.5 rounded-full border border-ring bg-muted px-2.5 py-1">
                 <span
                   aria-hidden
-                  className="h-3 w-3 rounded-sm border border-border"
+                  className="h-3 w-3 rounded-md border border-border"
                   style={{ backgroundColor: color }}
                 />
                 Cor <code className="font-mono text-foreground">{color}</code>
                 <button
                   type="button"
                   aria-label="Remover filtro de cor"
-                  className="ml-0.5 rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  className="ml-0.5 rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   onClick={() => {
                     const p = new URLSearchParams(searchParams);
                     p.delete('color');
@@ -1083,7 +1084,7 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
                 <button
                   type="button"
                   aria-label="Remover filtro de origem"
-                  className="ml-0.5 rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  className="ml-0.5 rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   onClick={() => {
                     const p = new URLSearchParams(searchParams);
                     p.delete('src');
@@ -1534,7 +1535,7 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 pointer-events-none"
           >
-            <div className="flex flex-col items-center gap-3 text-foreground border-2 border-dashed border-border rounded-2xl px-12 py-10">
+            <div className="flex flex-col items-center gap-3 text-foreground border-2 border-dashed border-border rounded-xl px-12 py-10">
               <ImageIcon className="h-8 w-8" />
               <p className="text-sm font-medium">Solte para buscar parecidas</p>
             </div>
@@ -1687,11 +1688,7 @@ const CollectionsGrid: React.FC<{
             className="bg-input border-border text-sm h-9"
           />
           <div className="flex gap-1.5">
-            <Button
-              size="sm"
-              className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs flex-1"
-              onClick={submit}
-            >
+            <Button size="sm" variant="primary" className="text-xs flex-1" onClick={submit}>
               <Check className="h-3.5 w-3.5 mr-1" />
               Criar
             </Button>
@@ -1708,6 +1705,7 @@ const CollectionsGrid: React.FC<{
       ) : (
         <button
           onClick={() => setCreating(true)}
+          type="button"
           className="aspect-[4/3] rounded-xl border border-dashed border-border hover:border-border-hover text-muted-foreground hover:text-foreground transition-colors flex flex-col items-center justify-center gap-2"
         >
           <FolderPlus className="h-6 w-6" />
@@ -1716,47 +1714,27 @@ const CollectionsGrid: React.FC<{
       )}
 
       {collections.map((c) => (
-        <button
+        <MediaTile
           key={c.id}
-          onClick={() => onOpen(c.id)}
-          className="text-left rounded-xl overflow-hidden bg-card ring-1 ring-border hover:ring-ring transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <div className="aspect-[4/3] relative bg-muted">
-            {c.covers && c.covers.length > 1 ? (
-              <div className="grid grid-cols-2 grid-rows-2 w-full h-full gap-px">
-                {c.covers.slice(0, 4).map((u, i) => (
-                  <Thumb
-                    key={i}
-                    src={u}
-                    alt=""
-                    loading="lazy"
-                    className="w-full h-full object-cover"
-                  />
-                ))}
-              </div>
-            ) : c.coverUrl || c.covers?.[0] ? (
-              <Thumb
-                src={c.coverUrl || c.covers?.[0]}
-                alt={c.name}
-                loading="lazy"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full grid place-items-center text-muted-foreground">
-                <Folder className="h-8 w-8" />
-              </div>
-            )}
-          </div>
-          <div className="p-2.5">
-            <p className="text-xs font-medium text-foreground truncate flex items-center gap-1">
+          layout="stacked"
+          aspectRatio={4 / 3}
+          src={c.coverUrl || c.covers?.[0]}
+          alt={c.name}
+          fallbackIcon={Folder}
+          title={
+            <span className="flex items-center gap-1">
               {!c.isPublic && <Lock className="h-3 w-3 text-muted-foreground shrink-0" />}
-              {c.name}
-            </p>
-            <p className="text-2xs text-muted-foreground tabular-nums">
+              <span className="truncate">{c.name}</span>
+            </span>
+          }
+          actionLabel={c.name}
+          subtitle={
+            <span className="tabular-nums">
               {c.count} {c.count === 1 ? 'item' : 'itens'}
-            </p>
-          </div>
-        </button>
+            </span>
+          }
+          onClick={() => onOpen(c.id)}
+        />
       ))}
     </div>
   );
@@ -1837,11 +1815,7 @@ const SaveToCollectionDialog: React.FC<{ items: ReferenceItem[]; onClose: () => 
             placeholder="Nova coleção..."
             className="bg-input border-border text-sm h-9"
           />
-          <Button
-            size="sm"
-            className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs h-9"
-            onClick={createAndAdd}
-          >
+          <Button size="sm" variant="primary" className="text-xs h-9" onClick={createAndAdd}>
             <Plus className="h-3.5 w-3.5" />
           </Button>
         </div>
@@ -1865,7 +1839,7 @@ const SaveToCollectionDialog: React.FC<{ items: ReferenceItem[]; onClose: () => 
                 key={c.id}
                 onClick={() => addTo(c.id)}
                 disabled={savedIds.has(c.id)}
-                className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg hover:bg-muted text-left transition-colors"
+                className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-muted text-left transition-colors"
               >
                 <span className="flex items-center gap-2 text-sm text-foreground truncate">
                   <Folder className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -1971,11 +1945,7 @@ const BatchActionBar: React.FC<{
         Tudo
       </button>
     )}
-    <Button
-      size="sm"
-      className="h-8 bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs"
-      onClick={onSave}
-    >
+    <Button size="sm" variant="primary" className="h-8 text-xs" onClick={onSave}>
       <Bookmark className="h-3.5 w-3.5 mr-1.5" />
       Salvar em coleção
     </Button>
@@ -2047,12 +2017,7 @@ const EditReferenceDialog: React.FC<{
           >
             Cancelar
           </Button>
-          <Button
-            size="sm"
-            className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs"
-            disabled={saving}
-            onClick={save}
-          >
+          <Button size="sm" variant="primary" className="text-xs" disabled={saving} onClick={save}>
             {saving ? (
               <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
             ) : (
@@ -2171,42 +2136,48 @@ const ModerationQueue: React.FC<{ onClose: () => void; onResolved: () => void }>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto p-1">
             {items.map((ref) => (
-              <div
+              <MediaTile
                 key={ref.id}
-                className="rounded-lg border border-border bg-background/40 overflow-hidden"
-              >
-                <Thumb
-                  src={ref.thumbnailUrl || ref.referenceImageUrl}
-                  alt={ref.name}
-                  aspectRatio={1}
-                  className="w-full"
-                />
-                <div className="p-2 space-y-2">
-                  <p className="text-2xs truncate" title={ref.name}>
-                    {ref.name}
-                  </p>
-                  <div className="flex gap-1.5">
+                layout="stacked"
+                aspectRatio={1}
+                src={ref.thumbnailUrl || ref.referenceImageUrl}
+                alt={ref.name || 'Referência pendente'}
+                title={ref.name}
+                className={cn(busy === ref.id && 'opacity-60')}
+                badge={
+                  busy === ref.id && (
+                    <Badge variant="neutral">
+                      <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
+                      Analisando
+                    </Badge>
+                  )
+                }
+                actions={
+                  <>
                     <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 flex-1 border-border text-foreground hover:bg-muted text-2xs"
+                      variant="surface"
+                      size="icon-sm"
+                      title="Aprovar"
+                      aria-label="Aprovar"
                       disabled={busy === ref.id}
                       onClick={() => act(ref.id, 'approve')}
                     >
-                      {busy === ref.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Aprovar'}
+                      <Check />
                     </Button>
                     <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 flex-1 border-destructive/40 text-destructive hover:bg-destructive/10 text-2xs"
+                      variant="surface"
+                      size="icon-sm"
+                      className="hover:text-destructive"
+                      title="Rejeitar"
+                      aria-label="Rejeitar"
                       disabled={busy === ref.id}
                       onClick={() => act(ref.id, 'reject')}
                     >
-                      Rejeitar
+                      <X />
                     </Button>
-                  </div>
-                </div>
-              </div>
+                  </>
+                }
+              />
             ))}
           </div>
         )}
@@ -2370,13 +2341,13 @@ const MasonryCard: React.FC<{
   // Thumb que falha cai pra imagem cheia; se ela também falhar, o Thumb mostra o
   // estado quebrado dentro da MESMA caixa (nunca borrão eterno nem tile vazio).
   const [useFull, setUseFull] = useState(false);
-  const [failed, setFailed] = useState(false);
   const reduce = useReducedMotion();
   const cardRef = useRef<HTMLDivElement>(null);
   const thumbSrc = item.thumbnailUrl || item.referenceImageUrl;
   const src = useFull ? item.referenceImageUrl : thumbSrc;
   const placeholder = useThumbPlaceholder(item.thumbHash);
   const title = refTitle(item, locale);
+  const showQuickActions = typeof item.score !== 'number' && !selectionActive;
 
   useEffect(() => {
     if (focused)
@@ -2384,168 +2355,145 @@ const MasonryCard: React.FC<{
   }, [focused, reduce]);
 
   return (
-    <div>
-      <div
-        className="group relative"
-        ref={cardRef}
-        onContextMenu={(e) => {
-          if (!onContextMenu) return;
-          e.preventDefault();
-          onContextMenu(e.clientX, e.clientY);
-        }}
-      >
-        <button
-          aria-label={
-            selectionActive ? `${selected ? 'Desmarcar' : 'Selecionar'} ${title}` : `Abrir ${title}`
-          }
-          onClick={(e) => {
-            // Once anything is selected, clicking a card toggles it (fast multi-select).
-            if (selectionActive) onToggleSelect?.(e.shiftKey);
-            else onOpen();
-          }}
-          className={cn(
-            'block w-full text-left rounded-xl overflow-hidden bg-card ring-1 transition-[box-shadow,opacity] duration-[var(--dur-fast)] ease-out focus:outline-none',
-            selected || focused
-              ? 'ring-2 ring-brand-cyan'
-              : 'ring-border hover:ring-ring focus-visible:ring-2 focus-visible:ring-ring',
-            // In select-mode, dim what isn't chosen so the mode is unmistakable.
-            selectionActive && !selected && 'opacity-55 hover:opacity-100'
-          )}
-        >
-          {/* Reserva a caixa com a proporção REAL da imagem (gravada no ingest
-              por extractImageFacts). O 4/5 fixo de antes acertava por acaso: em
-              qualquer outra proporção o tile pulava ao carregar, e num masonry
-              isso empurra a coluna inteira. Fallback só quando a proporção é
-              desconhecida. */}
-          <div
-            className="relative"
-            style={{ aspectRatio: loaded ? undefined : item.aspectRatio || '4 / 5' }}
-          >
-            {/* LQIP: thumbhash if available, else a soft shimmer */}
-            {!loaded &&
-              !failed &&
-              (placeholder ? (
-                <img
-                  src={placeholder}
-                  alt=""
-                  aria-hidden
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              ) : (
-                <div className="absolute inset-0 animate-pulse bg-muted/50" />
-              ))}
-            <Thumb
-              src={src}
-              alt={title}
-              loading="lazy"
-              decoding="async"
-              onLoad={() => setLoaded(true)}
-              onError={() => {
-                if (!useFull && item.referenceImageUrl && item.referenceImageUrl !== thumbSrc) {
-                  setUseFull(true);
-                } else {
-                  setFailed(true);
-                }
-              }}
-              className={cn(
-                'w-full h-auto block transition-opacity duration-[var(--dur-base)] ease-out',
-                loaded ? 'opacity-100' : 'opacity-0'
-              )}
-              fallbackClassName="absolute inset-0 h-full w-full opacity-100"
-            />
-            {/* título + país no hover/foco (informação, não controle) */}
-            <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-[var(--dur-fast)]">
-              <p className="text-2xs font-medium text-white truncate">{title}</p>
-              {item.country && (
-                <p className="text-2xs text-neutral-300 truncate">
-                  {countryName(item.country, locale)}
-                </p>
-              )}
-            </div>
+    <MediaTile
+      ref={cardRef}
+      layout="masonry"
+      src={src}
+      alt={title}
+      // LQIP: o thumbhash pinta o fundo do <img> até a imagem carregar.
+      placeholder={placeholder ?? undefined}
+      onImageLoad={() => setLoaded(true)}
+      // Thumb que falha cai pra imagem cheia; se ela também falhar, o Thumb
+      // mostra o estado quebrado na mesma caixa.
+      onImageError={() => {
+        if (!useFull && item.referenceImageUrl && item.referenceImageUrl !== thumbSrc) {
+          setUseFull(true);
+        }
+      }}
+      onContextMenu={(e) => {
+        if (!onContextMenu) return;
+        e.preventDefault();
+        onContextMenu(e.clientX, e.clientY);
+      }}
+      // Reserva a caixa com a proporção REAL (gravada no ingest por
+      // extractImageFacts); sem ela, 4/5 até carregar e depois a natural.
+      aspectRatio={item.aspectRatio || (loaded ? undefined : '4 / 5')}
+      title={title}
+      subtitle={item.country ? countryName(item.country, locale) : undefined}
+      actionLabel={
+        selectionActive ? `${selected ? 'Desmarcar' : 'Selecionar'} ${title}` : `Abrir ${title}`
+      }
+      // Só vira toggle em modo seleção: fora dele o clique abre o lightbox.
+      selected={selectionActive ? !!selected : undefined}
+      onClick={(e) => {
+        // Once anything is selected, clicking a card toggles it (fast multi-select).
+        if (selectionActive) onToggleSelect?.(e.shiftKey);
+        else onOpen();
+      }}
+      // Em modo seleção o toggle fica sempre à vista (sem depender de hover).
+      actionsVisible={selectionActive ? 'always' : 'hover'}
+      className={cn(
+        focused && !selected && 'border-ring',
+        // In select-mode, dim what isn't chosen so the mode is unmistakable.
+        selectionActive && !selected && 'opacity-55 hover:opacity-100'
+      )}
+      badge={
+        (selected || typeof item.score === 'number' || dupe) && (
+          <>
+            {selected && (
+              <Badge variant="neutral" className="px-1 text-foreground">
+                <CheckSquare className="h-3.5 w-3.5" aria-hidden />
+              </Badge>
+            )}
             {typeof item.score === 'number' && (
-              <span className="absolute top-2 right-2 rounded-full bg-background/80 px-1.5 py-0.5 text-2xs tabular-nums text-foreground">
+              <Badge variant="neutral" className="tabular-nums">
                 {Math.round(item.score * 100)}%
-              </span>
+              </Badge>
             )}
             {/* Admin-only: identical bytes ingested more than once (the library
-                predates ingest dedup). Amber = the copy that survives a dedupe,
-                destructive = the copy that gets deleted. */}
+                  predates ingest dedup). Neutral = the copy that survives a dedupe,
+                  destructive = the copy that gets deleted. */}
             {dupe && (
-              <span
-                className={cn(
-                  'absolute bottom-2 right-2 rounded-full px-1.5 py-0.5 text-2xs tabular-nums',
-                  dupe.isKeeper
-                    ? 'bg-background/80 text-foreground'
-                    : 'bg-destructive text-destructive-foreground'
-                )}
-                title={
+              <Badge
+                variant={dupe.isKeeper ? 'neutral' : 'destructive'}
+                className="tabular-nums"
+                aria-label={
                   dupe.isKeeper
                     ? `${dupe.count} cópias idênticas. Esta é a mais antiga e fica.`
                     : `${dupe.count} cópias idênticas. Esta sai na limpeza.`
                 }
               >
                 {dupe.isKeeper ? `×${dupe.count}` : 'dup'}
-              </span>
+              </Badge>
             )}
-          </div>
-        </button>
-        {/* Select checkbox — sibling of the card button (avoids nested <button>) */}
-        {onToggleSelect && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleSelect(e.shiftKey);
-            }}
-            title={selected ? 'Desmarcar' : 'Selecionar'}
-            aria-label={selected ? 'Desmarcar' : 'Selecionar'}
-            aria-pressed={selected}
-            className={cn(
-              'absolute top-1.5 left-1.5 z-10 h-6 w-6 grid place-items-center rounded-md bg-background/80',
-              selected || selectionActive ? 'opacity-100' : hoverReveal,
-              selected ? 'text-brand-cyan' : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            {selected ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
-          </button>
-        )}
-        {/* Quick actions */}
-        <div
-          className={cn('absolute top-2 right-2 flex flex-col gap-1', hoverReveal)}
-          style={{
-            display: typeof item.score === 'number' || selectionActive ? 'none' : undefined,
-          }}
-        >
-          <button
-            onClick={onSimilar}
-            title="Ver parecidas"
-            aria-label="Ver parecidas"
-            className="h-7 w-7 grid place-items-center rounded-full bg-background/80 text-muted-foreground hover:text-foreground"
-          >
-            <Images className="h-3.5 w-3.5" />
-          </button>
-          {onRemove ? (
-            <button
-              onClick={onRemove}
-              title="Remover da coleção"
-              aria-label="Remover da coleção"
-              className="h-7 w-7 grid place-items-center rounded-full bg-background/80 text-muted-foreground hover:text-destructive"
+          </>
+        )
+      }
+      actions={
+        <>
+          {/* Select toggle — sibling of the main action (no nested <button>). */}
+          {onToggleSelect && (
+            <Button
+              variant="surface"
+              size="icon-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleSelect(e.shiftKey);
+              }}
+              title={selected ? 'Desmarcar' : 'Selecionar'}
+              aria-label={selected ? 'Desmarcar' : 'Selecionar'}
+              aria-pressed={selected}
             >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          ) : onSave ? (
-            <button
-              onClick={onSave}
-              title="Salvar em coleção"
-              aria-label="Salvar em coleção"
-              className="h-7 w-7 grid place-items-center rounded-full bg-background/80 text-muted-foreground hover:text-foreground"
-            >
-              <Bookmark className="h-3.5 w-3.5" />
-            </button>
-          ) : null}
-        </div>
-      </div>
-    </div>
+              {selected ? <CheckSquare /> : <Square />}
+            </Button>
+          )}
+          {showQuickActions && (
+            <>
+              <Button
+                variant="surface"
+                size="icon-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSimilar();
+                }}
+                title="Ver parecidas"
+                aria-label="Ver parecidas"
+              >
+                <Images />
+              </Button>
+              {onRemove ? (
+                <Button
+                  variant="surface"
+                  size="icon-sm"
+                  className="hover:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemove();
+                  }}
+                  title="Remover da coleção"
+                  aria-label="Remover da coleção"
+                >
+                  <X />
+                </Button>
+              ) : onSave ? (
+                <Button
+                  variant="surface"
+                  size="icon-sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSave();
+                  }}
+                  title="Salvar em coleção"
+                  aria-label="Salvar em coleção"
+                >
+                  <Bookmark />
+                </Button>
+              ) : null}
+            </>
+          )}
+        </>
+      }
+    />
   );
 };
 
@@ -2662,7 +2610,7 @@ const Lightbox: React.FC<{
                 // virava um selo perdido no meio do preto. `w-auto h-auto` com um
                 // piso relativo escala a pequena pra um tamanho legível — a
                 // pixelação é honesta e o aviso de baixa resolução explica.
-                className="max-h-full max-w-full w-auto h-auto object-contain rounded-lg"
+                className="max-h-full max-w-full w-auto h-auto object-contain rounded-xl"
                 fallbackClassName="h-64 w-64"
                 fallbackLabel="Imagem indisponível"
                 style={
@@ -2681,9 +2629,7 @@ const Lightbox: React.FC<{
                 const sub = item.studio?.trim() || item.provenance?.designer?.trim();
                 return (
                   <div>
-                    <h3 className="text-base font-semibold text-foreground leading-snug">
-                      {title}
-                    </h3>
+                    <h3 className="text-base font-medium text-foreground leading-snug">{title}</h3>
                     {sub && sub !== title && (
                       <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>
                     )}
@@ -2728,7 +2674,7 @@ const Lightbox: React.FC<{
                 (() => {
                   const shared = sharedDimensions(similarSource, item);
                   return shared.length ? (
-                    <div className="rounded-lg border border-border bg-muted p-3">
+                    <div className="rounded-xl border border-border bg-muted p-3">
                       <p className="text-xs text-muted-foreground mb-1.5">Por que combina</p>
                       <div className="flex flex-wrap gap-1">
                         {shared.map((s) => (
@@ -2826,7 +2772,8 @@ const Lightbox: React.FC<{
               <div className="flex flex-col gap-2 pt-2 border-t border-border">
                 <Button
                   size="sm"
-                  className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs"
+                  variant="primary"
+                  className="text-xs"
                   onClick={() => onSimilar(item)}
                 >
                   <Images className="h-3.5 w-3.5 mr-1.5" />
@@ -2946,15 +2893,11 @@ const MasonrySkeleton: React.FC<{ cols: number }> = ({ cols }) => {
 
 const FirstRun: React.FC<{ onUpload: () => void }> = ({ onUpload }) => (
   <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
-    <div className="h-14 w-14 grid place-items-center rounded-2xl bg-card ring-1 ring-border">
+    <div className="h-14 w-14 grid place-items-center rounded-xl bg-card ring-1 ring-border">
       <ImageIcon className="h-7 w-7 text-muted-foreground" />
     </div>
     <h3 className="text-lg font-semibold text-foreground">Sua biblioteca de referências</h3>
-    <Button
-      size="sm"
-      className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs mt-1"
-      onClick={onUpload}
-    >
+    <Button size="sm" variant="primary" className="text-xs mt-1" onClick={onUpload}>
       <Upload className="h-3.5 w-3.5 mr-1.5" />
       Subir primeira referência
     </Button>
@@ -2988,18 +2931,6 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
   const [awardSource, setAwardSource] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [uploading, setUploading] = useState(false);
-
-  const pick = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.multiple = true;
-    input.accept = 'image/*';
-    input.onchange = (e) => {
-      const list = (e.target as HTMLInputElement).files;
-      if (list) setFiles(Array.from(list).slice(0, 10));
-    };
-    input.click();
-  };
 
   const submit = async () => {
     if (files.length === 0) {
@@ -3062,21 +2993,18 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
         </DialogHeader>
 
         <div className="space-y-4">
-          <button
-            type="button"
-            onClick={pick}
-            className="w-full border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-border-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Upload className="h-7 w-7 mx-auto text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">
-              {files.length > 0
+          <Dropzone
+            accept="image/*"
+            multiple
+            onFiles={(picked) => setFiles(picked.slice(0, 10))}
+            icon={Upload}
+            label={
+              files.length > 0
                 ? `${files.length} imagem(ns) selecionada(s)`
-                : 'Selecionar imagens (máx. 10)'}
-            </p>
-            <p className="text-2xs text-muted-foreground mt-1">
-              Grátis. As imagens entram na fila de revisão antes de aparecer na biblioteca.
-            </p>
-          </button>
+                : 'Selecionar imagens (máx. 10)'
+            }
+            hint="Grátis. As imagens entram na fila de revisão antes de aparecer na biblioteca."
+          />
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -3143,7 +3071,8 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
             </Button>
             <Button
               size="sm"
-              className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs"
+              variant="primary"
+              className="text-xs"
               disabled={uploading || files.length === 0}
               onClick={submit}
             >

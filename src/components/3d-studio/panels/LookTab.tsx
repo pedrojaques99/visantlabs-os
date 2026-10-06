@@ -191,7 +191,7 @@ export const LookTab: React.FC = React.memo(() => {
           hint="Environment map intensity. Higher is glossier"
         />
 
-        <span className="text-2xs text-neutral-400">Blend Mode</span>
+        <span className="text-2xs text-muted-foreground">Blend Mode</span>
         <Select
           options={BLEND_MODE_SELECT_OPTIONS}
           value={store.blendMode}

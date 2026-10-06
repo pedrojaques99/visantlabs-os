@@ -77,8 +77,8 @@ export const PromptContextMenu: React.FC<PromptContextMenuProps> = ({
         onWheel={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <div className="px-3 py-2.5 border-b border-neutral-800/30 flex items-center justify-between sticky top-0 bg-neutral-950/70 backdrop-blur-xl z-10 rounded-t-2xl">
-          <span className="text-xs font-semibold text-neutral-300">
+        <div className="px-3 py-2.5 border-b border-neutral-800/30 flex items-center justify-between sticky top-0 bg-neutral-950/70 backdrop-blur-xl z-10 rounded-t-xl">
+          <span className="text-xs font-medium text-neutral-300">
             {t('canvasNodes.promptContextMenu.title')}
           </span>
           <Button
@@ -98,7 +98,7 @@ export const PromptContextMenu: React.FC<PromptContextMenuProps> = ({
               onSavePrompt();
               onClose();
             }}
-            className="w-full px-2 py-1.5 text-left text-sm text-foreground hover:bg-brand-cyan/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md font-semibold"
+            className="w-full px-2 py-1.5 text-left text-sm text-foreground hover:bg-brand-cyan/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md font-medium"
           >
             <Save size={16} className="text-foreground flex-shrink-0" />
             <span className="text-2xs flex-1 text-left">

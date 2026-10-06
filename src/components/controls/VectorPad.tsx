@@ -102,8 +102,8 @@ export const VectorPad = React.memo<VectorPadProps>(
           onPointerCancel={endDrag}
         >
           {/* crosshair grid */}
-          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/[0.06]" />
-          <div className="absolute top-1/2 left-0 right-0 h-px bg-white/[0.06]" />
+          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-muted" />
+          <div className="absolute top-1/2 left-0 right-0 h-px bg-muted" />
           {/* vector line from center */}
           <svg className="absolute inset-0 h-full w-full pointer-events-none">
             <line

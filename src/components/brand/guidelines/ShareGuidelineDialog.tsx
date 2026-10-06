@@ -190,7 +190,7 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
           <motion.div
             variants={item}
             className={cn(
-              'rounded-2xl border p-4 transition-colors duration-300',
+              'rounded-xl border p-4 transition-colors duration-300',
               'bg-muted/30 border-border'
             )}
           >
@@ -198,7 +198,7 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
               <div className="flex items-center gap-3 min-w-0">
                 <div
                   className={cn(
-                    'w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors',
+                    'w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors',
                     isPublic ? 'bg-muted text-foreground' : 'bg-muted text-muted-foreground'
                   )}
                 >

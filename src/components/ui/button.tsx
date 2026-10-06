@@ -21,27 +21,36 @@ const buttonVariants = cva(
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
         // ── Brand ────────────────────────────────────────────────────────────
-        brand:
-          'bg-brand-cyan/80 hover:bg-brand-cyan/90 text-black border border-neutral-800 hover:border-neutral-700 shadow-lg',
+        // Two cyan CTAs, two jobs (never both on the same panel):
+        //  - `primary` = the house action CTA: tinted cyan, foreground text.
+        //    The ONE main action of a tool/panel (Compress, Convert, Export…).
+        //    Replaces the hand-painted `bg-brand-cyan/10 border-brand-cyan/30`.
+        //  - `brand`   = filled cyan, black text. Hero/marketing moments only
+        //    (landing, pricing, paywall, onboarding finish).
+        // Neither lifts or casts a shadow: hover only deepens the fill/border.
+        primary:
+          'border border-brand-cyan/30 bg-brand-cyan/10 text-foreground hover:bg-brand-cyan/20',
+        brand: 'border border-transparent bg-brand-cyan/80 text-black hover:bg-brand-cyan/90',
         // Scale is owned by the base (press-in). The old `hover:scale-[1.02]` +
         // `active:scale-100` inverted the feedback (grew on hover, dead on click).
         sidebarAction:
-          'bg-neutral-800/50 hover:bg-neutral-700/50 disabled:bg-neutral-700 disabled:text-neutral-500 text-neutral-400 hover:text-neutral-200 border border-neutral-700/50 hover:border-neutral-700 shadow-lg',
+          'bg-muted hover:bg-accent disabled:bg-muted disabled:text-muted-foreground text-muted-foreground hover:text-foreground border border-border hover:border-border-hover shadow-lg',
         // ── Surface actions ──────────────────────────────────────────────────
         // Bordered muted button — toolbars, page headers, inline forms
         // Usage: px-4 py-2, border, muted text, subtle bg hover
         surface: `${glassSurface.control} text-foreground rounded-md`,
-        // Toolbar compact — uppercase tracking, neutral accent on hover
+        // Toolbar compact — muted text, neutral accent on hover
         // Usage: canvas headers, guideline export bars
         toolbar:
-          'h-9 px-4 text-2xs font-bold uppercase tracking-widest rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50',
+          'h-9 px-4 text-xs rounded-md text-muted-foreground hover:text-foreground hover:bg-accent',
         // ── Icon actions ─────────────────────────────────────────────────────
         // Inline icon — hover-reveal action icons inside cards/rows
         // Usage: edit, copy, delete icons that appear on group-hover
-        action: 'p-1.5 rounded-md text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300',
+        action: 'p-1.5 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground',
         // Destructive icon — delete/remove actions
         // Usage: trash icons, remove buttons
-        danger: 'p-1.5 rounded-md text-neutral-500 hover:bg-destructive/10 hover:text-destructive',
+        danger:
+          'p-1.5 rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive',
         // ── Menu / dropdown ──────────────────────────────────────────────────
         // Full-width dropdown item
         // Usage: auth dropdowns, footer policy links, language selector
@@ -49,9 +58,9 @@ const buttonVariants = cva(
           'w-full justify-start px-3 py-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-accent',
         // ── Subtle surface ─────────────────────────────────────────────────
         // Low-contrast action — header bars, inline triggers, non-primary CTAs
-        subtle: 'bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200',
+        subtle: 'bg-muted hover:bg-accent border border-border text-foreground',
         // ── Info / variant states ────────────────────────────────────────────
-        info: 'bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400',
+        info: 'bg-chart-1/10 hover:bg-chart-1/20 border border-chart-1/30 text-chart-1',
         warning: 'bg-warning/10 hover:bg-warning/20 border border-warning/30 text-warning',
       },
       size: {

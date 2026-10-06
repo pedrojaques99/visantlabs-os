@@ -24,7 +24,7 @@ function OutputPills({
   disabled?: boolean;
 }) {
   return (
-    <div className="flex items-center bg-white/5 rounded-md p-0.5 gap-px">
+    <div className="flex items-center bg-muted rounded-md p-0.5 gap-px">
       {items.map((item) => (
         <button
           key={item}
@@ -33,7 +33,9 @@ function OutputPills({
           disabled={disabled}
           className={cn(
             'px-1.5 py-0.5 text-2xs font-medium rounded transition-colors',
-            value === item ? 'bg-white/15 text-white' : 'text-white/30 hover:text-white/60'
+            value === item
+              ? 'bg-accent text-foreground'
+              : 'text-muted-foreground hover:text-foreground'
           )}
         >
           {item}
@@ -121,8 +123,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     <div className={cn('group w-full flex flex-col gap-1.5', className)}>
       <div
         className={cn(
-          'relative flex flex-col w-full rounded-2xl transition-[color,background-color,border-color,opacity] duration-300',
-          'bg-white/5 border border-white/10 focus-within:border-white/20 focus-within:bg-white/10',
+          'relative flex flex-col w-full rounded-xl transition-[color,background-color,border-color,opacity] duration-300',
+          'bg-muted border border-border focus-within:border-ring focus-within:bg-accent',
           disabled && 'opacity-50 grayscale cursor-not-allowed'
         )}
       >
@@ -135,7 +137,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           disabled={disabled || isLoading || isIngesting}
           className={cn(
             'flex-1 min-h-[44px] resize-none bg-transparent border-none outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-4 py-3 text-sm',
-            'placeholder:text-white/20 text-white/90 scrollbar-none'
+            'placeholder:text-muted-foreground text-foreground scrollbar-none'
           )}
           style={{ height: `${minHeight}px` }}
         />
@@ -147,7 +149,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 text-white/30 hover:text-white hover:bg-white/5"
+                className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-accent"
                 onClick={onAttachClick}
                 disabled={isLoading || isIngesting}
                 aria-label="Anexar arquivo"
@@ -189,8 +191,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               onClick={onSend}
               disabled={disabled || (!value.trim() && !isIngesting) || isLoading || isIngesting}
               className={cn(
-                'h-8 w-8 rounded-lg shadow-xl transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-300',
-                'bg-white/10 hover:bg-white text-white hover:text-black',
+                'h-8 w-8 rounded-xl shadow-xl transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-300',
+                'bg-muted hover:bg-foreground text-foreground hover:text-background',
                 !value.trim() &&
                   !isIngesting &&
                   'opacity-0 scale-90 translate-x-2 pointer-events-none'

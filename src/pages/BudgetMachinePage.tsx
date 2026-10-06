@@ -717,6 +717,7 @@ export const BudgetMachinePage: React.FC = () => {
                             label: field.label,
                             x: pendingFieldPosition.x,
                             y: pendingFieldPosition.y,
+                            // EXCEÇÃO ao audit:design/inline-font-size: tamanho em pontos do campo no PDF (dado do mapeamento), não estilo de UI
                             fontSize: 12,
                             color: '#000000',
                             align: 'left',
@@ -761,6 +762,7 @@ export const BudgetMachinePage: React.FC = () => {
                         label: field.label,
                         x: pendingFieldPosition.x,
                         y: pendingFieldPosition.y,
+                        // EXCEÇÃO ao audit:design/inline-font-size: tamanho em pontos do campo no PDF (dado do mapeamento), não estilo de UI
                         fontSize: 12,
                         color: '#000000',
                         align: 'left',

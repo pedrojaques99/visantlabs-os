@@ -9,7 +9,7 @@ import {
 import { SHORTCUTS, type Shortcut } from './lib/shortcuts';
 
 const Key: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <kbd className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded border border-white/10 bg-neutral-900/80 text-2xs font-mono text-neutral-200">
+  <kbd className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded border border-border bg-neutral-900/80 text-2xs font-mono text-neutral-200">
     {children}
   </kbd>
 );
@@ -38,14 +38,14 @@ export const KeyboardCheatsheet: React.FC<Props> = ({ open, onOpenChange }) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-neutral-950 border-white/10">
+      <DialogContent className="max-w-2xl bg-neutral-950 border-border">
         <DialogHeader>
-          <DialogTitle className="text-white text-base font-bold tracking-tight">
+          <DialogTitle className="text-white text-base font-semibold tracking-tight">
             Atalhos do editor
           </DialogTitle>
           <DialogDescription className="text-neutral-500 text-xs">
             Aceleradores pra mover rápido. Pressione{' '}
-            <kbd className="inline-block px-1 py-0.5 rounded border border-white/10 bg-neutral-900 text-2xs font-mono">
+            <kbd className="inline-block px-1 py-0.5 rounded border border-border bg-neutral-900 text-2xs font-mono">
               ?
             </kbd>{' '}
             a qualquer momento.
@@ -58,7 +58,7 @@ export const KeyboardCheatsheet: React.FC<Props> = ({ open, onOpenChange }) => {
             if (!items.length) return null;
             return (
               <div key={g}>
-                <h3 className="text-2xs font-bold text-foreground mb-1.5">{g}</h3>
+                <h3 className="text-2xs font-medium text-foreground mb-1.5">{g}</h3>
                 <div className="divide-y divide-white/5">
                   {items.map((s, i) => (
                     <Row key={i} s={s} />

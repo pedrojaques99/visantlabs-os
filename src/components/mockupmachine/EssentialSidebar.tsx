@@ -89,7 +89,7 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
       {/* 1. BRAND SELECTION */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800/50 flex items-center justify-center shadow-inner">
+          <div className="w-8 h-8 rounded-xl bg-neutral-900 border border-neutral-800/50 flex items-center justify-center shadow-inner">
             <Gem
               size={14}
               className={cn(
@@ -109,7 +109,7 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
               <Diamond size={16} className="text-neutral-400" />
             </div>
             <MicroTitle className="text-neutral-200">{t('mockup.vibeSelect')}</MicroTitle>
@@ -136,7 +136,7 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
       <section className="space-y-4">
         <div className="flex items-center justify-between group/header">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
               <Diamond
                 size={16}
                 className={cn(
@@ -157,10 +157,10 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
           <button
             onClick={() => setShowInstructions(!showInstructions)}
             className={cn(
-              'w-8 h-8 rounded-lg flex items-center justify-center transition-colors',
+              'w-8 h-8 rounded-xl flex items-center justify-center transition-colors',
               showInstructions
                 ? 'bg-brand-cyan/10 border border-brand-cyan/30 text-foreground'
-                : 'bg-neutral-900 border border-neutral-800 text-neutral-600 hover:text-neutral-400 hover:border-white/10'
+                : 'bg-neutral-900 border border-neutral-800 text-neutral-600 hover:text-neutral-400 hover:border-border-hover'
             )}
             title={showInstructions ? t('common.hide') : t('common.show')}
             aria-label={showInstructions ? t('common.hide') : t('common.show')}

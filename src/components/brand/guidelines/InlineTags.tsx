@@ -64,13 +64,13 @@ export const InlineTags: React.FC<InlineTagsProps> = ({
               if (e.key === 'Enter') commitEdit();
               if (e.key === 'Escape') setEditIdx(null);
             }}
-            className="h-6 px-2 rounded border border-white/20 bg-neutral-800/60 text-xs text-neutral-200 focus:outline-none focus:border-white/30"
+            className="h-6 px-2 rounded border border-border-hover bg-muted text-xs text-foreground focus:outline-none focus:border-ring"
             style={{ width: `${Math.max(editVal.length * 7 + 24, inputWidth)}px` }}
           />
         ) : (
           <span
             key={i}
-            className="group/t inline-flex items-center gap-1 px-2 h-6 rounded border border-white/10 bg-neutral-800/30 text-xs text-neutral-300 cursor-pointer hover:border-white/20 hover:bg-neutral-800/50 transition-colors"
+            className="group/t inline-flex items-center gap-1 px-2 h-6 rounded border border-border bg-muted text-xs text-foreground cursor-pointer hover:border-border-hover hover:bg-accent transition-colors"
             onClick={() => {
               setEditIdx(i);
               setEditVal(v);
@@ -105,13 +105,13 @@ export const InlineTags: React.FC<InlineTagsProps> = ({
             }
           }}
           placeholder={placeholder}
-          className="h-6 px-2 rounded border border-white/20 bg-neutral-800/60 text-xs text-neutral-200 placeholder:text-neutral-700 focus:outline-none focus:border-white/30"
+          className="h-6 px-2 rounded border border-border-hover bg-muted text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring"
           style={{ width: `${inputWidth}px` }}
         />
       ) : (
         <button
           onClick={() => setAdding(true)}
-          className="h-6 px-1.5 rounded border border-dashed border-neutral-800 text-neutral-700 hover:text-neutral-400 hover:border-white/15 transition-colors"
+          className="h-6 px-1.5 rounded border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-border-hover transition-colors"
           aria-label="Add"
         >
           <Plus size={10} />

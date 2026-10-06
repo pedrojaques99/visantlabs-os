@@ -12,7 +12,7 @@ export type PromptInputProps = HTMLAttributes<HTMLFormElement>;
 export const PromptInput = ({ className, ...props }: PromptInputProps) => (
   <form
     className={cn(
-      'w-full divide-y overflow-hidden rounded-xl border border-neutral-700/50 bg-neutral-950/30 backdrop-blur-sm shadow-sm',
+      'w-full divide-y overflow-hidden rounded-xl border border-neutral-700/50 bg-neutral-950/30 shadow-sm',
       className
     )}
     {...props}
@@ -99,11 +99,9 @@ export const PromptInputSubmit = ({
 
   return (
     <Button
-      variant="brand"
+      variant="primary"
       className={cn(
-        'flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5',
-        'bg-brand-cyan text-black font-medium text-sm',
-        'hover:bg-brand-cyan/90 transition-colors',
+        'flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 font-medium text-sm',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         className
       )}

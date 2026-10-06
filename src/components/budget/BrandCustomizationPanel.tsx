@@ -194,7 +194,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
         <div className="flex-1 overflow-y-auto">
           {/* Panel Header */}
           <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-neutral-800 bg-neutral-900">
-            <h3 className="text-lg font-semibold text-neutral-200">
+            <h3 className="text-lg font-semibold text-foreground">
               {t('budget.brandCustomization')}
             </h3>
             <Button
@@ -232,7 +232,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
               <div className="space-y-3 mb-6">
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs text-neutral-400">Formato do Documento</label>
-                  <span className="text-neutral-300 font-semibold text-xs">
+                  <span className="text-foreground font-medium text-xs">
                     {data.contentWidth || 800}px
                   </span>
                 </div>
@@ -243,7 +243,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     onClick={() => handleContentWidthChange(595)}
                     className={`px-3 py-2 rounded-md border text-xs transition-colors ${
                       data.contentWidth === 595
-                        ? 'bg-brand-cyan/20 border-neutral-600 text-brand-cyan'
+                        ? 'bg-muted border-neutral-600 text-foreground'
                         : 'bg-neutral-950/70 border-neutral-800 text-neutral-300 hover:border-neutral-700'
                     }`}
                   >
@@ -256,7 +256,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     onClick={() => handleContentWidthChange(842)}
                     className={`px-3 py-2 rounded-md border text-xs transition-colors ${
                       data.contentWidth === 842
-                        ? 'bg-brand-cyan/20 border-neutral-600 text-brand-cyan'
+                        ? 'bg-muted border-neutral-600 text-foreground'
                         : 'bg-neutral-950/70 border-neutral-800 text-neutral-300 hover:border-neutral-700'
                     }`}
                   >
@@ -269,7 +269,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     onClick={() => handleContentWidthChange(612)}
                     className={`px-3 py-2 rounded-md border text-xs transition-colors ${
                       data.contentWidth === 612
-                        ? 'bg-brand-cyan/20 border-neutral-600 text-brand-cyan'
+                        ? 'bg-muted border-neutral-600 text-foreground'
                         : 'bg-neutral-950/70 border-neutral-800 text-neutral-300 hover:border-neutral-700'
                     }`}
                   >
@@ -282,7 +282,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     onClick={() => handleContentWidthChange(800)}
                     className={`px-3 py-2 rounded-md border text-xs transition-colors ${
                       data.contentWidth === 800 || !data.contentWidth
-                        ? 'bg-brand-cyan/20 border-neutral-600 text-brand-cyan'
+                        ? 'bg-muted border-neutral-600 text-foreground'
                         : 'bg-neutral-950/70 border-neutral-800 text-neutral-300 hover:border-neutral-700'
                     }`}
                   >
@@ -401,7 +401,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
       {showSaveModal && (
         <div className="fixed inset-0 bg-neutral-950/50 z-[60] flex items-center justify-center p-4">
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold text-neutral-200 mb-4">Salvar como Template</h3>
+            <h3 className="text-lg font-medium text-foreground mb-4">Salvar como Template</h3>
             <Input
               type="text"
               value={templateName}
@@ -422,7 +422,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
               <Button
                 variant="brand"
                 onClick={saveTemplate}
-                className="flex-1 px-4 py-2 bg-brand-cyan hover:bg-brand-cyan/90 text-black font-semibold rounded-md text-sm transition-colors"
+                className="flex-1 px-4 py-2 bg-brand-cyan hover:bg-brand-cyan/90 text-black font-medium rounded-md text-sm transition-colors"
               >
                 Salvar
               </Button>
@@ -445,7 +445,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
       {showLoadModal && (
         <div className="fixed inset-0 bg-neutral-950/50 z-[60] flex items-center justify-center p-4">
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-hidden flex flex-col">
-            <h3 className="text-lg font-semibold text-neutral-200 mb-4">Carregar Template</h3>
+            <h3 className="text-lg font-medium text-foreground mb-4">Carregar Template</h3>
             <div className="flex-1 overflow-y-auto space-y-2 mb-4">
               {templates.length === 0 ? (
                 <p className="text-sm text-neutral-500 text-center py-8">
@@ -460,7 +460,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h4 className="text-sm font-semibold text-neutral-200 mb-1">
+                        <h4 className="text-sm font-medium text-foreground mb-1">
                           {template.name}
                         </h4>
                         <p className="text-xs text-neutral-400">{template.brandName}</p>

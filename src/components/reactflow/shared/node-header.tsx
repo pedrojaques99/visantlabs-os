@@ -87,7 +87,7 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
                 className={cn(
                   'flex items-center justify-center w-8 h-8 rounded-md border-node transition-[color,background-color,border-color,opacity] duration-300',
                   isBrandActive
-                    ? 'bg-foreground/20 border-neutral-600 text-foreground'
+                    ? 'bg-accent border-neutral-600 text-foreground'
                     : 'bg-neutral-900/50 border-neutral-800 text-neutral-600 grayscale opacity-60 hover:opacity-100'
                 )}
               >

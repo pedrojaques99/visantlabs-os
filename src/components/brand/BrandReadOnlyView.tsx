@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Masonry } from '@/components/ui/Masonry';
+import { MediaTile } from '@/components/ui/MediaTile';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { manifestoText } from '@/lib/brandManifesto';
 import { FullScreenViewer } from '@/components/FullScreenViewer';
@@ -1176,7 +1177,7 @@ const ColorUsagePalette: React.FC<{
               .filter(Boolean)
               .join(', ')}
             className={cn(
-              'group relative rounded-2xl overflow-hidden border border-[var(--brand-text)]/10 transition-[color,background-color,border-color,box-shadow] hover:border-[var(--brand-text)]/30 text-left',
+              'group relative rounded-xl overflow-hidden border border-[var(--brand-text)]/10 transition-[color,background-color,border-color,box-shadow] hover:border-[var(--brand-text)]/30 text-left',
               rankSpan(color.usageRank)
             )}
           >
@@ -1298,7 +1299,7 @@ export const BrandColorsView: React.FC<BrandColorsViewProps> = ({
                   .join(', ')}
                 className="group cursor-pointer space-y-3 text-left"
               >
-                <div className="relative aspect-square rounded-2xl overflow-hidden border border-[var(--brand-text)]/10 transition-colors group-hover:border-[var(--brand-text)]/30">
+                <div className="relative aspect-square rounded-xl overflow-hidden border border-[var(--brand-text)]/10 transition-colors group-hover:border-[var(--brand-text)]/30">
                   <div className="absolute inset-0" style={{ backgroundColor: color.hex }} />
                   <div
                     className={cn(
@@ -1653,17 +1654,24 @@ export interface BrandMediaViewProps extends SectionCommonProps {
 const MEDIA_GRID_LIMIT = 12;
 
 /** Compact vibe/aesthetic chips from an asset's LLM analysis (read-only). */
+const assetTags = (analysis?: { dimensions?: Record<string, string[]> }): string[] => {
+  const dims = analysis?.dimensions;
+  if (!dims) return [];
+  return [...(dims.vibe || []), ...(dims.aesthetic || [])].slice(0, 3);
+};
+
 const AssetTagChips: React.FC<{ analysis?: { dimensions?: Record<string, string[]> } }> = ({
   analysis,
 }) => {
-  const dims = analysis?.dimensions;
-  if (!dims) return null;
-  const tags = [...(dims.vibe || []), ...(dims.aesthetic || [])].slice(0, 3);
+  const tags = assetTags(analysis);
   if (tags.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-1 py-0.5">
       {tags.map((t, i) => (
-        <span key={i} className="px-1.5 py-0.5 rounded-full bg-white/15 text-2xs text-white/90">
+        <span
+          key={i}
+          className="rounded-full bg-muted px-1.5 py-0.5 text-2xs text-muted-foreground"
+        >
           {t}
         </span>
       ))}
@@ -1672,9 +1680,10 @@ const AssetTagChips: React.FC<{ analysis?: { dimensions?: Record<string, string[
 };
 
 /**
- * One asset tile. The art sets its own height — a fixed aspect box + object-cover
- * used to crop every piece — and the label/chips only surface on hover, so at rest
- * the grid is nothing but the work. Mirrors the reference library's card.
+ * One asset tile (MediaTile `masonry`). The art sets its own height — a fixed
+ * aspect box + object-cover used to crop every piece — with a 4:5 placeholder
+ * box only until the real proportion is known. A broken image calls `onError`
+ * so the parent DROPS the item (the masonry distributes by index).
  */
 const BrandMediaCard: React.FC<{
   item: any;
@@ -1685,36 +1694,28 @@ const BrandMediaCard: React.FC<{
 }> = ({ item, onOpen, onDownload, onError, onDragStart }) => {
   const { t } = useTranslation();
   const [loaded, setLoaded] = useState(false);
+  const label = item.label || t('brandView.untitled');
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="group relative rounded-2xl overflow-hidden border border-white/[0.04] bg-neutral-900/40 cursor-pointer transition-colors hover:border-white/10"
-      draggable={!!onDragStart}
-      // motion.div types onDragStart as its own pan gesture; the HTML drag event
-      // is what we actually get, hence the cast (same as the pre-masonry code).
-      onDragStart={(e) => onDragStart?.(e as unknown as React.DragEvent)}
+    <MediaTile
+      src={item.url}
+      alt={item.label || t('brandView.media')}
+      layout="masonry"
+      aspectRatio={loaded ? undefined : '4 / 5'}
+      onImageLoad={() => setLoaded(true)}
+      onImageError={onError}
       onClick={onOpen}
-    >
-      <img
-        src={item.url}
-        alt={item.label || t('brandView.media')}
-        loading="lazy"
-        onLoad={() => setLoaded(true)}
-        onError={onError}
-        className="w-full h-auto block"
-        // Placeholder ratio only until the real one is known — dropped on load so
-        // the art keeps its own proportions.
-        style={{ aspectRatio: loaded ? undefined : '4 / 5' }}
-      />
-
-      <div className={cn('absolute inset-0 duration-300 pointer-events-none', hoverReveal)}>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+      actionLabel={label}
+      title={label}
+      meta={
+        assetTags(item.analysis).length > 0 ? <AssetTagChips analysis={item.analysis} /> : undefined
+      }
+      draggable={!!onDragStart}
+      onDragStart={onDragStart}
+      actions={
         <Button
-          size="icon"
-          className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/60 text-white/80 hover:text-white hover:bg-black/80 border border-white/10 pointer-events-auto"
+          variant="surface"
+          size="icon-sm"
           onClick={(e) => {
             e.stopPropagation();
             onDownload();
@@ -1723,14 +1724,8 @@ const BrandMediaCard: React.FC<{
         >
           <Download size={15} />
         </Button>
-        <div className="absolute bottom-3 left-3 right-3 space-y-1">
-          <p className="text-xs font-medium text-white truncate">
-            {item.label || t('brandView.untitled')}
-          </p>
-          <AssetTagChips analysis={item.analysis} />
-        </div>
-      </div>
-    </motion.div>
+      }
+    />
   );
 };
 

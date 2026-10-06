@@ -31,7 +31,7 @@ export const AppShellLegalMenu: React.FC<{ className?: string; openUp?: boolean 
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 text-neutral-500"
+          className="h-7 w-7 text-muted-foreground"
           onClick={() => setOpen(!open)}
         >
           <Scale size={14} />
@@ -40,7 +40,7 @@ export const AppShellLegalMenu: React.FC<{ className?: string; openUp?: boolean 
       {open && (
         <div
           className={cn(
-            'absolute right-0 min-w-[160px] rounded-md border border-neutral-800 bg-neutral-900/95 backdrop-blur-xl py-1 z-50 shadow-xl',
+            'absolute right-0 min-w-[160px] rounded-md border border-border bg-card/95 backdrop-blur-xl py-1 z-50 shadow-xl',
             openUp ? 'bottom-full mb-1' : 'top-full mt-1'
           )}
         >
@@ -51,7 +51,7 @@ export const AppShellLegalMenu: React.FC<{ className?: string; openUp?: boolean 
                 navigate(item.path);
                 setOpen(false);
               }}
-              className="w-full text-left px-3 py-1.5 text-2xs text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
+              className="w-full text-left px-3 py-1.5 text-2xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
             >
               {item.label}
             </button>

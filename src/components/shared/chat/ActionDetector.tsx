@@ -37,7 +37,7 @@ const getActionIcon = (type: DetectedAction['type']) => {
 const getActionColor = (type: DetectedAction['type']) => {
   switch (type) {
     case 'prompt':
-      return 'text-purple-400 border-purple-400/30 bg-purple-400/10 hover:bg-purple-400/20';
+      return 'text-chart-4 border-chart-4/30 bg-chart-4/10 hover:bg-chart-4/20';
     case 'mockup':
       return 'text-foreground border-brand-cyan/30 bg-brand-cyan/10 hover:bg-brand-cyan/20';
     case 'strategy':
@@ -45,7 +45,7 @@ const getActionColor = (type: DetectedAction['type']) => {
     case 'text':
       return 'text-success border-success/30 bg-success/10 hover:bg-success/20';
     default:
-      return 'text-neutral-400 border-neutral-400/30 bg-neutral-400/10 hover:bg-neutral-400/20';
+      return 'text-muted-foreground border-border bg-muted hover:bg-accent';
   }
 };
 
@@ -73,7 +73,7 @@ export const ActionDetector: React.FC<ActionDetectorProps> = ({
   };
 
   return (
-    <div className="mt-4 pt-3 border-t border-neutral-800 space-y-2.5 min-w-0">
+    <div className="mt-4 pt-3 border-t border-border space-y-2.5 min-w-0">
       <MicroTitle className="text-2xs text-muted-foreground flex items-center gap-1.5 mb-2 min-w-0">
         <Diamond size={11} className="text-foreground shrink-0" />
         <span className="truncate">{t('canvasNodes.chatNode.detectedActions')}</span>

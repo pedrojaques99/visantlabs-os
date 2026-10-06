@@ -97,9 +97,7 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
       <Button
         variant="ghost"
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${
-          theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
-        }`}
+        className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${'hover:bg-accent'}`}
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {icon && <div className="flex-shrink-0">{icon}</div>}
@@ -330,36 +328,14 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
   const getCategoryIcon = (group: { id: string | number; key: string }) => {
     const categoryId = typeof group.id === 'string' ? group.id : group.key.toLowerCase();
     const iconMap: Record<string, React.ReactNode> = {
-      stationery: (
-        <FileText
-          size={14}
-          className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-        />
-      ),
-      packaging: (
-        <Package size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
-      ),
-      apparel: (
-        <Shirt size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
-      ),
-      devices: (
-        <Smartphone
-          size={14}
-          className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-        />
-      ),
-      signage: (
-        <MapPin size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
-      ),
-      drinkware: (
-        <CupSoda size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
-      ),
-      art: (
-        <Palette size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
-      ),
-      other: (
-        <Grid3x3 size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
-      ),
+      stationery: <FileText size={14} className="text-muted-foreground" />,
+      packaging: <Package size={14} className="text-muted-foreground" />,
+      apparel: <Shirt size={14} className="text-muted-foreground" />,
+      devices: <Smartphone size={14} className="text-muted-foreground" />,
+      signage: <MapPin size={14} className="text-muted-foreground" />,
+      drinkware: <CupSoda size={14} className="text-muted-foreground" />,
+      art: <Palette size={14} className="text-muted-foreground" />,
+      other: <Grid3x3 size={14} className="text-muted-foreground" />,
     };
 
     if (iconMap[categoryId]) return iconMap[categoryId];
@@ -438,9 +414,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
         <Button
           variant="ghost"
           onClick={() => setIsSectionExpanded(!isSectionExpanded)}
-          className={`w-full flex justify-between items-center text-left p-3 transition-[color,background-color,border-color,opacity,transform,filter] duration-200 ${
-            theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
-          }`}
+          className={`w-full flex justify-between items-center text-left p-3 transition-[color,background-color,border-color,opacity,transform,filter] duration-200 ${'hover:bg-accent'}`}
         >
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
@@ -521,21 +495,13 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                 <Button
                   variant="ghost"
                   onClick={() => setIsFinalExpanded(!isFinalExpanded)}
-                  className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${
-                    theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
-                  }`}
+                  className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${'hover:bg-accent'}`}
                 >
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     {drinkwareTags.length > 0 ? (
-                      <CupSoda
-                        size={14}
-                        className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-                      />
+                      <CupSoda size={14} className="text-muted-foreground" />
                     ) : (
-                      <Grid3x3
-                        size={14}
-                        className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-                      />
+                      <Grid3x3 size={14} className="text-muted-foreground" />
                     )}
                     <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
                       <MicroTitle as="span">
@@ -595,12 +561,8 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                       className={cn(
                         'rounded-md border p-2.5 transition-colors duration-200',
                         customSelectedTags.length > 0 || isEditingCustom
-                          ? theme === 'dark'
-                            ? 'bg-neutral-800/30 border-neutral-800'
-                            : 'bg-white/60 border-neutral-200'
-                          : theme === 'dark'
-                            ? 'bg-neutral-900/20 border-neutral-800'
-                            : 'bg-white/30 border-neutral-200/50'
+                          ? 'bg-muted border-border'
+                          : 'bg-card border-border'
                       )}
                     >
                       <div className="flex items-center gap-1.5 mb-2">

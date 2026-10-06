@@ -431,9 +431,11 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       className={cn(
         getPositionClasses(),
         'z-40',
+        // EXCEÇÃO ao ruido-scan/blur-em-card: barra flutuante ancorada sobre o canvas
+        // (z-40, posição absoluta); não é card no fluxo, o fundo é o board.
         'backdrop-blur-md border',
         isLight ? 'border-neutral-300/50' : 'border-neutral-800/50',
-        'rounded-lg shadow-2xl',
+        'rounded-xl shadow-2xl',
         'transition-[color,background-color,border-color,box-shadow,filter] duration-300 ease-out',
         'flex flex-col'
       )}
@@ -453,7 +455,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
             isLight ? 'border-neutral-300/30' : 'border-neutral-800/30'
           )}
         >
-          <h2 className="text-2xs font-semibold px-3 py-2" style={{ color: textColors.primary }}>
+          <h2 className="text-2xs font-medium px-3 py-2" style={{ color: textColors.primary }}>
             {t('canvasToolbar.title')}
           </h2>
           <div className="flex items-center">

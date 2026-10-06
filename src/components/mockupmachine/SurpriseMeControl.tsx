@@ -128,15 +128,15 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
             onClick={onClick}
             disabled={disabled}
             className={cn(
-              'relative flex items-center justify-center rounded-xl border font-bold transition-[color,background-color,border-color,opacity,transform,filter] duration-300 h-12 md:h-14',
+              'relative flex items-center justify-center rounded-xl border font-medium transition-[color,background-color,border-color,opacity,transform,filter] duration-300 h-12 md:h-14',
               label ? 'px-4 gap-2 md:px-5' : 'w-12 md:w-14',
               disabled
-                ? 'bg-neutral-800 border-white/10 text-neutral-500 opacity-40 cursor-not-allowed'
-                : 'bg-white border-white text-black shadow-lg hover:bg-white/90 active:scale-[0.98]'
+                ? 'bg-muted border-border text-muted-foreground opacity-40 cursor-not-allowed'
+                : 'bg-foreground border-foreground text-background shadow-lg hover:opacity-90 active:scale-[0.98]'
             )}
           >
             <span className="flex shrink-0 items-center justify-center">{icon}</span>
-            {label && <span className="text-xs font-bold ">{label}</span>}
+            {label && <span className="text-xs font-medium">{label}</span>}
           </Button>
         </Tooltip>
       );
@@ -171,7 +171,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
         {/* Pool Director Mode Indicator */}
         {isSurpriseMeMode && (
           <div className="absolute -top-5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 animate-fade-in">
-            <span className="text-2xs font-bold text-foreground whitespace-nowrap">
+            <span className="text-2xs font-medium text-foreground whitespace-nowrap">
               {t('mockup.surpriseMeModeActiveTooltip')}
             </span>
           </div>
@@ -200,7 +200,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
         {!isSurpriseMeMode && (
           <>
             {/* Divider */}
-            <div className="w-[1px] h-10 bg-white/5 mx-1" />
+            <div className="w-[1px] h-10 bg-muted mx-1" />
 
             {/* 2. MAIN GENERATION FLOW */}
             <div className="flex items-center gap-2">
@@ -262,7 +262,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
         {/* Uploaded image thumb - only in collapsed (pool) mode */}
         {!isInline && isSurpriseMeMode && thumbSrc && (
           <div
-            className="w-14 h-14 shrink-0 rounded-xl border border-white/10 overflow-hidden bg-neutral-900/50"
+            className="w-14 h-14 shrink-0 rounded-xl border border-border overflow-hidden bg-neutral-900/50"
             role="img"
             aria-label={t('mockup.uploadedDesignAlt')}
           >

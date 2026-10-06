@@ -56,14 +56,14 @@ export const GenerationActionButton: React.FC<GenerationActionButtonProps> = ({
       onClick={onClick}
       disabled={disabled || loading}
       className={cn(
-        'relative flex items-center justify-center rounded-xl border font-bold transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-300',
+        'relative flex items-center justify-center rounded-xl border font-medium transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-300',
         'focus:outline-none focus:ring-2 focus:ring-brand-cyan/50',
         lg ? 'h-12 md:h-14' : 'h-11',
         label ? 'px-4 gap-2 md:px-5' : lg ? 'w-12 p-0 md:w-14' : 'w-11 p-0',
         cyan
           ? 'bg-brand-cyan border-brand-cyan/50 text-black shadow-lg hover:bg-brand-cyan/90 active:scale-[0.98]'
-          : 'bg-white/[0.03] border-neutral-800 text-neutral-300 hover:bg-white/[0.06] hover:text-white',
-        active && 'ring-2 ring-brand-cyan ring-offset-2 ring-offset-neutral-950',
+          : 'bg-muted border-border text-foreground hover:bg-accent hover:text-foreground',
+        active && 'ring-2 ring-brand-cyan ring-offset-2 ring-offset-background',
         (disabled || loading) && 'opacity-40 cursor-not-allowed active:scale-100',
         className
       )}
@@ -72,10 +72,10 @@ export const GenerationActionButton: React.FC<GenerationActionButtonProps> = ({
         {loading ? <GlitchLoader size={16} color={cyan ? 'black' : 'white'} /> : icon}
       </span>
       {label && (
-        <span className="flex items-center gap-1.5 text-xs font-bold leading-none">
+        <span className="flex items-center gap-1.5 text-xs font-medium leading-none">
           {label}
           {credits != null && credits > 0 && (
-            <span className="text-2xs font-semibold opacity-70">· {credits}</span>
+            <span className="text-2xs opacity-70">· {credits}</span>
           )}
         </span>
       )}

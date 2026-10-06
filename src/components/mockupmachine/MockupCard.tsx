@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Thumb } from '@/components/ui/Thumb';
+import { MediaTile } from '@/components/ui/MediaTile';
 import {
   Download,
   RefreshCw,
@@ -18,7 +18,6 @@ import { ReImaginePanel } from '../ReImaginePanel';
 import { useMockupLike } from '@/hooks/useMockupLike';
 import { isSafeUrl, downloadImage } from '@/utils/imageUtils';
 import type { AspectRatio } from '@/types/types';
-import { GlassPanel } from '../ui/GlassPanel';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useGenerationFeedback } from '@/hooks/useGenerationFeedback';
@@ -129,283 +128,257 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
       return isSafeUrl(dataUrl) ? dataUrl : '';
     }, [base64Image]);
 
-    const canInteract = !isLoading && base64Image;
+    const canInteract = !isLoading && !!base64Image;
     const showSkeleton = isLoading && !base64Image;
-    const showEmptyState = !isLoading && !base64Image;
-    // Map specific ratios to tailwind classes if needed, or rely on style/layout handling
-    // Note: Tailwind v3 supports arbitrary values like aspect-[16/9]
-    const aspectRatioClass =
-      aspectRatio === '16:9'
-        ? 'aspect-[16/9]'
-        : aspectRatio === '4:3'
-          ? 'aspect-[4/3]'
-          : 'aspect-square';
+    const tileRatio = aspectRatio === '16:9' ? '16 / 9' : aspectRatio === '4:3' ? '4 / 3' : 1;
 
-    return (
-      <GlassPanel
-        className={cn(
-          'relative group transition-colors duration-300 hover:border-neutral-700 animate-fade-in',
-          aspectRatioClass,
-          className
-        )}
-        style={style}
+    const likeLabel = localIsLiked
+      ? t('canvasNodes.imageNode.removeFromFavorites')
+      : t('canvasNodes.imageNode.addToFavorites');
+    const promptSteps = [1, 2, 3, 4, 5].map((n) => t(`mockup.card.promptStep${n}`));
+    const imageSteps = [1, 2, 3, 4, 5, 6].map((n) => t(`mockup.card.imageStep${n}`));
+
+    const toolbarButtonClass = (disabled: boolean) =>
+      cn(
+        'h-8 min-w-0 gap-1.5 rounded-md px-2',
+        disabled
+          ? 'cursor-not-allowed text-muted-foreground opacity-50'
+          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+      );
+
+    // Cover overlay, same three states as before: generating (no image yet),
+    // redrawing over the old image, or loading with a stale image.
+    const busy = showSkeleton ? (
+      <GeneratingImageCard
+        isLoading
+        showFrame={false}
+        className="h-full w-full"
+        steps={isGeneratingPrompt ? promptSteps : imageSteps}
+      />
+    ) : isRedrawing ? (
+      <GlitchLoader size={32} />
+    ) : isLoading && !!base64Image ? (
+      <ImageIcon size={40} className="text-muted-foreground" />
+    ) : undefined;
+
+    // While redrawing, the old card sat under a blocking overlay: the controls
+    // stay visible but inert, and the main action is off.
+    const actions =
+      canInteract && (onRemove || handleToggleLike) ? (
+        <div className="flex items-center gap-1" inert={isRedrawing || undefined}>
+          {handleToggleLike && (
+            <Button
+              variant="surface"
+              size="icon-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleToggleLike();
+              }}
+              aria-pressed={localIsLiked}
+              className={cn('bg-card', localIsLiked && 'border-ring text-foreground')}
+              title={likeLabel}
+              aria-label={likeLabel}
+            >
+              <Heart size={12} className={localIsLiked ? 'fill-current' : ''} />
+            </Button>
+          )}
+          {onRemove && (
+            <Button
+              variant="surface"
+              size="icon-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemove();
+              }}
+              className="bg-card hover:bg-destructive/10 hover:text-destructive"
+              title={t('mockup.removeImage')}
+              aria-label={t('mockup.removeImage')}
+            >
+              <X size={12} />
+            </Button>
+          )}
+        </div>
+      ) : undefined;
+
+    const footer = canInteract ? (
+      <div
+        className="flex flex-row items-center justify-center gap-0.5 border-t border-border p-1"
+        inert={isRedrawing || undefined}
       >
-        {showSkeleton && (
-          <div className="absolute inset-0">
-            <GeneratingImageCard
-              isLoading
-              showFrame={false}
-              className="h-full w-full"
-              steps={
-                isGeneratingPrompt
-                  ? ['Preparando', 'Analisando', 'Compondo', 'Conceituando', 'Sintetizando']
-                  : ['Criando', 'Desenhando', 'Esculpindo', 'Refinando', 'Moldando', 'Lapidando']
+        <Tooltip content={t('common.download')} position="top">
+          <a
+            href={imageUrl}
+            download={`mockup-${Date.now()}.png`}
+            aria-label={t('common.download')}
+            className="flex h-8 w-8 items-center justify-center rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            onClick={async (e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              try {
+                await downloadImage(imageUrl, 'mockup');
+              } catch (error) {
+                console.error('Download failed:', error);
               }
-            />
-          </div>
-        )}
+            }}
+          >
+            <Download size={12} />
+          </a>
+        </Tooltip>
 
-        {showEmptyState && (
-          <div className="w-full h-full flex items-center justify-center text-neutral-800">
-            <ImageIcon size={48} strokeWidth={1} />
-          </div>
-        )}
+        <div className="mx-1 h-3 w-px bg-border" />
 
-        {base64Image && (
-          <Thumb
-            key={base64Image}
-            src={imageUrl}
-            alt={t('mockup.generatedAlt')}
-            loading="lazy"
-            className={cn(
-              'w-full h-full object-contain cursor-pointer transition-[color,background-color,border-color,opacity,transform,filter] duration-700',
-              isRedrawing ? 'filter blur-md scale-105 opacity-50' : ' animate-bloom'
-            )}
+        <SendToButton
+          source="mockupmachine"
+          outputMime="image/png"
+          imageUrl={imageUrl}
+          mimeType="image/png"
+          label="Mockup Machine output"
+          variant="icon"
+        />
+
+        <div className="mx-1 h-3 w-px bg-border" />
+
+        <Tooltip
+          content={
+            editButtonsDisabled ? t('mockup.insufficientCredits') : t('mockup.redrawTooltip')
+          }
+          position="top"
+        >
+          <Button
+            variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
-              if (canInteract && onView) onView();
+              onRedraw();
             }}
-          />
-        )}
+            disabled={editButtonsDisabled || isRedrawing}
+            aria-label={t('mockup.redrawTooltip')}
+            className={toolbarButtonClass(editButtonsDisabled || isRedrawing)}
+          >
+            <RefreshCw size={14} className={isRedrawing ? 'animate-spin' : ''} />
+            {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
+              <span className="text-2xs font-medium text-foreground">{creditsPerOperation}</span>
+            )}
+          </Button>
+        </Tooltip>
 
-        {isRedrawing && (
-          <div className="absolute inset-0 flex items-center justify-center z-30 bg-neutral-950/10">
-            <GlitchLoader size={32} color="white" />
-          </div>
-        )}
-
-        {isLoading && !isRedrawing && !!base64Image && (
-          <div className="absolute inset-0 flex items-center justify-center bg-neutral-950/20">
-            <ImageIcon size={40} className="text-white/20" />
-          </div>
-        )}
-
-        {/* Timer removed — PremiumGlitchLoader handles timer + status in one unified display */}
-
-        {/* Action Overlay - pointer-events-none so image stays clickable; only buttons get pointer-events-auto */}
-        {canInteract && (
-          <div className="absolute inset-0 z-20 pointer-events-none">
-            {/* Top Buttons: Remove & Like - only the buttons block clicks, not the full row */}
-            <div className="absolute top-3 left-3 right-3 flex justify-between items-start opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100 transition-[color,background-color,border-color,box-shadow,opacity,filter] duration-300">
-              {onRemove && (
-                <Button
-                  variant="ghost"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRemove();
-                  }}
-                  className="p-2 rounded-md bg-neutral-950/60 text-neutral-400 hover:bg-destructive/20 hover:text-destructive border border-neutral-800 transition-[color,background-color,border-color,box-shadow,opacity,filter] shadow-lg pointer-events-auto"
-                  title={t('mockup.removeImage')}
-                  aria-label={t('mockup.removeImage')}
-                >
-                  <X size={12} />
-                </Button>
+        {onReImagine && (
+          <Tooltip
+            content={
+              editButtonsDisabled ? t('mockup.insufficientCredits') : t('mockup.reimagineTooltip')
+            }
+            position="top"
+          >
+            <Button
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowReImaginePanel(true);
+              }}
+              disabled={editButtonsDisabled || isRedrawing}
+              aria-label={t('mockup.reimagineTooltip')}
+              className={toolbarButtonClass(editButtonsDisabled || isRedrawing)}
+            >
+              <Pencil size={14} />
+              {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
+                <span className="text-2xs font-medium text-foreground">{creditsPerOperation}</span>
               )}
-              {handleToggleLike && (
-                <Button
-                  variant="ghost"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleToggleLike();
-                  }}
-                  className={`p-2 rounded-md border transition-[color,background-color,border-color,box-shadow,filter] shadow-lg pointer-events-auto ${
-                    localIsLiked
-                      ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 hover:bg-brand-cyan/30'
-                      : 'bg-neutral-950/60 text-neutral-400 border-neutral-800 hover:text-white hover:bg-neutral-950/80'
-                  }`}
-                  title={localIsLiked ? 'Remover dos favoritos' : 'Salvar nos favoritos'}
-                >
-                  <Heart size={12} className={localIsLiked ? 'fill-current' : ''} />
-                </Button>
-              )}
-            </div>
-
-            <div className="absolute bottom-3 left-0 right-0 flex justify-center opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100 transition-[color,background-color,border-color,box-shadow,opacity,filter] duration-300">
-              <GlassPanel
-                padding="none"
-                className="flex flex-row items-center gap-0.5 p-1 bg-neutral-950/80 backdrop-blur-xl border-white/10 rounded-lg shadow-2xl pointer-events-auto"
-              >
-                <Tooltip content={t('common.download')} position="top">
-                  <a
-                    href={imageUrl}
-                    download={`mockup-${Date.now()}.png`}
-                    className="p-1.5 w-8 h-8 flex items-center justify-center rounded-md text-neutral-400 hover:text-white hover:bg-white/10 transition-[color,background-color,border-color,box-shadow,opacity,filter]"
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      try {
-                        await downloadImage(imageUrl, 'mockup');
-                      } catch (error) {
-                        console.error('Download failed:', error);
-                      }
-                    }}
-                  >
-                    <Download size={12} />
-                  </a>
-                </Tooltip>
-
-                <div className="w-px h-3 bg-white/10 mx-1" />
-
-                <SendToButton
-                  source="mockupmachine"
-                  outputMime="image/png"
-                  imageUrl={imageUrl}
-                  mimeType="image/png"
-                  label="Mockup Machine output"
-                  variant="icon"
-                />
-
-                <div className="w-px h-3 bg-white/10 mx-1" />
-
-                <Tooltip
-                  content={
-                    editButtonsDisabled
-                      ? t('mockup.insufficientCredits')
-                      : t('mockup.redrawTooltip')
-                  }
-                  position="top"
-                >
-                  <Button
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRedraw();
-                    }}
-                    disabled={editButtonsDisabled || isRedrawing}
-                    className={`h-8 px-2 rounded-md flex items-center gap-1.5 transition-[color,background-color,border-color,opacity] min-w-0 ${
-                      editButtonsDisabled || isRedrawing
-                        ? 'text-neutral-600 cursor-not-allowed opacity-50'
-                        : 'text-neutral-300 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    <RefreshCw size={14} className={isRedrawing ? 'animate-spin' : ''} />
-                    {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                      <span className="text-2xs font-bold text-foreground">
-                        {creditsPerOperation}
-                      </span>
-                    )}
-                  </Button>
-                </Tooltip>
-
-                {onReImagine && (
-                  <Tooltip
-                    content={
-                      editButtonsDisabled
-                        ? t('mockup.insufficientCredits')
-                        : t('mockup.reimagineTooltip')
-                    }
-                    position="top"
-                  >
-                    <Button
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowReImaginePanel(true);
-                      }}
-                      disabled={editButtonsDisabled || isRedrawing}
-                      className={`h-8 px-2 rounded-md flex items-center gap-1.5 transition-[color,background-color,border-color,opacity] min-w-0 ${
-                        editButtonsDisabled || isRedrawing
-                          ? 'text-neutral-600 cursor-not-allowed opacity-50'
-                          : 'text-foreground hover:bg-muted'
-                      }`}
-                    >
-                      <Pencil size={14} />
-                      {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                        <span className="text-2xs font-bold text-foreground">
-                          {creditsPerOperation}
-                        </span>
-                      )}
-                    </Button>
-                  </Tooltip>
-                )}
-
-                <div className="w-px h-3 bg-white/10 mx-1" />
-
-                <div className="flex items-center gap-0.5 px-1">
-                  <Tooltip
-                    content={
-                      feedback.rating === 'up'
-                        ? 'Remover feedback positivo'
-                        : 'Valeu! (Melhora o modelo)'
-                    }
-                    position="top"
-                  >
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        feedback.submit('up');
-                      }}
-                      className={cn(
-                        'w-8 h-8 rounded-md transition-colors',
-                        feedback.rating === 'up'
-                          ? 'text-success bg-success/10 hover:bg-success/20'
-                          : 'text-neutral-400 hover:text-white hover:bg-white/10'
-                      )}
-                      disabled={feedback.isLoading}
-                    >
-                      <ThumbsUp
-                        size={12}
-                        className={cn(feedback.rating === 'up' && 'fill-current')}
-                      />
-                    </Button>
-                  </Tooltip>
-
-                  <Tooltip
-                    content={
-                      feedback.rating === 'down'
-                        ? 'Remover feedback negativo'
-                        : 'Não gostei (Reportar ruído)'
-                    }
-                    position="top"
-                  >
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        feedback.submit('down');
-                      }}
-                      className={cn(
-                        'w-8 h-8 rounded-md transition-colors',
-                        feedback.rating === 'down'
-                          ? 'text-destructive bg-destructive/10 hover:bg-destructive/20'
-                          : 'text-neutral-400 hover:text-white hover:bg-white/10'
-                      )}
-                      disabled={feedback.isLoading}
-                    >
-                      <ThumbsDown
-                        size={12}
-                        className={cn(feedback.rating === 'down' && 'fill-current')}
-                      />
-                    </Button>
-                  </Tooltip>
-                </div>
-              </GlassPanel>
-            </div>
-          </div>
+            </Button>
+          </Tooltip>
         )}
+
+        <div className="mx-1 h-3 w-px bg-border" />
+
+        <div className="flex items-center gap-0.5 px-1">
+          <Tooltip
+            content={
+              feedback.rating === 'up'
+                ? t('mockup.card.feedbackUpRemove')
+                : t('mockup.card.feedbackUp')
+            }
+            position="top"
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                feedback.submit('up');
+              }}
+              aria-pressed={feedback.rating === 'up'}
+              aria-label={t('mockup.card.feedbackUp')}
+              className={cn(
+                'h-8 w-8 rounded-md transition-colors',
+                feedback.rating === 'up'
+                  ? 'bg-success/10 text-success hover:bg-success/20'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              )}
+              disabled={feedback.isLoading}
+            >
+              <ThumbsUp size={12} className={cn(feedback.rating === 'up' && 'fill-current')} />
+            </Button>
+          </Tooltip>
+
+          <Tooltip
+            content={
+              feedback.rating === 'down'
+                ? t('mockup.card.feedbackDownRemove')
+                : t('mockup.card.feedbackDown')
+            }
+            position="top"
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                feedback.submit('down');
+              }}
+              aria-pressed={feedback.rating === 'down'}
+              aria-label={t('mockup.card.feedbackDown')}
+              className={cn(
+                'h-8 w-8 rounded-md transition-colors',
+                feedback.rating === 'down'
+                  ? 'bg-destructive/10 text-destructive hover:bg-destructive/20'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              )}
+              disabled={feedback.isLoading}
+            >
+              <ThumbsDown size={12} className={cn(feedback.rating === 'down' && 'fill-current')} />
+            </Button>
+          </Tooltip>
+        </div>
+      </div>
+    ) : undefined;
+
+    return (
+      <>
+        <MediaTile
+          // Remount on a new image so the bloom-in replays (as the old keyed <img> did).
+          key={base64Image ?? 'empty'}
+          src={imageUrl || undefined}
+          alt={t('mockup.generatedAlt')}
+          aspectRatio={tileRatio}
+          fallbackIcon={ImageIcon}
+          loading="lazy"
+          imageClassName={cn(
+            'object-contain transition-opacity duration-700',
+            isRedrawing ? 'opacity-50' : 'animate-bloom'
+          )}
+          onClick={
+            canInteract && onView && !isRedrawing
+              ? (e) => {
+                  e.stopPropagation();
+                  onView();
+                }
+              : undefined
+          }
+          actionLabel={t('mockup.generatedAlt')}
+          actions={actions}
+          footer={footer}
+          busy={busy}
+          className={cn('animate-fade-in', className)}
+          style={style}
+        />
 
         {showReImaginePanel && onReImagine && (
           <ReImaginePanel
@@ -417,7 +390,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
             isLoading={isRedrawing || isLoading}
           />
         )}
-      </GlassPanel>
+      </>
     );
   }
 );

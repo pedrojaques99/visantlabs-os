@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Copy, Download, Edit2, Trash2, Heart, Play } from '@/lib/ui/icons';
-import { toast } from 'sonner';
 import { cn } from '../lib/utils';
-import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { authService } from '../services/authService';
 import type { CanvasWorkflow } from '../services/workflowApi';
 import { WORKFLOW_CATEGORY_CONFIG } from '../types/workflow';
 import { Button } from '@/components/ui/button';
-import { Thumb } from '@/components/ui/Thumb';
+import { MediaTile } from '@/components/ui/MediaTile';
 
 interface WorkflowCardProps {
   workflow: CanvasWorkflow;
@@ -39,6 +37,10 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
   const isLiked = workflow.isLikedByUser || false;
   const likesCount = workflow.likesCount || 0;
   const usageCount = workflow.usageCount || 0;
+  // The like toggle carries the count and is the only control that stays visible
+  // (persistentActions); duplicate/edit/delete keep the hover reveal. Meta only
+  // shows the count when there is no toggle, so it is never repeated.
+  const showLikeToggle = isAuthenticated && !!onToggleLike;
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const isOwner = currentUserId && workflow.userId && currentUserId === workflow.userId;
 
@@ -57,164 +59,119 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
   const nodeCount = Array.isArray(workflow.nodes) ? workflow.nodes.length : 0;
   const edgeCount = Array.isArray(workflow.edges) ? workflow.edges.length : 0;
 
+  // Card controls are siblings of MediaTile's stretched main action: every one
+  // stops propagation so it never also triggers onClick.
+  const stop =
+    (fn: () => void) =>
+    (e: React.MouseEvent): void => {
+      e.stopPropagation();
+      fn();
+    };
+
+  const chip = 'rounded border border-border bg-muted px-1.5 py-0.5 font-mono whitespace-nowrap';
+
   return (
-    <div
-      className="bg-card border border-neutral-800/50 rounded-md p-4 hover:border-neutral-700 hover:bg-card/80 transition-colors group relative cursor-pointer h-full flex flex-col"
+    <MediaTile
+      src={workflow.thumbnailUrl || undefined}
+      alt={workflow.name}
+      aspectRatio={16 / 9}
+      title={workflow.name}
+      subtitle={workflow.description}
       onClick={onClick}
-    >
-      <div className="mb-3">
-        {workflow.thumbnailUrl ? (
-          <div className="relative w-full aspect-video rounded-md overflow-hidden border border-neutral-700/30 bg-neutral-900/30">
-            <Thumb
-              src={workflow.thumbnailUrl}
-              alt={workflow.name}
-              loading="lazy"
-              className="w-full h-full object-cover"
-              fallbackIcon={CategoryIcon}
-            />
-          </div>
-        ) : (
-          <div className="w-full aspect-video rounded-md border border-neutral-700/30 bg-neutral-900/30 flex items-center justify-center">
-            <div className="text-neutral-500">
-              <CategoryIcon size={32} />
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="flex-1 space-y-3 flex flex-col min-h-0">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-base font-semibold text-neutral-200 mb-0.5 font-mono line-clamp-1">
-              {workflow.name}
-            </h3>
-            <p className="text-xs text-neutral-500 font-mono line-clamp-2 leading-snug">
-              {workflow.description}
-            </p>
-          </div>
-          <div className="flex gap-1 flex-shrink-0">
-            {isAuthenticated && onDuplicate && (
-              <Button
-                variant="ghost"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDuplicate();
-                }}
-                className={cn(
-                  hoverReveal,
-                  'p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors'
-                )}
-                title={
-                  isOwner
-                    ? t('workflows.actions.duplicate') || 'Duplicate'
-                    : t('workflows.actions.addToLibrary') || 'Add to Library'
-                }
-              >
-                {isOwner ? <Copy className="h-4 w-4" /> : <Download className="h-4 w-4" />}
-              </Button>
-            )}
-            {(isOwner || canEdit) && onEdit && (
-              <Button
-                variant="ghost"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit?.();
-                }}
-                className={cn(
-                  hoverReveal,
-                  'p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors'
-                )}
-                title={t('common.edit') || 'Edit'}
-              >
-                <Edit2 className="h-4 w-4" />
-              </Button>
-            )}
-            {(isOwner || canEdit) && onDelete && (
-              <Button
-                variant="ghost"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete?.();
-                }}
-                className={cn(
-                  hoverReveal,
-                  'p-1.5 text-neutral-500 hover:bg-destructive/10 hover:text-destructive rounded transition-colors'
-                )}
-                title={t('common.delete') || 'Delete'}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-auto space-y-3">
-          {/* Tags and metadata */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span
-              className={cn(
-                'px-2 py-0.5 rounded border font-mono text-2xs flex-shrink-0 whitespace-nowrap',
-                categoryConfig.badgeClass
-              )}
+      fallbackIcon={CategoryIcon}
+      className="h-full"
+      actions={
+        <>
+          {isAuthenticated && onDuplicate && (
+            <Button
+              variant="surface"
+              size="icon-sm"
+              onClick={stop(onDuplicate)}
+              aria-label={
+                isOwner ? t('workflows.actions.duplicate') : t('workflows.actions.addToLibrary')
+              }
+              title={
+                isOwner ? t('workflows.actions.duplicate') : t('workflows.actions.addToLibrary')
+              }
             >
-              {categoryConfig.label}
+              {isOwner ? <Copy /> : <Download />}
+            </Button>
+          )}
+          {(isOwner || canEdit) && onEdit && (
+            <Button
+              variant="surface"
+              size="icon-sm"
+              onClick={stop(onEdit)}
+              aria-label={t('common.edit')}
+              title={t('common.edit')}
+            >
+              <Edit2 />
+            </Button>
+          )}
+          {(isOwner || canEdit) && onDelete && (
+            <Button
+              variant="surface"
+              size="icon-sm"
+              onClick={stop(onDelete)}
+              aria-label={t('common.delete')}
+              title={t('common.delete')}
+              className="hover:text-destructive"
+            >
+              <Trash2 />
+            </Button>
+          )}
+        </>
+      }
+      persistentActions={
+        showLikeToggle && onToggleLike ? (
+          <Button
+            variant="surface"
+            size={likesCount > 0 ? 'xs' : 'icon-sm'}
+            className="tabular-nums"
+            onClick={stop(onToggleLike)}
+            aria-pressed={isLiked}
+            aria-label={isLiked ? t('workflows.actions.unlike') : t('workflows.actions.like')}
+            title={isLiked ? t('workflows.actions.unlike') : t('workflows.actions.like')}
+          >
+            <Heart className={isLiked ? 'fill-current' : undefined} />
+            {likesCount > 0 && likesCount}
+          </Button>
+        ) : undefined
+      }
+      meta={
+        <div className="flex flex-col gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className={cn(chip, categoryConfig.badgeClass)}>{categoryConfig.label}</span>
+            <span className={chip}>
+              {t('workflows.stats.nodes').replace('{count}', String(nodeCount))}
             </span>
-            <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-2xs flex-shrink-0 whitespace-nowrap">
-              {t('workflows.stats.nodes')
-                ? t('workflows.stats.nodes').replace('{count}', String(nodeCount))
-                : `${nodeCount} nodes`}
-            </span>
-            <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-2xs flex-shrink-0 whitespace-nowrap">
-              {t('workflows.stats.edges')
-                ? t('workflows.stats.edges').replace('{count}', String(edgeCount))
-                : `${edgeCount} edges`}
+            <span className={chip}>
+              {t('workflows.stats.edges').replace('{count}', String(edgeCount))}
             </span>
             {usageCount > 0 && (
-              <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-2xs flex-shrink-0 whitespace-nowrap flex items-center gap-1">
+              <span className={cn(chip, 'inline-flex items-center gap-1')}>
                 <Play size={10} />
                 {usageCount}
               </span>
             )}
-            {isAuthenticated && onToggleLike && (
-              <Button
-                variant="ghost"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleLike();
-                }}
-                className={`flex items-center gap-1 px-2 py-0.5 rounded-md transition-colors text-2xs font-mono flex-shrink-0 whitespace-nowrap ${
-                  isLiked
-                    ? 'bg-neutral-800/50 text-neutral-300 hover:bg-neutral-700/50'
-                    : 'bg-neutral-900/40 text-neutral-500 hover:bg-neutral-800/50 hover:text-neutral-400'
-                }`}
-                title={
-                  isLiked
-                    ? t('workflows.actions.unlike') || 'Unlike'
-                    : t('workflows.actions.like') || 'Like'
-                }
-              >
-                <Heart size={12} className={isLiked ? 'fill-current' : ''} />
-                <span className="tabular-nums">{likesCount}</span>
-              </Button>
+            {!showLikeToggle && likesCount > 0 && (
+              <span className={cn(chip, 'inline-flex items-center gap-1 tabular-nums')}>
+                <Heart size={10} className={isLiked ? 'fill-current' : undefined} />
+                {likesCount}
+              </span>
             )}
           </div>
-
-          {/* Tags */}
           {workflow.tags && workflow.tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {workflow.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="px-1.5 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/20 text-neutral-500 font-mono text-2xs hover:border-neutral-600/40 hover:text-neutral-400 transition-colors"
-                  title={tag}
-                >
+                <span key={index} className={chip} title={tag}>
                   #{tag}
                 </span>
               ))}
             </div>
           )}
         </div>
-      </div>
-    </div>
+      }
+    />
   );
 };

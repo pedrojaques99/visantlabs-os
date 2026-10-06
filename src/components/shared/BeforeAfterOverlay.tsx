@@ -1,12 +1,14 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { useImageLabStore, type CompareMode } from '@/stores/imageLabStore';
 import { OverlayLabel } from '@/components/shared/OverlayLabel';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface BeforeAfterOverlayProps {
   sourceUrl: string;
 }
 
 export const BeforeAfterOverlay: React.FC<BeforeAfterOverlayProps> = React.memo(({ sourceUrl }) => {
+  const { t } = useTranslation();
   const { compareMode, showOriginal, splitPosition, setSplitPosition } = useImageLabStore();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -27,7 +29,7 @@ export const BeforeAfterOverlay: React.FC<BeforeAfterOverlayProps> = React.memo(
     return (
       <div className="absolute inset-0 z-20 pointer-events-none">
         <img src={sourceUrl} alt="Original" className="w-full h-full object-contain" />
-        <OverlayLabel position="tl">Original</OverlayLabel>
+        <OverlayLabel position="tl">{t('toolEditor.compare.original')}</OverlayLabel>
       </div>
     );
   }
@@ -59,8 +61,8 @@ export const BeforeAfterOverlay: React.FC<BeforeAfterOverlayProps> = React.memo(
             </div>
           </div>
         </div>
-        <OverlayLabel position="tl">Original</OverlayLabel>
-        <OverlayLabel position="tr">Processed</OverlayLabel>
+        <OverlayLabel position="tl">{t('toolEditor.compare.original')}</OverlayLabel>
+        <OverlayLabel position="tr">{t('toolEditor.compare.processed')}</OverlayLabel>
       </div>
     );
   }

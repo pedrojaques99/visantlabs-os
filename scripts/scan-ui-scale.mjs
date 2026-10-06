@@ -14,10 +14,14 @@
  *   node scripts/scan-ui-scale.mjs src/components/cockpit
  *   node scripts/scan-ui-scale.mjs --top 20           # piores arquivos
  *   node scripts/scan-ui-scale.mjs --check            # exit 1 se piorar
+ *   node scripts/scan-ui-scale.mjs --self-test        # trava o contrato da exceção
  *
  * `--check` compara com `scripts/.ui-scale-baseline.json` e falha se algum
  * total subir. É catraca: o número existente é dívida conhecida, o número novo
  * é regressão. Regravar a linha de base: `--save-baseline`.
+ *
+ * Linha legítima: `EXCEÇÃO ao ui-scale/<regra>: motivo` na linha ou nas 8
+ * acima; arquivo inteiro: `// ui-scale-ignore-file: <regra> — motivo`.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -138,18 +142,71 @@ function isCode(line) {
   return !(t.startsWith('//') || t.startsWith('*') || t.startsWith('/*') || t.startsWith('import '));
 }
 
-function scanFile(file) {
-  const src = fs.readFileSync(file, 'utf8');
+/*
+ * Exceção escrita — mesmo contrato do scan-design-violations e do scan-ui-slop.
+ *
+ *   {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia * /}
+ *       na própria linha ou em até 8 linhas acima; libera SÓ a regra nomeada.
+ *   // ui-scale-ignore-file: peso-pesado — motivo
+ *       libera a regra no arquivo inteiro.
+ *
+ * Motivo é obrigatório (8+ letras). Nome de regra é exato: `peso` não libera
+ * `peso-pesado`. Exceção abaixo da linha não vale.
+ */
+const EXCEPTION_WINDOW = 8;
+const RULE_IDS = new Set(RULES.map((r) => r.id));
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const letters = (s) => (s.match(/\p{L}/gu) ?? []).length;
+const EXCEPTION_RE = Object.fromEntries(
+  RULES.map((r) => [
+    r.id,
+    new RegExp(String.raw`EXCE(?:Ç|C)(?:Ã|A)O\s+ao\s+ui-scale/${escapeRe(r.id)}(?![\w-])\s*:\s*(.*)`, 'i'),
+  ])
+);
+
+function hasWrittenException(lines, i, ruleId) {
+  const re = EXCEPTION_RE[ruleId];
+  for (let k = i; k >= Math.max(0, i - EXCEPTION_WINDOW); k--) {
+    const m = lines[k].match(re);
+    if (!m) continue;
+    // O motivo pode quebrar pra linha seguinte do comentário; conta as duas.
+    const next = k + 1 <= i ? (lines[k + 1] ?? '').replace(/^\s*(?:\/\/|\*|\/\*|\{\/\*)/, '') : '';
+    const head = m[1].replace(/\*\/\}?\s*$/, '');
+    if (letters(`${head} ${next}`) >= 8 && /\p{L}{3,}/u.test(head)) return true;
+  }
+  return false;
+}
+
+/** Regras liberadas por "ui-scale-ignore-file: <regra> — <motivo>". */
+function fileExceptions(src) {
+  const out = new Set();
+  for (const m of src.matchAll(/ui-scale-ignore-file:\s*([\w-]+)(.*)/g)) {
+    if (!RULE_IDS.has(m[1])) continue;
+    const reason = m[2].replace(/\*\/\}?\s*$/, '').replace(/^[\s—–:-]+/, '');
+    if (letters(reason) >= 8) out.add(m[1]);
+  }
+  return out;
+}
+
+function scanSource(src) {
   const lines = src.split(/\r?\n/);
+  const ignored = fileExceptions(src);
   const counts = {};
   for (const rule of RULES) {
+    if (ignored.has(rule.id)) {
+      counts[rule.id] = 0;
+      continue;
+    }
     if (rule.variety) {
-      counts[rule.id] = rule.variety(src);
+      // Linha com exceção escrita sai da conta de variedade; o resto conta igual.
+      counts[rule.id] = rule.variety(lines.filter((_, i) => !hasWrittenException(lines, i, rule.id)).join('\n'));
       continue;
     }
     let n = 0;
-    for (const line of lines) {
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
       if (!isCode(line) || !rule.test(line)) continue;
+      if (hasWrittenException(lines, i, rule.id)) continue;
       /* Conta OCORRÊNCIA, não linha, quando a regra sabe se contar.
          Contar linha deixa a catraca sensível a reflow do prettier: duas
          classes iguais que ele junta numa linha viram -1, e uma que ele quebra
@@ -160,6 +217,45 @@ function scanFile(file) {
     counts[rule.id] = n;
   }
   return counts;
+}
+
+function scanFile(file) {
+  return scanSource(fs.readFileSync(file, 'utf8'));
+}
+
+// ─── Self-test (trava o contrato da exceção) ─────────────────────────────────
+// Caso novo que escapar: acrescente aqui, nunca substitua.
+if (flag('--self-test')) {
+  const OP = '<div className="bg-black/40" />';
+  const BOLD = '<b className="font-bold" />';
+  const cases = [
+    ['sem exceção conta', [OP], 'opacidade-cru', 1],
+    ['exceção na linha de cima', ['{/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}', OP], 'opacidade-cru', 0],
+    ['exceção na própria linha', [`${OP} {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}`], 'opacidade-cru', 0],
+    ['exceção 8 linhas acima', ['// EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia', ...Array(7).fill('x'), OP], 'opacidade-cru', 0],
+    ['exceção 9 linhas acima (fora)', ['// EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia', ...Array(8).fill('x'), OP], 'opacidade-cru', 1],
+    ['sem motivo', ['// EXCEÇÃO ao ui-scale/opacidade-cru:', OP], 'opacidade-cru', 1],
+    ['motivo curto', ['// EXCEÇÃO ao ui-scale/opacidade-cru: ok', OP], 'opacidade-cru', 1],
+    ['motivo quebrado em duas linhas', ['// EXCEÇÃO ao ui-scale/opacidade-cru: scrim', '// sobre a foto do cliente', OP], 'opacidade-cru', 0],
+    ['regra trocada não libera', ['// EXCEÇÃO ao ui-scale/peso-pesado: hierarquia do título', OP], 'opacidade-cru', 1],
+    ['nome parcial não libera', ['// EXCEÇÃO ao ui-scale/peso: hierarquia do título', BOLD], 'peso-pesado', 1],
+    ['escopo de outro scanner não libera', ['// EXCEÇÃO ao ui-slop/opacidade-cru: scrim sobre mídia', OP], 'opacidade-cru', 1],
+    ['exceção abaixo não vale', [OP, '// EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia'], 'opacidade-cru', 1],
+    ['ignore-file com motivo', ['// ui-scale-ignore-file: peso-pesado — escala tipográfica do PDF exportado', BOLD, BOLD], 'peso-pesado', 0],
+    ['ignore-file sem motivo', ['// ui-scale-ignore-file: peso-pesado', BOLD], 'peso-pesado', 1],
+    ['ignore-file de outra regra', ['// ui-scale-ignore-file: opacidade-cru — scrim sobre mídia do player', BOLD], 'peso-pesado', 1],
+    ['ignore-file nome parcial', ['// ui-scale-ignore-file: peso — escala tipográfica do PDF exportado', BOLD], 'peso-pesado', 1],
+    ['variedade: linha liberada sai do set', ['<a className="rounded-sm" />', '<a className="rounded-md" />', '// EXCEÇÃO ao ui-scale/raio-sortido: pílula do avatar é forma', '<a className="rounded-3xl" />'], 'raio-sortido', 2],
+  ];
+  let fail = 0;
+  for (const [name, src, rule, expect] of cases) {
+    const got = scanSource(src.join('\n'))[rule];
+    const ok = got === expect;
+    if (!ok) fail++;
+    console.log(`  ${ok ? 'ok  ' : 'FAIL'}  ${name}  (${rule}: esperado ${expect}, veio ${got})`);
+  }
+  console.log(fail ? `\n${fail} caso(s) falharam.` : `\n${cases.length} casos ok.`);
+  process.exit(fail ? 1 : 0);
 }
 
 const files = collect();
@@ -223,7 +319,10 @@ if (flag('--check')) {
       console.error(`  ${r.id}: ${base.totals[r.id]} -> ${totals[r.id]}`);
     process.exit(1);
   }
-  console.log('\ncatraca OK — nada piorou.');
+  const caiu = RULES.some((r) => totals[r.id] < (base.totals[r.id] ?? 0));
+  console.log(
+    caiu ? '\ncatraca OK — melhorou; rode --save-baseline pra apertar.' : '\ncatraca OK — nada piorou.'
+  );
 }
 
 console.log('');

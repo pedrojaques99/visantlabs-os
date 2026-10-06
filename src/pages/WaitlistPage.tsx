@@ -38,18 +38,14 @@ export const WaitlistPage: React.FC = () => {
       await waitlistService.joinWaitlist(email);
 
       setIsSubmitted(true);
-      toast.success(
-        t('waitlist.success.addedToWaitlist') || "Thank you! You've been added to the waitlist."
-      );
+      toast.success(t('waitlist.success.addedToWaitlist'));
       setEmail('');
     } catch (error: any) {
       console.error('Error joining waitlist:', error);
       // Check if email is already in waitlist (not really an error)
       if (error.message?.includes('already in waitlist')) {
         setIsSubmitted(true);
-        toast.success(
-          t('waitlist.success.addedToWaitlist') || "Thank you! You've been added to the waitlist."
-        );
+        toast.success(t('waitlist.success.addedToWaitlist'));
         setEmail('');
       } else {
         toast.error(t('waitlist.errors.failedToJoin'));
@@ -143,9 +139,7 @@ export const WaitlistPage: React.FC = () => {
                 </form>
               ) : (
                 <div className="text-center py-4">
-                  <div className="text-success text-sm mb-4">
-                    {t('waitlist.addedToWaitlist') || "✓ You've been added to the waitlist!"}
-                  </div>
+                  <div className="text-success text-sm mb-4">{t('waitlist.addedToWaitlist')}</div>
                   <Button
                     variant="ghost"
                     onClick={() => setIsSubmitted(false)}

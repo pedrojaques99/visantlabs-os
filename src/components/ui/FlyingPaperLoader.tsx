@@ -130,24 +130,24 @@ export function FlyingPaperLoader({ progress, label, className }: FlyingPaperLoa
 
       {progress != null && (
         <div className="mt-3 w-[200px] mx-auto">
-          <div className="h-[6px] rounded-full bg-neutral-800 overflow-hidden">
+          <div className="h-[6px] rounded-full bg-muted overflow-hidden">
             <motion.div
-              className="h-full bg-foreground/70 rounded-full"
+              className="h-full bg-foreground rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
             />
           </div>
-          <p className="text-2xs text-neutral-500 text-center mt-1.5 tabular-nums">
-            <span className="text-neutral-600 mr-1">{glitch}</span>
+          <p className="text-2xs text-muted-foreground text-center mt-1.5 tabular-nums">
+            <span className="text-muted-foreground mr-1">{glitch}</span>
             {label || `${Math.round(progress)}%`}
           </p>
         </div>
       )}
 
       {progress == null && (
-        <p className="text-2xs text-neutral-500 text-center mt-3">
-          <span className="text-neutral-600 mr-1">{glitch}</span>
+        <p className="text-2xs text-muted-foreground text-center mt-3">
+          <span className="text-muted-foreground mr-1">{glitch}</span>
           {label || 'Processing...'}
         </p>
       )}

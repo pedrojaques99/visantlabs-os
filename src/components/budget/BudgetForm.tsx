@@ -151,7 +151,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
     <div className="space-y-6">
       {/* Basic Info */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-neutral-200">Informações Básicas</h3>
+        <h3 className="text-lg font-medium text-foreground">Informações Básicas</h3>
 
         <div>
           <label className="block text-xs text-neutral-400 mb-2">{t('budget.clientName')} *</label>

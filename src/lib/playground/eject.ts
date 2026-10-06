@@ -34,7 +34,7 @@ const COMPONENT_MAP: Record<string, string> = {
   Text: 'span className="text-sm text-neutral-300"',
   MicroTitle: 'span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500"',
   Button:
-    'button className="px-4 py-2 rounded-lg bg-cyan-500 text-neutral-900 font-medium text-sm hover:bg-cyan-400 transition-colors"',
+    'button className="px-4 py-2 rounded-xl bg-cyan-500 text-neutral-900 font-medium text-sm hover:bg-cyan-400 transition-colors"',
   Badge: 'span className="px-2 py-0.5 text-[10px] rounded-full bg-neutral-800 text-neutral-300"',
   Separator: 'hr className="border-neutral-800"',
   Metric: 'div className="bg-neutral-950 border border-neutral-800/50 rounded-xl p-4"',

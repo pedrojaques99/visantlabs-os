@@ -21,6 +21,7 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Badge } from './ui/badge';
 import { MicroTitle } from './ui/MicroTitle';
+import { Thumb } from './ui/Thumb';
 import { Modal } from '@/components/ui/Modal';
 import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { cn } from '../lib/utils';
@@ -209,7 +210,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
     >
       <div className="space-y-6">
         {error && (
-          <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 text-sm text-destructive flex items-center gap-2">
+          <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive flex items-center gap-2">
             <AlertTriangle size={16} className="shrink-0" />
             <span>{error}</span>
           </div>
@@ -222,10 +223,11 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
           </MicroTitle>
           <div className="relative w-full h-40 rounded-xl overflow-hidden bg-muted border border-border group">
             {coverImageUrl ? (
-              <img
+              <Thumb
                 src={coverImageUrl}
                 alt={t('common.cover')}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                className="w-full h-full object-cover"
+                fallbackIcon={ImageIcon}
               />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center gap-2">
@@ -252,7 +254,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               aria-label={t('community.editProfileModal.changeCover')}
               className={cn(
                 hoverReveal,
-                'absolute inset-0 flex items-center justify-center bg-background/70 backdrop-blur-sm disabled:opacity-50'
+                'absolute inset-0 flex items-center justify-center bg-background/80 disabled:opacity-50'
               )}
             >
               {isUploadingCover ? (

@@ -144,7 +144,7 @@ export const UsageDashboard: React.FC<{ enabled?: boolean }> = ({ enabled = true
       <Card className="bg-card border border-border rounded-xl">
         <CardContent className="p-4 md:p-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
-            <h2 className="text-base font-semibold text-foreground">
+            <h2 className="text-base font-medium text-foreground">
               {t('profile.usage.history30')}
             </h2>
             <div className="flex items-center gap-2 flex-wrap">
@@ -208,7 +208,7 @@ export const UsageDashboard: React.FC<{ enabled?: boolean }> = ({ enabled = true
       {/* Feature Breakdown */}
       <Card className="bg-card border border-border rounded-xl">
         <CardContent className="p-4 md:p-6">
-          <h2 className="text-base font-semibold text-foreground mb-4">
+          <h2 className="text-base font-medium text-foreground mb-4">
             {t('profile.usage.byFeature')}
           </h2>
           {isLoadingStats ? (
@@ -220,7 +220,7 @@ export const UsageDashboard: React.FC<{ enabled?: boolean }> = ({ enabled = true
               {featureRows.map((row) => {
                 const data = stats?.byFeature[row.key] ?? { count: 0, credits: 0 };
                 return (
-                  <div key={row.key} className="bg-muted/40 border border-border rounded-lg p-4">
+                  <div key={row.key} className="bg-muted/40 border border-border rounded-xl p-4">
                     <div className="flex items-center justify-between mb-3">
                       <Badge variant="neutral">{row.label}</Badge>
                     </div>
@@ -229,7 +229,7 @@ export const UsageDashboard: React.FC<{ enabled?: boolean }> = ({ enabled = true
                         <span className="text-muted-foreground text-xs">
                           {t('profile.usage.calls')}
                         </span>
-                        <span className="text-foreground font-semibold tabular-nums">
+                        <span className="text-foreground font-medium tabular-nums">
                           {data.count.toLocaleString()}
                         </span>
                       </div>
@@ -237,7 +237,7 @@ export const UsageDashboard: React.FC<{ enabled?: boolean }> = ({ enabled = true
                         <span className="text-muted-foreground text-xs">
                           {t('profile.usage.credits')}
                         </span>
-                        <span className="text-foreground font-semibold tabular-nums">
+                        <span className="text-foreground font-medium tabular-nums">
                           {data.credits.toLocaleString()}
                         </span>
                       </div>

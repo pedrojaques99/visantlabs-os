@@ -92,7 +92,7 @@ export const NamingHistoryPopover: React.FC<NamingHistoryPopoverProps> = ({
           'flex h-8 w-8 items-center justify-center rounded-full border transition-colors',
           open
             ? 'border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan'
-            : 'border-neutral-800 bg-white/[0.03] text-neutral-500 hover:border-white/10 hover:text-neutral-300'
+            : 'border-border bg-muted text-muted-foreground hover:border-border-hover hover:text-foreground'
         )}
       >
         <History size={14} />
@@ -140,10 +140,10 @@ export const NamingHistoryPopover: React.FC<NamingHistoryPopoverProps> = ({
                       onClick={() => restore(s.id)}
                       onKeyDown={(e) => e.key === 'Enter' && restore(s.id)}
                       className={cn(
-                        'group flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 transition-colors',
+                        'group flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2 transition-colors',
                         s.id === currentId
                           ? 'border-brand-cyan/40 bg-brand-cyan/[0.06]'
-                          : 'border-neutral-800 hover:bg-white/[0.035]'
+                          : 'border-border hover:bg-accent'
                       )}
                     >
                       <span

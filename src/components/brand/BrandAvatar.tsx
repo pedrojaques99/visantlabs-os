@@ -34,7 +34,7 @@ export const BrandAvatar: React.FC<BrandAvatarProps> = ({
   const url = getBrandLogoUrl(brand, preference);
   const initial = getBrandInitial(brand);
   const roundedClass =
-    rounded === 'full' ? 'rounded-full' : rounded === 'sm' ? 'rounded-sm' : 'rounded-md';
+    rounded === 'full' ? 'rounded-full' : rounded === 'sm' ? 'rounded-md' : 'rounded-md';
 
   const base = cn(
     'shrink-0 flex items-center justify-center overflow-hidden',

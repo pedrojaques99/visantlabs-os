@@ -51,7 +51,7 @@ export const BrandingChatInput: React.FC<BrandingChatInputProps> = ({
   }, [creditsRequired]);
 
   return (
-    <GlassPanel className="w-full shadow-lg border-white/5" padding="md">
+    <GlassPanel className="w-full shadow-lg border-border" padding="md">
       <div className="space-y-4">
         {/* Chat Input */}
         <ChatInput
@@ -83,7 +83,7 @@ export const BrandingChatInput: React.FC<BrandingChatInputProps> = ({
               {t('branding.aiSuggestions')}
             </p>
             {promptSuggestions.map((suggestion, index) => (
-              <GlassPanel key={index} className="border-white/5 bg-white/5" padding="sm">
+              <GlassPanel key={index} className="border-border bg-muted" padding="sm">
                 <div className="space-y-2">
                   <Button
                     variant="ghost"

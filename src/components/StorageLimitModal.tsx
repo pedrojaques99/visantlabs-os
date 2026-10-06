@@ -46,11 +46,11 @@ export const StorageLimitModal: React.FC<StorageLimitModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-neutral-950/50 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-background/80 backdrop-blur-md overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="bg-neutral-950/95 backdrop-blur-xl border border-destructive/30 rounded-md p-6 w-full max-w-lg mx-4 shadow-xl"
+        className="bg-popover border border-destructive/30 rounded-xl p-6 w-full max-w-lg mx-4 shadow-[var(--e-modal)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-4 mb-4">
@@ -58,21 +58,21 @@ export const StorageLimitModal: React.FC<StorageLimitModalProps> = ({
             <AlertTriangle size={24} />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase mb-2">
-              Limite de Armazenamento Excedido
+            <h2 className="text-lg font-medium text-foreground mb-2">
+              {t('storageLimitModal.title')}
             </h2>
-            <p className="text-sm text-neutral-400 font-mono leading-relaxed mb-3">
-              Você excedeu seu limite de armazenamento ({usedMB}MB / {limitMB}MB).
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              {t('storageLimitModal.usage', { used: usedMB, limit: limitMB })}
             </p>
-            <p className="text-sm text-neutral-400 font-mono leading-relaxed">
-              Faça upgrade para Premium para ter mais espaço e continuar fazendo upload de imagens.
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {t('storageLimitModal.body')}
             </p>
           </div>
           <Button
             variant="ghost"
             onClick={onClose}
-            className="flex-shrink-0 text-neutral-500 hover:text-neutral-300 transition-colors"
-            aria-label="Close"
+            className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label={t('common.close')}
           >
             <X size={20} />
           </Button>
@@ -82,17 +82,17 @@ export const StorageLimitModal: React.FC<StorageLimitModalProps> = ({
           <Button
             variant="ghost"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors border border-neutral-700/50 hover:border-neutral-600 rounded-md"
+            className="px-4 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors border border-border hover:border-border-hover rounded-md"
           >
-            Fechar
+            {t('common.close')}
           </Button>
           <Button
-            variant="brand"
+            variant="primary"
             onClick={handleUpgrade}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-foreground border border-brand-cyan/30 hover:border-neutral-700 rounded-md transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-xs rounded-md"
           >
             <CreditCard size={14} />
-            <span>Fazer Upgrade</span>
+            <span>{t('storageLimitModal.upgrade')}</span>
           </Button>
         </div>
       </div>

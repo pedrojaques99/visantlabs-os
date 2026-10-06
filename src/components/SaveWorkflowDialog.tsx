@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { X, Save, Share2, Tags, Folder, FileType, Info, Globe } from '@/lib/ui/icons';
+import { Save, Share2, Tags, Folder, FileType, Info, Globe } from '@/lib/ui/icons';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -11,6 +10,8 @@ import type { WorkflowCategory } from '../types/workflow';
 import { WORKFLOW_CATEGORY_CONFIG } from '../types/workflow';
 import { cn } from '../lib/utils';
 import { MicroTitle } from './ui/MicroTitle';
+import { Modal } from './ui/Modal';
+import { GlassPanel } from './ui/GlassPanel';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 interface SaveWorkflowDialogProps {
@@ -100,186 +101,146 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
   const nodeCount = nodes.length;
   const edgeCount = edges.length;
 
-  const modalContent = (
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-sm animate-fade-in"
-      onClick={onClose}
-    >
-      <div
-        className="relative w-full max-w-2xl bg-neutral-900 border border-neutral-800/60 rounded-xl shadow-2xl flex flex-col overflow-hidden animate-slide-up"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-neutral-800/60 bg-neutral-900/20 backdrop-blur-sm">
-          <div className="flex items-center gap-4">
-            <div className="p-2 bg-neutral-800/60 rounded-md border border-neutral-700/50">
-              <Save size={20} className="text-neutral-300" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-neutral-200 font-manrope tracking-tight">
-                {t('workflows.saveDialog.title') || 'Save Workflow'}
-              </h2>
-              <p className="text-xs text-neutral-500 font-mono mt-0.5">
-                {t('workflows.saveDialog.description') ||
-                  'Save your canvas as a reusable workflow template'}
-              </p>
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            className="p-2 rounded-md hover:bg-neutral-800/50 text-neutral-400 hover:text-neutral-200 transition-all hover:scale-110 active:scale-95"
-          >
-            <X size={20} />
-          </Button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(85vh-140px)] custom-scrollbar flex-1">
-          {/* Stats */}
-          <div className="flex items-center gap-4 px-4 py-3 bg-neutral-900/40 border border-neutral-800/60 rounded-md">
-            <MicroTitle className="flex items-center gap-2 text-2xs  text-neutral-400">
-              <FileType size={14} className="text-neutral-500" />
-              <span>
-                {nodeCount} {t('workflows.saveDialog.nodes') || 'nodes'}
-              </span>
-            </MicroTitle>
-            <div className="w-px h-3 bg-neutral-800" />
-            <MicroTitle className="flex items-center gap-2 text-2xs  text-neutral-400">
-              <Share2 size={14} className="text-neutral-500" />
-              <span>
-                {edgeCount} {t('workflows.saveDialog.connections') || 'connections'}
-              </span>
-            </MicroTitle>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Name */}
-            <div className="space-y-2 md:col-span-2">
-              <MicroTitle as="label" className="ml-1">
-                {t('workflows.saveDialog.name') || 'Workflow Name'}{' '}
-                <span className="text-destructive">*</span>
-              </MicroTitle>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={
-                  t('workflows.saveDialog.namePlaceholder') || 'e.g., Brand Identity Workflow'
-                }
-                className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600 focus:ring-brand-cyan/20"
-              />
-            </div>
-
-            {/* Category */}
-            <div className="space-y-2">
-              <MicroTitle as="label" className="ml-1 flex items-center gap-1.5 lowercase">
-                <Folder size={12} className="uppercase" />
-                {t('workflows.saveDialog.category') || 'Category'}
-              </MicroTitle>
-              <Select
-                value={category}
-                onChange={(value) => setCategory(value as WorkflowCategory)}
-                options={Object.entries(WORKFLOW_CATEGORY_CONFIG)
-                  .filter(([key]) => key !== 'all')
-                  .map(([key, config]) => ({
-                    value: key,
-                    label: config.label,
-                  }))}
-                className="w-full bg-neutral-900/50 border-neutral-800"
-              />
-            </div>
-
-            {/* Tags */}
-            <div className="space-y-2">
-              <MicroTitle as="label" className="ml-1 flex items-center gap-1.5 lowercase">
-                <Tags size={12} className="uppercase" />
-                {t('workflows.saveDialog.tags') || 'Tags'}
-              </MicroTitle>
-              <Input
-                value={tagsInput}
-                onChange={(e) => setTagsInput(e.target.value)}
-                placeholder={
-                  t('workflows.saveDialog.tagsPlaceholder') || 'branding, logo, identity'
-                }
-                className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600 focus:ring-brand-cyan/20"
-              />
-            </div>
-
-            {/* Description */}
-            <div className="space-y-2 md:col-span-2">
-              <MicroTitle as="label" className="ml-1 flex items-center gap-1.5 lowercase">
-                <Info size={12} className="uppercase" />
-                {t('workflows.saveDialog.description') || 'Description'}{' '}
-                <span className="text-destructive">*</span>
-              </MicroTitle>
-              <Textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder={
-                  t('workflows.saveDialog.descriptionPlaceholder') ||
-                  'Describe what this workflow does...'
-                }
-                className="min-h-[100px] bg-neutral-900/50 border-neutral-800 focus:border-neutral-600 focus:ring-brand-cyan/20 resize-none"
-              />
-            </div>
-
-            {/* Public Toggle */}
-            <div className="md:col-span-2 p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md hover:border-neutral-700/50 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <label className="text-sm font-semibold text-neutral-300 flex items-center gap-2">
-                    <Globe
-                      size={16}
-                      className={cn(
-                        'transition-colors',
-                        isPublic ? 'text-brand-cyan' : 'text-neutral-500'
-                      )}
-                    />
-                    {t('workflows.saveDialog.makePublic') || 'Make Public'}
-                  </label>
-                  <p className="text-2xs text-neutral-500 font-mono">
-                    {t('workflows.saveDialog.makePublicHint') ||
-                      'Share this workflow with the community (requires approval)'}
-                  </p>
-                </div>
-                <Switch checked={isPublic} onCheckedChange={setIsPublic} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-6 border-t border-neutral-800/60 bg-neutral-900/20 backdrop-blur-sm flex justify-end gap-3">
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="lg"
+      title={t('workflows.saveDialog.title')}
+      description={t('workflows.saveDialog.description')}
+      footer={
+        <>
           <Button
             variant="ghost"
             onClick={onClose}
             disabled={isSaving}
             className="font-mono text-neutral-400 hover:text-neutral-200"
           >
-            {t('common.cancel') || 'Cancel'}
+            {t('common.cancel')}
           </Button>
           <Button
-            variant="brand"
+            variant="primary"
             onClick={handleSave}
             disabled={!name.trim() || !description.trim() || isSaving}
-            className="font-mono min-w-[140px] shadow-lg shadow-brand-cyan/10"
+            className="font-mono min-w-[140px]"
           >
             {isSaving ? (
               <span className="flex items-center gap-2">
                 <GlitchLoader size={16} />
-                {t('workflows.saveDialog.saving') || 'Saving...'}
+                {t('workflows.saveDialog.saving')}
               </span>
             ) : (
               <span className="flex items-center gap-2">
                 <Save size={16} />
-                {t('workflows.saveDialog.save') || 'Save Workflow'}
+                {t('workflows.saveDialog.save')}
               </span>
             )}
           </Button>
+        </>
+      }
+    >
+      <div className="space-y-6">
+        {/* Stats */}
+        <div className="flex items-center gap-4 px-4 py-3 bg-neutral-900/40 border border-neutral-800/60 rounded-md">
+          <MicroTitle className="flex items-center gap-2 text-2xs  text-neutral-400">
+            <FileType size={14} className="text-neutral-500" />
+            <span>
+              {nodeCount} {t('workflows.saveDialog.nodes')}
+            </span>
+          </MicroTitle>
+          <div className="w-px h-3 bg-neutral-800" />
+          <MicroTitle className="flex items-center gap-2 text-2xs  text-neutral-400">
+            <Share2 size={14} className="text-neutral-500" />
+            <span>
+              {edgeCount} {t('workflows.saveDialog.connections')}
+            </span>
+          </MicroTitle>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Name */}
+          <div className="space-y-2 md:col-span-2">
+            <MicroTitle as="label" className="ml-1">
+              {t('workflows.saveDialog.name')} <span className="text-destructive">*</span>
+            </MicroTitle>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t('workflows.saveDialog.namePlaceholder')}
+              className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600 focus:ring-brand-cyan/20"
+            />
+          </div>
+
+          {/* Category */}
+          <div className="space-y-2">
+            <MicroTitle as="label" className="ml-1 flex items-center gap-1.5 lowercase">
+              <Folder size={12} className="uppercase" />
+              {t('workflows.saveDialog.category')}
+            </MicroTitle>
+            <Select
+              value={category}
+              onChange={(value) => setCategory(value as WorkflowCategory)}
+              options={Object.entries(WORKFLOW_CATEGORY_CONFIG)
+                .filter(([key]) => key !== 'all')
+                .map(([key, config]) => ({
+                  value: key,
+                  label: config.label,
+                }))}
+              className="w-full bg-neutral-900/50 border-neutral-800"
+            />
+          </div>
+
+          {/* Tags */}
+          <div className="space-y-2">
+            <MicroTitle as="label" className="ml-1 flex items-center gap-1.5 lowercase">
+              <Tags size={12} className="uppercase" />
+              {t('workflows.saveDialog.tags')}
+            </MicroTitle>
+            <Input
+              value={tagsInput}
+              onChange={(e) => setTagsInput(e.target.value)}
+              placeholder={t('workflows.saveDialog.tagsPlaceholder')}
+              className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600 focus:ring-brand-cyan/20"
+            />
+          </div>
+
+          {/* Description */}
+          <div className="space-y-2 md:col-span-2">
+            <MicroTitle as="label" className="ml-1 flex items-center gap-1.5 lowercase">
+              <Info size={12} className="uppercase" />
+              {t('workflows.saveDialog.description')} <span className="text-destructive">*</span>
+            </MicroTitle>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t('workflows.saveDialog.descriptionPlaceholder')}
+              className="min-h-[100px] bg-neutral-900/50 border-neutral-800 focus:border-neutral-600 focus:ring-brand-cyan/20 resize-none"
+            />
+          </div>
+
+          {/* Public Toggle */}
+          <GlassPanel padding="sm" className="md:col-span-2 rounded-md">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-neutral-300 flex items-center gap-2">
+                  <Globe
+                    size={16}
+                    className={cn(
+                      'transition-colors',
+                      isPublic ? 'text-brand-cyan' : 'text-neutral-500'
+                    )}
+                  />
+                  {t('workflows.saveDialog.makePublic')}
+                </label>
+                <p className="text-2xs text-neutral-500 font-mono">
+                  {t('workflows.saveDialog.makePublicHint')}
+                </p>
+              </div>
+              <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+            </div>
+          </GlassPanel>
         </div>
       </div>
-    </div>
+    </Modal>
   );
-
-  return createPortal(modalContent, document.body);
 };

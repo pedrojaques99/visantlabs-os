@@ -30,11 +30,11 @@ const ColorsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) =
   return (
     <div className="grid grid-cols-4 gap-2">
       {colors.slice(0, 8).map((c, i) => (
-        <div key={i} className="rounded-lg overflow-hidden border border-white/5">
+        <div key={i} className="rounded-xl overflow-hidden border border-border">
           <div className="h-12" style={{ backgroundColor: c.hex }} />
-          <div className="px-2 py-1.5 bg-neutral-900/60">
-            <p className="text-3xs font-bold text-white truncate">{c.name}</p>
-            <p className="text-3xs font-mono text-neutral-500 uppercase">{c.hex}</p>
+          <div className="px-2 py-1.5 bg-card/60">
+            <p className="text-3xs font-medium text-foreground truncate">{c.name}</p>
+            <p className="text-3xs font-mono text-muted-foreground uppercase">{c.hex}</p>
           </div>
         </div>
       ))}
@@ -49,7 +49,7 @@ const TypographyPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline 
   const primary = fonts[0];
   return (
     <div className="space-y-3">
-      <div className="p-3 rounded-xl bg-neutral-900/40 border border-white/[0.03]">
+      <div className="p-3 rounded-xl bg-card/40 border border-border">
         <p className="text-2xs text-muted-foreground mb-1">{primary.role}</p>
         <p
           className="text-3xl leading-tight text-white"
@@ -70,7 +70,7 @@ const TypographyPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline 
           {fonts.slice(1).map((f, i) => (
             <span
               key={i}
-              className="px-2 py-1 rounded-md bg-white/[0.03] border border-white/5 text-2xs text-neutral-400"
+              className="px-2 py-1 rounded-md bg-muted border border-border text-2xs text-muted-foreground"
               style={{ fontFamily: f.family }}
             >
               {f.family} <span className="text-muted-foreground">{f.role}</span>
@@ -270,7 +270,7 @@ const GradientsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }
   return (
     <div className="grid grid-cols-3 gap-2">
       {grads.slice(0, 6).map((g) => (
-        <div key={g.id} className="rounded-xl overflow-hidden border border-white/5">
+        <div key={g.id} className="rounded-xl overflow-hidden border border-border">
           <div
             className="h-14"
             style={{
@@ -337,7 +337,7 @@ const MotionPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) =
       {m.easing && (
         <div className="flex items-center gap-2">
           <span className="text-2xs text-muted-foreground">Easing</span>
-          <span className="text-2xs font-mono text-neutral-300 bg-white/[0.03] px-2 py-0.5 rounded-md border border-white/5">
+          <span className="text-2xs font-mono text-foreground bg-muted px-2 py-0.5 rounded-md border border-border">
             {m.easing}
           </span>
         </div>
@@ -349,7 +349,7 @@ const MotionPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) =
               m.durations?.[k] !== undefined && (
                 <div
                   key={k}
-                  className="flex-1 text-center p-2 rounded-lg bg-white/[0.03] border border-white/5"
+                  className="flex-1 text-center p-2 rounded-xl bg-muted border border-border"
                 >
                   <p className="text-2xs font-mono text-muted-foreground">{k}</p>
                   <p className="text-xs font-mono text-foreground font-medium">
@@ -415,7 +415,7 @@ const LogosPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) =>
     <div className="flex gap-3 flex-wrap">
       {logos.slice(0, 4).map((l, i) => (
         <div key={i} className="flex flex-col items-center gap-1">
-          <div className="w-20 h-14 rounded-xl bg-neutral-900 border border-white/5 flex items-center justify-center overflow-hidden">
+          <div className="w-20 h-14 rounded-xl bg-card border border-border flex items-center justify-center overflow-hidden">
             <Thumb
               src={l.url}
               alt={l.label || l.variant}
@@ -658,7 +658,7 @@ const EmptyDropZone: React.FC<{ onExtractFiles?: (files: FileList) => void }> = 
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       className={cn(
-        'py-16 text-center space-y-4 border-2 border-dashed rounded-2xl transition-colors cursor-pointer',
+        'py-16 text-center space-y-4 border-2 border-dashed rounded-xl transition-colors cursor-pointer',
         dragging ? 'border-ring bg-muted/60' : 'border-border hover:border-ring'
       )}
       onClick={() => fileInputRef.current?.click()}

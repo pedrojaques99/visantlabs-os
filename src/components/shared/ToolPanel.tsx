@@ -50,7 +50,7 @@ const HexTextInput: React.FC<{
       spellCheck={false}
       aria-label={ariaLabel || 'Color hex'}
       className={cn(
-        'bg-transparent text-2xs text-neutral-400 font-mono uppercase tracking-wider outline-none focus:text-neutral-200 w-[8ch]',
+        'bg-transparent text-2xs text-muted-foreground font-mono uppercase tracking-wider outline-none focus:text-foreground w-[8ch]',
         className
       )}
     />
@@ -67,13 +67,11 @@ export const ToolPanel: React.FC<{ children: React.ReactNode; className?: string
 );
 
 export const ToolPanelHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="shrink-0 border-b border-neutral-800/50 px-4 py-3">{children}</div>
+  <div className="shrink-0 border-b border-border px-4 py-3">{children}</div>
 );
 
 export const ToolPanelContent: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
-    {children}
-  </div>
+  <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6 scrollbar-thin">{children}</div>
 );
 
 export const SectionLabel: React.FC<{ children: React.ReactNode; className?: string }> = ({
@@ -93,10 +91,8 @@ export const SegmentedControl: React.FC<{
 }> = ({ options, value, onChange, variant = 'glass', size = 'md', className }) => (
   <div
     className={cn(
-      'flex rounded-lg p-0.5 border',
-      variant === 'brand'
-        ? 'bg-neutral-900/50 border-neutral-800'
-        : 'bg-white/[0.03] border-neutral-800',
+      'flex rounded-xl p-0.5 border',
+      variant === 'brand' ? 'bg-muted/50 border-border' : 'bg-muted border-border',
       className
     )}
   >
@@ -109,9 +105,9 @@ export const SegmentedControl: React.FC<{
           size === 'sm' ? 'px-2 py-1 text-2xs' : 'px-3 py-1 text-2xs',
           value === opt.value
             ? variant === 'brand'
-              ? 'bg-brand-cyan text-black font-bold'
-              : 'bg-white/10 text-neutral-100 shadow-sm'
-            : 'text-neutral-500 hover:text-neutral-300'
+              ? 'bg-brand-cyan text-black font-medium'
+              : 'bg-accent text-foreground shadow-sm'
+            : 'text-muted-foreground hover:text-foreground'
         )}
       >
         {opt.label}
@@ -162,18 +158,18 @@ export const ToolPanelDisclosure: React.FC<{
   return (
     <div
       id={id}
-      className="rounded-md border border-neutral-800/50 transition-colors duration-200 scroll-mt-2"
+      className="rounded-md border border-border transition-colors duration-200 scroll-mt-2"
     >
       <button
         onClick={() => setOpen(!open)}
         className={cn(
           'w-full flex items-center justify-between text-left px-3 py-2.5 transition-colors duration-200 rounded-md',
-          'hover:bg-neutral-800/10',
-          open && 'bg-neutral-800/20'
+          'hover:bg-accent',
+          open && 'bg-muted/50'
         )}
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          {icon && <span className="text-neutral-500">{icon}</span>}
+          {icon && <span className="text-muted-foreground">{icon}</span>}
           <span className="text-xs font-medium text-muted-foreground">{label}</span>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -181,7 +177,7 @@ export const ToolPanelDisclosure: React.FC<{
           <ChevronDown
             size={14}
             className={cn(
-              'text-neutral-500 transition-transform duration-200',
+              'text-muted-foreground transition-transform duration-200',
               open && 'rotate-180'
             )}
           />
@@ -192,10 +188,10 @@ export const ToolPanelDisclosure: React.FC<{
   );
 };
 
-export const ToolPanelDivider: React.FC = () => <div className="h-px bg-neutral-800/50" />;
+export const ToolPanelDivider: React.FC = () => <div className="h-px bg-border" />;
 
 export const ToolPanelActions: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="shrink-0 border-t border-neutral-800/50 px-4 py-3 space-y-2">{children}</div>
+  <div className="shrink-0 border-t border-border px-4 py-3 space-y-2">{children}</div>
 );
 
 export const ToolPanelGrid: React.FC<{ children: React.ReactNode; cols?: 2 | 3 | 4 | 5 }> = ({
@@ -225,8 +221,8 @@ export const ToolPanelChip: React.FC<{
     className={cn(
       'px-2.5 py-2 rounded-md text-xs transition-colors duration-200 text-left border',
       active
-        ? 'bg-white/10 text-white border-white/20'
-        : 'bg-neutral-900/50 text-neutral-400 border-neutral-800/50 hover:bg-neutral-800/30 hover:text-neutral-200 hover:border-neutral-700/50',
+        ? 'bg-accent text-foreground border-border-hover'
+        : 'bg-muted/50 text-muted-foreground border-border hover:bg-accent hover:text-foreground hover:border-border-hover',
       className
     )}
   >
@@ -239,7 +235,7 @@ export const ToolPanelRow: React.FC<{
   children: React.ReactNode;
 }> = ({ label, children }) => (
   <div className="flex items-center justify-between py-1">
-    <span className="text-2xs text-neutral-400">{label}</span>
+    <span className="text-2xs text-muted-foreground">{label}</span>
     {children}
   </div>
 );
@@ -258,7 +254,7 @@ export const InlineColorPicker: React.FC<{
         aria-label={label || 'Color'}
         className="w-6 h-6 rounded-md cursor-pointer bg-transparent border-0"
       />
-      <span className="text-2xs text-neutral-600 font-mono">#</span>
+      <span className="text-2xs text-muted-foreground font-mono">#</span>
       <HexTextInput
         value={value}
         onChange={onChange}
@@ -292,8 +288,8 @@ export const ChannelRow: React.FC<{
 }) => (
   <div
     className={cn(
-      'rounded-lg border transition-colors',
-      expanded ? 'border-neutral-700 bg-neutral-900/50' : 'border-transparent'
+      'rounded-xl border transition-colors',
+      expanded ? 'border-border bg-muted/50' : 'border-transparent'
     )}
   >
     {/* Row background toggles on mouse-click for convenience; the accessible
@@ -301,7 +297,7 @@ export const ChannelRow: React.FC<{
         propagation so they don't double-fire the toggle. */}
     <div
       onClick={onToggleExpand}
-      className="flex items-center gap-2 w-full py-2 px-2 hover:bg-neutral-800/30 rounded-lg transition-colors cursor-pointer"
+      className="flex items-center gap-2 w-full py-2 px-2 hover:bg-accent rounded-xl transition-colors cursor-pointer"
     >
       <input
         type="color"
@@ -317,7 +313,7 @@ export const ChannelRow: React.FC<{
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
       >
-        <span className="text-2xs text-neutral-600 font-mono">#</span>
+        <span className="text-2xs text-muted-foreground font-mono">#</span>
         <HexTextInput value={color} onChange={onColorChange} ariaLabel={`${label} hex`} />
       </span>
       {!label.startsWith('#') && (
@@ -333,7 +329,7 @@ export const ChannelRow: React.FC<{
             e.stopPropagation();
             onToggleVisible();
           }}
-          className="text-neutral-500 hover:text-white transition-colors p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan/60"
+          className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan/60"
         >
           {visible ? <Eye size={14} /> : <EyeOff size={14} />}
         </button>
@@ -345,7 +341,7 @@ export const ChannelRow: React.FC<{
             e.stopPropagation();
             onToggleExpand();
           }}
-          className="p-1 rounded text-neutral-600 hover:text-neutral-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan/60"
+          className="p-1 rounded text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan/60"
         >
           <ChevronDown size={14} className={cn('transition-transform', expanded && 'rotate-180')} />
         </button>
@@ -442,12 +438,12 @@ export const ExpandableColorPicker: React.FC<{
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="w-7 h-7 rounded-md border border-white/10 shrink-0 cursor-pointer hover:border-white/30 transition-colors"
+          className="w-7 h-7 rounded-md border border-border shrink-0 cursor-pointer hover:border-border-hover transition-colors"
           style={{ backgroundColor: color }}
           aria-label={label ? `Toggle ${label} color picker` : 'Toggle color picker'}
         />
-        <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-0.5 min-w-0">
-          <span className="text-2xs text-neutral-500 mr-1">#</span>
+        <div className="flex items-center flex-1 bg-muted border border-border rounded px-2 py-0.5 min-w-0">
+          <span className="text-2xs text-muted-foreground mr-1">#</span>
           <input
             type="text"
             value={hexInput}
@@ -462,16 +458,16 @@ export const ExpandableColorPicker: React.FC<{
             spellCheck={false}
             autoCapitalize="characters"
             aria-label={label || 'Color hex'}
-            className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none uppercase"
+            className="bg-transparent text-xs text-foreground font-mono tracking-wider w-full focus:outline-none uppercase"
           />
         </div>
         {eyedropperOn && (
           <button
             type="button"
             onClick={pickWithEyedropper}
-            className="text-neutral-500 hover:text-foreground transition-colors p-1 shrink-0"
-            aria-label="Pick color from screen"
-            title="Eyedropper"
+            className="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0"
+            aria-label={t('toolEditor.eyedropperHint')}
+            title={t('toolEditor.eyedropper')}
           >
             <Pipette size={14} />
           </button>
@@ -480,7 +476,7 @@ export const ExpandableColorPicker: React.FC<{
           <button
             type="button"
             onClick={onReset}
-            className="text-neutral-600 hover:text-neutral-400 transition-colors p-1 shrink-0"
+            className="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0"
             aria-label={t('common.reset')}
           >
             <RotateCcw size={12} />
@@ -488,7 +484,10 @@ export const ExpandableColorPicker: React.FC<{
         )}
         <ChevronDown
           size={14}
-          className={cn('text-neutral-600 transition-transform shrink-0', open && 'rotate-180')}
+          className={cn(
+            'text-muted-foreground transition-transform shrink-0',
+            open && 'rotate-180'
+          )}
         />
       </div>
       {open && (
@@ -503,8 +502,8 @@ export const ExpandableColorPicker: React.FC<{
                   className={cn(
                     'w-5 h-5 rounded-full border transition-colors',
                     color.toLowerCase() === p.toLowerCase()
-                      ? 'border-white/40 ring-1 ring-white/20 ring-offset-1 ring-offset-neutral-950'
-                      : 'border-white/10 hover:border-white/20'
+                      ? 'border-ring ring-1 ring-ring/50 ring-offset-1 ring-offset-background'
+                      : 'border-border hover:border-border-hover'
                   )}
                   style={{ backgroundColor: p }}
                   aria-label={`Preset ${p}`}
@@ -524,9 +523,9 @@ export const ExpandableColorPicker: React.FC<{
               {(['R', 'G', 'B'] as const).map((ch, i) => (
                 <label
                   key={ch}
-                  className="flex items-center gap-1 bg-white/5 border border-white/10 rounded px-1.5 py-0.5"
+                  className="flex items-center gap-1 bg-muted border border-border rounded px-1.5 py-0.5"
                 >
-                  <span className="text-2xs font-mono text-neutral-500">{ch}</span>
+                  <span className="text-2xs font-mono text-muted-foreground">{ch}</span>
                   <input
                     type="number"
                     min={0}
@@ -534,7 +533,7 @@ export const ExpandableColorPicker: React.FC<{
                     value={rgb[i]}
                     onChange={(e) => setChannel(i, e.target.value)}
                     aria-label={`${label ? label + ' ' : ''}${ch} channel`}
-                    className="bg-transparent text-2xs text-white font-mono tabular-nums w-full focus:outline-none"
+                    className="bg-transparent text-2xs text-foreground font-mono tabular-nums w-full focus:outline-none"
                   />
                 </label>
               ))}
@@ -551,8 +550,8 @@ export const ExpandableColorPicker: React.FC<{
                     className={cn(
                       'w-5 h-5 rounded-full border transition-colors',
                       color.toLowerCase() === c.toLowerCase()
-                        ? 'border-white/40 ring-1 ring-white/20'
-                        : 'border-white/10 hover:border-white/20'
+                        ? 'border-ring ring-1 ring-ring/50'
+                        : 'border-border hover:border-border-hover'
                     )}
                     style={{ backgroundColor: c }}
                     aria-label={`Recent ${c}`}
@@ -585,7 +584,7 @@ export const ToolPanelExportActions: React.FC<{
           <Button
             onClick={onExport}
             disabled={isExporting || disabled}
-            className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2"
+            className="flex-1 bg-foreground hover:bg-foreground/90 text-background font-medium h-9 text-xs gap-2"
           >
             <Download size={14} />
             {isExporting ? t('common.exporting') : t('common.export')}
@@ -595,7 +594,7 @@ export const ToolPanelExportActions: React.FC<{
             onClick={() => setMenuOpen(!menuOpen)}
             disabled={disabled}
             variant="outline"
-            className="h-9 w-9 p-0 border-neutral-700 text-neutral-400 hover:text-white"
+            className="h-9 w-9 p-0 border-border text-muted-foreground hover:text-foreground"
           >
             <ChevronDown
               size={14}
@@ -609,7 +608,7 @@ export const ToolPanelExportActions: React.FC<{
               variant="outline"
               aria-label={t('common.copyAsPng')}
               title={t('common.copyAsPng')}
-              className="h-9 w-9 p-0 border-neutral-700 text-neutral-400 hover:text-white"
+              className="h-9 w-9 p-0 border-border text-muted-foreground hover:text-foreground"
             >
               <Copy size={14} />
             </Button>
@@ -617,7 +616,7 @@ export const ToolPanelExportActions: React.FC<{
         </div>
 
         {menuOpen && (
-          <div className="absolute bottom-full left-0 right-0 mb-1 bg-neutral-900 border border-neutral-700 rounded-lg p-1 shadow-xl z-20 animate-fade-in">
+          <div className="absolute bottom-full left-0 right-0 mb-1 bg-popover border border-border rounded-xl p-1 shadow-xl z-20 animate-fade-in">
             {sendTo && <div className="px-1 py-0.5">{sendTo}</div>}
           </div>
         )}

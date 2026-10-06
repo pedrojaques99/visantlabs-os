@@ -145,7 +145,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
             <div className="inline-flex items-center justify-center w-20 h-20 bg-neutral-800 rounded-md mb-4">
               <FileText className="h-10 w-10 text-foreground" />
             </div>
-            <h2 className="text-2xl font-bold text-neutral-200 mb-2">Layout Custom</h2>
+            <h2 className="text-2xl font-semibold text-foreground mb-2">Layout Custom</h2>
             <p className="text-sm text-neutral-400">
               Faça upload do seu PDF customizado para começar
             </p>
@@ -155,7 +155,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
           {showSavePresetModal && (
             <div className="fixed inset-0 bg-neutral-950/50 flex items-center justify-center z-50">
               <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 max-w-md w-full mx-4">
-                <h4 className="text-lg font-semibold text-neutral-200 mb-4">Salvar como Preset</h4>
+                <h4 className="text-lg font-medium text-foreground mb-4">Salvar como Preset</h4>
                 <Input
                   type="text"
                   value={presetName}

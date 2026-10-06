@@ -20,7 +20,7 @@ export const PremiumGate: React.FC<PremiumGateProps> = ({ children, toolName }) 
 
   if (isLoading || isCheckingAuth) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
         <GlitchLoader />
       </div>
     );
@@ -29,14 +29,16 @@ export const PremiumGate: React.FC<PremiumGateProps> = ({ children, toolName }) 
   if (hasAccess) return <>{children}</>;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950 px-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background px-6">
       <div className="flex flex-col items-center gap-6 max-w-xs text-center">
-        <div className="w-16 h-16 rounded-2xl border border-neutral-800 bg-neutral-900 flex items-center justify-center">
-          <Lock size={28} className="text-neutral-500" />
+        <div className="w-16 h-16 rounded-xl border border-border bg-card flex items-center justify-center">
+          <Lock size={28} className="text-muted-foreground" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-sm font-medium text-white">{toolName}</h2>
-          <p className="text-xs text-neutral-500 leading-relaxed">{t('premium.upgradeRequired')}</p>
+          <h2 className="text-sm font-medium text-foreground">{toolName}</h2>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {t('premium.upgradeRequired')}
+          </p>
         </div>
         <div className="flex gap-3">
           {!isAuthenticated && (

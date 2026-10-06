@@ -15,6 +15,7 @@ import { NodeHeader } from './shared/node-header';
 
 import { ChatMessage } from '../shared/chat/ChatMessage';
 import { ChatInput } from '../shared/chat/ChatInput';
+import { useIsChatInPanel } from '../canvas/chatPanelPresence';
 import { ModelSelector } from '../shared/ModelSelector';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 
@@ -25,6 +26,8 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
   const { t } = useTranslation();
   const { handleResize: handleResizeWithDebounce } = useNodeResize();
   const nodeData = data as ChatNodeData;
+  // Same conversation open in the side panel: type there, one composer per chat.
+  const isInPanel = useIsChatInPanel(nodeId);
   const [inputMessage, setInputMessage] = useState('');
   const messagesAreaRef = useRef<HTMLDivElement>(null);
   const [showSystemPromptEditor, setShowSystemPromptEditor] = useState(false);
@@ -179,7 +182,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         {showSystemPromptEditor && (
           <div className="px-4 py-3 border-b border-neutral-700/30 bg-neutral-900/50 animate-in slide-in-from-top-1">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-2xs font-semibold text-neutral-400">
+              <label className="text-2xs font-medium text-neutral-400">
                 {t('canvasNodes.chatNode.systemPrompt')}
               </label>
               <div className="flex items-center gap-2">
@@ -246,7 +249,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           {hasContext && (
             <div className="flex items-center justify-between pb-3 border-b border-neutral-700/20">
               <div className="flex gap-2">
-                <span className="text-2xs text-neutral-400 flex items-center gap-1 font-bold">
+                <span className="text-2xs text-neutral-400 flex items-center gap-1 font-medium">
                   <CheckCircle2 size={10} /> {t('canvasNodes.chatNode.context')}
                 </span>
                 {connectedImages.length > 0 && (
@@ -265,13 +268,21 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               </NodeButton>
             </div>
           )}
-          <ChatInput
-            value={inputMessage}
-            onChange={setInputMessage}
-            onSend={handleSend}
-            isLoading={isLoading}
-            placeholder={t('canvasNodes.chatNode.typeYourMessage')}
-          />
+          {isInPanel ? (
+            <p className="text-xs text-muted-foreground">
+              {t('canvasNodes.chatNode.replyingInPanel')}
+            </p>
+          ) : (
+            // EXCEÇÃO ao ruido-scan/porta-repetida: o mesmo chat no painel lateral (ChatSidebar)
+            // registra presença e este campo some (useIsChatInPanel); nunca há dois na tela.
+            <ChatInput
+              value={inputMessage}
+              onChange={setInputMessage}
+              onSend={handleSend}
+              isLoading={isLoading}
+              placeholder={t('canvasNodes.chatNode.typeYourMessage')}
+            />
+          )}
         </div>
       </div>
 

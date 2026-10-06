@@ -19,6 +19,7 @@ import {
   toBlob,
   type LoadedScene,
 } from '@/lib/mockup/sceneClient';
+import { Thumb } from '@/components/ui/Thumb';
 
 export interface MockupRecipe {
   psdFileName: string;
@@ -344,7 +345,7 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
             ]}
           >
             {imgUrl && (
-              <img
+              <Thumb
                 src={imgUrl}
                 alt={current?.faceName ?? ''}
                 className="w-full h-full object-cover rounded-xl"
@@ -357,7 +358,7 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
             <div className="absolute inset-0 z-20 pointer-events-none flex items-end justify-center pb-3">
               <div
                 className={cn(
-                  'flex items-center gap-0.5 p-1 rounded-lg pointer-events-auto',
+                  'flex items-center gap-0.5 p-1 rounded-xl pointer-events-auto',
                   glassSurface.panelStrong,
                   hoverReveal
                 )}

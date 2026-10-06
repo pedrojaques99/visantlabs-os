@@ -97,7 +97,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             elements.push(
               <h4
                 key={elements.length}
-                className="text-lg font-semibold text-foreground mb-3 mt-6 normal-case"
+                className="text-lg font-medium text-foreground mb-3 mt-6 normal-case"
               >
                 {parseInlineMarkdown(trimmed.substring(5))}
               </h4>
@@ -108,7 +108,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             elements.push(
               <h3
                 key={elements.length}
-                className="text-xl font-semibold text-foreground mb-4 mt-8 normal-case"
+                className="text-xl font-medium text-foreground mb-4 mt-8 normal-case"
               >
                 {parseInlineMarkdown(trimmed.substring(4))}
               </h3>
@@ -119,7 +119,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             elements.push(
               <h2
                 key={elements.length}
-                className="text-2xl font-bold text-foreground mb-4 mt-8 normal-case"
+                className="text-2xl font-semibold text-foreground mb-4 mt-8 normal-case"
               >
                 {parseInlineMarkdown(trimmed.substring(3))}
               </h2>
@@ -130,7 +130,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             elements.push(
               <h1
                 key={elements.length}
-                className="text-3xl font-bold text-foreground mb-4 mt-8 normal-case"
+                className="text-3xl font-semibold text-foreground mb-4 mt-8 normal-case"
               >
                 {parseInlineMarkdown(trimmed.substring(2))}
               </h1>
@@ -169,7 +169,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             parts.push(text.substring(currentIndex, match.index));
           }
           parts.push(
-            <strong key={parts.length} className="font-semibold text-foreground">
+            <strong key={parts.length} className="font-medium text-foreground">
               {match[1]}
             </strong>
           );
@@ -206,7 +206,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {content.strengths && (
               <div>
-                <h4 className="font-semibold text-success mb-2">{t('branding.strengths')}</h4>
+                <h4 className="font-medium text-success mb-2">{t('branding.strengths')}</h4>
                 <ul className="space-y-1">
                   {content.strengths.map((item: string, index: number) => (
                     <li key={index} className="text-sm text-foreground">
@@ -218,7 +218,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             )}
             {content.weaknesses && (
               <div>
-                <h4 className="font-semibold text-destructive mb-2">{t('branding.weaknesses')}</h4>
+                <h4 className="font-medium text-destructive mb-2">{t('branding.weaknesses')}</h4>
                 <ul className="space-y-1">
                   {content.weaknesses.map((item: string, index: number) => (
                     <li key={index} className="text-sm text-foreground">
@@ -230,7 +230,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             )}
             {content.opportunities && (
               <div>
-                <h4 className="font-semibold text-blue-400 mb-2">{t('branding.opportunities')}</h4>
+                <h4 className="font-medium text-chart-2 mb-2">{t('branding.opportunities')}</h4>
                 <ul className="space-y-1">
                   {content.opportunities.map((item: string, index: number) => (
                     <li key={index} className="text-sm text-foreground">
@@ -242,7 +242,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             )}
             {content.threats && (
               <div>
-                <h4 className="font-semibold text-orange-400 mb-2">{t('branding.threats')}</h4>
+                <h4 className="font-medium text-warning mb-2">{t('branding.threats')}</h4>
                 <ul className="space-y-1">
                   {content.threats.map((item: string, index: number) => (
                     <li key={index} className="text-sm text-foreground">
@@ -262,13 +262,13 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
           <div className="space-y-4">
             {content.demographics && (
               <div>
-                <h4 className="font-semibold mb-2">{t('branding.demographics')}</h4>
+                <h4 className="font-medium mb-2">{t('branding.demographics')}</h4>
                 <p className="text-foreground">{content.demographics}</p>
               </div>
             )}
             {content.desires && (
               <div>
-                <h4 className="font-semibold mb-2">{t('branding.desires')}</h4>
+                <h4 className="font-medium mb-2">{t('branding.desires')}</h4>
                 <ul className="space-y-1">
                   {content.desires.map((item: string, index: number) => (
                     <li key={index} className="text-sm text-foreground">
@@ -280,7 +280,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             )}
             {content.pains && (
               <div>
-                <h4 className="font-semibold mb-2">{t('branding.painPoints')}</h4>
+                <h4 className="font-medium mb-2">{t('branding.painPoints')}</h4>
                 <ul className="space-y-1">
                   {content.pains.map((item: string, index: number) => (
                     <li key={index} className="text-sm text-foreground">
@@ -309,7 +309,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
                   key={index}
                   className="border border-border rounded-md p-4 bg-card/50 animate-fade-in"
                 >
-                  <h4 className="font-semibold mb-2 text-foreground normal-case">
+                  <h4 className="font-medium mb-2 text-foreground normal-case">
                     {String(paletteName)}
                   </h4>
                   <div className="flex gap-2 mb-3">
@@ -348,9 +348,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
 
         return (
           <div className="border border-border rounded-md p-4 bg-card/50 animate-fade-in">
-            <h4 className="font-semibold mb-2 text-foreground normal-case">
-              {String(paletteName)}
-            </h4>
+            <h4 className="font-medium mb-2 text-foreground normal-case">{String(paletteName)}</h4>
             <div className="flex gap-2 mb-3">
               {paletteColors.map((color: string, colorIndex: number) => (
                 <div

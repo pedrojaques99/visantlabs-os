@@ -57,11 +57,11 @@ export const PbrMapUpload: React.FC<{
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <span className="text-3xs text-neutral-500">{label}</span>
+        <span className="text-3xs text-muted-foreground">{label}</span>
         {value && (
           <button
             onClick={() => onChange('')}
-            className="text-3xs text-neutral-600 hover:text-destructive transition-colors"
+            className="text-3xs text-muted-foreground hover:text-destructive transition-colors"
           >
             Remove
           </button>
@@ -69,7 +69,7 @@ export const PbrMapUpload: React.FC<{
       </div>
       <button
         onClick={() => inputRef.current?.click()}
-        className="w-full px-2 py-1.5 rounded text-2xs bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
+        className="w-full px-2 py-1.5 rounded text-2xs bg-muted text-muted-foreground hover:bg-accent hover:text-foreground transition-colors border border-dashed border-border"
       >
         {value ? 'Map loaded' : `Upload ${label}`}
       </button>
@@ -95,12 +95,12 @@ export const LightPositionSliders: React.FC<{
   position: [number, number, number];
   onChange: (p: [number, number, number]) => void;
 }> = ({ label, position, onChange }) => (
-  <div className="space-y-1 pl-2 border-l border-white/5">
-    <span className="text-3xs text-neutral-500">{label}</span>
+  <div className="space-y-1 pl-2 border-l border-border">
+    <span className="text-3xs text-muted-foreground">{label}</span>
     <div className="grid grid-cols-3 gap-1">
       {(['X', 'Y', 'Z'] as const).map((axis, i) => (
         <div key={axis} className="flex flex-col items-center gap-0.5">
-          <span className="text-3xs text-neutral-600 font-mono">{axis}</span>
+          <span className="text-3xs text-muted-foreground font-mono">{axis}</span>
           <input
             type="number"
             value={Math.round(position[i] * 10) / 10}
@@ -112,7 +112,7 @@ export const LightPositionSliders: React.FC<{
               onChange(next);
             }}
             step={0.5}
-            className="w-full bg-white/5 border border-white/10 rounded px-1 py-0.5 text-2xs text-center text-white font-mono focus:outline-none focus:border-white/20"
+            className="w-full bg-muted border border-border rounded px-1 py-0.5 text-2xs text-center text-foreground font-mono focus:outline-none focus:border-ring"
           />
         </div>
       ))}
@@ -154,7 +154,7 @@ export const MaterialCategoryTabs: React.FC<{
                 <span
                   className={cn(
                     'w-5 h-5 rounded-full border flex-shrink-0',
-                    store.material === m.id ? 'border-white/40' : 'border-white/10'
+                    store.material === m.id ? 'border-border-hover' : 'border-border'
                   )}
                   style={{ backgroundColor: m.color || '#666' }}
                 />
@@ -339,7 +339,7 @@ export const TextureControls: React.FC<{
         </ToolPanelGrid>
         <button
           onClick={() => textureInputRef.current?.click()}
-          className="w-full px-2 py-1.5 rounded text-2xs bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
+          className="w-full px-2 py-1.5 rounded text-2xs bg-muted text-muted-foreground hover:bg-accent hover:text-foreground transition-colors border border-dashed border-border"
         >
           {t('studio3d.texture.upload')}
         </button>
@@ -387,7 +387,7 @@ export const TextureControls: React.FC<{
                 onClick={() =>
                   applyProcedural(PROCEDURAL_TEXTURES.find((p) => p.id === activeProc)!)
                 }
-                className="w-full py-1 rounded text-2xs text-neutral-500 hover:text-neutral-300 transition-colors"
+                className="w-full py-1 rounded text-2xs text-muted-foreground hover:text-muted-foreground transition-colors"
               >
                 {t('studio3d.texture.regenerate')}
               </button>
@@ -397,7 +397,7 @@ export const TextureControls: React.FC<{
                 store.setTexture('');
                 setActiveProc(null);
               }}
-              className="w-full py-1 rounded text-2xs text-neutral-600 hover:text-destructive transition-colors"
+              className="w-full py-1 rounded text-2xs text-muted-foreground hover:text-destructive transition-colors"
             >
               {t('studio3d.texture.remove')}
             </button>

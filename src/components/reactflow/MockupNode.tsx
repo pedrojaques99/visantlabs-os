@@ -802,7 +802,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
                       className="flex items-center gap-1 pl-1.5 pr-0.5 py-0.5 rounded-md border-node text-xs bg-neutral-900/80 border-neutral-700"
                     >
                       <span
-                        className="w-2.5 h-2.5 rounded-md border-node border-white/10"
+                        className="w-2.5 h-2.5 rounded-md border-node border-border"
                         style={{ backgroundColor: color }}
                       ></span>
                       <span className="font-mono text-2xs">{color}</span>
@@ -902,10 +902,10 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
           ) : (
             <div className="flex items-center justify-center gap-2">
               <Diamond size={14} className="group-hover/gen:rotate-12 transition-transform" />
-              <span className="font-semibold tracking-tight">
+              <span className="font-medium tracking-tight">
                 {t('canvasNodes.mockupNode.generateMockup')}
               </span>
-              <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-2xs text-foreground/80">
+              <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-background/50 text-2xs text-foreground">
                 <Diamond size={10} className="opacity-50 fill-current" />
                 {getCreditsRequired(model, resolution)}
               </div>

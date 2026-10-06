@@ -2,6 +2,7 @@ import React, { useEffect, useCallback, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Check } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useImageEditorStore, type EditorAction } from '@/stores/imageEditorStore';
 import { IMAGE_EDITOR } from '@/constants/imageEditorTokens';
@@ -92,14 +93,16 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
   const content = (
     <div className={cn('fixed inset-0 z-[9999] flex flex-col', IMAGE_EDITOR.canvas.bg, className)}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-neutral-300">{t('imageEditor.title')}</span>
-          <span className="text-xs text-neutral-600 tabular-nums">
+          <span className="text-xs font-medium text-muted-foreground">
+            {t('imageEditor.title')}
+          </span>
+          <span className="text-xs text-muted-foreground tabular-nums">
             {imageWidth}×{imageHeight}
           </span>
           {editHistory.length > 0 && (
-            <span className="text-xs text-neutral-500 tabular-nums">
+            <span className="text-xs text-muted-foreground tabular-nums">
               {t(editHistory.length > 1 ? 'imageEditor.editsApplied' : 'imageEditor.editApplied', {
                 count: editHistory.length,
               })}
@@ -108,7 +111,10 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         </div>
         <div className="flex items-center gap-2">
           {editHistory.length > 0 && (
-            <button
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
               onClick={() => {
                 const finalUrl = currentImageUrl || imageUrl;
                 onResult({
@@ -118,17 +124,17 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
                 });
               }}
               disabled={isGenerating}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-foreground bg-brand-cyan/20 border border-brand-cyan/30 hover:bg-brand-cyan/30 transition-colors disabled:opacity-30"
+              className="text-xs"
             >
               <Check size={14} />
               {t('common.done')}
-            </button>
+            </Button>
           )}
           <button
             onClick={onClose}
             disabled={isGenerating}
             aria-label={t('common.close')}
-            className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800/50 transition-colors disabled:opacity-30"
+            className="p-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-30"
           >
             <X size={16} />
           </button>
@@ -157,32 +163,34 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
 
       {/* Result preview overlay */}
       {showResult && resultUrl && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-neutral-950/90 backdrop-blur-sm">
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-popover/90 backdrop-blur-sm">
           <img
             src={resultUrl}
-            alt="Result"
-            className="max-w-[80%] max-h-[70vh] rounded-xl border border-white/10 shadow-2xl"
+            alt={t('imageEditor.result')}
+            className="max-w-[80%] max-h-[70vh] rounded-xl border border-border shadow-2xl"
           />
           <div className="flex items-center gap-3 mt-4">
-            <button
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => {
                 setShowResult(false);
                 useImageEditorStore.getState().setResult(null);
               }}
-              className="px-4 py-2 rounded-lg text-sm font-medium text-neutral-400 bg-neutral-800/50 border border-white/10 hover:text-white hover:bg-neutral-800 transition-colors"
             >
-              Reject & Retry
-            </button>
-            <button
+              {t('imageEditor.rejectRetry')}
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
               onClick={() => {
                 // Push to history and continue editing with the new image
                 pushHistory(resultUrl, activeAction);
                 setShowResult(false);
               }}
-              className="px-4 py-2 rounded-lg text-sm font-medium text-foreground bg-brand-cyan/20 border border-brand-cyan/30 hover:bg-brand-cyan/30 transition-colors"
             >
-              Accept & Apply
-            </button>
+              {t('imageEditor.acceptApply')}
+            </Button>
           </div>
         </div>
       )}

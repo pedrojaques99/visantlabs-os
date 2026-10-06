@@ -1,6 +1,6 @@
 // TODO: dívida herdada do AdminChat original (não corrigida nesta passada
 // para não expandir o escopo):
-// - O backdrop do modal é feito à mão (`fixed inset-0 ... bg-black/40`)
+// - O backdrop do modal é feito à mão (`fixed inset-0 ... bg-background/80`)
 //   em vez do componente `Modal` canônico — precisa migrar sem perder o modo
 //   'panel' (não-modal) que este shell também suporta.
 // (i18n das strings hardcoded já resolvido — namespace `chatShell` em src/locales.)
@@ -691,7 +691,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
           <div
             className={cn(
               mode === 'modal'
-                ? 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm'
+                ? 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm'
                 : 'w-full h-full flex flex-col'
             )}
           >
@@ -702,14 +702,14 @@ export const ChatShell: React.FC<ChatShellProps> = ({
               className={cn(
                 'bg-card overflow-hidden flex',
                 mode === 'modal'
-                  ? 'w-full h-screen md:h-[85vh] md:max-w-4xl rounded-2xl border border-border shadow-2xl'
+                  ? 'w-full h-screen md:h-[85vh] md:max-w-4xl rounded-xl border border-border shadow-2xl'
                   : 'w-full h-full rounded-none'
               )}
             >
               {/* Mobile drawer backdrop */}
               {!isDesktop && sidebarOpen && (
                 <div
-                  className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm md:hidden"
+                  className="fixed inset-0 z-30 bg-background/80 backdrop-blur-sm md:hidden"
                   onClick={() => setSidebarOpen(false)}
                   aria-hidden="true"
                 />
@@ -736,7 +736,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                   </div>
                   <button
                     onClick={createNewSession}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                   >
                     <Plus size={16} className="opacity-60" />
                     <span>{t('chatShell.newSession')}</span>
@@ -764,7 +764,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           key={session._id}
                           onClick={() => loadSession(session._id)}
                           className={cn(
-                            'w-full text-left px-3 py-2 rounded-lg text-sm transition-colors group relative cursor-pointer',
+                            'w-full text-left px-3 py-2 rounded-xl text-sm transition-colors group relative cursor-pointer',
                             currentSessionId === session._id
                               ? 'bg-accent text-foreground'
                               : 'text-muted-foreground hover:bg-accent hover:text-foreground'
@@ -810,7 +810,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                 {/* User footer — some dentro do AppShell (rail já mostra) */}
                 {user && !inShell && (
                   <div className="p-3 border-t border-border">
-                    <div className="flex items-center gap-3 px-2 py-1.5 rounded-lg">
+                    <div className="flex items-center gap-3 px-2 py-1.5 rounded-xl">
                       {user.picture ? (
                         <Thumb
                           src={user.picture}
@@ -818,7 +818,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           className="w-8 h-8 rounded-full object-cover shrink-0"
                         />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center text-xs font-semibold text-muted-foreground shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground shrink-0">
                           {(user.name || user.email || '?').charAt(0).toUpperCase()}
                         </div>
                       )}
@@ -845,7 +845,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                 onDrop={handleDrop}
               >
                 {isDraggingFile && (
-                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-muted border-2 border-dashed border-white/20 rounded-lg pointer-events-none backdrop-blur-sm">
+                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-muted border-2 border-dashed border-border rounded-xl pointer-events-none backdrop-blur-sm">
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                       <Paperclip size={28} />
                       <span className="text-xs">{t('chatShell.dropToAttach')}</span>
@@ -857,7 +857,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <button
                       onClick={() => setSidebarOpen(!sidebarOpen)}
-                      className="p-1.5 hover:bg-accent rounded-lg transition-colors text-muted-foreground shrink-0"
+                      className="p-1.5 hover:bg-accent rounded-xl transition-colors text-muted-foreground shrink-0"
                       aria-label={t('chatShell.toggleSidebar')}
                     >
                       {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
@@ -974,9 +974,9 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           <div className="w-8 h-8 rounded-full bg-muted border border-warning/30 flex items-center justify-center shadow-lg shrink-0">
                             <BookOpen size={16} className="text-warning" />
                           </div>
-                          <div className="flex-1 max-w-[85%] rounded-2xl border border-warning/30 bg-warning/[0.04] p-4 space-y-3">
+                          <div className="flex-1 max-w-[85%] rounded-xl border border-warning/30 bg-warning/[0.04] p-4 space-y-3">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-semibold text-warning/80">
+                              <span className="text-xs font-medium text-warning">
                                 {t('chatShell.saveToBrandMemory')}
                               </span>
                             </div>
@@ -988,7 +988,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                                 </p>
                               )}
                             </div>
-                            <div className="text-xs text-muted-foreground bg-muted rounded-lg p-3 border border-border whitespace-pre-wrap max-h-40 overflow-y-auto">
+                            <div className="text-xs text-muted-foreground bg-muted rounded-xl p-3 border border-border whitespace-pre-wrap max-h-40 overflow-y-auto">
                               {pending.content}
                             </div>
                             <div className="flex items-center gap-2">
@@ -1027,20 +1027,20 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                         <div className="w-8 h-8 rounded-full bg-muted border border-border flex items-center justify-center shadow-lg shrink-0">
                           <Bot size={16} className="text-muted-foreground" />
                         </div>
-                        <div className="flex-1 max-w-[85%] rounded-2xl border border-border bg-muted/40 p-4 space-y-4">
+                        <div className="flex-1 max-w-[85%] rounded-xl border border-border bg-muted/40 p-4 space-y-4">
                           {activePlan.summary && (
                             <p className="text-xs text-muted-foreground">{activePlan.summary}</p>
                           )}
 
                           {activePlan.proposals?.length > 0 && (
                             <div className="space-y-1.5">
-                              <p className="text-2xs font-semibold text-muted-foreground">
+                              <p className="text-2xs font-medium text-muted-foreground">
                                 {t('chatShell.proposedVariations')}
                               </p>
                               {activePlan.proposals.map((p, i) => (
                                 <div
                                   key={i}
-                                  className="flex items-start gap-2 px-3 py-2 rounded-lg bg-muted border border-border"
+                                  className="flex items-start gap-2 px-3 py-2 rounded-xl bg-muted border border-border"
                                 >
                                   <span className="text-xs text-muted-foreground shrink-0 mt-px">
                                     {i + 1}.
@@ -1060,7 +1060,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
 
                           {activePlan.questions && activePlan.questions.length > 0 && (
                             <div className="space-y-2.5">
-                              <p className="text-2xs font-semibold text-muted-foreground">
+                              <p className="text-2xs font-medium text-muted-foreground">
                                 {t('chatShell.questions')}
                               </p>
                               {activePlan.questions.map((q, i) => (
@@ -1133,7 +1133,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                                 <div
                                   key={tc.id}
                                   className={cn(
-                                    'flex items-center gap-2.5 px-3 py-2 rounded-lg border text-xs',
+                                    'flex items-center gap-2.5 px-3 py-2 rounded-xl border text-xs',
                                     tc.status === 'error'
                                       ? 'bg-destructive/5 border-destructive/20 text-destructive'
                                       : tc.status === 'running'

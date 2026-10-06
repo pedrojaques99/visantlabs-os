@@ -76,10 +76,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
     // Validate file size
     if (file.size > MAX_IMAGE_SIZE_BYTES) {
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      toast.error(
-        t('upload.imageTooLarge', { size: fileSizeMB, max: MAX_IMAGE_SIZE_MB }) ||
-          `Image size must be less than ${MAX_IMAGE_SIZE_MB}MB`
-      );
+      toast.error(t('upload.imageTooLarge', { size: fileSizeMB, max: MAX_IMAGE_SIZE_MB }));
       return;
     }
 
@@ -137,12 +134,13 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
         backgroundColor: brandBackgroundColor || undefined,
       }}
     >
-      <h3 className={`text-lg font-semibold ${textColor}`}>{t('budget.brandCustomization')}</h3>
+      <h3 className={`text-lg font-medium ${textColor}`}>{t('budget.brandCustomization')}</h3>
 
       <div>
         <label className={`block text-xs mb-2 ${textColor} opacity-80`}>
           {t('budget.brandName')}
         </label>
+        {/* EXCEÇÃO ao ui-scale/opacidade-cru: campo pintado sobre a cor de fundo da marca */}
         <FormInput
           value={brandName}
           onChange={(e) => onBrandNameChange(e.target.value)}

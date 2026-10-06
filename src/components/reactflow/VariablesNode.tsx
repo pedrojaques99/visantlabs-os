@@ -51,9 +51,9 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
   return (
     <NodeContainer selected={selected} dragging={dragging} className="min-w-[260px]">
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-white/10">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
         <Braces size={13} className="text-foreground" />
-        <span className="text-xs font-semibold text-white/70">
+        <span className="text-xs font-medium text-muted-foreground">
           {t('canvasNodes.variablesNode.title')}
         </span>
       </div>
@@ -61,7 +61,7 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
       {/* Variable rows */}
       <div className="flex flex-col gap-1 px-3 py-2">
         {variables.length === 0 && (
-          <p className="text-2xs text-white/30 text-center py-2">
+          <p className="text-2xs text-muted-foreground text-center py-2">
             {t('canvasNodes.variablesNode.empty')}
           </p>
         )}
@@ -69,19 +69,19 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
           <div key={idx} className="flex items-center gap-1">
             <input
               className={cn(
-                'flex-1 min-w-0 bg-white/5 border-node border-white/10 rounded px-2 py-1',
-                'text-2xs text-white placeholder:text-white/30 focus:outline-none focus:border-neutral-600'
+                'flex-1 min-w-0 bg-muted border-node rounded px-2 py-1 border-border',
+                'text-2xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-neutral-600'
               )}
               placeholder={t('canvasNodes.variablesNode.name')}
               aria-label={t('canvasNodes.variablesNode.name')}
               value={v.key}
               onChange={(e) => handleKeyChange(idx, e.target.value)}
             />
-            <span className="text-white/30 text-2xs shrink-0">=</span>
+            <span className="text-muted-foreground text-2xs shrink-0">=</span>
             <input
               className={cn(
-                'flex-[2] min-w-0 bg-white/5 border-node border-white/10 rounded px-2 py-1',
-                'text-2xs text-white placeholder:text-white/30 focus:outline-none focus:border-neutral-600'
+                'flex-[2] min-w-0 bg-muted border-node rounded px-2 py-1 border-border',
+                'text-2xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-neutral-600'
               )}
               placeholder={t('canvasNodes.variablesNode.value')}
               aria-label={t('canvasNodes.variablesNode.value')}
@@ -91,7 +91,7 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
             <button
               onClick={() => handleRemove(idx)}
               aria-label={t('canvasNodes.variablesNode.remove')}
-              className="shrink-0 text-white/30 hover:text-destructive transition-colors"
+              className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
             >
               <Trash2 size={12} />
             </button>
@@ -109,9 +109,9 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
 
       {/* Hint */}
       <div className="px-3 pb-2">
-        <p className="text-2xs text-white/25 leading-tight">
+        <p className="text-2xs text-muted-foreground leading-tight">
           {t('canvasNodes.variablesNode.hint')}{' '}
-          <span className="text-white/40 font-mono">{`{{name}}`}</span>
+          <span className="text-muted-foreground font-mono">{`{{name}}`}</span>
         </p>
       </div>
 

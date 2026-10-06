@@ -81,12 +81,12 @@ interface Props {
 // (`--accent-text`) — the page's contrast-safe pair, so it reads on any brand color
 // (no more dark-on-purple). `group/btn` lets the arrow nudge on hover.
 const primaryBtn =
-  'group/btn inline-flex items-center gap-2 rounded-lg text-sm font-medium ' +
+  'group/btn inline-flex items-center gap-2 rounded-xl text-sm font-medium ' +
   'bg-[var(--accent)] text-[var(--accent-text)] hover:opacity-90 transition-opacity disabled:opacity-40';
 
 // Secondary/ghost: readable brand text, hairline border, faint surface fill on hover.
 const ghostBtn =
-  'inline-flex items-center gap-2 rounded-lg border border-[var(--brand-text)]/12 text-sm ' +
+  'inline-flex items-center gap-2 rounded-xl border border-[var(--brand-text)]/12 text-sm ' +
   'text-[var(--brand-text)]/70 hover:text-[var(--brand-text)] hover:bg-[var(--brand-text)]/[0.04] ' +
   'hover:border-[var(--brand-text)]/25 transition-colors disabled:opacity-40';
 
@@ -126,7 +126,7 @@ const IdeaCard: React.FC<{
     <ArrowUpRight
       size={15}
       aria-hidden
-      className="pointer-events-none absolute top-5 right-4 text-[var(--brand-text)]/25 transition-[color,transform] group-hover:text-[var(--brand-text)]/70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+      className="pointer-events-none absolute top-5 right-4 text-[var(--brand-text)]/25 transition-colors group-hover:text-[var(--brand-text)]/70"
     />
     {actions && (
       <div className="absolute bottom-3 right-3 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">

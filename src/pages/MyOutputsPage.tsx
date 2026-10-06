@@ -19,7 +19,7 @@ import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Thumb } from '@/components/ui/Thumb';
+import { MediaTile } from '@/components/ui/MediaTile';
 
 export const MyOutputsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -309,26 +309,21 @@ export const MyOutputsPage: React.FC = () => {
       const reserved = loadedIds.has(key) ? undefined : mockup.aspectRatio.replace(':', ' / ');
       // Excluir fica no viewer, onde a decisão é tomada olhando a imagem.
       return (
-        <div className="relative rounded-xl overflow-hidden bg-card ring-1 ring-border hover:ring-ring transition-shadow">
-          <button
-            type="button"
-            onClick={() => handleView(mockup)}
-            className="block w-full cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label={t('apps.open')}
-          >
-            <Thumb
-              src={imageUrl}
-              alt={mockup.prompt || t('myOutputs.imageAlt')}
-              aspectRatio={reserved}
-              className="w-full h-auto block"
-              fallbackLabel={t('common.unavailable')}
-              loading="lazy"
-              onLoad={() => setLoadedIds((prev) => (prev.has(key) ? prev : new Set(prev).add(key)))}
-            />
-          </button>
-        </div>
+        <MediaTile
+          layout="masonry"
+          src={imageUrl}
+          alt={mockup.prompt || t('myOutputs.imageAlt')}
+          aspectRatio={reserved}
+          actionLabel={t('apps.open')}
+          fallbackLabel={t('common.unavailable')}
+          onClick={() => handleView(mockup)}
+          onImageLoad={() =>
+            setLoadedIds((prev) => (prev.has(key) ? prev : new Set(prev).add(key)))
+          }
+        />
       );
     },
+
     [handleView, loadedIds, t]
   );
 

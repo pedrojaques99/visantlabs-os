@@ -240,13 +240,13 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
         {(error || success) && (
           <div className="space-y-3 mb-8">
             {error && (
-              <div className="rounded-lg p-4 text-sm flex items-center gap-2 bg-destructive/10 border border-destructive/30 text-destructive">
+              <div className="rounded-xl p-4 text-sm flex items-center gap-2 bg-destructive/10 border border-destructive/30 text-destructive">
                 <X size={16} />
                 {error}
               </div>
             )}
             {success && (
-              <div className="rounded-lg p-4 text-sm flex items-center gap-2 bg-success/10 border border-success/30 text-success">
+              <div className="rounded-xl p-4 text-sm flex items-center gap-2 bg-success/10 border border-success/30 text-success">
                 <Check size={16} />
                 {success}
               </div>
@@ -269,7 +269,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
             onClick={handlePictureClick}
             disabled={isUploadingPicture}
             aria-label={t('profile.changePicture')}
-            className="relative w-28 h-28 rounded-lg overflow-hidden flex items-center justify-center bg-muted border border-border transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+            className="relative w-28 h-28 rounded-xl overflow-hidden flex items-center justify-center bg-muted border border-border transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isUploadingPicture ? (
               <GlitchLoader size={32} />
@@ -287,7 +287,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 "Salvar". Dois acentos na mesma superfície é accent-overuse. */}
             <span
               className={cn(
-                'absolute bottom-2 right-2 rounded-lg p-2 shadow-lg border border-border',
+                'absolute bottom-2 right-2 rounded-xl p-2 shadow-lg border border-border',
                 isUploadingPicture
                   ? 'bg-muted text-muted-foreground'
                   : 'bg-background text-foreground'

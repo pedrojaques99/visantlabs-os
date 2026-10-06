@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
-import { Thumb } from '../components/ui/Thumb';
+import { MediaTile } from '../components/ui/MediaTile';
 import { EmptyState } from '../components/ui/EmptyState';
 import { ErrorState } from '../components/ui/ErrorState';
 import { canvasApi, type CanvasProject } from '../services/canvasApi';
@@ -11,7 +11,16 @@ import { PageShell } from '../components/ui/PageShell';
 import { AuthModal } from '../components/AuthModal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { toast } from 'sonner';
-import { FolderKanban, Trash2, Plus, FolderOpen, FileJson, Search, Globe } from '@/lib/ui/icons';
+import {
+  FolderKanban,
+  Trash2,
+  Edit,
+  Plus,
+  FolderOpen,
+  FileJson,
+  Search,
+  Globe,
+} from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { SearchBar } from '../components/ui/SearchBar';
@@ -467,7 +476,7 @@ export const CanvasProjectsPage: React.FC = () => {
           Sem label o botão é ícone + `title` — o padrão já validado no mobile,
           não um terceiro comportamento. */}
       <Button
-        variant="brand"
+        variant="primary"
         onClick={handleCreateNew}
         title={t('canvas.newProject')}
         aria-label={t('canvas.newProject')}
@@ -496,10 +505,14 @@ export const CanvasProjectsPage: React.FC = () => {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-card border border-border rounded-xl p-4">
-              <SkeletonLoader height="12rem" className="w-full rounded-lg mb-4" />
-              <SkeletonLoader height="1.25rem" className="w-2/3 mb-2" />
-              <SkeletonLoader height="0.875rem" className="w-24" />
+            <div key={i} className="overflow-hidden rounded-xl border border-border bg-card">
+              <div className="aspect-[16/10] w-full">
+                <SkeletonLoader height="100%" className="w-full rounded-none" />
+              </div>
+              <div className="p-3">
+                <SkeletonLoader height="0.875rem" className="w-2/3 mb-2" />
+                <SkeletonLoader height="0.75rem" className="w-24" />
+              </div>
             </div>
           ))}
         </div>
@@ -579,74 +592,64 @@ export const CanvasProjectsPage: React.FC = () => {
               const isEditing = editingProjectId === project._id;
 
               return (
-                <div
+                <MediaTile
                   key={project._id}
-                  role="button"
-                  tabIndex={0}
-                  className="group bg-card border border-border rounded-xl p-4 hover:border-ring transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  src={thumbnail ?? undefined}
+                  alt={displayName}
+                  aspectRatio="16 / 10"
+                  fallbackIcon={FolderKanban}
+                  actionLabel={displayName}
                   onClick={() => {
                     if (!isEditing) handleView(project);
                   }}
-                  onKeyDown={(e) => {
-                    if (e.target !== e.currentTarget || isEditing) return;
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleView(project);
-                    }
-                  }}
-                >
-                  <Thumb
-                    src={thumbnail ?? undefined}
-                    alt={displayName}
-                    fallbackIcon={FolderKanban}
-                    loading="lazy"
-                    className="w-full h-48 mb-4 rounded-lg object-cover border border-border"
-                  />
-
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      {isEditing ? (
-                        <Input
-                          ref={editingInputRef}
-                          type="text"
-                          value={editingName}
-                          onChange={(e) => setEditingName(e.target.value)}
-                          onBlur={() => handleNameEditSave(project._id)}
-                          onKeyDown={(e) => handleNameEditKeyDown(e, project._id)}
-                          onClick={(e) => e.stopPropagation()}
-                          className="font-semibold text-foreground text-base bg-transparent border-0 border-b border-ring focus:outline-none px-1 h-auto py-0"
-                        />
-                      ) : (
-                        <h3
-                          className="font-semibold text-foreground text-base line-clamp-1 cursor-text"
-                          onClick={(e) => handleNameEditStart(project, e)}
-                          title={t('canvas.clickToEdit')}
-                        >
-                          {displayName}
-                        </h3>
-                      )}
-                      <p
-                        className="text-xs text-muted-foreground mt-1"
-                        title={`${t('canvas.lastEdited')}: ${formatDate(
-                          project.updatedAt || project.createdAt
-                        )}`}
-                      >
-                        {formatDate(project.updatedAt || project.createdAt)}
-                      </p>
-                    </div>
-                    <Button
-                      variant="danger"
-                      size="icon-sm"
-                      onClick={(e) => handleDeleteClick(project._id, e)}
-                      disabled={deletingId === project._id}
-                      aria-label={t('canvas.deleteProject')}
-                      title={t('canvas.deleteProject')}
-                      className="shrink-0"
+                  title={displayName}
+                  editableTitle={
+                    isEditing ? (
+                      <Input
+                        ref={editingInputRef}
+                        type="text"
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        onBlur={() => handleNameEditSave(project._id)}
+                        onKeyDown={(e) => handleNameEditKeyDown(e, project._id)}
+                        aria-label={t('canvas.renameProject')}
+                        className="h-auto border-0 border-b border-ring bg-transparent px-1 py-0 text-sm font-medium text-foreground focus:outline-none"
+                      />
+                    ) : undefined
+                  }
+                  subtitle={
+                    <span
+                      title={`${t('canvas.lastEdited')}: ${formatDate(
+                        project.updatedAt || project.createdAt
+                      )}`}
                     >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+                      {formatDate(project.updatedAt || project.createdAt)}
+                    </span>
+                  }
+                  actions={
+                    <>
+                      <Button
+                        variant="surface"
+                        size="icon-sm"
+                        onClick={(e) => handleNameEditStart(project, e)}
+                        aria-label={t('canvas.renameProject')}
+                        title={t('canvas.renameProject')}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="icon-sm"
+                        onClick={(e) => handleDeleteClick(project._id, e)}
+                        disabled={deletingId === project._id}
+                        aria-label={t('canvas.deleteProject')}
+                        title={t('canvas.deleteProject')}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  }
+                />
               );
             })}
           </div>
@@ -660,7 +663,7 @@ export const CanvasProjectsPage: React.FC = () => {
       >
         <div className="flex items-end justify-between gap-4 mb-6">
           <div className="min-w-0">
-            <h2 className="text-sm font-semibold text-foreground">{t('canvas.community.title')}</h2>
+            <h2 className="text-sm font-medium text-foreground">{t('canvas.community.title')}</h2>
             <p className="text-xs text-muted-foreground mt-0.5">{t('canvas.community.subtitle')}</p>
           </div>
           <Button

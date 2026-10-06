@@ -249,7 +249,7 @@ export const ApiKeysPage: React.FC = () => {
                 <div className="flex items-start gap-3 mb-3">
                   <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-warning font-semibold text-sm">
+                    <p className="text-warning font-medium text-sm">
                       {t('api.keys.save_your_api_key_now')}
                     </p>
                     <p className="text-muted-foreground text-xs mt-1">
@@ -294,7 +294,7 @@ export const ApiKeysPage: React.FC = () => {
           {showCreateForm && (
             <Card className="bg-card border border-border rounded-xl">
               <CardContent className="p-4 md:p-6">
-                <h2 className="text-lg font-semibold text-foreground mb-4">
+                <h2 className="text-lg font-medium text-foreground mb-4">
                   {t('api.keys.createTitle')}
                 </h2>
                 <form onSubmit={handleCreateKey} className="space-y-4">

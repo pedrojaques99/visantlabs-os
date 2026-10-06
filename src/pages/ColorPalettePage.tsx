@@ -10,6 +10,7 @@ import { getContrastRatioPublic, checkWCAGCompliance } from '@/utils/colorUtils'
 import { copyToClipboard } from '@/utils/clipboard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Thumb } from '@/components/ui/Thumb';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { useToolInput } from '@/hooks/useToolInput';
 import { BrandFunnelBanner } from '@/components/funnel/BrandFunnelBanner';
@@ -192,12 +193,12 @@ export const ColorPalettePage: React.FC = () => {
       <div className="w-full max-w-4xl space-y-6">
         {/* Header */}
         <div className="flex items-center gap-2">
-          <Palette size={16} className="text-neutral-400" />
-          <h1 className="text-sm font-semibold text-neutral-200">Color Palette</h1>
+          <Palette size={16} className="text-muted-foreground" />
+          <h1 className="text-sm font-semibold text-foreground">Color Palette</h1>
           {imageUrl && (
             <button
               onClick={reset}
-              className="ml-auto text-neutral-500 hover:text-neutral-300 transition-colors"
+              className="ml-auto text-muted-foreground hover:text-foreground transition-colors"
               title="Reset"
             >
               <X size={14} />
@@ -212,11 +213,11 @@ export const ColorPalettePage: React.FC = () => {
               'flex flex-col items-center justify-center gap-3 w-full h-48 rounded-xl border-2 border-dashed cursor-pointer transition-colors',
               isDragOver
                 ? 'border-ring bg-muted/30'
-                : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40'
+                : 'border-border hover:border-border-hover bg-muted'
             )}
           >
-            <Upload size={24} className="text-neutral-500" />
-            <span className="text-xs font-medium text-neutral-500">JPG, PNG or WebP</span>
+            <Upload size={24} className="text-muted-foreground" />
+            <span className="text-xs font-medium text-muted-foreground">JPG, PNG or WebP</span>
             <input
               ref={inputRef}
               type="file"
@@ -231,12 +232,12 @@ export const ColorPalettePage: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               {/* Small image preview */}
               <div className="flex-shrink-0">
-                <img
+                <Thumb
                   src={imageUrl}
                   alt={fileName}
-                  className="w-32 h-32 rounded-lg object-cover border border-neutral-800 bg-neutral-950"
+                  className="w-32 h-32 rounded-xl object-cover border border-border bg-muted"
                 />
-                <p className="text-2xs font-mono text-neutral-500 mt-1 truncate max-w-[128px]">
+                <p className="text-2xs font-mono text-muted-foreground mt-1 truncate max-w-[128px]">
                   {fileName}
                 </p>
               </div>
@@ -252,12 +253,12 @@ export const ColorPalettePage: React.FC = () => {
                     {colors.map((color, i) => (
                       <div key={i} className="group relative flex flex-col items-center gap-1">
                         <div
-                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border border-neutral-700 cursor-pointer relative"
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-border cursor-pointer relative"
                           style={{ backgroundColor: color.hex }}
                           onClick={() => handleCopySwatch(color.hex)}
                           title={`Copy ${color.hex}`}
                         >
-                          {/* Lock toggle */}
+                          {/* Lock toggle. EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre a cor do usuário (mídia) */}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -271,7 +272,7 @@ export const ColorPalettePage: React.FC = () => {
                           >
                             {color.locked ? <Lock size={10} /> : <Unlock size={10} />}
                           </button>
-                          {/* Remove */}
+                          {/* Remove. EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre a cor do usuário (mídia) */}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -285,7 +286,7 @@ export const ColorPalettePage: React.FC = () => {
                           >
                             <X size={10} />
                           </button>
-                          {/* Lock indicator */}
+                          {/* Lock indicator. EXCEÇÃO ao ui-scale/opacidade-cru: sobre a cor do usuário (mídia) */}
                           {color.locked && (
                             <Lock
                               size={8}
@@ -293,7 +294,7 @@ export const ColorPalettePage: React.FC = () => {
                             />
                           )}
                         </div>
-                        <span className="text-2xs font-mono text-neutral-400">
+                        <span className="text-2xs font-mono text-muted-foreground">
                           {color.hex.toUpperCase()}
                         </span>
                       </div>
@@ -301,7 +302,7 @@ export const ColorPalettePage: React.FC = () => {
                     {/* Add color button */}
                     {addingColor ? (
                       <div className="flex flex-col items-center gap-1">
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border border-dashed border-neutral-700 flex items-center justify-center bg-neutral-950/40">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-dashed border-border flex items-center justify-center bg-muted">
                           <Input
                             value={newHex}
                             onChange={(e) => setNewHex(e.target.value)}
@@ -309,7 +310,7 @@ export const ColorPalettePage: React.FC = () => {
                               if (e.key === 'Enter') handleAddColor();
                               if (e.key === 'Escape') setAddingColor(false);
                             }}
-                            className="w-[72px] h-7 text-2xs font-mono text-center bg-transparent border-neutral-700 px-1"
+                            className="w-[72px] h-7 text-2xs font-mono text-center bg-transparent border-border px-1"
                             maxLength={7}
                             autoFocus
                           />
@@ -324,7 +325,7 @@ export const ColorPalettePage: React.FC = () => {
                     ) : (
                       <button
                         onClick={() => setAddingColor(true)}
-                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-dashed border-neutral-700 hover:border-neutral-500 flex items-center justify-center text-neutral-500 hover:text-neutral-300 transition-colors"
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border-2 border-dashed border-border hover:border-border-hover flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
                       >
                         <Plus size={16} />
                       </button>
@@ -338,7 +339,7 @@ export const ColorPalettePage: React.FC = () => {
             <div className="space-y-4">
               {/* Max colors slider */}
               <div className="flex items-center gap-3">
-                <span className="text-xs font-medium text-neutral-500">Max Colors</span>
+                <span className="text-xs font-medium text-muted-foreground">Max Colors</span>
                 <input
                   type="range"
                   min="5"
@@ -347,9 +348,9 @@ export const ColorPalettePage: React.FC = () => {
                   value={maxColors}
                   onChange={(e) => setMaxColors(parseInt(e.target.value))}
                   disabled={isExtracting}
-                  className="flex-1 max-w-[200px] h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
+                  className="flex-1 max-w-[200px] h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
                 />
-                <span className="text-2xs font-mono text-neutral-500 w-6 text-right">
+                <span className="text-2xs font-mono text-muted-foreground w-6 text-right">
                   {maxColors}
                 </span>
               </div>
@@ -380,33 +381,33 @@ export const ColorPalettePage: React.FC = () => {
             {/* Export section */}
             {colors.length > 0 && (
               <div className="space-y-3">
-                <span className="text-xs font-medium text-neutral-500">Export</span>
+                <span className="text-xs font-medium text-muted-foreground">Export</span>
                 <div className="flex flex-wrap gap-2">
                   <Button
                     onClick={exportCSS}
                     variant="outline"
-                    className="text-xs font-medium border-neutral-700"
+                    className="text-xs font-medium border-border"
                   >
                     <Copy size={12} className="mr-1.5" /> CSS Variables
                   </Button>
                   <Button
                     onClick={exportTailwind}
                     variant="outline"
-                    className="text-xs font-medium border-neutral-700"
+                    className="text-xs font-medium border-border"
                   >
                     <Copy size={12} className="mr-1.5" /> Tailwind
                   </Button>
                   <Button
                     onClick={exportJSON}
                     variant="outline"
-                    className="text-xs font-medium border-neutral-700"
+                    className="text-xs font-medium border-border"
                   >
                     <Copy size={12} className="mr-1.5" /> JSON
                   </Button>
                   <Button
                     onClick={exportAll}
                     variant="outline"
-                    className="text-xs font-medium border-neutral-700"
+                    className="text-xs font-medium border-border"
                   >
                     <Copy size={12} className="mr-1.5" /> Copy All
                   </Button>
@@ -418,7 +419,9 @@ export const ColorPalettePage: React.FC = () => {
             {/* WCAG Contrast Grid */}
             {colors.length >= 2 && (
               <div className="space-y-2">
-                <span className="text-xs font-medium text-neutral-500">WCAG Contrast Grid</span>
+                <span className="text-xs font-medium text-muted-foreground">
+                  WCAG Contrast Grid
+                </span>
                 <div className="overflow-x-auto">
                   <table className="border-collapse">
                     <thead>
@@ -427,7 +430,7 @@ export const ColorPalettePage: React.FC = () => {
                         {colors.map((c, i) => (
                           <th key={i} className="w-14 h-8 text-center">
                             <div
-                              className="w-6 h-6 rounded mx-auto border border-neutral-700"
+                              className="w-6 h-6 rounded mx-auto border border-border"
                               style={{ backgroundColor: c.hex }}
                               title={c.hex}
                             />
@@ -440,7 +443,7 @@ export const ColorPalettePage: React.FC = () => {
                         <tr key={ri}>
                           <td className="w-8 h-8">
                             <div
-                              className="w-6 h-6 rounded mx-auto border border-neutral-700"
+                              className="w-6 h-6 rounded mx-auto border border-border"
                               style={{ backgroundColor: row.hex }}
                               title={row.hex}
                             />
@@ -450,7 +453,7 @@ export const ColorPalettePage: React.FC = () => {
                               return (
                                 <td
                                   key={ci}
-                                  className="w-14 h-8 text-center text-2xs font-mono text-neutral-700"
+                                  className="w-14 h-8 text-center text-2xs font-mono text-muted-foreground"
                                 >
                                   -
                                 </td>

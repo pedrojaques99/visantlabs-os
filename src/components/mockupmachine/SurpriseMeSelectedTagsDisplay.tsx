@@ -297,9 +297,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
                     <div
                       className={cn(
                         'px-2.5 py-1 text-2xs font-medium',
-                        theme === 'dark'
-                          ? 'text-neutral-600 bg-black/20'
-                          : 'text-neutral-400 bg-neutral-50'
+                        'text-muted-foreground bg-muted'
                       )}
                     >
                       {group.categoryName}
@@ -356,12 +354,7 @@ const ToggleCheckbox: React.FC<ToggleCheckboxProps> = ({ value, onChange, label,
     >
       {value && <Check size={10} className="text-black" strokeWidth={3} />}
     </div>
-    <label
-      className={cn(
-        'text-2xs select-none cursor-pointer',
-        theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-      )}
-    >
+    <label className={cn('text-2xs select-none cursor-pointer', 'text-muted-foreground')}>
       {label}
     </label>
   </div>

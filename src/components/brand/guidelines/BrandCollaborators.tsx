@@ -10,6 +10,7 @@ import {
   LiveblocksEditorProvider,
   LocalEditorProvider,
 } from '@/contexts/BrandGuidelineEditorContext';
+import { Thumb } from '@/components/ui/Thumb';
 
 // ─── Section presence dot ─────────────────────────────────────────────────────
 
@@ -59,11 +60,11 @@ export const BrandCollaboratorAvatars: React.FC = () => {
           return (
             <Tooltip key={c.connectionId} content={name}>
               <div
-                className="w-6 h-6 rounded-full ring-2 ring-black overflow-hidden shrink-0 flex items-center justify-center text-2xs font-semibold text-white"
+                className="w-6 h-6 rounded-full ring-2 ring-black overflow-hidden shrink-0 flex items-center justify-center text-2xs font-medium text-white"
                 style={{ backgroundColor: color }}
               >
                 {picture ? (
-                  <img src={picture} alt={name} className="w-full h-full object-cover" />
+                  <Thumb src={picture} alt={name} className="w-full h-full object-cover" />
                 ) : (
                   name.charAt(0).toUpperCase()
                 )}

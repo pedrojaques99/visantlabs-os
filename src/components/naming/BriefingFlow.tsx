@@ -157,7 +157,7 @@ export const BriefingFlow: React.FC<BriefingFlowProps> = ({ onComplete }) => {
         {step === 'concept' && (
           <motion.div key="concept" {...screenAnim} className="space-y-6">
             <div className="space-y-2 text-center">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-100">
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
                 O que você está criando?
               </h1>
               <p className="text-sm text-neutral-500">Uma frase basta. A IA cuida do resto.</p>
@@ -279,7 +279,7 @@ export const BriefingFlow: React.FC<BriefingFlowProps> = ({ onComplete }) => {
           <motion.div key="confirm" {...screenAnim} className="space-y-6">
             <div className="space-y-1 text-center">
               <p className="text-2xs text-neutral-600">Entendi isso</p>
-              <h2 className="text-xl font-semibold text-neutral-200">Confere pra mim?</h2>
+              <h2 className="text-xl font-semibold text-foreground">Confere pra mim?</h2>
             </div>
 
             <div className="flex flex-wrap justify-center gap-2">
@@ -301,7 +301,7 @@ export const BriefingFlow: React.FC<BriefingFlowProps> = ({ onComplete }) => {
                       <button
                         type="button"
                         onClick={() => setEditingKey(key)}
-                        className="group inline-flex items-center gap-1.5 rounded-full border border-neutral-800 bg-white/[0.03] px-3 py-1.5 text-sm text-neutral-300 hover:border-neutral-700 transition-colors"
+                        className="group inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1.5 text-sm text-foreground hover:border-border-hover transition-colors"
                       >
                         {current}
                         <Pencil
@@ -334,7 +334,7 @@ export const BriefingFlow: React.FC<BriefingFlowProps> = ({ onComplete }) => {
         {/* ── Perguntas dinâmicas ─────────────────────────────────────── */}
         {step === 'question' && question && (
           <motion.div key={question.id} {...screenAnim} className="space-y-8">
-            <h2 className="text-center text-xl sm:text-2xl font-semibold text-neutral-100">
+            <h2 className="text-center text-xl sm:text-2xl font-semibold text-foreground">
               {question.prompt}
             </h2>
 
@@ -385,7 +385,7 @@ function QuestionBody({
               whileTap={{ scale: 0.97 }}
               disabled={disabled}
               onClick={() => onAnswer(opt)}
-              className="rounded-2xl border border-neutral-800 bg-white/[0.03] px-4 py-10 text-lg font-medium text-neutral-200 hover:border-neutral-700 hover:bg-white/5 transition-colors disabled:opacity-50"
+              className="rounded-xl border border-border bg-muted px-4 py-10 text-lg font-medium text-foreground hover:border-border-hover hover:bg-accent transition-colors disabled:opacity-50"
             >
               {opt}
             </motion.button>
@@ -425,7 +425,7 @@ function QuestionBody({
                     'rounded-xl border px-4 py-4 text-left transition-colors disabled:opacity-50',
                     isSel
                       ? 'border-brand-cyan/50 bg-brand-cyan/5'
-                      : 'border-neutral-800 bg-white/[0.03] hover:border-neutral-700'
+                      : 'border-border bg-muted hover:border-border-hover'
                   )}
                 >
                   <span className="text-sm font-medium text-neutral-200">{opt}</span>
@@ -487,7 +487,7 @@ function QuestionBody({
                     'rounded-full border px-3.5 py-1.5 text-sm transition-colors disabled:opacity-50',
                     isSel
                       ? 'border-brand-cyan/50 bg-brand-cyan/10 text-brand-cyan'
-                      : 'border-neutral-800 bg-white/[0.03] text-neutral-300 hover:border-neutral-700'
+                      : 'border-border bg-muted text-foreground hover:border-border-hover'
                   )}
                 >
                   {opt}

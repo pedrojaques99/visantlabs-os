@@ -100,7 +100,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
                       return (
                         <li
                           key={i}
-                          className="flex gap-3 p-3 rounded-lg border border-border bg-muted/30 text-xs"
+                          className="flex gap-3 p-3 rounded-xl border border-border bg-muted/30 text-xs"
                         >
                           <Icon size={13} className={cn('shrink-0 mt-0.5', meta.cls)} />
                           <div className="flex-1 min-w-0">
@@ -124,7 +124,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
                   </h3>
                   <ul className="flex flex-col gap-2">
                     {report.recommendations.map((rec, i) => (
-                      <li key={i} className="p-3 rounded-lg border border-border bg-muted/30">
+                      <li key={i} className="p-3 rounded-xl border border-border bg-muted/30">
                         <p className="text-xs text-foreground font-medium">{rec.action}</p>
                         <p className="mt-1 text-xs text-muted-foreground leading-snug">
                           {rec.reason}

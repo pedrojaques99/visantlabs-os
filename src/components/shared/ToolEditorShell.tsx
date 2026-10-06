@@ -113,8 +113,11 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
     ? 'absolute inset-0 transition-[padding] duration-[var(--dur-slow)]'
     : 'absolute inset-0 pt-10 transition-[padding] duration-[var(--dur-slow)]';
 
+  // O editor é sempre escuro: `dark` escopa os tokens do tema escuro nesta subárvore
+  // (o variant do Tailwind é `&:is(.dark *)`), então o painel continua escuro com o app em
+  // tema claro. `text-foreground` porque a cor herdada do body já vem resolvida no tema claro.
   return (
-    <AppShell>
+    <AppShell className="dark text-foreground">
       {!hideTopBar && (
         <ToolEditorTopBar
           title={title}

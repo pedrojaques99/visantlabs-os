@@ -54,7 +54,7 @@ const RatioTile: React.FC<{
         compact ? 'w-12 py-2' : 'flex-1 py-3',
         selected
           ? 'border-brand-cyan/40 bg-brand-cyan/[0.08]'
-          : 'border-neutral-800 bg-white/[0.02] hover:border-neutral-700',
+          : 'border-neutral-800 bg-muted hover:border-neutral-700',
         disabled && 'opacity-50 cursor-not-allowed'
       )}
     >
@@ -137,7 +137,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             'flex w-12 flex-col items-center justify-center rounded-xl border-node py-2 transition-colors',
             isOtherSelected
               ? 'border-brand-cyan/40 bg-brand-cyan/[0.08] text-brand-cyan'
-              : 'border-neutral-800 bg-white/[0.02] text-neutral-500 hover:border-neutral-700',
+              : 'border-neutral-800 bg-muted text-neutral-500 hover:border-neutral-700',
             disabled && 'opacity-50 cursor-not-allowed'
           )}
         >

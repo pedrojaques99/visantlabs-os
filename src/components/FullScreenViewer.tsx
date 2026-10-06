@@ -442,7 +442,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
 
               {/* RAG Feedback (thumbs up/down) */}
               {generationId && (
-                <div className="flex items-center gap-1 rounded-lg bg-background/80 border border-border p-1">
+                <div className="flex items-center gap-1 rounded-xl bg-background/80 border border-border p-1">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -600,7 +600,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   {t('fullScreenViewer.zoomIn')}
                 </span>
                 {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                  <span className="text-2xs font-mono text-muted-foreground font-semibold">
+                  <span className="text-2xs font-mono text-muted-foreground font-medium">
                     {creditsPerOperation}
                   </span>
                 )}
@@ -622,7 +622,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   {t('fullScreenViewer.zoomOut')}
                 </span>
                 {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                  <span className="text-2xs font-mono text-muted-foreground font-semibold">
+                  <span className="text-2xs font-mono text-muted-foreground font-medium">
                     {creditsPerOperation}
                   </span>
                 )}
@@ -644,7 +644,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   {t('fullScreenViewer.reImagine')}
                 </span>
                 {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                  <span className="text-2xs font-mono text-muted-foreground font-semibold">
+                  <span className="text-2xs font-mono text-muted-foreground font-medium">
                     {creditsPerOperation}
                   </span>
                 )}

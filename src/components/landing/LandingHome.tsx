@@ -78,7 +78,7 @@ const Marquee: React.FC<{
         {[...names, ...names].map((name, i) => (
           <div
             key={`${name}-${i}`}
-            className={`shrink-0 overflow-hidden rounded-xl border border-white/10 bg-neutral-900 ${
+            className={`shrink-0 overflow-hidden rounded-xl border border-border bg-neutral-900 ${
               tall ? 'w-[190px] md:w-[240px] h-56 md:h-72' : 'w-[200px] md:w-[280px] h-32 md:h-44'
             }`}
           >
@@ -88,6 +88,10 @@ const Marquee: React.FC<{
               aria-hidden
               loading="lazy"
               className="w-full h-full object-cover"
+              onError={(e) => {
+                // Decorativo: tile quebrado some e fica o fundo do card.
+                e.currentTarget.style.visibility = 'hidden';
+              }}
             />
           </div>
         ))}
@@ -197,7 +201,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
   return (
     <div
       ref={rootRef}
-      className="relative z-20 min-h-screen w-full overflow-x-hidden bg-neutral-950 text-white pt-10 md:pt-14"
+      className="dark relative z-20 min-h-screen w-full overflow-x-hidden bg-neutral-950 text-foreground pt-10 md:pt-14"
       data-vsn-page="home"
       data-vsn-component="LandingHome"
     >
@@ -234,15 +238,13 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
         <div className="pointer-events-none relative z-20 flex h-full flex-col items-center justify-center px-6 text-center">
           <div data-hero className="flex flex-col items-center gap-7">
             <h1 className="text-5xl font-semibold leading-[0.91] tracking-[-0.08em] sm:text-7xl lg:text-[6rem]">
-              <span className="block text-white">{t('landing.hero.titleLine1')}</span>
+              <span className="block text-foreground">{t('landing.hero.titleLine1')}</span>
               <span className="block text-foreground">{t('landing.hero.titleLine2')}</span>
             </h1>
             <p className="max-w-lg text-base text-neutral-400 sm:text-lg">
               {t('landing.hero.subtitle')}
             </p>
-            <p className="font-redhatmono text-2xs uppercase tracking-widest text-neutral-500">
-              {t('landing.hero.icp')}
-            </p>
+            <p className="text-sm text-neutral-500">{t('landing.hero.icp')}</p>
             <div
               className="pointer-events-auto mt-1 flex flex-col items-center gap-3 sm:flex-row"
               onMouseEnter={() => lerpIntensity(2)}
@@ -251,7 +253,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
               <Button
                 variant="brand"
                 onClick={onGetStarted}
-                className="h-12 rounded-full px-8 text-sm font-semibold"
+                className="h-12 rounded-full px-8 text-sm font-medium"
               >
                 {t('landing.hero.ctaPrimary')}
               </Button>
@@ -260,7 +262,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
                 onClick={() =>
                   document.getElementById('apps-preview')?.scrollIntoView({ behavior: 'smooth' })
                 }
-                className="h-12 rounded-full px-8 text-sm font-semibold"
+                className="h-12 rounded-full px-8 text-sm font-medium"
               >
                 {t('landing.hero.ctaSecondary')}
               </Button>
@@ -280,11 +282,11 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
           <span className="font-redhatmono text-2xs uppercase tracking-widest text-neutral-500">
             {t('landing.howItWorks.eyebrow')}
           </span>
-          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h2 className="text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
             {t('landing.howItWorks.title')}
           </h2>
         </div>
-        <div className="grid grid-cols-1 gap-px bg-white/5 sm:grid-cols-3 rounded-2xl overflow-hidden border border-neutral-800">
+        <div className="grid grid-cols-1 gap-px bg-muted sm:grid-cols-3 rounded-xl overflow-hidden border border-neutral-800">
           {[
             {
               num: t('landing.howItWorks.step1Num'),
@@ -311,7 +313,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
                 {step.num}
               </span>
               <div className="flex flex-col gap-2">
-                <h3 className="text-lg font-semibold text-white tracking-tight">{step.title}</h3>
+                <h3 className="text-lg font-medium text-foreground tracking-tight">{step.title}</h3>
                 <p className="text-sm leading-relaxed text-neutral-500">{step.desc}</p>
               </div>
             </div>
@@ -325,7 +327,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
         className="relative z-10 mx-auto max-w-6xl px-6 py-20 sm:py-28 scroll-mt-16"
       >
         <div data-reveal className="mb-10 flex flex-col gap-3 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h2 className="text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
             {t('landing.bento.title')}
           </h2>
         </div>
@@ -336,7 +338,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
               key={tool.img}
               data-reveal
               onClick={onGetStarted}
-              className={`group relative min-h-[200px] overflow-hidden rounded-2xl border border-white/10 text-left transition-colors hover:border-white/20 sm:min-h-[240px] ${
+              className={`group relative min-h-[200px] overflow-hidden rounded-xl border border-border text-left transition-colors hover:border-border-hover sm:min-h-[240px] ${
                 tool.wide ? 'sm:col-span-2 lg:col-span-2' : ''
               }`}
             >
@@ -345,14 +347,14 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
                 alt=""
                 aria-hidden
                 loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover opacity-90 transition-transform duration-500 group-hover:scale-105"
+                className="absolute inset-0 h-full w-full object-cover opacity-90 transition-opacity duration-300 group-hover:opacity-100"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/30 to-transparent" />
               <div className="relative z-10 flex h-full flex-col justify-end p-5">
                 <span className="font-redhatmono text-2xs uppercase tracking-widest text-neutral-400 mb-1">
                   {tool.name}
                 </span>
-                <p className="max-w-xs text-sm font-medium text-white">{tool.desc}</p>
+                <p className="max-w-xs text-sm font-medium text-foreground">{tool.desc}</p>
               </div>
             </button>
           ))}
@@ -368,10 +370,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
             t('landing.trust.label3'),
             t('landing.trust.label4'),
           ].map((label) => (
-            <span
-              key={label}
-              className="font-redhatmono text-2xs uppercase tracking-widest text-neutral-500"
-            >
+            <span key={label} className="text-xs text-neutral-500">
               {label}
             </span>
           ))}
@@ -399,7 +398,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
         {/* Subtle ambient gradient base */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgba(82,221,235,0.07),transparent)]"
+          className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,oklch(from_var(--brand-cyan)_l_c_h/7%),transparent)]"
         />
         {/* Mouse-follow glow — CSS only, no GPU */}
         <div
@@ -414,19 +413,17 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
           data-reveal
           className="relative z-10 mx-auto flex max-w-3xl flex-col items-center gap-7 px-6 py-28 text-center sm:py-36"
         >
-          <h2 className="text-4xl font-semibold leading-[0.91] tracking-[-0.08em] text-white sm:text-6xl">
+          <h2 className="text-4xl font-semibold leading-[0.91] tracking-[-0.08em] text-foreground sm:text-6xl">
             {t('landing.finalCta.title')}
           </h2>
           <Button
             variant="brand"
             onClick={onGetStarted}
-            className="h-12 rounded-full px-10 text-sm font-semibold"
+            className="h-12 rounded-full px-10 text-sm font-medium"
           >
             {t('landing.finalCta.button')}
           </Button>
-          <p className="font-redhatmono text-2xs uppercase tracking-widest text-neutral-600">
-            {t('landing.finalCta.anchor')}
-          </p>
+          <p className="text-xs text-neutral-500">{t('landing.finalCta.anchor')}</p>
         </div>
       </section>
 

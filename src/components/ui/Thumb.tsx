@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ImageOff, type LucideIcon } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 
-interface ThumbProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+interface ThumbProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'placeholder'> {
   /**
    * Reserves the box BEFORE the image loads (and keeps it if the image fails),
    * so masonry/grids never collapse to a sliver. Number (`width / height`, e.g.
@@ -15,6 +15,17 @@ interface ThumbProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   fallbackIcon?: LucideIcon;
   /** Optional short label under the broken icon (e.g. "unavailable"). */
   fallbackLabel?: string;
+  /**
+   * Custom content for the broken/empty tile (e.g. a brand avatar), replacing
+   * the icon + label. The box, radius and `role="img"` name stay the same.
+   */
+  fallback?: React.ReactNode;
+  /**
+   * Low-quality preview (thumbhash / blurhash data URL) painted as the image's
+   * background until it loads. Removed on load so a transparent PNG doesn't
+   * show the preview through it.
+   */
+  placeholder?: string;
 }
 
 /**
@@ -37,11 +48,15 @@ export const Thumb: React.FC<ThumbProps> = ({
   fallbackClassName,
   fallbackIcon: Icon = ImageOff,
   fallbackLabel,
+  fallback,
+  placeholder,
   onError,
+  onLoad,
   ...rest
 }) => {
   // Failure is tied to the src that failed: a new src gets a fresh attempt.
   const [failedSrc, setFailedSrc] = useState<string | undefined>(undefined);
+  const [loadedSrc, setLoadedSrc] = useState<string | undefined>(undefined);
   const failed = !!src && failedSrc === src;
 
   if (!src || failed) {
@@ -56,21 +71,45 @@ export const Thumb: React.FC<ThumbProps> = ({
         style={{ ...style, aspectRatio: aspectRatio ?? style?.aspectRatio ?? '1 / 1' }}
         aria-label={fallbackLabel || (typeof alt === 'string' ? alt : undefined)}
       >
-        <Icon className="w-6 h-6 opacity-60" strokeWidth={1.5} />
-        {fallbackLabel && <span className="text-2xs">{fallbackLabel}</span>}
+        {fallback ?? (
+          <>
+            <Icon className="w-6 h-6 opacity-60" strokeWidth={1.5} />
+            {fallbackLabel && <span className="text-2xs">{fallbackLabel}</span>}
+          </>
+        )}
       </div>
     );
   }
+
+  const showPlaceholder = !!placeholder && loadedSrc !== src;
+  const merged: React.CSSProperties | undefined =
+    aspectRatio != null || showPlaceholder
+      ? {
+          ...style,
+          ...(aspectRatio != null ? { aspectRatio } : null),
+          ...(showPlaceholder
+            ? {
+                backgroundImage: `url(${JSON.stringify(placeholder)})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }
+            : null),
+        }
+      : style;
 
   return (
     <img
       src={src}
       alt={alt}
       className={cn(aspectRatio != null && 'object-cover', className)}
-      style={aspectRatio != null ? { ...style, aspectRatio } : style}
+      style={merged}
       onError={(e) => {
         setFailedSrc(src);
         onError?.(e);
+      }}
+      onLoad={(e) => {
+        setLoadedSrc(src);
+        onLoad?.(e);
       }}
       {...rest}
     />

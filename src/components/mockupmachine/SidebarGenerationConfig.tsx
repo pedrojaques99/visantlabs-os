@@ -288,7 +288,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
           {selectedColors.map((color, i) => (
             <div
               key={i}
-              className="w-3 h-3 rounded-full border border-white/10 ring-2 ring-neutral-900/50 relative"
+              className="w-3 h-3 rounded-full border border-border ring-2 ring-neutral-900/50 relative"
               style={{ backgroundColor: color }}
               title={color}
             />
@@ -299,8 +299,8 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
           className={cn(
             'px-2 h-7 rounded-md transition-colors flex items-center gap-1.5 border cursor-pointer select-none',
             designType === 'logo'
-              ? 'bg-white/10 border-white/20 text-foreground'
-              : 'bg-white/5 border-white/10 text-neutral-500 hover:text-neutral-400 hover:bg-white/10'
+              ? 'bg-muted border-ring text-foreground'
+              : 'bg-muted border-border text-neutral-500 hover:text-neutral-400 hover:bg-accent'
           )}
         >
           <Switch

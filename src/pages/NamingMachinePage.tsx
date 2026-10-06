@@ -891,7 +891,7 @@ function DeckSkeleton({ label }: { label: string }) {
       className="absolute inset-0 items-center justify-center gap-4 px-8 py-12 text-center"
     >
       <div className="h-4 w-24 animate-pulse rounded-full bg-muted" />
-      <div className="h-10 w-48 animate-pulse rounded-lg bg-muted" />
+      <div className="h-10 w-48 animate-pulse rounded-xl bg-muted" />
       <div className="h-3 w-56 animate-pulse rounded-full bg-muted" />
       <p className="mt-4 text-xs text-muted-foreground">{label}</p>
     </GlassPanel>

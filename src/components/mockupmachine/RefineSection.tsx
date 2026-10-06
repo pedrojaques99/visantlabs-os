@@ -158,14 +158,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
         {value && <Check size={10} weight="bold" className="text-black" />}
       </div>
       <SkeletonText loading={isGenerating} className="min-w-0">
-        <span
-          className={cn(
-            'text-2xs select-none',
-            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-          )}
-        >
-          {label}
-        </span>
+        <span className={cn('text-2xs select-none', 'text-muted-foreground')}>{label}</span>
       </SkeletonText>
     </button>
   );
@@ -247,32 +240,17 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
         <AdvancedOptions {...advancedOptionsProps} isGenerating={isGenerating} />
 
         {/* Color Palette Panel (collapsible) */}
-        <div
-          className={`mt-2 rounded-xl border transition-colors duration-200 overflow-hidden ${
-            theme === 'dark'
-              ? 'bg-neutral-900/30 border-neutral-800'
-              : 'bg-white/50 border-neutral-200'
-          }`}
-        >
+        <div className="mt-2 rounded-xl border transition-colors duration-200 overflow-hidden bg-card border-border">
           <Button
             variant="ghost"
             onClick={() => setIsColorPaletteExpanded(!isColorPaletteExpanded)}
-            className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${
-              theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
-            }`}
+            className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${'hover:bg-accent'}`}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <PaletteIcon
-                size={14}
-                className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-              />
+              <PaletteIcon size={14} className="text-muted-foreground" />
               <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
                 <SkeletonText loading={isGenerating}>
-                  <span
-                    className={`text-2xs ${
-                      theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-                    }`}
-                  >
+                  <span className={`text-2xs ${'text-muted-foreground'}`}>
                     {t('mockup.colorPalette')}
                   </span>
                 </SkeletonText>
@@ -318,7 +296,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                     aria-label={t('mockup.removeColor', { color })}
                   >
                     <span
-                      className="w-3.5 h-3.5 rounded-full border border-white/10"
+                      className="w-3.5 h-3.5 rounded-full border border-border"
                       style={{ backgroundColor: color }}
                     />
                     <span className="truncate max-w-[72px]">{color}</span>

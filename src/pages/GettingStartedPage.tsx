@@ -55,7 +55,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ code, language }) => {
   };
 
   return (
-    <div className="relative group rounded-lg overflow-hidden border border-border bg-muted">
+    <div className="relative group rounded-xl overflow-hidden border border-border bg-muted">
       <div className="flex items-center justify-between px-4 py-2 bg-muted border-b border-border">
         <span className="text-xs font-mono text-muted-foreground">{langLabel[language]}</span>
         <button
@@ -373,10 +373,10 @@ export const GettingStartedPage: React.FC = () => {
                 <Card className="bg-card border border-border rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
-                      <div className="p-2 bg-muted rounded-lg">
+                      <div className="p-2 bg-muted rounded-xl">
                         <Key size={18} className="text-muted-foreground" />
                       </div>
-                      <h2 className="text-xl font-semibold font-manrope text-foreground">
+                      <h2 className="text-xl font-medium font-manrope text-foreground">
                         Authentication
                       </h2>
                     </div>
@@ -404,7 +404,7 @@ export const GettingStartedPage: React.FC = () => {
                         Create an API key <ExternalLink size={12} />
                       </Link>
                     </div>
-                    <div className="bg-muted/40 border border-border rounded-lg p-4">
+                    <div className="bg-muted/40 border border-border rounded-xl p-4">
                       <p className="text-xs font-medium text-muted-foreground mb-2">
                         OAuth 2.1 (for AI agents &amp; third-party apps)
                       </p>
@@ -427,7 +427,7 @@ export const GettingStartedPage: React.FC = () => {
                       <p className="text-xs text-muted-foreground mb-2">List available tools</p>
                       <CodeBlock code={AUTH_CURL} language="bash" />
                     </div>
-                    <div className="bg-muted/40 border border-border rounded-lg p-4">
+                    <div className="bg-muted/40 border border-border rounded-xl p-4">
                       <p className="text-xs font-medium text-muted-foreground mb-2">
                         Available scopes
                       </p>
@@ -436,7 +436,7 @@ export const GettingStartedPage: React.FC = () => {
                           {
                             scope: 'read',
                             desc: 'Read resources and metadata',
-                            color: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
+                            color: 'text-foreground bg-chart-1/10 border-chart-1/40',
                           },
                           {
                             scope: 'write',
@@ -446,14 +446,14 @@ export const GettingStartedPage: React.FC = () => {
                           {
                             scope: 'generate',
                             desc: 'Invoke AI generation tools',
-                            color: 'text-purple-400 bg-purple-500/10 border-purple-500/30',
+                            color: 'text-foreground bg-chart-4/10 border-chart-4/40',
                           },
                         ].map(({ scope, desc, color }) => (
                           <div
                             key={scope}
                             className={`text-xs font-mono px-2.5 py-1.5 rounded border ${color}`}
                           >
-                            <span className="font-semibold">{scope}</span>
+                            <span className="font-medium">{scope}</span>
                             <span className="ml-2 opacity-70">{desc}</span>
                           </div>
                         ))}
@@ -468,16 +468,16 @@ export const GettingStartedPage: React.FC = () => {
                 <Card className="bg-card border border-border rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
-                      <div className="p-2 bg-purple-500/10 rounded-lg">
-                        <Palette size={18} className="text-purple-400" />
+                      <div className="p-2 bg-chart-4/10 rounded-xl">
+                        <Palette size={18} className="text-foreground" />
                       </div>
                       <div>
-                        <h2 className="text-xl font-semibold font-manrope text-foreground">
+                        <h2 className="text-xl font-medium font-manrope text-foreground">
                           Brand Generation
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           Scope required:{' '}
-                          <span className="font-mono text-purple-400">generate</span>
+                          <span className="font-mono text-foreground">generate</span>
                         </p>
                       </div>
                     </div>
@@ -490,9 +490,9 @@ export const GettingStartedPage: React.FC = () => {
                       <p className="text-xs text-muted-foreground mb-2">Create a brand guideline</p>
                       <TabCode js={BRAND_JS} python={BRAND_PY} />
                     </div>
-                    <div className="bg-muted/40 border border-border rounded-lg p-4 text-xs font-mono text-muted-foreground space-y-1">
-                      <p className="text-foreground font-semibold mb-2">
-                        Tool: <span className="text-purple-400">brand-guidelines-create</span>
+                    <div className="bg-muted/40 border border-border rounded-xl p-4 text-xs font-mono text-muted-foreground space-y-1">
+                      <p className="text-foreground font-medium mb-2">
+                        Tool: <span className="font-mono">brand-guidelines-create</span>
                       </p>
                       <p>
                         <span className="text-foreground">identity.name</span>: string, required
@@ -515,11 +515,11 @@ export const GettingStartedPage: React.FC = () => {
                 <Card className="bg-card border border-border rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
-                      <div className="p-2 bg-warning/10 rounded-lg">
+                      <div className="p-2 bg-warning/10 rounded-xl">
                         <Image size={18} className="text-warning" />
                       </div>
                       <div>
-                        <h2 className="text-xl font-semibold font-manrope text-foreground">
+                        <h2 className="text-xl font-medium font-manrope text-foreground">
                           Mockup Generation
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
@@ -537,8 +537,8 @@ export const GettingStartedPage: React.FC = () => {
                       </p>
                       <TabCode js={MOCKUP_JS} python={MOCKUP_PY} />
                     </div>
-                    <div className="bg-muted/40 border border-border rounded-lg p-4 text-xs font-mono text-muted-foreground space-y-1">
-                      <p className="text-foreground font-semibold mb-2">
+                    <div className="bg-muted/40 border border-border rounded-xl p-4 text-xs font-mono text-muted-foreground space-y-1">
+                      <p className="text-foreground font-medium mb-2">
                         Tool: <span className="text-warning">mockup-generate</span>
                       </p>
                       <p>
@@ -565,11 +565,11 @@ export const GettingStartedPage: React.FC = () => {
                 <Card className="bg-card border border-border rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
-                      <div className="p-2 bg-success/10 rounded-lg">
+                      <div className="p-2 bg-success/10 rounded-xl">
                         <Zap size={18} className="text-success" />
                       </div>
                       <div>
-                        <h2 className="text-xl font-semibold font-manrope text-foreground">
+                        <h2 className="text-xl font-medium font-manrope text-foreground">
                           Creative Studio
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
@@ -588,8 +588,8 @@ export const GettingStartedPage: React.FC = () => {
                       </p>
                       <TabCode js={CREATIVE_JS} python={CREATIVE_PY} />
                     </div>
-                    <div className="bg-muted/40 border border-border rounded-lg p-4 text-xs font-mono text-muted-foreground space-y-1">
-                      <p className="text-foreground font-semibold mb-2">
+                    <div className="bg-muted/40 border border-border rounded-xl p-4 text-xs font-mono text-muted-foreground space-y-1">
+                      <p className="text-foreground font-medium mb-2">
                         Tool: <span className="text-success">creative-generate</span>
                       </p>
                       <p>
@@ -611,13 +611,13 @@ export const GettingStartedPage: React.FC = () => {
               <section id="next-steps">
                 <Card className="bg-card border border-border rounded-xl">
                   <CardContent className="p-6">
-                    <h2 className="text-xl font-semibold font-manrope text-foreground mb-5">
+                    <h2 className="text-xl font-medium font-manrope text-foreground mb-5">
                       Next Steps
                     </h2>
                     <div className="grid sm:grid-cols-3 gap-4">
                       <Link
                         to="/api/docs"
-                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-border-hover hover:bg-muted transition-colors"
+                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-xl hover:border-border-hover hover:bg-muted transition-colors"
                       >
                         <div className="flex items-center justify-between">
                           <BookOpen size={16} className="text-muted-foreground" />
@@ -633,7 +633,7 @@ export const GettingStartedPage: React.FC = () => {
                       </Link>
                       <Link
                         to="/settings/api-keys"
-                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-border-hover hover:bg-muted transition-colors"
+                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-xl hover:border-border-hover hover:bg-muted transition-colors"
                       >
                         <div className="flex items-center justify-between">
                           <Key size={16} className="text-muted-foreground" />
@@ -649,7 +649,7 @@ export const GettingStartedPage: React.FC = () => {
                       </Link>
                       <Link
                         to="/profile?tab=overview"
-                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-border-hover hover:bg-muted transition-colors"
+                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-xl hover:border-border-hover hover:bg-muted transition-colors"
                       >
                         <div className="flex items-center justify-between">
                           <Zap size={16} className="text-muted-foreground" />

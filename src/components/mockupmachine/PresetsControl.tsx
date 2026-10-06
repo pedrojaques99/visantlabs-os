@@ -122,9 +122,7 @@ export const PresetsControl: React.FC = () => {
             'flex items-center gap-1.5 px-3 py-2 rounded-md text-xs transition-colors flex-1 justify-center border',
             isOpen
               ? 'bg-brand-cyan/10 text-foreground border-brand-cyan/30'
-              : theme === 'dark'
-                ? 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:text-neutral-300'
-                : 'bg-white/50 text-neutral-600 border-neutral-200 hover:bg-neutral-100 hover:text-neutral-800'
+              : 'bg-card text-muted-foreground border-border hover:bg-accent hover:text-foreground'
           )}
         >
           <FolderOpen size={14} />
@@ -140,9 +138,7 @@ export const PresetsControl: React.FC = () => {
             'flex items-center gap-1.5 px-3 py-2 rounded-md text-xs transition-colors flex-1 justify-center border',
             isSaving
               ? 'bg-brand-cyan/10 text-foreground border-brand-cyan/30'
-              : theme === 'dark'
-                ? 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:text-neutral-300'
-                : 'bg-white/50 text-neutral-600 border-neutral-200 hover:bg-neutral-100 hover:text-neutral-800'
+              : 'bg-card text-muted-foreground border-border hover:bg-accent hover:text-foreground'
           )}
         >
           <Save size={14} />

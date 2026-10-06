@@ -25,6 +25,7 @@ export const OverlayLabel: React.FC<OverlayLabelProps> = ({
   children,
 }) => (
   <div
+    // EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia (rótulo sobre a imagem)
     className={cn(
       'absolute z-10 px-2 py-0.5 rounded bg-black/60 text-2xs text-neutral-300 pointer-events-none',
       positionStyles[position],

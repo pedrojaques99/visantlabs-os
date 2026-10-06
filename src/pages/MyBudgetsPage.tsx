@@ -7,6 +7,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { AuthModal } from '../components/AuthModal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { GlassPanel } from '../components/ui/GlassPanel';
+import { MediaTile } from '../components/ui/MediaTile';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { toast } from 'sonner';
@@ -193,7 +194,7 @@ export const MyBudgetsPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-6 relative z-10">
           {/* Actions */}
           <div className="flex items-center justify-end gap-2 mb-6">
-            <Button variant="brand" onClick={() => navigate('/budget-machine')}>
+            <Button variant="primary" onClick={() => navigate('/budget-machine')}>
               <Pickaxe className="h-4 w-4" />
               {t('budget.createNew')}
             </Button>
@@ -252,7 +253,7 @@ export const MyBudgetsPage: React.FC = () => {
                         padding="none"
                         className="p-5 bg-card hover:border-ring transition-colors"
                       >
-                        <h3 className="font-semibold text-foreground text-base line-clamp-2 mb-1">
+                        <h3 className="font-medium text-foreground text-base line-clamp-2 mb-1">
                           {truncateText(preset.name, 60)}
                         </h3>
                         <p className="text-xs text-muted-foreground mb-4">
@@ -305,52 +306,40 @@ export const MyBudgetsPage: React.FC = () => {
             />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {budgets.map((budget) => (
-                <div
-                  key={budget._id}
-                  role="button"
-                  tabIndex={0}
-                  className="bg-card border border-border rounded-xl p-5 hover:border-ring transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  onClick={() => handleView(budget)}
-                  onKeyDown={(e) => {
-                    if (e.target !== e.currentTarget) return;
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleView(budget);
+              {budgets.map((budget) => {
+                const name = budget.name
+                  ? truncateText(budget.name, 60)
+                  : truncateText(budget.projectDescription, 60);
+                return (
+                  <MediaTile
+                    key={budget._id}
+                    alt={name}
+                    aspectRatio="16 / 10"
+                    fallbackIcon={FileText}
+                    actionLabel={name}
+                    onClick={() => handleView(budget)}
+                    title={name}
+                    subtitle={formatDate(budget.createdAt)}
+                    meta={
+                      budget.clientName ? (
+                        <span className="line-clamp-2">{truncateText(budget.clientName, 120)}</span>
+                      ) : undefined
                     }
-                  }}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-foreground text-base line-clamp-2">
-                        {budget.name
-                          ? truncateText(budget.name, 60)
-                          : truncateText(budget.projectDescription, 60)}
-                      </h3>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {formatDate(budget.createdAt)}
-                      </p>
-                    </div>
-                    <Button
-                      variant="danger"
-                      size="icon-sm"
-                      onClick={(e) => handleDeleteClick(budget._id, e)}
-                      disabled={deletingId === budget._id}
-                      aria-label={t('common.delete')}
-                      title={t('common.delete')}
-                      className="shrink-0"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  {budget.clientName && (
-                    <p className="text-sm text-muted-foreground mt-3 line-clamp-3">
-                      {truncateText(budget.clientName, 120)}
-                    </p>
-                  )}
-                </div>
-              ))}
+                    actions={
+                      <Button
+                        variant="danger"
+                        size="icon-sm"
+                        onClick={(e) => handleDeleteClick(budget._id, e)}
+                        disabled={deletingId === budget._id}
+                        aria-label={t('common.delete')}
+                        title={t('common.delete')}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    }
+                  />
+                );
+              })}
             </div>
           )}
         </div>

@@ -15,7 +15,7 @@ import {
   ChevronUp,
   ArrowRight,
 } from '@/lib/ui/icons';
-import { SegmentedControl } from '@/components/shared/ToolPanel';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import {
   getUserLocale,
   formatPrice,
@@ -137,21 +137,21 @@ const CreditYieldTable: React.FC<{ credits: number }> = ({ credits }) => {
 
       {open && (
         <div className="px-4 pb-4 pt-1 bg-muted/40 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-          <div className="flex justify-between text-xs font-semibold text-muted-foreground border-b border-border pb-2 mb-2">
+          <div className="flex justify-between text-xs font-medium text-muted-foreground border-b border-border pb-2 mb-2">
             <span>{t('creditsModal.yieldModel')}</span>
             <span>{t('creditsModal.yieldImages')}</span>
           </div>
           {getCreditYieldRows().map((item, idx) => (
             <div key={idx} className="flex justify-between text-xs items-center">
               <span className="text-muted-foreground">{item.label}</span>
-              <span className="text-foreground font-bold tabular-nums">
+              <span className="text-foreground font-medium tabular-nums">
                 {Math.floor(credits / item.cost)}
               </span>
             </div>
           ))}
           <div className="flex justify-between text-xs items-center pt-2 border-t border-border mt-1">
             <span className="text-muted-foreground">Veo 3</span>
-            <span className="text-foreground font-bold tabular-nums">
+            <span className="text-foreground font-medium tabular-nums">
               {t('creditsModal.videoCount', { count: Math.floor(credits / 15) })}
             </span>
           </div>
@@ -324,7 +324,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
         aria-modal="true"
         className={cn(
           glassSurface.panelStrong,
-          'w-full max-w-xl md:max-w-2xl rounded-2xl relative max-h-full overflow-hidden flex flex-col animate-scale-in'
+          'w-full max-w-xl md:max-w-2xl rounded-xl relative max-h-full overflow-hidden flex flex-col animate-scale-in'
         )}
       >
         <Button
@@ -347,17 +347,20 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
               </div>
 
               {contextMessage && (
-                <div className="flex items-start gap-2 p-3 rounded-lg bg-warning/10 border border-warning/30 text-warning text-xs leading-relaxed">
+                <div className="flex items-start gap-2 p-3 rounded-xl bg-warning/10 border border-warning/30 text-warning text-xs leading-relaxed">
                   {contextMessage}
                 </div>
               )}
 
               {/* 3-tab bar */}
               <SegmentedControl
+                aria-label={t('creditsModal.tabsLabel')}
+                size="sm"
+                fullWidth
                 value={activeTab}
                 onChange={(v) => {
                   playClickSound();
-                  setActiveTab(v as typeof activeTab);
+                  setActiveTab(v);
                 }}
                 options={[
                   { value: 'carteira', label: t('creditsModal.tabs.wallet') },
@@ -377,7 +380,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                         {/* Selector row */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-baseline gap-2">
-                            <span className="text-4xl sm:text-5xl font-black text-foreground leading-none tabular-nums">
+                            <span className="text-4xl sm:text-5xl font-semibold text-foreground leading-none tabular-nums">
                               {animatedCredits}
                             </span>
                             <span className="text-sm text-muted-foreground">
@@ -442,7 +445,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 {t('pricing.oneTimePayment')}
                               </p>
                               <div className="flex items-baseline gap-1.5">
-                                <span className="text-3xl sm:text-4xl font-black text-foreground tabular-nums">
+                                <span className="text-3xl sm:text-4xl font-medium text-foreground tabular-nums">
                                   {formatPrice(
                                     animatedPrice,
                                     currencyInfo.currency,
@@ -470,7 +473,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             playClickSound();
                             handleBuyCredits();
                           }}
-                          className="w-full font-semibold"
+                          className="w-full"
                         >
                           <CreditCard size={14} />
                           {t('creditsPackages.buy')}
@@ -482,7 +485,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 playClickSound();
                                 handleBuyWithPix();
                               }}
-                              className="w-full bg-success/80 hover:bg-success text-black font-semibold"
+                              className="w-full bg-success/80 hover:bg-success text-black"
                             >
                               <QrCode size={14} />
                               {t('pix.payWithPix')}
@@ -530,7 +533,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               {cycle === 'monthly' ? t('pricing.monthly') : t('pricing.yearly')}
                               {cycle === 'yearly' && (
                                 <span
-                                  className={`text-2xs px-1 py-0.5 rounded font-bold ${
+                                  className={`text-2xs px-1 py-0.5 rounded font-medium ${
                                     billingCycle === 'yearly'
                                       ? 'bg-success/10 text-success'
                                       : 'bg-muted text-muted-foreground'
@@ -577,7 +580,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 {/* Name */}
                                 <div className="pt-1">
                                   <div className="flex items-center gap-1.5 flex-wrap">
-                                    <span className="text-base font-black text-foreground leading-tight">
+                                    <span className="text-base font-medium text-foreground leading-tight">
                                       {plan.name}
                                     </span>
                                     {plan.metadata?.storageMB &&
@@ -592,7 +595,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 {/* Price */}
                                 <div className="border-t border-border pt-3">
                                   <div className="flex items-baseline gap-1">
-                                    <span className="text-2xl font-black text-foreground tabular-nums">
+                                    <span className="text-2xl font-semibold text-foreground tabular-nums">
                                       {formatPrice(
                                         planPrice,
                                         currencyInfo?.currency || 'BRL',
@@ -647,7 +650,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                     }
                                   }}
                                   variant={isPopular ? 'brand' : 'secondary'}
-                                  className="w-full text-xs font-semibold"
+                                  className="w-full text-xs"
                                 >
                                   <CreditCard size={12} />
                                   {t('pricing.subscribe')}
@@ -698,7 +701,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 {t('credits.available')}
                               </p>
                               <div className="flex items-baseline gap-2">
-                                <span className="text-4xl sm:text-5xl font-black text-foreground leading-none tabular-nums">
+                                <span className="text-4xl sm:text-5xl font-semibold text-foreground leading-none tabular-nums">
                                   {totalCreditsAvailable}
                                 </span>
                                 <span className="text-sm text-muted-foreground">
@@ -751,7 +754,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               playClickSound();
                               setActiveTab('creditos');
                             }}
-                            className="w-full font-semibold"
+                            className="w-full"
                           >
                             <CreditCard size={14} />
                             {t('creditsPackages.title')}
@@ -768,7 +771,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                   ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                               }, 300);
                             }}
-                            className="w-full text-muted-foreground font-semibold"
+                            className="w-full text-muted-foreground"
                           >
                             <FileText size={14} />
                             {t('usageHistory.title')}

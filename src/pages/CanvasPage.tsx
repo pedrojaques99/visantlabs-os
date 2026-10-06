@@ -4509,7 +4509,7 @@ export const CanvasPage: React.FC = () => {
   // Show loading state while checking access
   if (isLoadingAccess) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 flex items-center justify-center">
+      <div className="dark min-h-screen bg-background text-muted-foreground flex items-center justify-center">
         <GlitchLoader />
       </div>
     );
@@ -4527,12 +4527,12 @@ export const CanvasPage: React.FC = () => {
   // Allow visual rendering of canvas even during authentication
   if (isLoadingProject) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14">
+      <div className="dark min-h-screen bg-background text-muted-foreground pt-12 md:pt-14">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <GlitchLoader size={24} className="mx-auto mb-4" />
-              <p className="text-neutral-400 text-sm">{t('canvas.loadingProject')}</p>
+              <p className="text-muted-foreground text-sm">{t('canvas.loadingProject')}</p>
             </div>
           </div>
         </div>
@@ -4574,10 +4574,11 @@ export const CanvasPage: React.FC = () => {
       seoTitle={canvasHeader.projectName || t('canvas.seoTitle')}
       seoDescription={t('canvas.seoDescription')}
       hideHeader
-      contentClassName="p-0 sm:p-0 lg:p-0"
+      // `dark`: o canvas é sempre escuro; escopa os tokens escuros na subárvore.
+      contentClassName="p-0 sm:p-0 lg:p-0 dark text-foreground"
     >
       <div
-        className="flex flex-col h-screen relative overflow-hidden select-none bg-neutral-950"
+        className="flex flex-col h-screen relative overflow-hidden select-none bg-background"
         onMouseMove={handleGlobalMouseMove}
         onMouseUp={handleGlobalMouseUp}
         onDragOver={(e) => {
@@ -5164,7 +5165,7 @@ export const CanvasPage: React.FC = () => {
 
       {/* Auth Modal - shown when user is not authenticated, overlaid on canvas */}
       {showAuthModal && (
-        <div className="fixed inset-0 z-50 bg-neutral-950/80 backdrop-blur-sm flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center">
           <AuthModal
             isOpen={showAuthModal}
             onClose={() => {

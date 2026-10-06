@@ -190,14 +190,14 @@ export const CreditRechargeSuccessPage: React.FC = () => {
   const animatedTotalCredits = useCountAnimation(creditsConfirmed ? totalCredits : 0, 1200);
 
   return (
-    <div className="min-h-screen bg-background text-neutral-300 pt-12 md:pt-14">
+    <div className="min-h-screen bg-background text-foreground pt-12 md:pt-14">
       <div className="max-w-2xl mx-auto px-4 py-12 md:py-20">
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
             <CheckCircle size={64} className="text-success" />
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-semibold text-foreground mb-4">
+          <h1 className="text-3xl md:text-4xl font-medium text-foreground mb-4">
             {t('creditRechargeSuccess.title')}
           </h1>
 
@@ -223,14 +223,14 @@ export const CreditRechargeSuccessPage: React.FC = () => {
           <div className="bg-card border border-border rounded-md p-6 mb-8">
             <div className="flex items-center gap-3 mb-6">
               <Pickaxe size={20} className="text-muted-foreground" />
-              <h2 className="text-lg font-semibold text-foreground">
+              <h2 className="text-lg font-medium text-foreground">
                 {t('creditRechargeSuccess.creditsPurchased')}
               </h2>
             </div>
 
             {creditsPurchased && (
               <div className="mb-6 text-center py-4 bg-muted border border-border rounded-md">
-                <div className="text-5xl font-bold text-foreground tabular-nums">
+                <div className="text-5xl font-semibold text-foreground tabular-nums">
                   +{animatedCreditsPurchased}
                 </div>
               </div>
@@ -242,17 +242,17 @@ export const CreditRechargeSuccessPage: React.FC = () => {
                   <span className="text-muted-foreground text-sm">
                     {t('creditRechargeSuccess.previousCredits')}
                   </span>
-                  <span className="text-neutral-300 font-semibold text-lg tabular-nums">
+                  <span className="text-foreground font-medium text-lg tabular-nums">
                     {previousCredits} {t('creditsPackages.credits')}
                   </span>
                 </div>
               )}
 
               <div className="flex items-center justify-between p-3 bg-muted/60 border border-border rounded-md">
-                <span className="text-foreground text-sm font-semibold">
+                <span className="text-foreground text-sm font-medium">
                   {t('creditRechargeSuccess.totalCredits')}
                 </span>
-                <span className="text-foreground font-bold text-xl tabular-nums">
+                <span className="text-foreground font-semibold text-xl tabular-nums">
                   {animatedTotalCredits} {t('creditsPackages.credits')}
                 </span>
               </div>

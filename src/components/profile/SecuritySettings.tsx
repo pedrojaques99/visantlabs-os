@@ -150,7 +150,7 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
         ) : backupCodes ? (
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground">{t('profile.security.backupCodesHint')}</p>
-            <div className="grid grid-cols-2 gap-2 p-3 bg-muted rounded-lg border border-border">
+            <div className="grid grid-cols-2 gap-2 p-3 bg-muted rounded-xl border border-border">
               {backupCodes.map((code) => (
                 <span key={code} className="text-xs font-mono text-foreground">
                   {code}
@@ -177,7 +177,7 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
             <p className="text-xs text-muted-foreground">{t('profile.security.scanQr')}</p>
             {/* QR gerado localmente: o otpauth carrega o SEGREDO do TOTP e não pode
                 sair do navegador (antes ia na query de um serviço externo de QR). */}
-            <div className="p-3 bg-white rounded-lg inline-block">
+            <div className="p-3 bg-white rounded-xl inline-block">
               <QRCodeSVG value={setupData.otpauthUrl} size={200} />
             </div>
             <p className="text-2xs text-muted-foreground font-mono break-all">
@@ -246,7 +246,7 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
             {sessions.map((session) => (
               <div
                 key={session.id}
-                className="flex items-center justify-between gap-3 p-3 bg-card rounded-lg border border-border"
+                className="flex items-center justify-between gap-3 p-3 bg-card rounded-xl border border-border"
               >
                 <div className="space-y-0.5 min-w-0">
                   <p className="text-xs text-foreground truncate">

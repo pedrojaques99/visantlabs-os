@@ -322,7 +322,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             disabled={
               isAuthLoading || !email || !password || (isSignUp && captchaEnabled && !captchaToken)
             }
-            className="w-full font-semibold"
+            className="w-full"
           >
             {isAuthLoading ? (
               <>

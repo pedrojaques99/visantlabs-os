@@ -4,6 +4,7 @@ import { FormInput } from '@/components/ui/form-input';
 import { Select } from '@/components/ui/select';
 import type { PdfFieldMapping } from '@/types/types';
 import { Button } from '@/components/ui/button';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 
 interface FieldPropertiesPanelProps {
   mapping: PdfFieldMapping;
@@ -138,7 +139,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
       )}
       <div className="p-4 border-b border-neutral-800">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-neutral-200">Propriedades</h3>
+          <h3 className="text-sm font-medium text-foreground">Propriedades</h3>
         </div>
         <p className="text-xs text-neutral-400 mb-3">{mapping.label || mapping.fieldId}</p>
         <Button
@@ -212,7 +213,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
             onClick={() => updateLocal({ bold: !isBold })}
             className={`w-full px-3 py-2 rounded-md border transition-colors flex items-center justify-center gap-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-600/50 ${
               isBold
-                ? 'bg-brand-cyan/20 border-neutral-600/50 text-brand-cyan'
+                ? 'bg-muted border-neutral-600/50 text-foreground'
                 : 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700'
             }`}
             aria-label={isBold ? 'Desativar negrito' : 'Ativar negrito'}
@@ -247,50 +248,22 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
         {/* Alinhamento */}
         <div>
           <label className="block text-xs text-neutral-400 mb-2">Alinhamento</label>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => updateLocal({ align: 'left' })}
-              className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-600/50 ${
-                (getValue('align') || 'left') === 'left'
-                  ? 'bg-brand-cyan/20 border-neutral-600/50 text-brand-cyan'
-                  : 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700'
-              }`}
-              title="Esquerda"
-              aria-label="Alinhar à esquerda"
-              aria-pressed={(getValue('align') || 'left') === 'left'}
-            >
-              <AlignLeft size={18} className="mx-auto" />
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => updateLocal({ align: 'center' })}
-              className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-600/50 ${
-                getValue('align') === 'center'
-                  ? 'bg-brand-cyan/20 border-neutral-600/50 text-brand-cyan'
-                  : 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700'
-              }`}
-              title="Centro"
-              aria-label="Alinhar ao centro"
-              aria-pressed={getValue('align') === 'center'}
-            >
-              <AlignCenter size={18} className="mx-auto" />
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => updateLocal({ align: 'right' })}
-              className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-600/50 ${
-                getValue('align') === 'right'
-                  ? 'bg-brand-cyan/20 border-neutral-600/50 text-brand-cyan'
-                  : 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700'
-              }`}
-              title="Direita"
-              aria-label="Alinhar à direita"
-              aria-pressed={getValue('align') === 'right'}
-            >
-              <AlignRight size={18} className="mx-auto" />
-            </Button>
-          </div>
+          <SegmentedControl
+            aria-label="Alinhamento"
+            fullWidth
+            value={(getValue('align') || 'left') as 'left' | 'center' | 'right'}
+            onChange={(align) => updateLocal({ align })}
+            options={[
+              { value: 'left', label: null, icon: AlignLeft, 'aria-label': 'Alinhar à esquerda' },
+              {
+                value: 'center',
+                label: null,
+                icon: AlignCenter,
+                'aria-label': 'Alinhar ao centro',
+              },
+              { value: 'right', label: null, icon: AlignRight, 'aria-label': 'Alinhar à direita' },
+            ]}
+          />
         </div>
 
         {/* Posição */}

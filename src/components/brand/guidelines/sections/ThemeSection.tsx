@@ -41,7 +41,7 @@ function ContrastBadge({ fg, bg, label }: { fg: string; bg: string; label: strin
 function ThemePreview({ theme }: { theme: BrandColorTheme }) {
   return (
     <div
-      className="rounded-lg overflow-hidden border border-neutral-800 shadow-lg"
+      className="rounded-xl overflow-hidden border border-neutral-800 shadow-lg"
       style={{ background: theme.bg }}
     >
       <div className="p-4 space-y-2">
@@ -175,7 +175,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                       {ROLES.map((r) => (
                         <span
                           key={r}
-                          className="w-4 h-4 rounded-sm border border-white/10"
+                          className="w-4 h-4 rounded-md border border-border"
                           style={{ background: theme[r] }}
                           title={`${ROLE_LABELS[r]}: ${theme[r]}`}
                         />
@@ -215,7 +215,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                             value={theme.name}
                             onChange={(e) => updateTheme(theme.id, { name: e.target.value })}
                             placeholder="Theme name"
-                            className="h-7 text-xs bg-transparent border-white/10"
+                            className="h-7 text-xs bg-transparent border-border"
                           />
                           {ROLES.map((role) => (
                             <div key={role} className="flex items-center gap-2">
@@ -229,14 +229,14 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                                   onChange={(e) =>
                                     updateTheme(theme.id, { [role]: e.target.value })
                                   }
-                                  className="w-6 h-6 rounded cursor-pointer border border-white/10 bg-transparent [&::-webkit-color-swatch]:rounded [&::-webkit-color-swatch-wrapper]:p-0"
+                                  className="w-6 h-6 rounded cursor-pointer border border-border bg-transparent [&::-webkit-color-swatch]:rounded [&::-webkit-color-swatch-wrapper]:p-0"
                                 />
                                 <Input
                                   value={theme[role]}
                                   onChange={(e) =>
                                     updateTheme(theme.id, { [role]: e.target.value })
                                   }
-                                  className="h-6 text-2xs font-mono bg-transparent border-white/10 flex-1"
+                                  className="h-6 text-2xs font-mono bg-transparent border-border flex-1"
                                 />
                               </div>
                               {colorOptions.length > 0 && (
@@ -246,7 +246,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                                       key={c.hex}
                                       type="button"
                                       onClick={() => updateTheme(theme.id, { [role]: c.hex })}
-                                      className={`w-4 h-4 rounded-sm border transition-colors ${
+                                      className={`w-4 h-4 rounded-md border transition-colors ${
                                         theme[role].toLowerCase() === c.hex.toLowerCase()
                                           ? 'border-foreground ring-1 ring-foreground'
                                           : 'border-border hover:border-ring'

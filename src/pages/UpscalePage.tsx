@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Upload, Maximize2, Diamond, X } from '@/lib/ui/icons';
+import { Maximize2, Diamond, X } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,8 @@ import { ImageCompareSlider } from '@/components/shared/ImageCompareSlider';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
+import { Dropzone } from '@/components/ui/Dropzone';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToolInput } from '@/hooks/useToolInput';
 import { QuickActions } from '@/components/shared/QuickActions';
@@ -89,7 +91,7 @@ export const UpscalePage: React.FC = () => {
     items.find((i) => i.id === previewId) || items.find((i) => i.status === 'done') || items[0];
 
   const handleFiles = useCallback(
-    (fileList: FileList) => {
+    (fileList: FileList | File[]) => {
       const valid: { url: string; name: string }[] = [];
       Array.from(fileList).forEach((file) => {
         const error = validateFile(file, 'image');
@@ -102,14 +104,6 @@ export const UpscalePage: React.FC = () => {
       if (valid.length) addFiles(valid);
     },
     [addFiles]
-  );
-
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files) handleFiles(e.target.files);
-      if (e.target) e.target.value = '';
-    },
-    [handleFiles]
   );
 
   const handleDrop = useCallback(
@@ -183,17 +177,14 @@ export const UpscalePage: React.FC = () => {
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Add more */}
-      <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
-        <Upload size={12} />
-        {t('miniTools.addImages')}
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          multiple
-          className="hidden"
-          onChange={handleInputChange}
-        />
-      </label>
+      <Dropzone
+        onFiles={handleFiles}
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        label={t('miniTools.addImages')}
+        size="sm"
+        dropTarget={false}
+      />
 
       {/* Thumbnail queue */}
       <div className="max-h-[32vh] overflow-y-auto space-y-1.5 pr-1">
@@ -204,7 +195,7 @@ export const UpscalePage: React.FC = () => {
             {...fade}
             layout
             className={cn(
-              'group flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors duration-200',
+              'group flex items-center gap-2 p-1.5 rounded-xl cursor-pointer transition-colors duration-200',
               previewItem?.id === item.id ? 'bg-muted ring-1 ring-border' : 'hover:bg-muted/60'
             )}
           >
@@ -244,24 +235,15 @@ export const UpscalePage: React.FC = () => {
           <span className="text-xs font-medium text-muted-foreground">
             {t('miniTools.upscale.scale')}
           </span>
-          <div className="flex gap-1">
-            {SCALE_OPTIONS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setScaleFactor(s)}
-                disabled={isProcessing}
-                className={cn(
-                  'flex-1 px-2 py-1 rounded border text-xs font-mono transition-colors duration-200',
-                  scaleFactor === s
-                    ? 'border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan'
-                    : 'border-border bg-muted/40 text-muted-foreground hover:border-ring hover:text-foreground'
-                )}
-              >
-                {s}x
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            aria-label={t('miniTools.upscale.scale')}
+            size="sm"
+            fullWidth
+            value={String(scaleFactor)}
+            onChange={(v) => setScaleFactor(Number(v))}
+            disabled={isProcessing}
+            options={SCALE_OPTIONS.map((s) => ({ value: String(s), label: `${s}x` }))}
+          />
         </div>
 
         {/* Sharpening slider */}
@@ -300,7 +282,9 @@ export const UpscalePage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium transition-colors duration-200"
+                variant="primary"
+                size="sm"
+                className="w-full text-xs"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -372,17 +356,14 @@ export const UpscalePage: React.FC = () => {
       <AnimatePresence mode="wait">
         {!hasItems ? (
           <motion.div key="upload" {...fade} className="flex w-full justify-center py-8">
-            <label className="flex h-48 w-full max-w-md cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border px-4 text-center text-sm text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
-              <Upload size={20} />
-              {t('miniTools.dropImages')}
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                multiple
-                className="hidden"
-                onChange={handleInputChange}
-              />
-            </label>
+            <Dropzone
+              onFiles={handleFiles}
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              label={t('miniTools.dropImages')}
+              dropTarget={false}
+              className="max-w-md"
+            />
           </motion.div>
         ) : (
           /* ─── Working state — centered preview with ImageCompareSlider ─── */
@@ -390,7 +371,7 @@ export const UpscalePage: React.FC = () => {
             key="workspace"
             {...fadeScale}
             className={cn(
-              'relative w-full max-w-3xl rounded-2xl overflow-hidden min-h-[300px] flex items-center justify-center',
+              'relative w-full max-w-3xl rounded-xl overflow-hidden min-h-[300px] flex items-center justify-center',
               glassSurface.surface
             )}
           >

@@ -181,8 +181,8 @@ export const RisoCanvas = forwardRef<RisoCanvasHandle, RisoCanvasProps>(
 
     if (webglFailed) {
       return (
-        <div className="w-full h-full flex items-center justify-center bg-neutral-950">
-          <p className="text-neutral-500 text-2xs uppercase tracking-widest">
+        <div className="w-full h-full flex items-center justify-center bg-background">
+          <p className="text-muted-foreground text-xs">
             WebGL not supported — please use a modern browser
           </p>
         </div>
@@ -193,7 +193,7 @@ export const RisoCanvas = forwardRef<RisoCanvasHandle, RisoCanvasProps>(
       <div
         ref={containerRef}
         className={cn(
-          'w-full h-full flex items-center justify-center overflow-hidden bg-neutral-950',
+          'w-full h-full flex items-center justify-center overflow-hidden bg-background',
           isPanning && 'cursor-grabbing'
         )}
         onMouseDown={handleMouseDown}
@@ -202,10 +202,11 @@ export const RisoCanvas = forwardRef<RisoCanvasHandle, RisoCanvasProps>(
         onMouseLeave={handleMouseUp}
       >
         {isAnalyzing && (
+          // EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia
           <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/40 pointer-events-none">
-            <div className="flex items-center gap-2 text-neutral-300">
+            <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 size={16} className="animate-spin" />
-              <span className="text-2xs uppercase tracking-widest">Analyzing colors...</span>
+              <span className="text-xs">Analyzing colors...</span>
             </div>
           </div>
         )}

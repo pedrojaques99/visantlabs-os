@@ -43,8 +43,8 @@ export const EdgeContextMenu: React.FC<EdgeContextMenuProps> = ({ x, y, onClose,
           onWheel={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
         >
-          <div className="px-3 py-2.5 border-b border-neutral-800/30 flex items-center justify-between sticky top-0 bg-neutral-950/70 backdrop-blur-xl z-10 rounded-t-2xl">
-            <span className="text-xs font-semibold text-neutral-300">
+          <div className="px-3 py-2.5 border-b border-neutral-800/30 flex items-center justify-between sticky top-0 bg-neutral-950/70 backdrop-blur-xl z-10 rounded-t-xl">
+            <span className="text-xs font-medium text-neutral-300">
               {t('canvasNodes.edgeContextMenu.title')}
             </span>
             <Button

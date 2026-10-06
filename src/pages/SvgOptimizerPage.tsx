@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState, lazy, Suspense } from 'react';
 import {
   FileCode,
-  Upload,
   Eye,
   Code,
   X,
@@ -22,6 +21,8 @@ import { downloadBlob, copyToClipboard } from '@/utils/clipboard';
 import { MiniAppShell } from '@/components/shared/MiniAppShell';
 import { QuickActions } from '@/components/shared/QuickActions';
 import { Button } from '@/components/ui/button';
+import { Dropzone } from '@/components/ui/Dropzone';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { ScrubInput } from '@/components/ui/ScrubInput';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
@@ -129,7 +130,7 @@ export const SvgOptimizerPage: React.FC = () => {
     totalOriginal > 0 ? Math.round((1 - totalOptimized / totalOriginal) * 100) : 0;
 
   const processFiles = useCallback(
-    (fileList: FileList) => {
+    (fileList: FileList | File[]) => {
       const svgPending: Promise<{ name: string; content: string } | null>[] = [];
       const pngFiles: File[] = [];
 
@@ -165,14 +166,6 @@ export const SvgOptimizerPage: React.FC = () => {
       }
     },
     [addSvgFiles, addPngFiles, t]
-  );
-
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files) processFiles(e.target.files);
-      if (e.target) e.target.value = '';
-    },
-    [processFiles]
   );
 
   const handleDrop = useCallback(
@@ -279,26 +272,17 @@ export const SvgOptimizerPage: React.FC = () => {
   }, [selectedItem, retraceItem, localTurd, localOpt, localThresh, localAlphaMax, localPreset]);
 
   // ── Panel content (queue + controls + actions) ──────────────────────────
-  const tabClass = (selected: boolean) =>
-    cn(
-      'flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-colors duration-200',
-      selected ? 'bg-brand-cyan/10 text-brand-cyan' : 'text-muted-foreground hover:text-foreground'
-    );
-
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Queue: Add more */}
-      <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
-        <Upload size={12} />
-        {t('miniTools.addFiles')}
-        <input
-          type="file"
-          accept={ACCEPTED_TYPES}
-          multiple
-          className="hidden"
-          onChange={handleInputChange}
-        />
-      </label>
+      <Dropzone
+        onFiles={processFiles}
+        accept={ACCEPTED_TYPES}
+        multiple
+        label={t('miniTools.addFiles')}
+        size="sm"
+        dropTarget={false}
+      />
 
       {/* Queue: Item list */}
       <div className="max-h-[32vh] overflow-y-auto space-y-1.5 pr-1">
@@ -309,7 +293,7 @@ export const SvgOptimizerPage: React.FC = () => {
             {...fade}
             onClick={() => setSelectedId(item.id)}
             className={cn(
-              'group flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors duration-200',
+              'group flex items-center gap-2 p-1.5 rounded-xl cursor-pointer transition-colors duration-200',
               selectedItem?.id === item.id ? 'bg-muted ring-1 ring-border' : 'hover:bg-muted/60'
             )}
           >
@@ -400,23 +384,18 @@ export const SvgOptimizerPage: React.FC = () => {
             <span className="text-xs font-medium text-muted-foreground">
               {t('miniTools.svg.tracePreset')}
             </span>
-            <div className="flex flex-wrap gap-1">
-              {(['logo', 'lettering', 'lineArt', 'stamp', 'custom'] as const).map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => handlePresetChange(p)}
-                  className={cn(
-                    'px-2 py-0.5 rounded border text-xs transition-colors duration-200',
-                    localPreset === p
-                      ? 'border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan'
-                      : 'border-border bg-muted/40 text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  {t(`miniTools.svg.preset.${p}`)}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl
+              aria-label={t('miniTools.svg.tracePreset')}
+              size="sm"
+              fullWidth
+              className="flex-wrap"
+              value={localPreset}
+              onChange={handlePresetChange}
+              options={(['logo', 'lettering', 'lineArt', 'stamp', 'custom'] as const).map((p) => ({
+                value: p,
+                label: t(`miniTools.svg.preset.${p}`),
+              }))}
+            />
             {localPreset === 'custom' && (
               <div className="space-y-1.5">
                 <div className="grid grid-cols-2 gap-1.5">
@@ -542,18 +521,15 @@ export const SvgOptimizerPage: React.FC = () => {
             {...fade}
             className="flex w-full flex-col items-center gap-4 py-8"
           >
-            <label className="flex h-48 w-full max-w-md cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border px-4 text-center text-sm text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
-              <Upload size={20} />
-              {t('miniTools.svg.drop')}
-              <span className="text-xs">{t('miniTools.svg.pngHint')}</span>
-              <input
-                type="file"
-                accept={ACCEPTED_TYPES}
-                multiple
-                className="hidden"
-                onChange={handleInputChange}
-              />
-            </label>
+            <Dropzone
+              onFiles={processFiles}
+              accept={ACCEPTED_TYPES}
+              multiple
+              label={t('miniTools.svg.drop')}
+              hint={t('miniTools.svg.pngHint')}
+              dropTarget={false}
+              className="max-w-md"
+            />
 
             <AnimatePresence mode="wait">
               {!pasteMode ? (
@@ -572,12 +548,14 @@ export const SvgOptimizerPage: React.FC = () => {
                     value={pasteValue}
                     onChange={(e) => setPasteValue(e.target.value)}
                     placeholder="<svg ...>...</svg>"
-                    className="w-full h-32 bg-background border border-border rounded-lg p-3 text-xs font-mono text-foreground resize-none focus:outline-none focus:border-ring"
+                    className="w-full h-32 bg-background border border-border rounded-xl p-3 text-xs font-mono text-foreground resize-none focus:outline-none focus:border-ring"
                   />
                   <div className="flex gap-2">
                     <Button
                       onClick={handlePasteSubmit}
-                      className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
+                      variant="primary"
+                      size="sm"
+                      className="text-xs"
                     >
                       {t('miniTools.svg.optimize')}
                     </Button>
@@ -602,33 +580,23 @@ export const SvgOptimizerPage: React.FC = () => {
             key="workspace"
             {...fadeScale}
             className={cn(
-              'relative w-full max-w-3xl rounded-2xl overflow-hidden min-h-[300px] flex flex-col',
+              'relative w-full max-w-3xl rounded-xl overflow-hidden min-h-[300px] flex flex-col',
               glassSurface.surface
             )}
           >
             {/* View mode toggle */}
             <div className="flex items-center gap-1 p-2 border-b border-border">
-              <button
-                type="button"
-                onClick={() => setViewMode('preview')}
-                className={tabClass(viewMode === 'preview')}
-              >
-                <Eye size={10} /> {t('miniTools.svg.preview')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('edit')}
-                className={tabClass(viewMode === 'edit')}
-              >
-                <PenTool size={10} /> {t('common.edit')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('code')}
-                className={tabClass(viewMode === 'code')}
-              >
-                <Code size={10} /> {t('miniTools.svg.code')}
-              </button>
+              <SegmentedControl
+                aria-label={t('miniTools.svg.viewMode')}
+                size="sm"
+                value={viewMode}
+                onChange={setViewMode}
+                options={[
+                  { value: 'preview', label: t('miniTools.svg.preview'), icon: Eye },
+                  { value: 'edit', label: t('common.edit'), icon: PenTool },
+                  { value: 'code', label: t('miniTools.svg.code'), icon: Code },
+                ]}
+              />
             </div>
 
             {/* Content area */}

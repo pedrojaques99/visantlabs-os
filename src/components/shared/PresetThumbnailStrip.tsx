@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from '@/lib/ui/icons';
 import { Thumb } from '@/components/ui/Thumb';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export interface PresetThumbnailItem {
   name: string;
@@ -16,34 +17,35 @@ interface PresetThumbnailStripProps {
 
 export const PresetThumbnailStrip: React.FC<PresetThumbnailStripProps> = React.memo(
   ({ presets, imageUrl, onSelect }) => {
+    const { t } = useTranslation();
     const [open, setOpen] = useState(true);
 
     if (!imageUrl) return null;
 
     return (
-      <div className="shrink-0 border-b border-neutral-800/50">
+      <div className="shrink-0 border-b border-border">
         <button
           onClick={() => setOpen(!open)}
-          className="w-full flex items-center justify-between px-3 py-2 hover:bg-neutral-800/10 transition-colors"
+          className="w-full flex items-center justify-between px-3 py-2 hover:bg-accent transition-colors"
         >
-          <span className="text-2xs text-neutral-500">Presets</span>
+          <span className="text-2xs text-muted-foreground">{t('common.presets')}</span>
           <ChevronDown
             size={12}
             className={cn(
-              'text-neutral-500 transition-transform duration-200',
+              'text-muted-foreground transition-transform duration-200',
               open && 'rotate-180'
             )}
           />
         </button>
         {open && (
-          <div className="flex gap-1.5 px-3 py-2.5 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent animate-fade-in">
+          <div className="flex gap-1.5 px-3 py-2.5 overflow-x-auto scrollbar-thin animate-fade-in">
             {presets.map((preset) => (
               <button
                 key={preset.name}
                 onClick={() => onSelect(preset.name)}
                 className="shrink-0 flex flex-col items-center gap-1 group transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-150"
               >
-                <div className="relative w-14 h-14 rounded-md overflow-hidden bg-neutral-800">
+                <div className="relative w-14 h-14 rounded-md overflow-hidden bg-muted">
                   <Thumb
                     src={imageUrl}
                     alt={preset.name}
@@ -61,7 +63,7 @@ export const PresetThumbnailStrip: React.FC<PresetThumbnailStripProps> = React.m
                     </div>
                   )}
                 </div>
-                <span className="text-2xs text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
+                <span className="text-2xs text-muted-foreground group-hover:text-foreground transition-colors max-w-14 truncate">
                   {preset.name}
                 </span>
               </button>

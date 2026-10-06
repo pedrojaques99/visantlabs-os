@@ -25,6 +25,7 @@ import { fileToBase64 } from '@/utils/fileUtils';
 
 import { ChatMessage } from '../shared/chat/ChatMessage';
 import { ChatInput } from '../shared/chat/ChatInput';
+import { useRegisterChatPanel } from './chatPanelPresence';
 
 interface ChatSidebarProps {
   nodeData: ChatNodeData;
@@ -45,6 +46,7 @@ export const ChatSidebar = ({
   variant,
 }: ChatSidebarProps) => {
   const { t } = useTranslation();
+  useRegisterChatPanel(nodeId);
   const [inputMessage, setInputMessage] = useState('');
   const messagesAreaRef = useRef<HTMLDivElement>(null);
   const mediaInputRef = useRef<HTMLInputElement>(null);
@@ -267,7 +269,9 @@ export const ChatSidebar = ({
         'relative',
         variant === 'embedded'
           ? 'border-none shadow-none bg-transparent'
-          : 'z-50 backdrop-blur-xl border-l border-neutral-800/50 shadow-2xl bg-neutral-950/70',
+          : // EXCEÇÃO ao ruido-scan/blur-em-card: painel lateral flutuante (z-50) sobre o canvas;
+            // o fundo é o board ao vivo, blur é de painel de topo, não de card no fluxo.
+            'z-50 backdrop-blur-xl border-l border-border shadow-2xl bg-background/70',
         'transition-[color,background-color,border-color,box-shadow,filter] duration-300 ease-out',
         'flex flex-col',
         'flex-shrink-0',
@@ -296,7 +300,7 @@ export const ChatSidebar = ({
               onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
               className={cn(
                 'p-2 rounded-md border transition-[color,background-color,border-color,transform,box-shadow] bg-neutral-900/60 border-neutral-700/40 text-neutral-400 hover:border-neutral-600/60 hover:text-neutral-200 hover:bg-neutral-800/70 shadow-sm hover:shadow-md active:scale-95',
-                showSystemPromptEditor && 'border-brand-cyan/50 text-foreground bg-brand-cyan/10'
+                showSystemPromptEditor && 'border-ring bg-muted text-foreground'
               )}
               title={t('canvasNodes.chatNode.systemPromptSettings')}
             >
@@ -309,7 +313,7 @@ export const ChatSidebar = ({
         {showSystemPromptEditor && (
           <div className="px-4 py-3 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/50 to-neutral-900/30 animate-in slide-in-from-top-1 duration-200">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-neutral-300 font-semibold">
+              <label className="text-xs text-neutral-300 font-medium">
                 {t('canvasNodes.chatNode.systemPrompt')}
               </label>
               <div className="flex items-center gap-2">
@@ -322,11 +326,7 @@ export const ChatSidebar = ({
                     {t('canvasNodes.chatNode.resetToDefault')}
                   </Button>
                 )}
-                <Button
-                  variant="brand"
-                  onClick={handleSaveSystemPrompt}
-                  className="text-2xs px-2 py-1 rounded bg-brand-cyan/20 border border-brand-cyan/40 text-foreground hover:bg-brand-cyan/30 transition-colors"
-                >
+                <Button variant="primary" size="xs" onClick={handleSaveSystemPrompt}>
                   {t('common.save')}
                 </Button>
               </div>
@@ -335,7 +335,7 @@ export const ChatSidebar = ({
               value={systemPrompt}
               onChange={(e) => setSystemPrompt(e.target.value)}
               placeholder={t('canvasNodes.chatNode.systemPromptPlaceholder')}
-              className="resize-none bg-neutral-900/60 border-neutral-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 text-xs font-mono min-h-[120px] max-h-[300px]"
+              className="resize-none bg-neutral-900/60 border-neutral-700/40 focus:border-ring focus:ring-1 focus:ring-ring text-xs font-mono min-h-[120px] max-h-[300px]"
               disabled={isLoading}
             />
             <MicroTitle className="text-xs mt-2 ">
@@ -437,7 +437,7 @@ export const ChatSidebar = ({
                 {connectedImages.length > 0 && (
                   <div className="flex items-center gap-1.5 px-2.5 py-1 bg-neutral-800/50 border border-neutral-700/30 rounded-full shrink-0 shadow-sm">
                     <ImageIcon size={11} className="text-neutral-400" />
-                    <MicroTitle className="text-xs text-neutral-300 font-bold">
+                    <MicroTitle className="text-xs text-neutral-300 font-medium">
                       {connectedImages.length}
                     </MicroTitle>
                   </div>
@@ -445,7 +445,7 @@ export const ChatSidebar = ({
                 {connectedText && (
                   <div className="flex items-center gap-1.5 px-2.5 py-1 bg-neutral-800/50 border border-neutral-700/30 rounded-full shrink-0">
                     <FileText size={11} className="text-neutral-400" />
-                    <span className="text-xs text-neutral-300 font-bold tabular-nums">
+                    <span className="text-xs text-neutral-300 font-semibold tabular-nums">
                       {connectedText.length}
                     </span>
                   </div>
@@ -453,7 +453,7 @@ export const ChatSidebar = ({
                 {connectedStrategyData && (
                   <div className="flex items-center gap-1.5 px-2.5 py-1 bg-warning/10 border border-warning/30 rounded-full shrink-0 shadow-sm">
                     <Target size={11} className="text-warning" />
-                    <span className="text-xs text-warning font-bold">
+                    <span className="text-xs text-warning font-medium">
                       {strategySections.length}
                     </span>
                   </div>
@@ -461,10 +461,11 @@ export const ChatSidebar = ({
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <Button
-                  variant="brand"
+                  variant="surface"
+                  size="xs"
                   onClick={handleSuggestMockups}
                   disabled={isLoading}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-2xs text-neutral-200 transition-colors disabled:opacity-50"
+                  className="gap-1.5 px-3"
                 >
                   <Diamond size={11} />
                   <span>{t('canvasNodes.chatNode.suggestMockups')}</span>
@@ -501,7 +502,7 @@ export const ChatSidebar = ({
                 <div className="flex flex-col gap-2">
                   {connectedText && (
                     <div className="text-2xs text-neutral-300 line-clamp-2 bg-neutral-900/60 p-2 rounded-md border border-neutral-700/30">
-                      <span className="text-neutral-500 mr-1.5 font-semibold">
+                      <span className="text-neutral-500 mr-1.5 font-medium">
                         {t('canvasChat.connectedText')}
                       </span>
                       {connectedText}
@@ -539,6 +540,8 @@ export const ChatSidebar = ({
             onChange={setInputMessage}
             onSend={handleSend}
             isLoading={isLoading}
+            // EXCEÇÃO ao ruido-scan/porta-repetida: com este painel aberto o ChatNode do mesmo
+            // chat troca o campo dele por um aviso (useRegisterChatPanel); um campo só na tela.
             placeholder={
               hasContext
                 ? t('canvasNodes.chatNode.askAboutContext')

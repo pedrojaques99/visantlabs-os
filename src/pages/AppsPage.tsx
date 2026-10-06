@@ -21,6 +21,9 @@ import {
   X,
   LayoutGrid,
   Star,
+  History,
+  Eye,
+  EyeOff,
 } from '@/lib/ui/icons';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useLayout } from '@/hooks/useLayout';
@@ -32,10 +35,10 @@ import { AppEditDialog } from '@/components/AppEditDialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Thumb } from '@/components/ui/Thumb';
+import { MediaTile } from '@/components/ui/MediaTile';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { toast } from 'sonner';
 import { glassSurface } from '@/lib/ui/glass';
-import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { useInAppShell } from '@/components/shell/InAppShellContext';
 import { useRailSlot } from '@/components/shell/RailSlotContext';
 import { createPortal } from 'react-dom';
@@ -88,10 +91,10 @@ const appId = (app: any): string => app.id || app.appId;
 
 function AppCardSkeleton() {
   return (
-    <div className={cn('rounded-2xl overflow-hidden animate-pulse', glassSurface.surface)}>
+    <div className="rounded-xl border border-border bg-card overflow-hidden animate-pulse">
       <div className="aspect-[16/10] bg-muted" />
-      <div className="p-5 space-y-3">
-        <div className="h-4 w-1/2 bg-muted rounded-full" />
+      <div className="p-3 space-y-2">
+        <div className="h-3.5 w-1/2 bg-muted rounded-full" />
         <div className="h-3 w-4/5 bg-muted rounded-full" />
       </div>
     </div>
@@ -106,19 +109,18 @@ interface AppCardProps {
   hasAccess: boolean;
   onOpen: (app: any) => void;
   onEdit: (app: any) => void;
+  onToggleHidden: (app: any) => void;
 }
 
-const cornerBtn = 'p-2 rounded-xl bg-background/80 border border-border';
-
-function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit }: AppCardProps) {
+function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit, onToggleHidden }: AppCardProps) {
   const { t } = useTranslation();
   const isComingSoon = app.badgeVariant === 'comingSoon';
   const isPremium = app.badgeVariant === 'premium' || app.badgeVariant === 'featured';
   const locked = isPremium && !hasAccess;
   const isExternal = app.isExternal;
   const description = app.description || app.desc;
-  // Ícone real do app (AppConfig.icon, editável no admin). Sem ícone genérico:
-  // app sem thumb e sem ícone mostra o próprio nome.
+  // Ícone real do app (AppConfig.icon, editável no admin) é o fallback da capa;
+  // app sem ícone mostra o próprio nome no tile quebrado.
   const AppIcon = getLucideIcon(app.icon);
   // Fixar no rail (star estilo Figma).
   const { isPinned, toggle } = usePinnedNav();
@@ -130,101 +132,88 @@ function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit }: AppCardProps) {
   };
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      aria-label={app.name}
+    <MediaTile
+      layout="stacked"
+      aspectRatio={16 / 10}
+      src={app.thumbnail || undefined}
+      alt={app.name}
+      title={app.name}
+      subtitle={description}
+      subtitleLines={2}
+      fallbackIcon={AppIcon ?? undefined}
+      fallbackLabel={AppIcon ? undefined : app.name}
       onClick={() => onOpen(app)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onOpen(app);
-        }
-      }}
-      className={cn(
-        'group relative rounded-2xl overflow-hidden flex flex-col outline-none cursor-pointer',
-        glassSurface.tile,
-        'focus-visible:ring-2 focus-visible:ring-ring'
-      )}
-    >
-      <div className="relative aspect-[16/10] overflow-hidden bg-muted border-b border-border">
-        {app.thumbnail ? (
-          <Thumb
-            src={app.thumbnail}
-            alt={app.name}
-            loading="lazy"
-            className="w-full h-full object-cover"
-            fallbackIcon={AppIcon ?? undefined}
-          />
-        ) : AppIcon ? (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-            <AppIcon size={40} strokeWidth={1.25} />
-          </div>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center px-6 text-center text-lg font-semibold text-muted-foreground">
-            {app.name}
-          </div>
-        )}
-
-        <button
-          onClick={togglePin}
-          aria-label={pinned ? t('nav.unpin') : t('nav.pin')}
-          title={pinned ? t('nav.unpin') : t('nav.pin')}
-          className={cn(
-            'absolute top-3 left-3 z-20',
-            cornerBtn,
-            pinned
-              ? 'text-brand-cyan'
-              : cn(hoverReveal, 'text-muted-foreground hover:text-foreground')
-          )}
-        >
-          <Star size={12} className={pinned ? 'fill-brand-cyan' : ''} />
-        </button>
-
-        <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5">
+      meta={
+        isAdmin &&
+        (app.isHidden || isComingSoon) && (
+          <Badge variant="neutral">{app.isHidden ? t('apps.hidden') : t('apps.badge.soon')}</Badge>
+        )
+      }
+      badge={
+        (pinned || locked || isExternal) && (
+          <>
+            {pinned && (
+              <Badge variant="neutral" className="px-1.5" aria-hidden>
+                <Star size={12} className="fill-current text-foreground" aria-hidden />
+              </Badge>
+            )}
+            {locked ? (
+              <Badge variant="neutral" className="gap-1" title={t('apps.requiresPro')}>
+                <Lock size={12} aria-hidden />
+                {t('apps.badge.pro')}
+              </Badge>
+            ) : isExternal ? (
+              <Badge variant="neutral" className="px-1.5">
+                <ExternalLink size={12} aria-hidden />
+              </Badge>
+            ) : null}
+          </>
+        )
+      }
+      actions={
+        <>
+          <Button
+            variant="surface"
+            size="icon-sm"
+            onClick={togglePin}
+            aria-pressed={pinned}
+            aria-label={pinned ? t('nav.unpin') : t('nav.pin')}
+            title={pinned ? t('nav.unpin') : t('nav.pin')}
+          >
+            <Star className={pinned ? 'fill-current' : undefined} />
+          </Button>
           {isAdmin && (
-            <button
+            <Button
+              variant="surface"
+              size="icon-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleHidden(app);
+              }}
+              aria-pressed={!!app.isHidden}
+              aria-label={app.isHidden ? t('apps.show') : t('apps.hide')}
+              title={app.isHidden ? t('apps.show') : t('apps.hide')}
+            >
+              {app.isHidden ? <Eye /> : <EyeOff />}
+            </Button>
+          )}
+          {isAdmin && (
+            <Button
+              variant="surface"
+              size="icon-sm"
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit(app);
               }}
               aria-label={t('apps.edit_app')}
               title={t('apps.edit_app')}
-              className={cn(cornerBtn, hoverReveal, 'text-muted-foreground hover:text-foreground')}
             >
-              <Edit3 size={12} />
-            </button>
+              <Edit3 />
+            </Button>
           )}
-          {locked ? (
-            <span
-              title={t('apps.requiresPro')}
-              aria-label={t('apps.requiresPro')}
-              className={cn(cornerBtn, 'text-muted-foreground')}
-            >
-              <Lock size={12} />
-            </span>
-          ) : isExternal ? (
-            <span className={cn(cornerBtn, 'text-muted-foreground')}>
-              <ExternalLink size={12} />
-            </span>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="p-4 sm:p-5 flex-1 flex flex-col gap-2">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="text-base font-semibold text-foreground leading-snug">{app.name}</h3>
-          {isAdmin && (app.isHidden || isComingSoon) && (
-            <Badge variant="neutral" className="shrink-0">
-              {app.isHidden ? t('apps.hidden') : t('apps.badge.soon')}
-            </Badge>
-          )}
-        </div>
-        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 flex-1">
-          {description}
-        </p>
-      </div>
-    </div>
+        </>
+      }
+    />
   );
 }
 
@@ -367,6 +356,7 @@ export const AppsPage: React.FC = () => {
         name: t('apps.contentStudio.name'),
         desc: t('apps.contentStudio.description'),
         link: '/content-studio',
+        thumbnail: '/tools/content-studio.webp',
         // Pago (category 'pro', free:false) — variant 'premium' pra NÃO renderizar o
         // badge verde "Grátis" (isFree deriva de badgeVariant==='free'); senão o card
         // promete grátis e o clique cai no paywall.
@@ -379,6 +369,7 @@ export const AppsPage: React.FC = () => {
         name: t('apps.namingMachine.name'),
         desc: t('apps.namingMachine.description'),
         link: '/naming',
+        thumbnail: '/tools/naming-machine.webp',
         // Pago — variant 'premium' (não 'free') pra não mostrar badge verde enganoso.
         badgeVariant: 'premium',
         category: 'pro',
@@ -652,52 +643,57 @@ export const AppsPage: React.FC = () => {
 
   // ─── Fetch & Sync ───────────────────────────────────────────────────────
 
-  const fetchApps = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const data = await appsService.getAll();
-      const dbAppIds = new Set(data.map((app) => app.appId));
+  // silent: recarrega depois de salvar no diálogo sem trocar a grade por skeleton.
+  const fetchApps = useCallback(
+    async (opts?: { silent?: boolean }) => {
+      if (!opts?.silent) setIsLoading(true);
+      try {
+        const data = await appsService.getAll();
+        const dbAppIds = new Set(data.map((app) => app.appId));
 
-      if (isAdmin) {
-        const missingApps = staticAppsData.filter((app) => !dbAppIds.has(app.id));
-        if (missingApps.length > 0) {
-          await appsService.seed(staticAppsData);
-          const syncedData = await appsService.getAll();
-          setApps(syncedData);
-          return;
+        if (isAdmin) {
+          const missingApps = staticAppsData.filter((app) => !dbAppIds.has(app.id));
+          if (missingApps.length > 0) {
+            await appsService.seed(staticAppsData);
+            const syncedData = await appsService.getAll();
+            setApps(syncedData);
+            return;
+          }
         }
+
+        const staticById = new Map(staticAppsData.map((a) => [a.id, a]));
+        const mergedDbApps = data.map((dbApp) => {
+          const s = staticById.get(dbApp.appId);
+          if (!s) return dbApp;
+          return {
+            ...dbApp,
+            name: s.name,
+            description: s.desc,
+            // A capa estática (print real da UI, gerada por scripts/capture-app-shots.mjs)
+            // vence: o banco guardava capas antigas que escondiam a UI atual. A do
+            // banco (AppEditDialog) só vale pra app sem capa no repo.
+            thumbnail: s.thumbnail || dbApp.thumbnail,
+            category: s.category,
+          };
+        });
+
+        const missingStaticApps = staticAppsData
+          .filter((app) => !dbAppIds.has(app.id))
+          .map((app) => ({ ...app, appId: app.id, description: app.desc })) as any[];
+
+        setApps(
+          data.length === 0 ? (staticAppsData as any) : [...mergedDbApps, ...missingStaticApps]
+        );
+      } catch (error) {
+        console.error('Error fetching apps:', error);
+        setApps(staticAppsData as any);
+        toast.error(t('apps.failed_to_load_apps_from_database_using'));
+      } finally {
+        setIsLoading(false);
       }
-
-      const staticById = new Map(staticAppsData.map((a) => [a.id, a]));
-      const mergedDbApps = data.map((dbApp) => {
-        const s = staticById.get(dbApp.appId);
-        if (!s) return dbApp;
-        return {
-          ...dbApp,
-          name: s.name,
-          description: s.desc,
-          // A thumb que o admin envia (AppEditDialog) vale; a estática é só
-          // fallback. Antes o estático sobrescrevia com undefined quem não tinha.
-          thumbnail: dbApp.thumbnail || s.thumbnail,
-          category: s.category,
-        };
-      });
-
-      const missingStaticApps = staticAppsData
-        .filter((app) => !dbAppIds.has(app.id))
-        .map((app) => ({ ...app, appId: app.id, description: app.desc })) as any[];
-
-      setApps(
-        data.length === 0 ? (staticAppsData as any) : [...mergedDbApps, ...missingStaticApps]
-      );
-    } catch (error) {
-      console.error('Error fetching apps:', error);
-      setApps(staticAppsData as any);
-      toast.error(t('apps.failed_to_load_apps_from_database_using'));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isAdmin, staticAppsData, t]);
+    },
+    [isAdmin, staticAppsData, t]
+  );
 
   useEffect(() => {
     fetchApps();
@@ -705,7 +701,7 @@ export const AppsPage: React.FC = () => {
 
   // Copilot é flag-gated e fica FORA do staticAppsData de propósito: assim
   // nunca é seedado no DB de apps e a visibilidade/kill-switch segue só a
-  // flag. Sem thumb própria: o card mostra o ícone real (Bot).
+  // flag. Capa = print real (/tools/copilot.webp); o ícone (Bot) é o fallback.
   const visibleApps = useMemo(() => {
     const withoutCopilot = apps.filter((a) => appId(a) !== 'copilot');
     if (!FEATURE_COPILOT) return withoutCopilot;
@@ -719,6 +715,7 @@ export const AppsPage: React.FC = () => {
         // /copilot em vez do modal — paywall que mostra o produto vende mais.
         badgeVariant: 'featured',
         icon: 'Bot',
+        thumbnail: '/tools/copilot.webp',
         category: 'pro',
         free: false,
       } as any,
@@ -825,6 +822,32 @@ export const AppsPage: React.FC = () => {
     setIsDialogOpen(true);
   };
 
+  // Esconder/mostrar sem abrir o diálogo: muda na hora e desfaz se o servidor recusar.
+  const setHidden = useCallback(
+    async (app: any, isHidden: boolean) => {
+      const flip = (value: boolean) =>
+        setApps((prev) => prev.map((a) => (a.id === app.id ? { ...a, isHidden: value } : a)));
+      flip(isHidden);
+      try {
+        await appsService.update(app.id, { isHidden });
+        toast.success(isHidden ? t('apps.hiddenToast') : t('apps.shownToast'), {
+          action: { label: t('apps.undo'), onClick: () => void setHidden(app, !isHidden) },
+        });
+      } catch (error) {
+        console.error('Error toggling app visibility:', error);
+        flip(!isHidden);
+        toast.error(t('apps.visibilityFailed'));
+      }
+    },
+    [t]
+  );
+
+  const toggleHidden = (app: any) => {
+    // App que ainda não está no banco não tem id pra atualizar: cai no diálogo.
+    if (!app.appId) return startEdit(app);
+    void setHidden(app, !app.isHidden);
+  };
+
   const clearFilters = () => {
     setSearch('');
     setActiveCategory(null);
@@ -835,11 +858,12 @@ export const AppsPage: React.FC = () => {
     hasAccess,
     onOpen: openApp,
     onEdit: startEdit,
+    onToggleHidden: toggleHidden,
   };
 
   const renderSection = (section: { key: string; apps: any[] }) => (
     <section key={section.key}>
-      <h2 className="text-lg font-semibold text-foreground mb-4">{catLabel(section.key)}</h2>
+      <h2 className="text-lg font-medium text-foreground mb-4">{catLabel(section.key)}</h2>
       <div className={GRID_CLASS}>
         {section.apps.map((app) => (
           <AppCard key={appId(app)} app={app} {...cardProps} />
@@ -967,35 +991,33 @@ export const AppsPage: React.FC = () => {
               )}
             </div>
 
-            <button
-              onClick={() =>
-                setSortBy(
-                  sortBy === 'default' ? 'recent' : sortBy === 'recent' ? 'name' : 'default'
-                )
-              }
-              title={
-                sortBy === 'recent'
-                  ? t('apps.sort.hintRecent')
-                  : sortBy === 'name'
-                    ? t('apps.sort.hintName')
-                    : t('apps.sort.hintDefault')
-              }
-              className={cn(
-                'flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm border border-border transition-colors shrink-0',
-                sortBy !== 'default'
-                  ? 'text-foreground bg-muted'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-              )}
-            >
-              <ArrowUpDown size={14} />
-              <span className="hidden sm:inline">
-                {sortBy === 'recent'
-                  ? t('apps.sort.recent')
-                  : sortBy === 'name'
-                    ? t('apps.sort.name')
-                    : t('apps.sort.label')}
-              </span>
-            </button>
+            <SegmentedControl
+              aria-label={t('apps.sort.label')}
+              size="sm"
+              className="shrink-0"
+              value={sortBy}
+              onChange={setSortBy}
+              options={[
+                {
+                  value: 'default',
+                  icon: LayoutGrid,
+                  'aria-label': t('apps.sort.default'),
+                  label: <span className="hidden sm:inline">{t('apps.sort.default')}</span>,
+                },
+                {
+                  value: 'recent',
+                  icon: History,
+                  'aria-label': t('apps.sort.hintRecent'),
+                  label: <span className="hidden sm:inline">{t('apps.sort.recent')}</span>,
+                },
+                {
+                  value: 'name',
+                  icon: ArrowUpDown,
+                  'aria-label': t('apps.sort.hintName'),
+                  label: <span className="hidden sm:inline">{t('apps.sort.name')}</span>,
+                },
+              ]}
+            />
           </div>
         </div>
 
@@ -1030,7 +1052,7 @@ export const AppsPage: React.FC = () => {
                   type="button"
                   onClick={() => setShowUtilities((v) => !v)}
                   aria-expanded={showUtilities}
-                  className="flex w-full items-center gap-2 text-left text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="flex w-full items-center gap-2 text-left text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {t('apps.quickTools')}
                   <ChevronRight
@@ -1058,7 +1080,7 @@ export const AppsPage: React.FC = () => {
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         app={editingApp}
-        onSaved={fetchApps}
+        onSaved={() => fetchApps({ silent: true })}
       />
     </PageShell>
   );

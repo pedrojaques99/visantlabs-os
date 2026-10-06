@@ -66,7 +66,7 @@ export const CreativeActivationCanvas: React.FC = () => {
             <SkeletonLoader height="1rem" className="w-80 mb-8 rounded" />
             <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
               {[0, 1, 2].map((i) => (
-                <SkeletonLoader key={i} height="15rem" className="w-full rounded-2xl" />
+                <SkeletonLoader key={i} height="15rem" className="w-full rounded-xl" />
               ))}
             </div>
           </>
@@ -87,7 +87,7 @@ export const CreativeActivationCanvas: React.FC = () => {
                     type="button"
                     onClick={() => navigate(`/create?project=${p._id}`)}
                     className={cn(
-                      'group text-left rounded-2xl overflow-hidden hover:border-neutral-700 transition-colors',
+                      'group text-left rounded-xl overflow-hidden hover:border-neutral-700 transition-colors',
                       glassSurface.tile
                     )}
                   >
@@ -104,6 +104,7 @@ export const CreativeActivationCanvas: React.FC = () => {
                           <Diamond size={32} className="text-neutral-800" strokeWidth={1} />
                         </div>
                       )}
+                      {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
                       {p.format && (
                         <span className="absolute top-2 left-2 px-2 py-1 rounded-md bg-black/70 border border-white/10 text-2xs font-mono tabular-nums text-neutral-200">
                           {p.format}
@@ -135,7 +136,7 @@ export const CreativeActivationCanvas: React.FC = () => {
                   type="button"
                   onClick={() => seedIdea(t(`creativeSetup.starters.${key}.prompt`))}
                   className={cn(
-                    'group text-left rounded-2xl p-5 min-h-[9rem] flex flex-col justify-between hover:border-neutral-700 transition-colors',
+                    'group text-left rounded-xl p-5 min-h-[9rem] flex flex-col justify-between hover:border-neutral-700 transition-colors',
                     glassSurface.tile
                   )}
                 >
@@ -144,7 +145,7 @@ export const CreativeActivationCanvas: React.FC = () => {
                     className="text-neutral-600 group-hover:text-neutral-300 transition-colors"
                   />
                   <div>
-                    <p className="text-base font-semibold text-neutral-100">
+                    <p className="text-base font-medium text-neutral-100">
                       {t(`creativeSetup.starters.${key}.label`)}
                     </p>
                     <p className="mt-0.5 text-xs text-neutral-500">

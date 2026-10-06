@@ -39,7 +39,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(
     return (
       <ToolPanel>
         {/* Tab bar */}
-        <div className="shrink-0 flex border-b border-neutral-800/50">
+        <div className="shrink-0 flex border-b border-border">
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -48,8 +48,8 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(
                 'flex-1 transition-colors',
                 isMobile ? 'py-3 text-2xs' : 'py-2 text-2xs',
                 activeTab === tab.id
-                  ? 'text-white border-b border-white'
-                  : 'text-neutral-600 hover:text-neutral-400'
+                  ? 'text-foreground border-b border-ring'
+                  : 'text-muted-foreground hover:text-muted-foreground'
               )}
             >
               {tab.label}
@@ -68,11 +68,11 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(
         </ToolPanelContent>
 
         {/* Sticky bottom — Export button */}
-        <div className="shrink-0 border-t border-white/[0.06] px-3 py-2.5 flex gap-2">
+        <div className="shrink-0 border-t border-border px-3 py-2.5 flex gap-2">
           <Button
             onClick={onExport}
             aria-label="Export"
-            className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium text-xs h-8"
+            className="flex-1 bg-foreground hover:bg-foreground/90 text-background font-medium text-xs h-8"
           >
             <Download size={12} className="mr-1.5" />
             {t('studio3d.export.title')}

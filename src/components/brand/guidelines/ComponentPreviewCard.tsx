@@ -42,7 +42,7 @@ export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
-      className={cn('rounded-2xl border border-border bg-muted/20 overflow-hidden', className)}
+      className={cn('rounded-xl border border-border bg-muted/20 overflow-hidden', className)}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
@@ -67,7 +67,7 @@ export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
           onClick={() => onApprove(id)}
           disabled={state === 'approved'}
           className={cn(
-            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition-colors',
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs transition-colors',
             state === 'approved'
               ? 'border-border text-muted-foreground cursor-default'
               : 'border-border text-foreground hover:border-ring'
@@ -80,7 +80,7 @@ export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
           onClick={() => onNeedsWork(id)}
           disabled={state === 'approved'}
           className={cn(
-            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition-colors',
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs transition-colors',
             state === 'approved'
               ? 'border-border text-muted-foreground cursor-default'
               : 'border-border text-muted-foreground hover:text-foreground hover:border-ring'

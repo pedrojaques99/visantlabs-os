@@ -6,6 +6,7 @@ import type { LucideIcon } from '@/lib/ui/icons';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { FEATURE_ALPHA_TOOLS } from '@/config/featureFlags';
 import { cn } from '@/lib/utils';
+import { Thumb } from '@/components/ui/Thumb';
 
 /**
  * BrandCreateShowcase — an owner-facing "Create" card on the brand overview.
@@ -124,7 +125,7 @@ export const BrandCreateShowcase: React.FC<{ brandId: string; className?: string
   return (
     <div className={cn('mx-auto w-full max-w-6xl px-4 sm:px-6 my-8', className)}>
       <div
-        className="relative h-[280px] sm:h-[300px] rounded-2xl overflow-hidden border border-[var(--brand-text)]/10 bg-[var(--brand-surface)]/20"
+        className="relative h-[280px] sm:h-[300px] rounded-xl overflow-hidden border border-[var(--brand-text)]/10 bg-[var(--brand-surface)]/20"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocusCapture={() => setPaused(true)}
@@ -141,7 +142,7 @@ export const BrandCreateShowcase: React.FC<{ brandId: string; className?: string
             transition={{ duration: 0.9, ease: 'easeOut' }}
           >
             {slide.image ? (
-              <img
+              <Thumb
                 src={slide.image}
                 alt=""
                 aria-hidden
@@ -191,7 +192,7 @@ export const BrandCreateShowcase: React.FC<{ brandId: string; className?: string
               <p className="text-sm text-[var(--brand-text)]/70 mb-4">{slide.invite}</p>
               <button
                 onClick={() => open(slide)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-[var(--accent)] text-[var(--accent-text)] hover:opacity-90 transition-opacity"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-[var(--accent)] text-[var(--accent-text)] hover:opacity-90 transition-opacity"
               >
                 Open {slide.name}
                 <ArrowRight size={14} />

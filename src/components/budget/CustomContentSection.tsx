@@ -85,7 +85,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
       {/* Project Detail Sections */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-neutral-200">
+          <h3 className="text-lg font-medium text-foreground">
             {t('budget.projectDetailSections')}
           </h3>
           <Button
@@ -177,7 +177,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
       {/* Info Boxes */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-neutral-200">{t('budget.infoBoxes')}</h3>
+          <h3 className="text-lg font-medium text-foreground">{t('budget.infoBoxes')}</h3>
           <Button
             variant="brand"
             onClick={addInfoBox}

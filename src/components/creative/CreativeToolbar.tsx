@@ -41,7 +41,7 @@ import type { LucideIcon } from '@/lib/ui/icons';
 
 // ── Tiny reusable pieces ──────────────────────────────────────────────
 
-const Divider = () => <div className="w-px h-5 bg-white/10 mx-0.5" />;
+const Divider = () => <div className="w-px h-5 bg-accent mx-0.5" />;
 
 const Btn: React.FC<{
   icon: LucideIcon;
@@ -61,7 +61,7 @@ const Btn: React.FC<{
       disabled && 'opacity-30 pointer-events-none',
       danger && 'text-neutral-400 hover:text-destructive hover:bg-destructive/10',
       active && !danger && 'bg-brand-cyan/20 text-brand-cyan',
-      !active && !danger && 'text-neutral-400 hover:text-white hover:bg-white/5',
+      !active && !danger && 'text-neutral-400 hover:text-white hover:bg-accent',
     ]
       .filter(Boolean)
       .join(' ')}
@@ -105,11 +105,11 @@ export const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({ onEditAI }
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-neutral-900/95 border border-white/10 rounded-lg px-3 py-2 backdrop-blur-md shadow-2xl animate-in fade-in slide-in-from-top-2"
+      className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-neutral-900/95 border border-border rounded-xl px-3 py-2 backdrop-blur-md shadow-2xl animate-in fade-in slide-in-from-top-2"
     >
       <div className="flex items-center gap-1.5 pr-1">
         <ImageIcon size={12} className="text-neutral-400" />
-        <span className="text-2xs font-bold text-neutral-400">Fundo</span>
+        <span className="text-2xs font-medium text-neutral-400">Fundo</span>
       </div>
       <Divider />
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
@@ -131,7 +131,7 @@ export const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({ onEditAI }
           title={hasBrandMedia ? 'Imagem da marca' : 'Marca sem media'}
         />
         {showBrand && hasBrandMedia && activeGuideline && (
-          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 max-h-72 overflow-y-auto p-2 bg-neutral-900/95 border border-white/10 rounded-lg backdrop-blur-md shadow-2xl custom-scrollbar">
+          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 max-h-72 overflow-y-auto p-2 bg-neutral-900/95 border border-border rounded-xl backdrop-blur-md shadow-2xl custom-scrollbar">
             {/* Grid de assets da marca = MediaKitGallery compartilhado (SSoT), não
                 um grid hand-rollado. onAssetClick vira o fundo. */}
             <MediaKitGallery
@@ -195,7 +195,7 @@ export const CreativeToolbar: React.FC = () => {
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-neutral-900/95 border border-white/10 rounded-lg px-3 py-2 backdrop-blur-md shadow-2xl animate-in fade-in slide-in-from-top-2"
+      className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-neutral-900/95 border border-border rounded-xl px-3 py-2 backdrop-blur-md shadow-2xl animate-in fade-in slide-in-from-top-2"
     >
       {/* ── Selection badge & Grouping ── */}
       {selectedCount > 1 ? (
@@ -223,7 +223,7 @@ export const CreativeToolbar: React.FC = () => {
             <select
               value={logoUrl || ''}
               onChange={(e) => updateLogo(e.target.value)}
-              className="bg-neutral-800 text-2xs font-bold text-neutral-300 px-3 py-1.5 rounded-md border border-white/10 outline-none focus:border-neutral-600 max-w-[120px] appearance-none cursor-pointer pr-7 transition-colors hover:bg-neutral-750"
+              className="bg-neutral-800 text-2xs font-medium text-neutral-300 px-3 py-1.5 rounded-md border border-border outline-none focus:border-neutral-600 max-w-[120px] appearance-none cursor-pointer pr-7 transition-colors hover:bg-neutral-750"
             >
               <option disabled value="">
                 Trocar...
@@ -257,7 +257,7 @@ export const CreativeToolbar: React.FC = () => {
             <select
               value={textData.fontFamily}
               onChange={(e) => updateText({ fontFamily: e.target.value })}
-              className="bg-neutral-800 text-white text-xs font-mono px-2 py-1 rounded border border-white/10 outline-none focus:border-neutral-600 max-w-[120px]"
+              className="bg-neutral-800 text-white text-xs font-mono px-2 py-1 rounded border border-border outline-none focus:border-neutral-600 max-w-[120px]"
             >
               <option value="Inter, sans-serif">Default</option>
               {fonts.map((f) => (
@@ -274,7 +274,7 @@ export const CreativeToolbar: React.FC = () => {
             onChange={(e) => updateText({ fontSize: Number(e.target.value) })}
             min={8}
             max={400}
-            className="w-14 bg-neutral-800 text-white text-xs font-mono px-2 py-1 rounded border border-white/10 outline-none focus:border-neutral-600 tabular-nums"
+            className="w-14 bg-neutral-800 text-white text-xs font-mono px-2 py-1 rounded border border-border outline-none focus:border-neutral-600 tabular-nums"
           />
 
           <Btn
@@ -319,13 +319,13 @@ export const CreativeToolbar: React.FC = () => {
                   key={c.hex}
                   onClick={() => updateText({ color: c.hex })}
                   title={c.name || c.hex}
-                  className="w-4.5 h-4.5 rounded-full border border-white/20"
+                  className="w-4.5 h-4.5 rounded-full border border-border-hover"
                   style={{ backgroundColor: c.hex, width: 18, height: 18 }}
                 />
               ))}
               <div className="relative w-[18px] h-[18px]">
                 <div
-                  className="w-[18px] h-[18px] rounded-full border border-white/20 cursor-pointer"
+                  className="w-[18px] h-[18px] rounded-full border border-border-hover cursor-pointer"
                   style={{ backgroundColor: textData.color }}
                   title="Cor personalizada"
                 />
@@ -353,13 +353,13 @@ export const CreativeToolbar: React.FC = () => {
                 key={c.hex}
                 onClick={() => updateShape({ color: c.hex })}
                 title={c.name || c.hex}
-                className="rounded-full border border-white/20"
+                className="rounded-full border border-border-hover"
                 style={{ backgroundColor: c.hex, width: 18, height: 18 }}
               />
             ))}
             <div className="relative w-[18px] h-[18px]">
               <div
-                className="w-[18px] h-[18px] rounded-full border border-white/20 cursor-pointer"
+                className="w-[18px] h-[18px] rounded-full border border-border-hover cursor-pointer"
                 style={{ backgroundColor: shapeData.color }}
                 title="Cor personalizada"
               />
@@ -381,7 +381,7 @@ export const CreativeToolbar: React.FC = () => {
               onChange={(e) => updateShape({ cornerRadius: Math.max(0, Number(e.target.value)) })}
               min={0}
               max={400}
-              className="w-12 bg-neutral-800 text-white text-xs font-mono px-1.5 py-1 rounded border border-white/10 outline-none focus:border-neutral-600 tabular-nums"
+              className="w-12 bg-neutral-800 text-white text-xs font-mono px-1.5 py-1 rounded border border-border outline-none focus:border-neutral-600 tabular-nums"
             />
           </div>
 
@@ -397,11 +397,11 @@ export const CreativeToolbar: React.FC = () => {
               }}
               min={0}
               max={64}
-              className="w-12 bg-neutral-800 text-white text-xs font-mono px-1.5 py-1 rounded border border-white/10 outline-none focus:border-neutral-600 tabular-nums"
+              className="w-12 bg-neutral-800 text-white text-xs font-mono px-1.5 py-1 rounded border border-border outline-none focus:border-neutral-600 tabular-nums"
             />
             <div className="relative w-[18px] h-[18px]">
               <div
-                className="w-[18px] h-[18px] rounded-full border border-white/20 cursor-pointer"
+                className="w-[18px] h-[18px] rounded-full border border-border-hover cursor-pointer"
                 style={{ backgroundColor: shapeData.strokeColor ?? '#ffffff' }}
                 title="Cor da borda"
               />
@@ -433,7 +433,7 @@ export const CreativeToolbar: React.FC = () => {
               }}
               min={-360}
               max={360}
-              className="w-14 bg-neutral-800 text-white text-xs font-mono px-1.5 py-1 rounded border border-white/10 outline-none focus:border-neutral-600 tabular-nums"
+              className="w-14 bg-neutral-800 text-white text-xs font-mono px-1.5 py-1 rounded border border-border outline-none focus:border-neutral-600 tabular-nums"
             />
           </div>
           <Divider />

@@ -6,7 +6,7 @@ import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { mockupApi, type Mockup } from '../services/mockupApi';
 import { FullScreenViewer } from '../components/FullScreenViewer';
 import { useLayout } from '@/hooks/useLayout';
-import { Thumb } from '../components/ui/Thumb';
+import { MediaTile } from '../components/ui/MediaTile';
 import { EmptyState } from '../components/ui/EmptyState';
 import { ErrorState } from '../components/ui/ErrorState';
 import { getImageUrl, isSafeUrl } from '@/utils/imageUtils';
@@ -360,24 +360,13 @@ export const MockupsPage: React.FC = () => {
                 if (!imageUrl) return null;
 
                 return (
-                  <GlassPanel
+                  <MediaTile
                     key={mockup._id}
-                    className="relative overflow-hidden hover:border-ring transition-colors"
-                  >
-                    <button
-                      type="button"
-                      className="block w-full aspect-square relative overflow-hidden bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      onClick={() => handleView(mockup)}
-                      aria-label={mockup.prompt || t('community.mockupAlt')}
-                    >
-                      <Thumb
-                        src={imageUrl}
-                        alt={mockup.prompt || t('community.mockupAlt')}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </button>
-                  </GlassPanel>
+                    layout="overlay"
+                    src={imageUrl}
+                    alt={mockup.prompt || t('community.mockupAlt')}
+                    onClick={() => handleView(mockup)}
+                  />
                 );
               })}
             </div>

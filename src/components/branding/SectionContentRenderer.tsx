@@ -1,7 +1,6 @@
 import React from 'react';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useTheme } from '@/hooks/useTheme';
 import { ListSection } from './ListSection';
 import { CompetitorsSection } from './CompetitorsSection';
 import { SWOTSection } from './SWOTSection';
@@ -46,7 +45,6 @@ export const SectionContentRenderer: React.FC<SectionContentRendererProps> = ({
   onContentChange,
 }) => {
   const { t } = useTranslation();
-  const { theme } = useTheme();
   const errored = useStepErrored(stepNumber);
 
   if (isGenerating) {
@@ -225,11 +223,7 @@ export const SectionContentRenderer: React.FC<SectionContentRendererProps> = ({
   }
 
   return (
-    <div
-      className={`text-sm font-manrope ${
-        theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-      }`}
-    >
+    <div className="text-sm font-manrope text-muted-foreground">
       {JSON.stringify(content, null, 2)}
     </div>
   );

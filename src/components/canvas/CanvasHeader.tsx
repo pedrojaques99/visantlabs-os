@@ -96,8 +96,8 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
 
   // Common button classes
   const headerButtonClass =
-    'h-9 w-9 p-0 border rounded-[10px] transition-[color,background-color,border-color,box-shadow] flex items-center justify-center bg-neutral-900/40 hover:bg-[#252525]/60 text-neutral-400 hover:text-neutral-200 border-white/5 hover:border-white/10 cursor-pointer shadow-sm transition-[color,background-color,border-color,box-shadow] duration-200';
-  const activeHeaderButtonClass = 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/20';
+    'h-9 w-9 p-0 border rounded-[10px] transition-[color,background-color,border-color,box-shadow] flex items-center justify-center bg-neutral-900/40 hover:bg-[#252525]/60 text-neutral-400 hover:text-neutral-200 border-border hover:border-border-hover cursor-pointer shadow-sm transition-[color,background-color,border-color,box-shadow] duration-200';
+  const activeHeaderButtonClass = 'bg-muted text-foreground border-ring';
 
   // Handle share button click
   const handleShareClick = useCallback(() => {

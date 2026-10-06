@@ -463,7 +463,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 onClick={() => setEditingCategory(category)}
               >
                 <div
-                  className="w-2.5 h-2.5 rounded-sm border-node border-neutral-700/50"
+                  className="w-2.5 h-2.5 rounded-md border-node border-neutral-700/50"
                   style={{ backgroundColor: color }}
                 />
                 <span className="text-neutral-400 font-mono text-2xs">{color}</span>

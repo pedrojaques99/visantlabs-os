@@ -4,14 +4,14 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { Button } from '@/components/ui/button';
 
 const nodeButtonVariants = cva(
-  'rounded-md text-sm font-mono transition-[color,background-color,border-color,box-shadow,opacity,filter] flex items-center justify-center gap-3 whitespace-nowrap cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 nodrag nopan backdrop-blur-sm shadow-sm hover:shadow-md',
+  'rounded-md text-sm font-mono transition-[color,background-color,border-color,box-shadow,opacity,filter] flex items-center justify-center gap-3 whitespace-nowrap cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 nodrag nopan shadow-sm hover:shadow-md',
   {
     variants: {
       variant: {
         default:
           'bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-800 text-neutral-400 hover:text-neutral-300',
         primary:
-          'bg-foreground/10 hover:bg-foreground/20 border border-neutral-800 text-foreground focus:border-neutral-600',
+          'bg-muted hover:bg-accent border border-neutral-800 text-foreground focus:border-neutral-600',
         // Canvas identity accent. Uses `[var(--brand-cyan)]` and NOT the
         // `brand-cyan` utility on purpose: index.css has unconditional
         // `.node-container [class*='border-border']` / `[class*='text-foreground']`

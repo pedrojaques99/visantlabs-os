@@ -34,7 +34,7 @@ export const GiftOptionsSection: React.FC<GiftOptionsSectionProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-neutral-200">{t('budget.giftOptions')}</h3>
+        <h3 className="text-lg font-medium text-foreground">{t('budget.giftOptions')}</h3>
         <Button
           variant="brand"
           onClick={addGiftOption}

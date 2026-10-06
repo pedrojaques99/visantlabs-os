@@ -34,9 +34,9 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
       initial={{ opacity: 0, x: 20, scale: 0.95 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 10, scale: 0.95 }}
-      className="bg-neutral-900/90 backdrop-blur-xl rounded-2xl border border-border p-3 w-80 shadow-2xl flex gap-4 overflow-hidden"
+      className="bg-popover/90 backdrop-blur-xl rounded-xl border border-border p-3 w-80 shadow-2xl flex gap-4 overflow-hidden"
     >
-      <div className="w-16 h-16 rounded-xl overflow-hidden bg-neutral-800 flex-shrink-0 relative">
+      <div className="w-16 h-16 rounded-xl overflow-hidden bg-muted flex-shrink-0 relative">
         {thumb ? (
           <Thumb src={thumb} alt="" className="w-full h-full object-cover" />
         ) : (
@@ -53,7 +53,7 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
 
       <div className="flex-1 min-w-0 flex flex-col justify-center">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-xs font-medium text-white truncate pr-2">{label}</span>
+          <span className="text-xs font-medium text-foreground truncate pr-2">{label}</span>
           <button
             onClick={job.status === 'rendering' || job.status === 'queued' ? onCancel : onDismiss}
             aria-label={
@@ -61,26 +61,28 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
                 ? t('common.cancel')
                 : t('common.dismiss')
             }
-            className="p-1 hover:bg-neutral-800 rounded-full transition-colors flex-shrink-0"
+            className="p-1 hover:bg-accent rounded-full transition-colors flex-shrink-0"
           >
-            <X size={12} className="text-neutral-500" />
+            <X size={12} className="text-muted-foreground" />
           </button>
         </div>
 
         {job.status === 'rendering' && (
           <div className="flex flex-col gap-1.5">
-            <div className="w-full h-1 bg-neutral-800 rounded-full overflow-hidden">
+            <div className="w-full h-1 bg-muted rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-white rounded-full"
+                className="h-full bg-foreground rounded-full"
                 style={{ width: `${job.progress}%` }}
                 transition={{ duration: 0.3 }}
               />
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-2xs tabular-nums text-neutral-500">
+              <span className="text-2xs tabular-nums text-muted-foreground">
                 {Math.round(job.progress)}%
               </span>
-              <span className="text-2xs tabular-nums text-neutral-500">{elapsed.toFixed(1)}s</span>
+              <span className="text-2xs tabular-nums text-muted-foreground">
+                {elapsed.toFixed(1)}s
+              </span>
             </div>
           </div>
         )}
@@ -97,18 +99,20 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
                 {t('moodboard.render.saved')}
               </span>
             </div>
-            <span className="text-2xs tabular-nums text-neutral-500">{elapsed.toFixed(1)}s</span>
+            <span className="text-2xs tabular-nums text-muted-foreground">
+              {elapsed.toFixed(1)}s
+            </span>
           </motion.div>
         )}
 
         {job.status === 'completed' && (
           <div className="flex items-center justify-between">
-            <span className="text-xs text-neutral-400 font-medium">
+            <span className="text-xs text-muted-foreground font-medium">
               {t('moodboard.render.ready')}
             </span>
             <button
               onClick={handleDownload}
-              className="flex items-center gap-1 px-2 py-1 rounded-full bg-white text-black text-xs font-medium hover:opacity-90 transition-opacity"
+              className="flex items-center gap-1 px-2 py-1 rounded-full bg-foreground text-background text-xs font-medium hover:opacity-90 transition-opacity"
             >
               <Download size={10} /> {t('common.download')}
             </button>
@@ -127,12 +131,12 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
         {job.status === 'queued' && (
           <div className="flex items-center gap-1.5">
             <GlitchLoader size={12} />
-            <span className="text-xs text-neutral-500 font-medium">{t('common.queued')}</span>
+            <span className="text-xs text-muted-foreground font-medium">{t('common.queued')}</span>
           </div>
         )}
 
         {job.status === 'cancelled' && (
-          <div className="flex items-center gap-1.5 text-neutral-600">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
             <XCircle size={12} />
             <span className="text-xs font-medium">{t('moodboard.render.cancelled')}</span>
           </div>

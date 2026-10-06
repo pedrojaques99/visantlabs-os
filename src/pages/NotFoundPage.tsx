@@ -79,7 +79,7 @@ export const NotFoundPage: React.FC = () => {
               <Button
                 variant="brand"
                 onClick={() => navigate('/')}
-                className="px-8 py-3.5 font-semibold text-sm flex items-center gap-2"
+                className="px-8 py-3.5 font-medium text-sm flex items-center gap-2"
               >
                 <Home className="h-4 w-4" />
                 {t('notFound.goHome')}

@@ -59,14 +59,14 @@ function renderResolutionButton(
           ? 'flex-1 flex items-center justify-center gap-1 h-11 px-2 text-xs font-mono transition-colors min-w-0'
           : 'flex flex-col items-center justify-center gap-1 py-2 px-3 text-xs font-mono rounded-md transition-colors duration-200 border-node cursor-pointer',
         isSelected
-          ? 'bg-foreground/10 text-foreground border-neutral-600'
+          ? 'bg-accent text-foreground border-neutral-600'
           : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-700 hover:text-neutral-200',
         disabled && 'opacity-50 cursor-not-allowed'
       )}
       title={`${res} (${credits} credits)`}
       onMouseDown={onMouseDown}
     >
-      <span className={compact ? 'text-2xs' : 'font-semibold'}>{res}</span>
+      <span className={compact ? 'text-2xs' : 'font-medium'}>{res}</span>
       {!compact && <span className="text-2xs text-neutral-500">{credits}c</span>}
     </NodeButton>
   );

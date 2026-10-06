@@ -216,7 +216,7 @@ export const PsdSceneRenderPage: React.FC = () => {
 
           <div
             ref={canvasHostRef}
-            className="flex min-h-[20rem] items-center justify-center overflow-hidden rounded-lg border border-border bg-muted/30"
+            className="flex min-h-[20rem] items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/30"
           >
             {!art && (
               <span className="text-sm text-muted-foreground">

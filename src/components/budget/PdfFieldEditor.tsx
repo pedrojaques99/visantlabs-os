@@ -167,7 +167,7 @@ export const PdfFieldEditor: React.FC<PdfFieldEditorProps> = ({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-neutral-300">Variáveis Disponíveis</h3>
+      <h3 className="text-sm font-medium text-foreground">Variáveis Disponíveis</h3>
 
       {/* Grid de thumbs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">

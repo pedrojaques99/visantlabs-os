@@ -166,7 +166,7 @@ export const DirectorNode = memo(
           {activeGenerations > 0 && (
             <div className="p-2.5 rounded-md border-node border-neutral-800 bg-neutral-900/50">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-2xs font-bold text-foreground">
+                <span className="text-2xs font-medium text-foreground">
                   {activeGenerations} {activeGenerations === 1 ? 'mockup' : 'mockups'}
                 </span>
                 <span className="text-2xs font-mono text-neutral-500">
@@ -191,7 +191,7 @@ export const DirectorNode = memo(
               <Zap size={14} className="mr-2" />
               <span>{t('canvasNodes.directorNode.generateMockup')}</span>
               {activeGenerations > 0 && (
-                <span className="ml-2 px-1.5 py-0.5 rounded-full bg-black/30 text-2xs tabular-nums">
+                <span className="ml-2 px-1.5 py-0.5 rounded-full bg-background/50 text-2xs tabular-nums">
                   +{activeGenerations}
                 </span>
               )}

@@ -286,7 +286,7 @@ export const TextureFilterCanvas = forwardRef<TextureFilterCanvasHandle, Texture
       <div
         ref={containerRef}
         className={cn(
-          'w-full h-full flex items-center justify-center overflow-hidden bg-neutral-950',
+          'w-full h-full flex items-center justify-center overflow-hidden bg-background',
           isPanning && 'cursor-grabbing'
         )}
         onMouseDown={handleMouseDown}

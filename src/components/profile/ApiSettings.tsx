@@ -72,7 +72,7 @@ const KeyRow: React.FC<KeyRowProps> = ({
   <div className="space-y-3">
     <div className="flex flex-wrap items-center justify-between gap-2">
       <div className="flex items-center gap-2 min-w-0">
-        <label htmlFor={id} className="text-sm font-semibold text-foreground truncate">
+        <label htmlFor={id} className="text-sm font-medium text-foreground truncate">
           {label}
         </label>
         {hasKey && <Badge variant="success">{labels.active}</Badge>}
@@ -141,7 +141,7 @@ const KeyRow: React.FC<KeyRowProps> = ({
 
 const SectionDivider: React.FC<{ title: string }> = ({ title }) => (
   <div className="pt-6 border-t border-border">
-    <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+    <h3 className="text-sm font-medium text-foreground">{title}</h3>
   </div>
 );
 
@@ -360,7 +360,7 @@ export const ApiSettings: React.FC = () => {
     <div className="space-y-6 w-full mx-auto animate-in fade-in duration-300">
       <Card className="bg-card border border-border rounded-md">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold text-foreground">
+          <CardTitle className="text-base font-medium text-foreground">
             {t('profile.byok.title')}
           </CardTitle>
           <CardDescription className="text-xs text-muted-foreground mt-0.5">
@@ -384,9 +384,7 @@ export const ApiSettings: React.FC = () => {
               className="w-full flex items-center justify-between gap-3 rounded-md border border-border bg-muted/40 px-4 py-3 text-left hover:border-ring transition-colors"
             >
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground">
-                  {t('profile.byok.byokTitle')}
-                </p>
+                <p className="text-sm font-medium text-foreground">{t('profile.byok.byokTitle')}</p>
                 <p className="text-xs text-muted-foreground truncate">
                   {byokActiveCount === 1
                     ? t('profile.byok.activeOne')
@@ -472,7 +470,7 @@ export const ApiSettings: React.FC = () => {
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground">
+              <label className="text-sm font-medium text-foreground">
                 {t('profile.byok.adminChatProvider')}
               </label>
               <Select
@@ -489,7 +487,7 @@ export const ApiSettings: React.FC = () => {
               <div className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <label htmlFor="ollama-url" className="text-sm font-semibold text-foreground">
+                    <label htmlFor="ollama-url" className="text-sm font-medium text-foreground">
                       Ollama URL
                     </label>
                     <Button
@@ -516,7 +514,7 @@ export const ApiSettings: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="ollama-model" className="text-sm font-semibold text-foreground">
+                  <label htmlFor="ollama-model" className="text-sm font-medium text-foreground">
                     {t('profile.byok.model')}
                   </label>
                   <Input

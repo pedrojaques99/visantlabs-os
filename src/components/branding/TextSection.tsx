@@ -50,11 +50,7 @@ export const TextSection: React.FC<TextSectionProps> = ({
         }
       >
         <CardContent className="p-4 md:p-6">
-          <div
-            className={`text-sm font-manrope  ${
-              theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
-            }`}
-          >
+          <div className="text-sm font-manrope text-muted-foreground">
             Nenhum conteúdo disponível.
           </div>
         </CardContent>
@@ -83,11 +79,7 @@ export const TextSection: React.FC<TextSectionProps> = ({
             }
           >
             <CardContent className="p-4 md:p-6">
-              <div
-                className={`text-sm font-manrope leading-relaxed ${
-                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                }`}
-              >
+              <div className="text-sm font-manrope leading-relaxed text-muted-foreground">
                 <MarkdownRenderer content={paragraph.trim()} preserveLines />
               </div>
             </CardContent>
@@ -107,11 +99,7 @@ export const TextSection: React.FC<TextSectionProps> = ({
       }
     >
       <CardContent className="p-4 md:p-6">
-        <div
-          className={`text-sm font-manrope leading-relaxed whitespace-pre-wrap ${
-            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-          }`}
-        >
+        <div className="text-sm font-manrope leading-relaxed whitespace-pre-wrap text-muted-foreground">
           <MarkdownRenderer content={safeContent} preserveLines />
         </div>
       </CardContent>

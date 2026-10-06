@@ -67,6 +67,7 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
   };
 
   const addGradient = () => {
+    // EXCEÇÃO ao audit:design/hardcoded-hex-color: semente de DADO da marca (vira stop salvo no guideline), não cor de cromo.
     const p = guideline.colors?.[0]?.hex || '#52DDEB';
     const s = guideline.colors?.[1]?.hex || '#1F7878';
     const next = [
@@ -155,8 +156,8 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
                       className={cn(
                         'flex-1 h-6 rounded border text-2xs uppercase transition-colors',
                         g.type === t
-                          ? 'border-white/20 bg-white/5 text-neutral-200'
-                          : 'border-neutral-800 text-neutral-600 hover:border-white/10'
+                          ? 'border-border-hover bg-muted text-foreground'
+                          : 'border-border text-muted-foreground hover:border-border-hover'
                       )}
                     >
                       {t}
@@ -182,8 +183,8 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
                       className={cn(
                         'px-2 h-5 rounded border text-2xs font-mono transition-colors',
                         g.usage === u
-                          ? 'border-white/20 bg-white/5 text-neutral-200'
-                          : 'border-neutral-800 text-neutral-600 hover:border-white/10'
+                          ? 'border-border-hover bg-muted text-foreground'
+                          : 'border-border text-muted-foreground hover:border-border-hover'
                       )}
                     >
                       {USAGE_LABELS[u]}
@@ -205,7 +206,7 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
                     <div key={si} className="flex items-center gap-1.5">
                       <div className="relative w-6 h-6 shrink-0">
                         <div
-                          className="w-full h-full rounded border border-white/10"
+                          className="w-full h-full rounded border border-border"
                           style={{ backgroundColor: s.color }}
                         />
                         <input

@@ -181,7 +181,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
           key={i}
           className={cn(
             'underline decoration-brand-cyan/30 underline-offset-4 transition-colors duration-300',
-            'hover:text-foreground hover:decoration-foreground hover:bg-muted px-0.5 rounded-sm'
+            'hover:text-foreground hover:decoration-foreground hover:bg-muted px-0.5 rounded-md'
           )}
         >
           {part}
@@ -265,9 +265,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         <SkeletonText loading={isSidebarGenerating}>
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className={`flex items-center gap-2 text-xs hover:text-foreground transition-colors focus:outline-none ${
-              theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-            }`}
+            className={`flex items-center gap-2 text-xs hover:text-foreground transition-colors focus:outline-none ${'text-muted-foreground'}`}
           >
             <Info size={14} /> {t('mockup.prompt')}
             {isCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
@@ -413,7 +411,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
               <span
                 key={rule}
                 className={cn(
-                  'text-2xs px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20',
+                  'text-2xs px-1.5 py-0.5 rounded-md bg-neutral-500/10 border border-neutral-500/20',
                   theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
                 )}
               >
@@ -427,9 +425,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
       {promptSuggestions.length > 0 && (
         <div className="mt-3 space-y-2 animate-fade-in">
           <SkeletonText loading={isSidebarGenerating}>
-            <p className={`text-xs ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
-              {t('mockup.aiSuggestions')}
-            </p>
+            <p className={`text-xs ${'text-muted-foreground'}`}>{t('mockup.aiSuggestions')}</p>
           </SkeletonText>
           {promptSuggestions.map((suggestion, index) => (
             <div
@@ -478,7 +474,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                         onGenerateSuggestion(suggestion);
                       }}
                       disabled={isGenerating || !suggestion.trim() || isGenerateDisabled}
-                      className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-[color,background-color,border-color,opacity,transform,filter] duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-neutral-600/50 min-h-[44px]"
+                      className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-medium py-2 px-3 rounded-md transition-[color,background-color,border-color,opacity,transform,filter] duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-neutral-600/50 min-h-[44px]"
                       aria-label={
                         isGenerating ? t('mockup.generatingOutputs') : t('mockup.generateOutputs')
                       }
@@ -500,7 +496,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                     <ByokCostIndicator
                       isByok={isByokActive}
                       creditsRequired={creditsPerGeneration}
-                      className={theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}
+                      className={'text-muted-foreground'}
                     />
                   )}
                 </div>

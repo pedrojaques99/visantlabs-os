@@ -169,7 +169,7 @@ export const PricingPage: React.FC = () => {
                 className={cn(
                   'relative z-10 px-6 py-2 text-sm rounded-full min-w-[104px] transition-colors',
                   billingCycle === 'monthly'
-                    ? 'text-black font-bold'
+                    ? 'text-black font-medium'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
@@ -181,14 +181,14 @@ export const PricingPage: React.FC = () => {
                 className={cn(
                   'relative z-10 px-6 py-2 text-sm rounded-full min-w-[104px] flex items-center justify-center gap-2 transition-colors',
                   billingCycle === 'yearly'
-                    ? 'text-black font-bold'
+                    ? 'text-black font-medium'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 {copy.yearly}
                 <span
                   className={cn(
-                    'text-2xs px-1.5 py-0.5 rounded-full font-bold',
+                    'text-2xs px-1.5 py-0.5 rounded-full font-medium',
                     billingCycle === 'yearly'
                       ? 'bg-neutral-950/20 text-black'
                       : 'bg-muted text-muted-foreground'
@@ -222,7 +222,7 @@ export const PricingPage: React.FC = () => {
                 <div
                   key={tier.id}
                   className={cn(
-                    'relative flex flex-col rounded-2xl border bg-card p-6',
+                    'relative flex flex-col rounded-xl border bg-card p-6',
                     tier.recommended ? 'border-ring' : 'border-border'
                   )}
                   data-vsn-region={`tier-${tier.id}`}
@@ -248,7 +248,7 @@ export const PricingPage: React.FC = () => {
 
                   {/* Nome + tagline */}
                   <div className="mb-5 mt-1">
-                    <h2 className="text-xl font-bold text-foreground">{tc.name}</h2>
+                    <h2 className="text-xl font-medium text-foreground">{tc.name}</h2>
                     <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                       {tc.tagline}
                     </p>
@@ -256,7 +256,7 @@ export const PricingPage: React.FC = () => {
 
                   {/* Preço grande */}
                   <div className="flex items-baseline gap-1.5 mb-1">
-                    <span className="text-4xl font-bold tabular-nums text-foreground">
+                    <span className="text-4xl font-semibold tabular-nums text-foreground">
                       {priceStr}
                     </span>
                     {cycleSuffix && (

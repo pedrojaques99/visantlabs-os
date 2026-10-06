@@ -195,9 +195,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
       <Button
         variant="ghost"
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${
-          theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
-        }`}
+        className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${'hover:bg-accent'}`}
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {icon && <div className="flex-shrink-0">{icon}</div>}
@@ -425,12 +423,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           isSurpriseMeMode={isSurpriseMeMode}
           poolTags={locationPool}
           onPoolToggle={onLocationPoolToggle}
-          icon={
-            <MapPin
-              size={14}
-              className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-            />
-          }
+          icon={<MapPin size={14} className="text-muted-foreground" />}
         />
       </div>
       <CollapsableTagSection
@@ -446,12 +439,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         isSurpriseMeMode={isSurpriseMeMode}
         poolTags={anglePool}
         onPoolToggle={onAnglePoolToggle}
-        icon={
-          <Camera
-            size={14}
-            className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-          />
-        }
+        icon={<Camera size={14} className="text-muted-foreground" />}
       />
       <CollapsableTagSection
         title={t('mockup.lightingMood')}
@@ -466,12 +454,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         isSurpriseMeMode={isSurpriseMeMode}
         poolTags={lightingPool}
         onPoolToggle={onLightingPoolToggle}
-        icon={
-          <Lightbulb
-            size={14}
-            className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-          />
-        }
+        icon={<Lightbulb size={14} className="text-muted-foreground" />}
       />
       <CollapsableTagSection
         title={t('mockup.visualEffects')}
@@ -486,12 +469,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         isSurpriseMeMode={isSurpriseMeMode}
         poolTags={effectPool}
         onPoolToggle={onEffectPoolToggle}
-        icon={
-          <Diamond
-            size={14}
-            className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-          />
-        }
+        icon={<Diamond size={14} className="text-muted-foreground" />}
       />
       {designType === 'logo' && (
         <CollapsableTagSection
@@ -507,12 +485,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           isSurpriseMeMode={isSurpriseMeMode}
           poolTags={materialPool}
           onPoolToggle={onMaterialPoolToggle}
-          icon={
-            <Layers
-              size={14}
-              className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-            />
-          }
+          icon={<Layers size={14} className="text-muted-foreground" />}
         />
       )}
 
@@ -522,15 +495,10 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           <Button
             variant="ghost"
             onClick={() => setIsNegativeExpanded(!isNegativeExpanded)}
-            className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${
-              theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
-            }`}
+            className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${'hover:bg-accent'}`}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <XCircle
-                size={14}
-                className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-              />
+              <XCircle size={14} className="text-muted-foreground" />
               <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
                 <SkeletonText loading={isGenerating}>
                   <MicroTitle as="span">{t('mockup.negativePrompt')}</MicroTitle>
@@ -572,15 +540,10 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           <Button
             variant="ghost"
             onClick={() => setIsAdditionalExpanded(!isAdditionalExpanded)}
-            className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${
-              theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
-            }`}
+            className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${'hover:bg-accent'}`}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <FilePlus
-                size={14}
-                className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-              />
+              <FilePlus size={14} className="text-muted-foreground" />
               <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
                 <SkeletonText loading={isGenerating}>
                   <MicroTitle as="span">{t('mockup.additionalPrompt')}</MicroTitle>

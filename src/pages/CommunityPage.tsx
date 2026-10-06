@@ -36,7 +36,7 @@ import { getGithubUrl } from '../config/branding';
 import { MicroTitle } from '../components/ui/MicroTitle';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { GlassPanel } from '../components/ui/GlassPanel';
-import { Thumb } from '../components/ui/Thumb';
+import { MediaTile } from '../components/ui/MediaTile';
 import ClubLogo3D from '../components/3d/club-logo3d';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { CommunityPresetModal } from '../components/CommunityPresetModal';
@@ -454,7 +454,7 @@ export const CommunityPage: React.FC = () => {
     >
       <div className="relative z-10">
         {/* Hero Section */}
-        <div className="relative mb-16 min-h-[380px] flex items-center overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="relative mb-16 min-h-[380px] flex items-center overflow-hidden rounded-xl border border-border bg-card">
           {/* 3D Object - Repositioned for better balance */}
           <div className="absolute right-0 top-0 w-full md:w-1/2 h-full pointer-events-none z-0">
             <Suspense fallback={null}>
@@ -465,7 +465,7 @@ export const CommunityPage: React.FC = () => {
           {/* Content — full-width padding so it lines up with the sections below */}
           <div className="relative z-10 w-full px-6 md:px-10 py-12">
             <div className="max-w-2xl">
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 leading-[1.1] tracking-tight">
+              <h1 className="text-4xl md:text-5xl font-semibold text-foreground mb-4 leading-[1.1] tracking-tight">
                 {t('communityPresets.title')}
               </h1>
 
@@ -490,7 +490,7 @@ export const CommunityPage: React.FC = () => {
                     className="h-11 px-5"
                   >
                     <Globe size={18} className="text-muted-foreground" />
-                    <span className="font-semibold">{t('community.explorar_galeria')}</span>
+                    <span className="font-medium">{t('community.explorar_galeria')}</span>
                   </Button>
 
                   <Button
@@ -512,7 +512,7 @@ export const CommunityPage: React.FC = () => {
                     <span className="block text-2xs font-medium text-muted-foreground mb-2">
                       {t('community.membros')}
                     </span>
-                    <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
+                    <p className="text-3xl font-medium text-foreground font-mono tracking-tighter">
                       {isLoading ? '...' : globalCommunityStats.totalUsers}
                     </p>
                   </GlassPanel>
@@ -523,7 +523,7 @@ export const CommunityPage: React.FC = () => {
                     <span className="block text-2xs font-medium text-muted-foreground mb-2">
                       {t('community.criaes')}
                     </span>
-                    <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
+                    <p className="text-3xl font-medium text-foreground font-mono tracking-tighter">
                       {isLoading ? '...' : globalCommunityStats.totalPresets}
                     </p>
                   </GlassPanel>
@@ -534,7 +534,7 @@ export const CommunityPage: React.FC = () => {
                     <span className="block text-2xs font-medium text-muted-foreground mb-2">
                       {t('community.publicado')}
                     </span>
-                    <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
+                    <p className="text-3xl font-medium text-foreground font-mono tracking-tighter">
                       {isLoading ? '...' : globalCommunityStats.totalBlankMockups}
                     </p>
                   </GlassPanel>
@@ -559,7 +559,7 @@ export const CommunityPage: React.FC = () => {
                   <MicroTitle className="text-muted-foreground">
                     {t('community.curadoria')}
                   </MicroTitle>
-                  <h2 className="text-3xl font-bold text-foreground font-manrope tracking-tight">
+                  <h2 className="text-3xl font-medium text-foreground font-manrope tracking-tight">
                     {t('community.explorar_por_categoria')}
                   </h2>
                 </div>
@@ -586,11 +586,11 @@ export const CommunityPage: React.FC = () => {
                     <GlassPanel
                       asChild
                       key={category.type}
-                      className="relative rounded-2xl p-6 flex flex-col h-full hover:border-ring transition-colors overflow-hidden bg-muted/40"
+                      className="relative rounded-xl p-6 flex flex-col h-full hover:border-ring transition-colors overflow-hidden bg-muted/40"
                     >
                       <Link to={`/community/presets?type=${category.type}`}>
                         <div className="flex items-baseline justify-between gap-3 mb-6 flex-1">
-                          <h3 className="text-lg font-semibold text-foreground capitalize text-left">
+                          <h3 className="text-lg font-medium text-foreground capitalize text-left">
                             {category.label}
                           </h3>
                           <span className="text-sm text-muted-foreground whitespace-nowrap">
@@ -639,7 +639,7 @@ export const CommunityPage: React.FC = () => {
             <section className="space-y-8">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-foreground font-manrope">
+                  <h2 className="text-2xl font-medium text-foreground font-manrope">
                     {t('community.workflows_da_comunidade')}
                   </h2>
                   <p className="text-muted-foreground text-sm max-w-lg mt-2">
@@ -672,56 +672,43 @@ export const CommunityPage: React.FC = () => {
                       ] || WORKFLOW_CATEGORY_CONFIG.general;
                     const CategoryIcon = categoryConfig.icon;
 
+                    // Abre ESTE workflow. Antes ia pra `/canvas` cru: o usuário
+                    // clicava num workflow específico e caía num canvas vazio.
                     return (
-                      <GlassPanel
-                        asChild
+                      <MediaTile
                         key={workflow._id}
-                        className="relative rounded-2xl p-6 flex flex-col h-full hover:border-ring transition-colors text-left"
-                      >
-                        {/* Abre ESTE workflow. Antes ia pra `/canvas` cru: o usuário
-                            clicava num workflow específico e caía num canvas vazio. */}
-                        <Link to={`/canvas/${workflow._id}`}>
-                          <Thumb
-                            src={workflow.thumbnailUrl || undefined}
-                            alt={workflow.name}
-                            aspectRatio="16 / 9"
-                            fallbackIcon={CategoryIcon}
-                            loading="lazy"
-                            className="w-full rounded-md border border-border bg-muted/40 mb-4"
-                          />
-
-                          <div className="flex-1">
-                            <h3 className="text-base font-semibold text-foreground mb-1 line-clamp-1">
-                              {workflow.name}
-                            </h3>
-                            <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
-                              {workflow.description}
-                            </p>
-                          </div>
-
-                          <div className="flex items-center gap-2 pt-3 border-t border-border">
+                        src={workflow.thumbnailUrl || undefined}
+                        alt={workflow.name}
+                        aspectRatio={16 / 9}
+                        href={`/canvas/${workflow._id}`}
+                        title={workflow.name}
+                        subtitle={workflow.description}
+                        fallbackIcon={CategoryIcon}
+                        className="h-full"
+                        meta={
+                          <div className="flex flex-wrap items-center gap-1.5">
                             <span
                               className={cn(
-                                'px-2 py-0.5 rounded border text-2xs flex-shrink-0',
+                                'px-1.5 py-0.5 rounded border flex-shrink-0',
                                 categoryConfig.badgeClass
                               )}
                             >
                               {categoryConfig.label}
                             </span>
-                            <span className="px-2 py-0.5 bg-muted rounded border border-border text-muted-foreground text-2xs flex-shrink-0">
+                            <span className="px-1.5 py-0.5 bg-muted rounded border border-border flex-shrink-0">
                               {t('community.nodesCount', {
                                 count: Array.isArray(workflow.nodes) ? workflow.nodes.length : 0,
                               })}
                             </span>
                             {workflow.likesCount > 0 && (
-                              <span className="px-2 py-0.5 bg-muted rounded border border-border text-muted-foreground text-2xs flex-shrink-0 inline-flex items-center gap-1">
+                              <span className="px-1.5 py-0.5 bg-muted rounded border border-border flex-shrink-0 inline-flex items-center gap-1">
                                 <Heart size={10} className="fill-current" />
                                 {workflow.likesCount}
                               </span>
                             )}
                           </div>
-                        </Link>
-                      </GlassPanel>
+                        }
+                      />
                     );
                   })
                 ) : workflowsError ? (
@@ -733,7 +720,7 @@ export const CommunityPage: React.FC = () => {
                     onRetry={loadWorkflows}
                   />
                 ) : (
-                  <div className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-4 border border-border rounded-2xl bg-card">
+                  <div className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-4 border border-border rounded-xl bg-card">
                     <Workflow size={32} strokeWidth={1} className="text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">
                       {t('community.noPublicWorkflows')}
@@ -756,7 +743,7 @@ export const CommunityPage: React.FC = () => {
             <section className="space-y-8">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-bold text-foreground font-manrope">
+                  <h2 className="text-3xl font-medium text-foreground font-manrope">
                     {t('community.galeria_da_comunidade')}
                   </h2>
                   <p className="text-muted-foreground text-sm max-w-lg">
@@ -777,7 +764,7 @@ export const CommunityPage: React.FC = () => {
                   Array.from({ length: 10 }).map((_, i) => (
                     <div
                       key={i}
-                      className="aspect-square bg-muted rounded-2xl border border-border"
+                      className="aspect-square bg-muted rounded-xl border border-border"
                     />
                   ))
                 ) : statsError ? (
@@ -790,37 +777,19 @@ export const CommunityPage: React.FC = () => {
                   />
                 ) : (isGalleryExpanded ? allPublicMockups : communityMockups).length > 0 ? (
                   (isGalleryExpanded ? allPublicMockups : communityMockups).map((mockup) => (
-                    <GlassPanel
-                      asChild
+                    // O tile leva pra galeria — é o que o destino faz. Antes
+                    // prometia "usar como referência", que ele nunca fez.
+                    <MediaTile
                       key={mockup._id}
-                      className="group relative aspect-square rounded-2xl overflow-hidden hover:border-ring transition-colors"
-                    >
-                      <Link to="/mockups" className="block w-full h-full">
-                        <Thumb
-                          src={mockup.imageUrl || mockup.imageBase64 || undefined}
-                          alt={mockup.prompt || t('community.mockupAlt')}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end">
-                          <MicroTitle as="p" className="text-neutral-400 mb-1">
-                            {t('community.promptLabel')}
-                          </MicroTitle>
-                          <p className="text-xs text-white line-clamp-2 mb-2">{mockup.prompt}</p>
-                          {/* O tile leva pra galeria — é o que o destino faz. Antes
-                              prometia "usar como referência", que ele nunca fez. */}
-                          <div className="flex items-center gap-2 pt-2 border-t border-white/10">
-                            <ArrowRight size={10} className="text-neutral-400" />
-                            <span className="text-2xs text-neutral-300">
-                              {t('community.viewFullGallery')}
-                            </span>
-                          </div>
-                        </div>
-                      </Link>
-                    </GlassPanel>
+                      src={mockup.imageUrl || mockup.imageBase64 || undefined}
+                      alt={mockup.prompt || t('community.mockupAlt')}
+                      layout="overlay"
+                      href="/mockups"
+                      actionLabel={t('community.viewFullGallery')}
+                    />
                   ))
                 ) : (
-                  <div className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-4 border border-border rounded-2xl bg-card">
+                  <div className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-4 border border-border rounded-xl bg-card">
                     <ImageIcon size={32} strokeWidth={1} className="text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">{t('community.emptyGallery')}</p>
                   </div>
@@ -854,11 +823,11 @@ export const CommunityPage: React.FC = () => {
                   <div className="max-w-xl space-y-4 text-center md:text-left">
                     <div className="flex items-center justify-center md:justify-start gap-3 text-muted-foreground">
                       <Github size={24} />
-                      <MicroTitle as="span" className="font-semibold text-muted-foreground">
+                      <MicroTitle as="span" className="font-medium text-muted-foreground">
                         {t('community.openSource')}
                       </MicroTitle>
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-foreground font-manrope leading-tight">
+                    <h2 className="text-3xl md:text-4xl font-medium text-foreground font-manrope leading-tight">
                       {t('community.growTogetherTitle')}
                     </h2>
                     <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
@@ -870,7 +839,7 @@ export const CommunityPage: React.FC = () => {
                       href={getGithubUrl()}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3 px-8 py-4 bg-foreground text-background font-bold rounded-lg transition-opacity hover:opacity-90"
+                      className="flex items-center gap-3 px-8 py-4 bg-foreground text-background font-medium rounded-xl transition-opacity hover:opacity-90"
                     >
                       <Github size={22} />
                       <span>{t('community.ver_repositrio')}</span>

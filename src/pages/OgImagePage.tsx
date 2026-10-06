@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Image, Code, Upload, X, Download, Copy } from '@/lib/ui/icons';
+import { motion } from 'framer-motion';
+import { Image, Code, X, Download, Copy } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useOgImageStore, type OgTemplate } from '@/stores/ogImageStore';
@@ -13,6 +13,9 @@ import { loadImage } from '@/utils/imageUtils';
 import { copyImageAsPng, downloadBlob, copyToClipboard } from '@/utils/clipboard';
 import { validateFile } from '@/utils/fileUtils';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Dropzone } from '@/components/ui/Dropzone';
 import { glassSurface } from '@/lib/ui/glass';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -20,18 +23,6 @@ const OG_WIDTH = 1200;
 const OG_HEIGHT = 630;
 
 const ease = [0.4, 0, 0.2, 1] as const;
-const fadeUp = {
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8 },
-  transition: { duration: 0.35, ease },
-};
-const fadeScale = {
-  initial: { opacity: 0, scale: 0.96 },
-  animate: { opacity: 1, scale: 1 },
-  exit: { opacity: 0, scale: 0.96 },
-  transition: { duration: 0.3, ease },
-};
 
 /* ------------------------------------------------------------------ */
 /*  Canvas rendering                                                   */
@@ -137,56 +128,62 @@ async function renderOgImage(state: ReturnType<typeof useOgImageStore.getState>)
 /*  Template thumbnails                                                */
 /* ------------------------------------------------------------------ */
 
-const TEMPLATES: { id: OgTemplate; label: string }[] = [
-  { id: 'minimal', label: 'Minimal' },
-  { id: 'gradient', label: 'Gradient' },
-  { id: 'photo', label: 'Photo' },
-  { id: 'split', label: 'Split' },
-];
+const TEMPLATES: OgTemplate[] = ['minimal', 'gradient', 'photo', 'split'];
+
+// EXCEÇÃO ao audit:design/hardcoded-hex-color: miniatura do template desenha a SAÍDA
+// (a OG image renderizada no canvas com as cores padrão do gerador), não o cromo do app;
+// trocar por token mudaria a prévia conforme o tema e mentiria sobre o PNG final.
+const INK = '#0a0a0a';
+const ACCENT = '#00e5ff';
+const PHOTO = '#333';
+const PAPER = '#fff';
+const SHADE = '#000';
 
 function TemplateThumbnail({ id, active }: { id: OgTemplate; active: boolean }) {
   const w = 72;
   const h = 38;
   return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="rounded">
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="rounded text-foreground">
       {id === 'minimal' && (
         <>
-          <rect width={w} height={h} fill="#0a0a0a" />
-          <rect x={6} y={h - 8} width={10} height={2} fill="#00e5ff" />
-          <rect x={6} y={14} width={40} height={4} rx={1} fill="#fff" opacity={0.8} />
-          <rect x={6} y={21} width={28} height={3} rx={1} fill="#fff" opacity={0.4} />
+          <rect width={w} height={h} fill={INK} />
+          <rect x={6} y={h - 8} width={10} height={2} fill={ACCENT} />
+          <rect x={6} y={14} width={40} height={4} rx={1} fill={PAPER} opacity={0.8} />
+          <rect x={6} y={21} width={28} height={3} rx={1} fill={PAPER} opacity={0.4} />
         </>
       )}
       {id === 'gradient' && (
         <>
           <defs>
             <linearGradient id="gt" x1="0" y1="0" x2={w} y2={h} gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#0a0a0a" />
-              <stop offset="100%" stopColor="#00e5ff" stopOpacity={0.25} />
+              <stop offset="0%" stopColor={INK} />
+              <stop offset="100%" stopColor={ACCENT} stopOpacity={0.25} />
             </linearGradient>
           </defs>
           <rect width={w} height={h} fill="url(#gt)" />
-          <rect x={6} y={h - 8} width={10} height={2} fill="#00e5ff" />
-          <rect x={6} y={14} width={40} height={4} rx={1} fill="#fff" opacity={0.8} />
+          <rect x={6} y={h - 8} width={10} height={2} fill={ACCENT} />
+          <rect x={6} y={14} width={40} height={4} rx={1} fill={PAPER} opacity={0.8} />
         </>
       )}
       {id === 'photo' && (
         <>
-          <rect width={w} height={h} fill="#333" />
-          <rect width={w} height={h} fill="#000" opacity={0.5} />
-          <rect x={6} y={h - 8} width={10} height={2} fill="#00e5ff" />
-          <rect x={6} y={14} width={40} height={4} rx={1} fill="#fff" opacity={0.8} />
+          <rect width={w} height={h} fill={PHOTO} />
+          <rect width={w} height={h} fill={SHADE} opacity={0.5} />
+          <rect x={6} y={h - 8} width={10} height={2} fill={ACCENT} />
+          <rect x={6} y={14} width={40} height={4} rx={1} fill={PAPER} opacity={0.8} />
         </>
       )}
       {id === 'split' && (
         <>
-          <rect width={w / 2} height={h} fill="#00e5ff" opacity={0.12} />
-          <rect x={w / 2} width={w / 2} height={h} fill="#0a0a0a" />
-          <rect x={6} y={h - 8} width={10} height={2} fill="#00e5ff" />
-          <rect x={6} y={14} width={40} height={4} rx={1} fill="#fff" opacity={0.8} />
+          <rect width={w / 2} height={h} fill={ACCENT} opacity={0.12} />
+          <rect x={w / 2} width={w / 2} height={h} fill={INK} />
+          <rect x={6} y={h - 8} width={10} height={2} fill={ACCENT} />
+          <rect x={6} y={14} width={40} height={4} rx={1} fill={PAPER} opacity={0.8} />
         </>
       )}
-      {active && <rect width={w} height={h} fill="none" stroke="#00e5ff" strokeWidth={2} rx={4} />}
+      {active && (
+        <rect width={w} height={h} fill="none" stroke="currentColor" strokeWidth={2} rx={4} />
+      )}
     </svg>
   );
 }
@@ -257,9 +254,8 @@ export const OgImagePage: React.FC = () => {
   ]);
 
   // File uploads
-  const handleLogoUpload = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
+  const handleLogoFile = useCallback(
+    (file: File | undefined) => {
       if (!file) return;
       const error = validateFile(file, 'image');
       if (error) {
@@ -267,14 +263,12 @@ export const OgImagePage: React.FC = () => {
         return;
       }
       setLogoUrl(URL.createObjectURL(file));
-      e.target.value = '';
     },
     [setLogoUrl]
   );
 
-  const handleBgUpload = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
+  const handleBgFile = useCallback(
+    (file: File | undefined) => {
       if (!file) return;
       const error = validateFile(file, 'image');
       if (error) {
@@ -282,7 +276,6 @@ export const OgImagePage: React.FC = () => {
         return;
       }
       setBackgroundImageUrl(URL.createObjectURL(file));
-      e.target.value = '';
     },
     [setBackgroundImageUrl]
   );
@@ -293,15 +286,15 @@ export const OgImagePage: React.FC = () => {
     const resp = await fetch(previewUrl);
     const blob = await resp.blob();
     downloadBlob(blob, `og-image-${Date.now()}.png`);
-    toast.success('PNG downloaded');
-  }, [previewUrl]);
+    toast.success(t('miniTools.downloaded'));
+  }, [previewUrl, t]);
 
   const handleCopy = useCallback(async () => {
     if (!previewUrl) return;
     const result = await copyImageAsPng(previewUrl);
-    if (result.success) toast.success('Copied to clipboard');
-    else toast.error(result.error || 'Copy failed');
-  }, [previewUrl]);
+    if (result.success) toast.success(t('miniTools.copied'));
+    else toast.error(result.error || t('miniTools.copyFailed'));
+  }, [previewUrl, t]);
 
   const handleCopyMeta = useCallback(async () => {
     const meta = [
@@ -312,9 +305,9 @@ export const OgImagePage: React.FC = () => {
       `<meta name="twitter:image" content="YOUR_IMAGE_URL" />`,
     ].join('\n');
     const ok = await copyToClipboard(meta);
-    if (ok) toast.success('Meta tags copied');
-    else toast.error('Copy failed');
-  }, []);
+    if (ok) toast.success(t('miniTools.og.metaCopied'));
+    else toast.error(t('miniTools.copyFailed'));
+  }, [width, height, t]);
 
   const handleReset = useCallback(() => {
     reset();
@@ -327,123 +320,159 @@ export const OgImagePage: React.FC = () => {
 
   const panel = (
     <div className="space-y-5">
-      <h2 className="text-2xs font-medium text-neutral-500">Settings</h2>
-
       {/* Brand select */}
       <BrandToolSelect value={brandId} onChange={setBrandId} />
 
       {/* Template selector */}
-      <div className="space-y-2">
-        <label className="block text-xs font-medium text-neutral-300 mb-2">Template</label>
+      <div className="space-y-1.5">
+        <span className="block text-xs font-medium text-muted-foreground">
+          {t('miniTools.og.template')}
+        </span>
         <div className="flex gap-2 flex-wrap">
           {TEMPLATES.map((tpl) => (
-            <motion.button
-              key={tpl.id}
-              onClick={() => setTemplate(tpl.id)}
-              className="flex flex-col items-center gap-1 group"
-              title={tpl.label}
+            <button
+              key={tpl}
+              type="button"
+              aria-pressed={template === tpl}
+              onClick={() => setTemplate(tpl)}
+              className="flex flex-col items-center gap-1 group rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <TemplateThumbnail id={tpl.id} active={template === tpl.id} />
+              <TemplateThumbnail id={tpl} active={template === tpl} />
               <span
                 className={cn(
                   'text-2xs font-medium',
-                  template === tpl.id
-                    ? 'text-brand-cyan'
-                    : 'text-neutral-600 group-hover:text-neutral-400'
+                  template === tpl
+                    ? 'text-foreground'
+                    : 'text-muted-foreground group-hover:text-foreground'
                 )}
               >
-                {tpl.label}
+                {t(`miniTools.og.templates.${tpl}`)}
               </span>
-            </motion.button>
+            </button>
           ))}
         </div>
       </div>
 
       {/* Title */}
-      <div>
-        <label className="block text-xs font-medium text-neutral-300 mb-2">Title</label>
-        <textarea
+      <div className="space-y-1.5">
+        <label htmlFor="og-title" className="block text-xs font-medium text-muted-foreground">
+          {t('miniTools.og.title')}
+        </label>
+        <Textarea
+          id="og-title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Your blog post title"
+          placeholder={t('miniTools.og.titlePlaceholder')}
           rows={2}
-          className="w-full bg-neutral-950/60 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 resize-none"
+          className="resize-none text-sm"
         />
       </div>
 
       {/* Subtitle */}
-      <div>
-        <label className="block text-xs font-medium text-neutral-300 mb-2">Subtitle</label>
+      <div className="space-y-1.5">
+        <label htmlFor="og-subtitle" className="block text-xs font-medium text-muted-foreground">
+          {t('miniTools.og.subtitle')}
+        </label>
         <Input
+          id="og-subtitle"
           value={subtitle}
           onChange={(e) => setSubtitle(e.target.value)}
-          placeholder="What the page is about"
-          className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 placeholder:text-neutral-600 focus:border-neutral-600"
+          placeholder={t('miniTools.og.subtitlePlaceholder')}
+          className="text-sm"
         />
       </div>
 
       {/* Author */}
-      <div>
-        <label className="block text-xs font-medium text-neutral-300 mb-2">Author</label>
+      <div className="space-y-1.5">
+        <label htmlFor="og-author" className="block text-xs font-medium text-muted-foreground">
+          {t('miniTools.og.author')}
+        </label>
         <Input
+          id="og-author"
           value={authorName}
           onChange={(e) => setAuthorName(e.target.value)}
-          placeholder="Author name"
-          className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 placeholder:text-neutral-600 focus:border-neutral-600"
+          placeholder={t('miniTools.og.authorPlaceholder')}
+          className="text-sm"
         />
       </div>
 
       {/* Logo upload */}
-      <div>
-        <label className="block text-xs font-medium text-neutral-300 mb-2">Logo</label>
+      <div className="space-y-1.5">
+        <span className="block text-xs font-medium text-muted-foreground">
+          {t('miniTools.og.logo')}
+        </span>
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-xs cursor-pointer transition-colors">
-            <Upload size={10} />
-            Upload
-            <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-          </label>
+          <Dropzone
+            onFiles={(files) => handleLogoFile(files[0])}
+            accept="image/*"
+            label={t('miniTools.og.upload')}
+            size="sm"
+            className="flex-1"
+          />
           {logoUrl && (
-            <button
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label={t('miniTools.remove')}
               onClick={() => setLogoUrl('')}
-              className="text-neutral-600 hover:text-neutral-300 transition-colors"
             >
               <X size={12} />
-            </button>
+            </Button>
           )}
         </div>
       </div>
 
       {/* Background image upload (photo template only) */}
       {template === 'photo' && (
-        <div>
-          <label className="block text-xs font-medium text-neutral-300 mb-2">
-            Background Image
-          </label>
+        <div className="space-y-1.5">
+          <span className="block text-xs font-medium text-muted-foreground">
+            {t('miniTools.og.backgroundImage')}
+          </span>
           <div className="flex items-center gap-2">
-            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-xs cursor-pointer transition-colors">
-              <Upload size={10} />
-              Upload
-              <input type="file" accept="image/*" className="hidden" onChange={handleBgUpload} />
-            </label>
+            <Dropzone
+              onFiles={(files) => handleBgFile(files[0])}
+              accept="image/*"
+              label={t('miniTools.og.upload')}
+              size="sm"
+              className="flex-1"
+            />
             {backgroundImageUrl && (
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t('miniTools.remove')}
                 onClick={() => setBackgroundImageUrl('')}
-                className="text-neutral-600 hover:text-neutral-300 transition-colors"
               >
                 <X size={12} />
-              </button>
+              </Button>
             )}
           </div>
         </div>
       )}
 
       {/* Colors */}
-      <div>
-        <label className="block text-xs font-medium text-neutral-300 mb-2">Colors</label>
+      <div className="space-y-1.5">
+        <span className="block text-xs font-medium text-muted-foreground">
+          {t('miniTools.og.colors')}
+        </span>
         <div className="flex gap-3">
-          <ColorInput label="BG" value={backgroundColor} onChange={setBackgroundColor} />
-          <ColorInput label="Accent" value={accentColor} onChange={setAccentColor} />
-          <ColorInput label="Text" value={textColor} onChange={setTextColor} />
+          <ColorInput
+            label={t('miniTools.og.colorBg')}
+            value={backgroundColor}
+            onChange={setBackgroundColor}
+          />
+          <ColorInput
+            label={t('miniTools.og.colorAccent')}
+            value={accentColor}
+            onChange={setAccentColor}
+          />
+          <ColorInput
+            label={t('miniTools.og.colorText')}
+            value={textColor}
+            onChange={setTextColor}
+          />
         </div>
       </div>
 
@@ -452,7 +481,7 @@ export const OgImagePage: React.FC = () => {
         <QuickActions
           toolId="og-image"
           outputMime="image/png"
-          summary="OG image generated"
+          summary={t('miniTools.og.generated')}
           onDownloadAll={handleDownload}
           onCopy={handleCopy}
           assetData={{
@@ -470,31 +499,22 @@ export const OgImagePage: React.FC = () => {
   /* ---------------------------------------------------------------- */
 
   const statusBar = previewUrl ? (
-    <div className="flex items-center gap-3">
-      <button
-        onClick={handleDownload}
-        className="flex items-center gap-1.5 text-xs font-medium text-foreground hover:text-muted-foreground transition-colors"
-      >
+    <div className="flex items-center gap-1">
+      <Button type="button" variant="ghost" size="xs" onClick={handleDownload}>
         <Download className="w-3.5 h-3.5" />
-        Download PNG
-      </button>
-      <button
-        onClick={handleCopy}
-        className="flex items-center gap-1.5 text-xs font-medium text-foreground hover:text-muted-foreground transition-colors"
-      >
+        {t('miniTools.og.downloadPng')}
+      </Button>
+      <Button type="button" variant="ghost" size="xs" onClick={handleCopy}>
         <Copy className="w-3.5 h-3.5" />
-        Copy Image
-      </button>
-      <button
-        onClick={handleCopyMeta}
-        className="flex items-center gap-1.5 text-xs font-medium text-foreground hover:text-muted-foreground transition-colors"
-      >
+        {t('miniTools.og.copyImage')}
+      </Button>
+      <Button type="button" variant="ghost" size="xs" onClick={handleCopyMeta}>
         <Code className="w-3.5 h-3.5" />
-        Copy Meta Tags
-      </button>
+        {t('miniTools.og.copyMeta')}
+      </Button>
     </div>
   ) : (
-    <span className="text-xs text-neutral-600">Configure your OG image</span>
+    <span className="text-xs text-muted-foreground">{t('miniTools.og.configure')}</span>
   );
 
   /* ---------------------------------------------------------------- */
@@ -515,27 +535,24 @@ export const OgImagePage: React.FC = () => {
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4, ease }}
-        className={cn(
-          'relative rounded-2xl overflow-hidden shadow-2xl shadow-black/40 w-full max-w-2xl',
-          glassSurface.panel
-        )}
+        className={cn('relative rounded-xl overflow-hidden w-full max-w-2xl', glassSurface.panel)}
       >
         {previewUrl ? (
           <img
             src={previewUrl}
-            alt="OG Image Preview"
+            alt={t('miniTools.og.previewAlt')}
             className="w-full h-auto"
             style={{ aspectRatio: `${width}/${height}` }}
           />
         ) : (
           <div
-            className="w-full flex items-center justify-center text-neutral-600 text-xs"
+            className="w-full flex items-center justify-center text-muted-foreground text-xs"
             style={{ aspectRatio: `${width}/${height}` }}
           >
-            Preview
+            {t('miniTools.og.preview')}
           </div>
         )}
-        <span className="absolute bottom-2 right-2 text-2xs font-mono text-neutral-500 bg-neutral-950/80 px-2 py-0.5 rounded">
+        <span className="absolute bottom-2 right-2 text-2xs font-mono tabular-nums text-muted-foreground bg-background/80 px-2 py-0.5 rounded">
           {width} x {height}
         </span>
       </motion.div>
@@ -562,15 +579,17 @@ function ColorInput({
         type="color"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-6 h-6 rounded border border-neutral-700 bg-transparent cursor-pointer p-0"
+        aria-label={label}
+        className="w-6 h-6 rounded border border-border bg-transparent cursor-pointer p-0"
       />
       <div className="flex flex-col">
-        <span className="text-2xs font-medium text-neutral-500">{label}</span>
+        <span className="text-2xs font-medium text-muted-foreground">{label}</span>
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-[72px] bg-transparent text-2xs font-mono text-neutral-400 border-none outline-none p-0"
+          aria-label={label}
+          className="w-[72px] bg-transparent text-2xs font-mono text-foreground border-none outline-none p-0 rounded-md focus-visible:ring-1 focus-visible:ring-ring"
         />
       </div>
     </div>

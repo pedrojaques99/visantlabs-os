@@ -44,13 +44,13 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease }}
       className={cn(
-        'flex flex-col gap-2.5 p-3 rounded-xl bg-neutral-900/60 border border-neutral-800/60',
+        'flex flex-col gap-2.5 p-3 rounded-xl bg-card/60 border border-border',
         className
       )}
     >
       {/* Summary line */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs text-neutral-300">{summary}</span>
+        <span className="text-xs text-foreground">{summary}</span>
         {savedBytes != null && savedBytes > 0 && (
           <span className="text-2xs text-success bg-success/10 px-1.5 py-0.5 rounded tabular-nums">
             {t('quickActions.saved', { size: formatBytes(savedBytes) })}
@@ -64,7 +64,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         {/* Download */}
         <button
           onClick={onDownloadAll}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/20 text-xs transition-colors duration-200"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/20 text-xs transition-colors duration-200"
         >
           <Download size={12} />
           {t('common.download')}
@@ -74,7 +74,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         {onCopy && (
           <button
             onClick={onCopy}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-neutral-800/60 hover:bg-neutral-700/60 text-neutral-400 hover:text-neutral-200 border border-neutral-700/30 text-xs transition-colors duration-200"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-muted/60 hover:bg-accent text-muted-foreground hover:text-foreground border border-border text-xs transition-colors duration-200"
           >
             <Copy size={12} />
             {t('common.copy')}

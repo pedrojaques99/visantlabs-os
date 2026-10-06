@@ -1,11 +1,9 @@
 import React from 'react';
-import { createPortal } from 'react-dom';
-import { X, Image as ImageIcon, Plus, Crown, Search, Globe, LayoutGrid } from '@/lib/ui/icons';
+import { Image as ImageIcon, Plus, Crown, Search, Globe, LayoutGrid } from '@/lib/ui/icons';
 import { Input } from './ui/input';
 import type { MockupPresetType, MockupPreset } from '../types/mockupPresets';
 import type { Mockup } from '../services/mockupApi';
 import { getImageUrl } from '@/utils/imageUtils';
-import { cn } from '../lib/utils';
 import { updatePresetsCache } from '../services/mockupPresetsService';
 import { getAllCommunityPresets } from '../services/communityPresetsService';
 import { PresetCard, CATEGORY_CONFIG } from './PresetCard';
@@ -13,6 +11,9 @@ import type { CommunityPrompt } from '../types/communityPrompts';
 import { useTranslation } from '@/hooks/useTranslation';
 import { fetchAllOfficialPresets } from '../services/unifiedPresetService';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { Modal } from './ui/Modal';
 
 interface MockupPresetModalProps {
   isOpen: boolean;
@@ -130,25 +131,6 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
 
     fetchAllPresets();
   }, [isOpen]);
-
-  // Event Listeners
-  React.useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      window.addEventListener('keydown', handleKeyDown);
-      const modalElement = document.getElementById('mockup-preset-modal');
-      if (modalElement) modalElement.focus();
-
-      return () => {
-        document.body.style.overflow = '';
-        window.removeEventListener('keydown', handleKeyDown);
-      };
-    }
-  }, [isOpen, onClose]);
 
   // Reset selections
   React.useEffect(() => {
@@ -268,7 +250,8 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
   // Reset scroll when filter changes
   React.useEffect(() => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = 0;
+      // O ref é o filho direto do corpo rolável do <Modal>.
+      scrollContainerRef.current.parentElement?.scrollTo({ top: 0 });
     }
   }, [activeFilter]);
 
@@ -327,81 +310,88 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
 
   if (!isOpen) return null;
 
-  const modalContent = (
-    <div
+  const categoryOptions = (
+    ['all', 'mockup', 'texture', 'angle', 'ambience', 'luminance'] as PresetFilterType[]
+  ).map((type) => {
+    const config = CATEGORY_CONFIG[type as keyof typeof CATEGORY_CONFIG];
+    return {
+      value: type,
+      icon: config ? config.icon : ImageIcon,
+      label: (
+        <>
+          <span>{tOr(`communityPresets.tabs.${type}`, type)}</span>
+          <span className="text-muted-foreground tabular-nums">{presetCounts[type]}</span>
+        </>
+      ),
+    };
+  });
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
       id="mockup-preset-modal"
-      tabIndex={-1}
-      className="fixed inset-0 bg-neutral-950/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
-      style={{ animation: 'fadeIn 0.2s ease-out' }}
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="mockup-preset-modal-title"
-    >
-      <div
-        className="relative max-w-4xl w-full max-h-[90vh] bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl overflow-hidden flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-neutral-800/50 bg-neutral-900/20">
-          <div className="flex items-center gap-2">
-            <ImageIcon size={20} className="text-neutral-500" />
-            <h2 id="mockup-preset-modal-title" className="text-sm font-medium text-neutral-300">
-              {multiSelect
-                ? t('canvasNodes.promptNode.presetModal.titleMulti')
+      size="xl"
+      contentClassName="sm:max-w-4xl"
+      headerClassName="p-4 sm:p-4"
+      bodyClassName="p-0 sm:p-0 md:p-0"
+      title={
+        multiSelect
+          ? t('canvasNodes.promptNode.presetModal.titleMulti')
+              .replace('{selected}', selectedPresetIds.size.toString())
+              .replace('{max}', maxSelections.toString())
+          : t('canvasNodes.promptNode.presetModal.title')
+      }
+      footerClassName="justify-between p-4 sm:p-4"
+      footer={
+        multiSelect ? (
+          <>
+            <div className="text-xs text-muted-foreground">
+              {selectedPresetIds.size === 0
+                ? t('canvasNodes.promptNode.presetModal.multiSelectMessageEmpty').replace(
+                    '{max}',
+                    maxSelections.toString()
+                  )
+                : t('canvasNodes.promptNode.presetModal.multiSelectMessage')
                     .replace('{selected}', selectedPresetIds.size.toString())
-                    .replace('{max}', maxSelections.toString())
-                : t('canvasNodes.promptNode.presetModal.title')}
-            </h2>
-          </div>
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            className="p-2 text-neutral-500 hover:text-foreground transition-colors hover:bg-neutral-800/50 rounded-full"
-            title={t('common.close')}
-            aria-label={t('common.close')}
-          >
-            <X size={20} />
-          </Button>
-        </div>
-
-        {/* Type Filters and Search */}
-        <div className="flex flex-col border-b border-neutral-800/50 bg-neutral-900/10">
-          <div className="px-4 py-3 flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
-            {(
-              ['all', 'mockup', 'texture', 'angle', 'ambience', 'luminance'] as PresetFilterType[]
-            ).map((type) => {
-              const config = CATEGORY_CONFIG[type as keyof typeof CATEGORY_CONFIG];
-              const Icon = config ? config.icon : ImageIcon;
-              const count = presetCounts[type];
-
-              return (
-                <Button
-                  variant="ghost"
-                  key={type}
-                  onClick={() => setActiveFilter(type)}
-                  className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-2xs transition-[color,background-color,border-color,opacity] whitespace-nowrap border',
-                    activeFilter === type
-                      ? 'bg-brand-cyan/10 text-foreground border-brand-cyan/30'
-                      : 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700'
-                  )}
-                >
-                  <Icon size={12} />
-                  <span>{tOr(`communityPresets.tabs.${type}`, type)}</span>
-                  <span className="ml-1 text-2xs opacity-60">({count})</span>
-                </Button>
-              );
-            })}
+                    .replace('{max}', maxSelections.toString())}
+            </div>
+            <Button
+              variant="primary"
+              onClick={handleSelectMockups}
+              disabled={selectedPresetIds.size === 0 || isLoading}
+            >
+              {t('canvasNodes.promptNode.presetModal.confirmSelection')}
+            </Button>
+          </>
+        ) : undefined
+      }
+    >
+      {/* O corpo do Modal rola sem padding (bodyClassName): os filtros grudam no topo
+          dele e o padding mora só no bloco de conteúdo abaixo. */}
+      <div ref={scrollContainerRef}>
+        <div className="sticky top-0 z-10 flex flex-col border-b border-border bg-popover">
+          {/* Type Filters */}
+          <div className="px-4 py-3 flex items-center gap-2">
+            <SegmentedControl
+              aria-label={t('canvasNodes.promptNode.presetModal.title')}
+              size="sm"
+              scrollable
+              className="min-w-0"
+              value={activeFilter}
+              onChange={setActiveFilter}
+              options={categoryOptions}
+            />
 
             {/* Create New Button */}
             <Button
-              variant="ghost"
+              variant="outline"
+              size="xs"
               onClick={(e) => {
                 e.stopPropagation();
                 window.location.href = '/canvas';
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 ml-auto bg-neutral-900/50 hover:bg-neutral-800 border border-neutral-700 rounded-full text-2xs text-foreground transition-colors whitespace-nowrap"
+              className="ml-auto shrink-0 gap-1.5"
             >
               <Plus size={12} />
               <span>{t('canvasNodes.promptNode.presetModal.createNew')}</span>
@@ -409,78 +399,51 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
           </div>
 
           {/* Search Bar & Source Filter */}
-          <div className="px-4 py-3 border-t border-neutral-800/50 bg-neutral-900/5 flex flex-col sm:flex-row gap-3">
+          <div className="px-4 py-3 border-t border-border flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('common.search')}
-                className="pl-9 h-9 bg-neutral-900/50 border-neutral-800/50 focus:border-neutral-600 focus:ring-1 focus:ring-brand-cyan/30 text-xs w-full"
+                className="pl-9 h-9 text-xs w-full"
               />
             </div>
 
             {/* Source Toggle */}
-            <div className="flex bg-neutral-900/50 border border-neutral-800/50 rounded-md p-1 shrink-0 self-start sm:self-auto">
-              <Button
-                variant="ghost"
-                onClick={() => setPresetSource('all')}
-                className={cn(
-                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-2xs transition-[color,background-color,border-color,box-shadow]',
-                  presetSource === 'all'
-                    ? 'bg-neutral-800 text-white shadow-sm'
-                    : 'text-neutral-500 hover:text-neutral-300'
-                )}
-                title={t('communityPresets.filters.all')}
-              >
-                <LayoutGrid size={14} />
-                <span className="hidden sm:inline">{t('communityPresets.filters.all')}</span>
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => setPresetSource('official')}
-                className={cn(
-                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-2xs transition-[color,background-color,border-color,box-shadow]',
-                  presetSource === 'official'
-                    ? 'bg-warning/10 text-warning shadow-sm'
-                    : 'text-neutral-500 hover:text-warning/70'
-                )}
-                title={t('communityPresets.filters.official')}
-              >
-                <Crown size={14} />
-                <span className="hidden sm:inline">{t('communityPresets.filters.official')}</span>
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => setPresetSource('community')}
-                className={cn(
-                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-2xs transition-[color,background-color,border-color,box-shadow]',
-                  presetSource === 'community'
-                    ? 'bg-brand-cyan/10 text-foreground'
-                    : 'text-neutral-500 hover:text-neutral-200'
-                )}
-                title={t('communityPresets.filters.community')}
-              >
-                <Globe size={14} />
-                <span className="hidden sm:inline">{t('communityPresets.filters.community')}</span>
-              </Button>
-            </div>
+            <SegmentedControl
+              aria-label={t('communityPresets.filters.title')}
+              size="sm"
+              className="shrink-0 self-start sm:self-auto"
+              value={presetSource}
+              onChange={setPresetSource}
+              options={[
+                { value: 'all', icon: LayoutGrid, label: t('communityPresets.filters.all') },
+                {
+                  value: 'official',
+                  icon: Crown,
+                  label: t('communityPresets.filters.official'),
+                },
+                {
+                  value: 'community',
+                  icon: Globe,
+                  label: t('communityPresets.filters.community'),
+                },
+              ]}
+            />
           </div>
         </div>
 
         {/* Content */}
-        <div
-          ref={scrollContainerRef}
-          className="flex-1 overflow-y-auto overflow-x-hidden p-4 custom-scrollbar bg-neutral-950/50"
-        >
+        <div className="px-6 pb-6 pt-4 sm:px-10 sm:pb-10 md:px-12 md:pb-12">
           {isLoadingPresets ? (
-            <div className="flex flex-col items-center justify-center py-20 text-neutral-500 gap-2">
+            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-2">
               <div className="w-6 h-6 border-2 border-muted border-t-foreground rounded-full animate-spin"></div>
               <p className="text-xs">{t('canvasNodes.promptNode.presetModal.loading')}</p>
             </div>
           ) : filteredPresets.length === 0 ? (
             <div className="flex items-center justify-center py-20">
-              <p className="text-sm text-neutral-500">
+              <p className="text-sm text-muted-foreground">
                 {t('canvasNodes.promptNode.presetModal.noCommunity')}
               </p>
             </div>
@@ -492,56 +455,29 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
               }}
             >
               {filteredPresets.map((preset) => (
-                <div key={`${preset.presetType || 'default'}-${preset.id}`} className="relative">
-                  {preset.isOfficial && (
-                    <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-1.5 py-0.5 bg-warning/20 border border-warning/40 rounded text-2xs text-warning">
-                      <Crown size={8} />
-                      <span>{t('canvasNodes.promptNode.presetModal.official')}</span>
-                    </div>
-                  )}
-                  <PresetCard
-                    preset={preset}
-                    onClick={() => handlePresetClick(preset.id)}
-                    isAuthenticated={true}
-                    canEdit={false}
-                    t={t}
-                    selected={isPresetSelected(preset.id)}
-                    selectionIndex={getSelectionIndex(preset.id)}
-                  />
-                </div>
+                <PresetCard
+                  key={`${preset.presetType || 'default'}-${preset.id}`}
+                  preset={preset}
+                  onClick={() => handlePresetClick(preset.id)}
+                  isAuthenticated={true}
+                  canEdit={false}
+                  t={t}
+                  selected={isPresetSelected(preset.id)}
+                  selectionIndex={getSelectionIndex(preset.id)}
+                  badge={
+                    preset.isOfficial ? (
+                      <Badge variant="warning" className="gap-1 px-1.5 text-2xs">
+                        <Crown size={10} />
+                        {t('canvasNodes.promptNode.presetModal.official')}
+                      </Badge>
+                    ) : undefined
+                  }
+                />
               ))}
             </div>
           )}
         </div>
-
-        {/* Footer with Select Mockups button (multi-select mode only) */}
-        {multiSelect && (
-          <div className="border-t border-neutral-800/50 p-4 flex items-center justify-between bg-neutral-900/50">
-            <div className="text-xs text-neutral-400">
-              {selectedPresetIds.size === 0
-                ? t('canvasNodes.promptNode.presetModal.multiSelectMessageEmpty').replace(
-                    '{max}',
-                    maxSelections.toString()
-                  )
-                : t('canvasNodes.promptNode.presetModal.multiSelectMessage')
-                    .replace('{selected}', selectedPresetIds.size.toString())
-                    .replace('{max}', maxSelections.toString())}
-            </div>
-            <Button
-              variant="ghost"
-              onClick={handleSelectMockups}
-              disabled={selectedPresetIds.size === 0 || isLoading}
-              className={cn(
-                'px-6 py-2.5 bg-brand-cyan text-black font-semibold rounded-md text-xs transition-[color,background-color,border-color,opacity,transform,filter] hover:bg-brand-cyan/90 disabled:opacity-50 disabled:cursor-not-allowed'
-              )}
-            >
-              {t('canvasNodes.promptNode.presetModal.confirmSelection')}
-            </Button>
-          </div>
-        )}
       </div>
-    </div>
+    </Modal>
   );
-
-  return createPortal(modalContent, document.body);
 };

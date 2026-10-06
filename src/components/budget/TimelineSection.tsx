@@ -31,7 +31,7 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ timeline, onCh
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-neutral-200">{t('budget.timeline')}</h3>
+        <h3 className="text-lg font-medium text-foreground">{t('budget.timeline')}</h3>
         <Button
           variant="brand"
           onClick={addMilestone}

@@ -15,6 +15,7 @@ import { User, Plus, Trash2, ImagePlus, Loader2 } from '@/lib/ui/icons';
 import type { BrandGuideline, BrandPersona } from '@/lib/figma-types';
 import { InlineTags } from '../InlineTags';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
+import { Thumb } from '@/components/ui/Thumb';
 
 interface PersonasSectionProps {
   guideline: BrandGuideline;
@@ -56,13 +57,13 @@ const Avatar: React.FC<{
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className="w-10 h-10 rounded-full shrink-0 overflow-hidden border border-white/10 bg-neutral-800 flex items-center justify-center hover:border-white/20 transition-colors"
+          className="w-10 h-10 rounded-full shrink-0 overflow-hidden border border-border bg-muted flex items-center justify-center hover:border-border-hover transition-colors"
           title="Set avatar / gender for stock photos"
         >
           {img ? (
-            <img src={img} alt={persona.name} className="w-full h-full object-cover" />
+            <Thumb src={img} alt={persona.name} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-xs font-semibold text-neutral-400">{initials}</span>
+            <span className="text-xs font-medium text-muted-foreground">{initials}</span>
           )}
         </button>
       </DropdownMenuTrigger>
@@ -75,10 +76,10 @@ const Avatar: React.FC<{
               <button
                 key={g.value}
                 onClick={() => onSetGender(g.value)}
-                className={`w-6 h-6 rounded text-2xs font-bold transition-colors ${
+                className={`w-6 h-6 rounded text-2xs font-medium transition-colors ${
                   persona.gender === g.value
-                    ? 'bg-white/15 text-neutral-100'
-                    : 'bg-white/[0.03] text-neutral-500 hover:text-neutral-300'
+                    ? 'bg-accent text-foreground'
+                    : 'bg-muted text-muted-foreground hover:text-foreground'
                 }`}
                 title={g.value}
               >
@@ -97,10 +98,10 @@ const Avatar: React.FC<{
             {mediaItems!.map((m) => (
               <button
                 key={m.id}
-                className="aspect-square rounded overflow-hidden border border-neutral-800 hover:border-white/20 transition-colors"
+                className="aspect-square rounded overflow-hidden border border-border hover:border-border-hover transition-colors"
                 onClick={() => onPickImage(m.url)}
               >
-                <img src={m.url} alt={m.label || ''} className="w-full h-full object-cover" />
+                <Thumb src={m.url} alt={m.label || ''} className="w-full h-full object-cover" />
               </button>
             ))}
           </div>
@@ -231,7 +232,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
                 <Input
                   value={p.name}
                   onChange={(e) => set(i, { name: e.target.value })}
-                  className="h-8 bg-transparent border-none px-0 text-base font-semibold text-neutral-100 focus-visible:ring-0 placeholder:text-neutral-700"
+                  className="h-8 bg-transparent border-none px-0 text-base font-medium text-foreground focus-visible:ring-0 placeholder:text-muted-foreground"
                   placeholder="Nome da persona"
                 />
                 <Input
@@ -270,7 +271,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
                   <textarea
                     value={p.bio || ''}
                     onChange={(e) => set(i, { bio: e.target.value })}
-                    className="auto-textarea w-full bg-transparent border border-neutral-800 rounded-md px-3 py-2 text-xs text-neutral-400 placeholder:text-neutral-700 focus:outline-none focus:border-white/10 transition-colors"
+                    className="auto-textarea w-full bg-transparent border border-border rounded-md px-3 py-2 text-xs text-muted-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-colors"
                     placeholder="Contexto, rotina, mentalidade..."
                   />
                 </div>
@@ -282,7 +283,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
                     <textarea
                       value={toLines(p.desires)}
                       onChange={(e) => set(i, { desires: fromLines(e.target.value) })}
-                      className="auto-textarea w-full bg-transparent border border-neutral-800 rounded-md px-3 py-2 text-xs text-neutral-400 placeholder:text-neutral-700 focus:outline-none focus:border-white/10 transition-colors"
+                      className="auto-textarea w-full bg-transparent border border-border rounded-md px-3 py-2 text-xs text-muted-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-colors"
                       placeholder={'Reduzir fricção\nROI claro\nTime autônomo'}
                     />
                   </div>
@@ -291,7 +292,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
                     <textarea
                       value={toLines(p.painPoints)}
                       onChange={(e) => set(i, { painPoints: fromLines(e.target.value) })}
-                      className="auto-textarea w-full bg-transparent border border-neutral-800 rounded-md px-3 py-2 text-xs text-neutral-400 placeholder:text-neutral-700 focus:outline-none focus:border-white/10 transition-colors"
+                      className="auto-textarea w-full bg-transparent border border-border rounded-md px-3 py-2 text-xs text-muted-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-colors"
                       placeholder={'Ferramentas fragmentadas\nSem visibilidade\nOnboarding lento'}
                     />
                   </div>

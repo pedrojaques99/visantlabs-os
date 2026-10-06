@@ -46,7 +46,7 @@ const Field: React.FC<{
           }
         }}
         style={{ width }}
-        className="bg-neutral-800/60 border border-white/10 rounded px-1 py-0.5 text-white text-right focus:outline-none focus:border-neutral-600"
+        className="bg-neutral-800/60 border border-border rounded px-1 py-0.5 text-white text-right focus:outline-none focus:border-neutral-600"
       />
       {suffix && <span className="text-neutral-600">{suffix}</span>}
     </label>
@@ -154,7 +154,7 @@ export const SelectionHud: React.FC<Props> = ({
 
   return (
     <div
-      className="absolute z-20 flex items-center gap-2 px-2 py-1 rounded-md bg-neutral-950/95 backdrop-blur-xl border border-white/10 shadow-xl pointer-events-auto"
+      className="absolute z-20 flex items-center gap-2 px-2 py-1 rounded-md bg-neutral-950/95 backdrop-blur-xl border border-border shadow-xl pointer-events-auto"
       style={{ left: screenLeft, top: screenTop }}
       onMouseDown={(e) => e.stopPropagation()}
     >

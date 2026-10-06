@@ -136,7 +136,7 @@ export const BrandQuickEditDialog: React.FC<Props> = ({ guideline, open, onOpenC
         <DialogBody className="space-y-5">
           {/* Logo → brand mark / avatar */}
           <div className="flex items-center gap-4">
-            <div className="ring-1 ring-border rounded-lg">
+            <div className="ring-1 ring-border rounded-xl">
               <BrandAvatar brand={guideline} size={56} rounded="md" preference="primary" />
             </div>
             <div className="space-y-1">
@@ -191,7 +191,7 @@ export const BrandQuickEditDialog: React.FC<Props> = ({ guideline, open, onOpenC
             <Field label={t('brandQuickEdit.primary')}>
               <div className="flex items-center gap-2">
                 <span
-                  className="w-9 h-9 rounded-lg border border-border shrink-0"
+                  className="w-9 h-9 rounded-xl border border-border shrink-0"
                   style={{ backgroundColor: hexValid && primaryHex ? primaryHex : 'transparent' }}
                 />
                 <Input

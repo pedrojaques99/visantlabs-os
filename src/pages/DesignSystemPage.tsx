@@ -16,6 +16,10 @@ import {
   Command,
   Sliders,
   Sparkles,
+  Download,
+  Trash2,
+  List,
+  Heart,
 } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
@@ -66,6 +70,9 @@ import type { CommunityPrompt } from '../types/communityPrompts';
 import { PremiumButton } from '../components/ui/PremiumButton';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { MicroTitle } from '../components/ui/MicroTitle';
+import { MediaTile } from '../components/ui/MediaTile';
+import { SegmentedControl } from '../components/ui/SegmentedControl';
+import { Dropzone } from '../components/ui/Dropzone';
 import { copyToClipboard } from '@/utils/clipboard';
 
 const ColorSwatch: React.FC<{
@@ -84,33 +91,35 @@ const ColorSwatch: React.FC<{
   };
 
   return (
-    <div className="bg-card border border-neutral-800/20 rounded-xl px-6 py-4 hover:border-neutral-700 transition-colors">
+    <div className="bg-card border border-border rounded-xl px-6 py-4 hover:border-border-hover transition-colors">
       <div className="flex items-start gap-4">
         <div
-          className="w-16 h-16 rounded-xl border border-neutral-800/50 flex-shrink-0"
+          className="w-16 h-16 rounded-xl border border-border flex-shrink-0"
           style={{ backgroundColor: `var(${variable})` }}
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-semibold text-neutral-200">{name}</h4>
+            <h4 className="font-medium text-foreground">{name}</h4>
             <Button
               variant="ghost"
               onClick={handleCopy}
-              className="p-1 hover:bg-neutral-800/50 rounded transition-colors"
+              className="p-1 hover:bg-accent rounded transition-colors"
               title="Copy CSS variable"
             >
               {copied ? (
                 <Check className="w-3 h-3 text-foreground" />
               ) : (
-                <Copy className="w-3 h-3 text-neutral-400" />
+                <Copy className="w-3 h-3 text-muted-foreground" />
               )}
             </Button>
           </div>
-          <p className="font-mono text-xs text-neutral-500 mb-1 break-all">{variable}</p>
+          <p className="font-mono text-xs text-muted-foreground mb-1 break-all">{variable}</p>
           {resolvedValue && (
-            <p className="font-mono text-2xs text-neutral-600 mb-1 break-all">{resolvedValue}</p>
+            <p className="font-mono text-2xs text-muted-foreground mb-1 break-all">
+              {resolvedValue}
+            </p>
           )}
-          {description && <p className="text-sm text-neutral-400 font-mono">{description}</p>}
+          {description && <p className="text-sm text-muted-foreground font-mono">{description}</p>}
         </div>
       </div>
     </div>
@@ -123,18 +132,18 @@ const SpacingExample: React.FC<{
   tailwind?: string;
 }> = ({ name, px, tailwind }) => (
   <div className="flex items-center gap-4">
-    <div className="w-24 font-mono text-sm text-neutral-400">{name}</div>
+    <div className="w-24 font-mono text-sm text-muted-foreground">{name}</div>
     <div className="flex-1">
-      <div className="h-8 bg-neutral-800/50 rounded-lg flex items-center">
+      <div className="h-8 bg-muted rounded-xl flex items-center">
         <div
-          className="bg-brand-cyan/30 h-full flex items-center justify-center text-xs font-mono text-foreground rounded-lg"
+          className="bg-brand-cyan/30 h-full flex items-center justify-center text-xs font-mono text-foreground rounded-xl"
           style={{ width: `${px}px`, minWidth: '20px' }}
         >
           {px}px
         </div>
       </div>
     </div>
-    <div className="w-32 font-mono text-xs text-neutral-500">{tailwind ?? `${px}px`}</div>
+    <div className="w-32 font-mono text-xs text-muted-foreground">{tailwind ?? `${px}px`}</div>
   </div>
 );
 
@@ -143,14 +152,14 @@ const CssTokenRow: React.FC<{
   resolvedValue?: string;
   description?: string;
 }> = ({ variable, resolvedValue, description }) => (
-  <div className="flex items-center justify-between py-2 border-b border-neutral-800/30 last:border-0">
+  <div className="flex items-center justify-between py-2 border-b border-border last:border-0">
     <div>
       <span className="font-mono text-xs text-foreground">{variable}</span>
       {description && (
-        <span className="ml-3 text-xs text-neutral-500 font-mono">{description}</span>
+        <span className="ml-3 text-xs text-muted-foreground font-mono">{description}</span>
       )}
     </div>
-    <span className="font-mono text-xs text-neutral-400">{resolvedValue || '—'}</span>
+    <span className="font-mono text-xs text-muted-foreground">{resolvedValue || '—'}</span>
   </div>
 );
 
@@ -195,6 +204,15 @@ export const DesignSystemPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSharedModal, setShowSharedModal] = useState(false);
+  const [showBodyModal, setShowBodyModal] = useState(false);
+  const [segmentedValue, setSegmentedValue] = useState<'grid' | 'list' | 'board'>('grid');
+  const [selectedTile, setSelectedTile] = useState<string | null>(null);
+  const [tileName, setTileName] = useState('Summer campaign');
+  const [tileLiked, setTileLiked] = useState(false);
+  const [panelTab, setPanelTab] = useState<'logos' | 'images' | 'videos' | 'fonts' | 'refs'>(
+    'logos'
+  );
+  const [droppedFiles, setDroppedFiles] = useState<string[]>([]);
 
   const navigationItems: NavigationItem[] = [
     {
@@ -276,6 +294,12 @@ export const DesignSystemPage: React.FC = () => {
           id: 'micro-title',
           label: t('designSystem.components.microTitle.title'),
         },
+        { id: 'media-tile', label: t('designSystem.components.mediaTile.title') },
+        {
+          id: 'segmented-control',
+          label: t('designSystem.components.segmentedControl.title'),
+        },
+        { id: 'dropzone', label: t('designSystem.components.dropzone.title') },
       ],
     },
     {
@@ -467,18 +491,18 @@ export const DesignSystemPage: React.FC = () => {
     if (!previousTab && !nextTab) return null;
 
     return (
-      <div className="mt-8 pt-8 border-t border-neutral-800/50">
+      <div className="mt-8 pt-8 border-t border-border">
         <div className="flex items-center justify-between gap-4">
           {previousTab ? (
             <Button
               variant="ghost"
               onClick={() => handleNavigationClick(previousTab)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-colors border border-neutral-800/50 hover:border-white/10"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors border border-border hover:border-border-hover"
             >
               <ChevronLeft className="w-4 h-4" />
               <span>{t('designSystem.navigation.previous')}</span>
-              <span className="text-neutral-500">•</span>
-              <span className="text-neutral-500">{getTabLabel(previousTab)}</span>
+              <span className="text-muted-foreground">•</span>
+              <span className="text-muted-foreground">{getTabLabel(previousTab)}</span>
             </Button>
           ) : (
             <div />
@@ -487,10 +511,10 @@ export const DesignSystemPage: React.FC = () => {
             <Button
               variant="ghost"
               onClick={() => handleNavigationClick(nextTab)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-colors border border-neutral-800/50 hover:border-white/10 ml-auto"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors border border-border hover:border-border-hover ml-auto"
             >
-              <span className="text-neutral-500">{getTabLabel(nextTab)}</span>
-              <span className="text-neutral-500">•</span>
+              <span className="text-muted-foreground">{getTabLabel(nextTab)}</span>
+              <span className="text-muted-foreground">•</span>
               <span>{t('designSystem.navigation.next')}</span>
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -507,7 +531,7 @@ export const DesignSystemPage: React.FC = () => {
         description={t('designSystem.seo.description')}
         keywords={t('designSystem.seo.keywords')}
       />
-      <div className="bg-background text-neutral-300 relative min-h-screen">
+      <div className="bg-background text-foreground relative min-h-screen">
         <div className="fixed inset-0 z-0"></div>
 
         <div className="flex relative z-10">
@@ -561,12 +585,12 @@ export const DesignSystemPage: React.FC = () => {
                 {activeTab === 'home' && (
                   <div className="flex items-center justify-between gap-4 mb-8">
                     <div className="flex items-center gap-4">
-                      <Palette className="h-6 w-6 md:h-8 md:w-8 text-neutral-500" />
+                      <Palette className="h-6 w-6 md:h-8 md:w-8 text-muted-foreground" />
                       <div className="flex-1">
-                        <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-neutral-300">
+                        <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-foreground">
                           {t('designSystem.title')}
                         </h1>
-                        <p className="text-neutral-500 font-mono text-sm md:text-base mt-1">
+                        <p className="text-muted-foreground font-mono text-sm md:text-base mt-1">
                           {t('designSystem.description')}
                         </p>
                       </div>
@@ -581,12 +605,12 @@ export const DesignSystemPage: React.FC = () => {
                         });
                         document.dispatchEvent(event);
                       }}
-                      className="hidden md:flex items-center gap-2 px-4 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-400 hover:text-neutral-300 hover:border-white/10 transition-colors text-sm font-mono"
+                      className="hidden md:flex items-center gap-2 px-4 py-2 bg-muted border border-border rounded-md text-muted-foreground hover:text-foreground hover:border-border-hover transition-colors text-sm font-mono"
                       title={t('designSystem.commandPalette.searchShortcut')}
                     >
                       <Search className="w-4 h-4" />
                       <span>{t('common.search')}</span>
-                      <div className="flex items-center gap-1 px-1.5 py-0.5 bg-neutral-900/50 rounded border border-neutral-800/50">
+                      <div className="flex items-center gap-1 px-1.5 py-0.5 bg-muted rounded border border-border">
                         <Command className="w-3 h-3" />
                         <kbd className="text-xs">K</kbd>
                       </div>
@@ -601,7 +625,7 @@ export const DesignSystemPage: React.FC = () => {
                     <Card className="overflow-hidden">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                          <Diamond className="w-5 h-5 text-neutral-500" />
+                          <Diamond className="w-5 h-5 text-muted-foreground" />
                           {t('designSystem.home.welcome')}
                         </CardTitle>
                         <CardDescription>{t('designSystem.home.description')}</CardDescription>
@@ -609,94 +633,94 @@ export const DesignSystemPage: React.FC = () => {
                       <CardContent className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                           <Card
-                            className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group"
+                            className="cursor-pointer hover:border-border-hover hover:bg-accent hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group"
                             onClick={() => setActiveTab('colors')}
                           >
                             <CardHeader>
-                              <Palette className="w-8 h-8 text-neutral-500 mb-2" />
-                              <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">
+                              <Palette className="w-8 h-8 text-muted-foreground mb-2" />
+                              <CardTitle className="text-lg group-hover:text-foreground transition-colors">
                                 {t('designSystem.tabs.colors')}
                               </CardTitle>
                             </CardHeader>
                             <CardContent>
-                              <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
+                              <p className="text-sm text-muted-foreground font-mono group-hover:text-foreground transition-colors">
                                 {t('designSystem.home.colorsDescription')}
                               </p>
                             </CardContent>
                           </Card>
                           <Card
-                            className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group"
+                            className="cursor-pointer hover:border-border-hover hover:bg-accent hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group"
                             onClick={() => setActiveTab('typography')}
                           >
                             <CardHeader>
                               <Type className="w-8 h-8 text-foreground mb-2" />
-                              <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">
+                              <CardTitle className="text-lg group-hover:text-foreground transition-colors">
                                 {t('designSystem.tabs.typography')}
                               </CardTitle>
                             </CardHeader>
                             <CardContent>
-                              <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
+                              <p className="text-sm text-muted-foreground font-mono group-hover:text-foreground transition-colors">
                                 {t('designSystem.home.typographyDescription')}
                               </p>
                             </CardContent>
                           </Card>
                           <Card
-                            className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group"
+                            className="cursor-pointer hover:border-border-hover hover:bg-accent hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group"
                             onClick={() => setActiveTab('components')}
                           >
                             <CardHeader>
                               <Box className="w-8 h-8 text-foreground mb-2" />
-                              <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">
+                              <CardTitle className="text-lg group-hover:text-foreground transition-colors">
                                 {t('designSystem.tabs.components')}
                               </CardTitle>
                             </CardHeader>
                             <CardContent>
-                              <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
+                              <p className="text-sm text-muted-foreground font-mono group-hover:text-foreground transition-colors">
                                 {t('designSystem.home.componentsDescription')}
                               </p>
                             </CardContent>
                           </Card>
                           <Card
-                            className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group"
+                            className="cursor-pointer hover:border-border-hover hover:bg-accent hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group"
                             onClick={() => setActiveTab('spacing')}
                           >
                             <CardHeader>
                               <LayoutGrid className="w-8 h-8 text-foreground mb-2" />
-                              <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">
+                              <CardTitle className="text-lg group-hover:text-foreground transition-colors">
                                 {t('designSystem.tabs.spacing')}
                               </CardTitle>
                             </CardHeader>
                             <CardContent>
-                              <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
+                              <p className="text-sm text-muted-foreground font-mono group-hover:text-foreground transition-colors">
                                 {t('designSystem.home.spacingDescription')}
                               </p>
                             </CardContent>
                           </Card>
                           <Link to="/design-system/controls" className="block">
-                            <Card className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group h-full">
+                            <Card className="cursor-pointer hover:border-border-hover hover:bg-accent hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group h-full">
                               <CardHeader>
                                 <Sliders className="w-8 h-8 text-foreground mb-2" />
-                                <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">
+                                <CardTitle className="text-lg group-hover:text-foreground transition-colors">
                                   Controls
                                 </CardTitle>
                               </CardHeader>
                               <CardContent>
-                                <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
+                                <p className="text-sm text-muted-foreground font-mono group-hover:text-foreground transition-colors">
                                   Curves, gradient, XY pad, dual-range &amp; more
                                 </p>
                               </CardContent>
                             </Card>
                           </Link>
                           <Link to="/design-system/icons" className="block">
-                            <Card className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group h-full">
+                            <Card className="cursor-pointer hover:border-border-hover hover:bg-accent hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group h-full">
                               <CardHeader>
-                                <Sparkles className="w-8 h-8 text-neutral-500 mb-2" />
-                                <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">
+                                <Sparkles className="w-8 h-8 text-muted-foreground mb-2" />
+                                <CardTitle className="text-lg group-hover:text-foreground transition-colors">
                                   Icons
                                 </CardTitle>
                               </CardHeader>
                               <CardContent>
-                                <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
+                                <p className="text-sm text-muted-foreground font-mono group-hover:text-foreground transition-colors">
                                   Phosphor icon catalog with usage counts
                                 </p>
                               </CardContent>
@@ -712,10 +736,10 @@ export const DesignSystemPage: React.FC = () => {
                               </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-2">
-                              <p className="text-sm text-neutral-400 font-mono">
+                              <p className="text-sm text-muted-foreground font-mono">
                                 {t('designSystem.home.quickStartDescription')}
                               </p>
-                              <ul className="text-sm text-neutral-400 font-mono list-disc list-inside space-y-1">
+                              <ul className="text-sm text-muted-foreground font-mono list-disc list-inside space-y-1">
                                 <li>{t('designSystem.home.quickStart1')}</li>
                                 <li>{t('designSystem.home.quickStart2')}</li>
                                 <li>{t('designSystem.home.quickStart3')}</li>
@@ -729,11 +753,11 @@ export const DesignSystemPage: React.FC = () => {
                               </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-2">
-                              <p className="text-sm text-neutral-400 font-mono">
+                              <p className="text-sm text-muted-foreground font-mono">
                                 {t('designSystem.home.usageDescription')}
                               </p>
-                              <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                                <code className="text-xs font-mono text-neutral-300">
+                              <div className="p-3 bg-muted border border-border rounded-md">
+                                <code className="text-xs font-mono text-foreground">
                                   {t('designSystem.home.usageExample')}
                                 </code>
                               </div>
@@ -845,14 +869,14 @@ export const DesignSystemPage: React.FC = () => {
                         {TYPOGRAPHY_TOKENS.map((font) => (
                           <div
                             key={font.className}
-                            className="border border-neutral-800/20 rounded-xl p-6 bg-neutral-900/40"
+                            className="border border-border rounded-xl p-6 bg-muted"
                           >
                             <div className="flex items-start justify-between mb-4">
                               <div>
-                                <h3 className="font-semibold text-neutral-200 mb-1">{font.name}</h3>
-                                <p className="text-sm text-neutral-400">{font.description}</p>
+                                <h3 className="font-medium text-foreground mb-1">{font.name}</h3>
+                                <p className="text-sm text-muted-foreground">{font.description}</p>
                               </div>
-                              <span className="font-mono text-2xs text-neutral-600 bg-neutral-800/50 px-2 py-1 rounded">
+                              <span className="font-mono text-2xs text-muted-foreground bg-muted px-2 py-1 rounded">
                                 {font.className}
                               </span>
                             </div>
@@ -863,7 +887,7 @@ export const DesignSystemPage: React.FC = () => {
                             <p className={cn('text-lg mt-2', font.className)}>
                               0123456789 !@#$%^&*()
                             </p>
-                            <p className="font-mono text-2xs text-neutral-600 mt-3">
+                            <p className="font-mono text-2xs text-muted-foreground mt-3">
                               {font.fontFamily}
                             </p>
                           </div>
@@ -881,11 +905,11 @@ export const DesignSystemPage: React.FC = () => {
                       <CardContent className="space-y-4">
                         <div className="space-y-2">
                           <h1 className="text-4xl font-semibold font-manrope">Heading 1</h1>
-                          <h2 className="text-3xl font-semibold font-manrope">Heading 2</h2>
-                          <h3 className="text-2xl font-semibold font-manrope">Heading 3</h3>
-                          <h4 className="text-xl font-semibold font-manrope">Heading 4</h4>
-                          <h5 className="text-lg font-semibold font-manrope">Heading 5</h5>
-                          <h6 className="text-base font-semibold font-manrope">Heading 6</h6>
+                          <h2 className="text-3xl font-medium font-manrope">Heading 2</h2>
+                          <h3 className="text-2xl font-medium font-manrope">Heading 3</h3>
+                          <h4 className="text-xl font-medium font-manrope">Heading 4</h4>
+                          <h5 className="text-lg font-medium font-manrope">Heading 5</h5>
+                          <h6 className="text-base font-medium font-manrope">Heading 6</h6>
                           <p className="text-base font-manrope">
                             Body text, regular paragraph text
                           </p>
@@ -909,7 +933,7 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         {/* Core variants */}
-                        <p className="text-xs font-mono text-neutral-500">Core:</p>
+                        <p className="text-xs font-mono text-muted-foreground">Core:</p>
                         <div className="flex flex-wrap gap-3">
                           <Button variant="default">Default</Button>
                           <Button variant="secondary">Secondary</Button>
@@ -921,8 +945,20 @@ export const DesignSystemPage: React.FC = () => {
                           <Button variant="sidebarAction">Sidebar Action</Button>
                         </div>
                         <Separator />
+                        {/* Cyan CTAs: primary (tool action) vs brand (hero) */}
+                        <p className="text-xs text-muted-foreground">
+                          {t('designSystem.components.buttons.ctaNote')}
+                        </p>
+                        <div className="flex flex-wrap gap-3">
+                          <Button variant="primary">Primary</Button>
+                          <Button variant="primary" size="sm">
+                            Primary sm
+                          </Button>
+                          <Button variant="brand">Brand</Button>
+                        </div>
+                        <Separator />
                         {/* Semantic variants (new) */}
-                        <p className="text-xs font-mono text-neutral-500">
+                        <p className="text-xs font-mono text-muted-foreground">
                           Semantic (use in place of ghost+className override):
                         </p>
                         <div className="flex flex-wrap gap-3">
@@ -941,13 +977,13 @@ export const DesignSystemPage: React.FC = () => {
                               <Users className="h-4 w-4" />
                             </Button>
                           </div>
-                          <p className="text-xs font-mono text-neutral-500">
+                          <p className="text-xs font-mono text-muted-foreground">
                             action + danger, hover-reveal icon buttons
                           </p>
                         </div>
                         <Separator />
                         {/* Sizes */}
-                        <p className="text-xs font-mono text-neutral-500">Sizes:</p>
+                        <p className="text-xs font-mono text-muted-foreground">Sizes:</p>
                         <div className="flex flex-wrap items-center gap-3">
                           <Button variant="surface" size="xs">
                             xs
@@ -993,9 +1029,11 @@ export const DesignSystemPage: React.FC = () => {
                           ].map(({ variant, label, note }) => (
                             <div
                               key={label}
-                              className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md"
+                              className="p-3 bg-muted border border-border rounded-md"
                             >
-                              <div className="text-2xs font-mono text-neutral-500 mb-2">{note}</div>
+                              <div className="text-2xs font-mono text-muted-foreground mb-2">
+                                {note}
+                              </div>
                               <Button variant={variant} size="sm" className="w-full">
                                 {label}
                               </Button>
@@ -1032,7 +1070,7 @@ export const DesignSystemPage: React.FC = () => {
                       <CardContent className="space-y-4">
                         <div className="space-y-4">
                           <div>
-                            <p className="text-xs font-mono text-neutral-500 mb-2">Default:</p>
+                            <p className="text-xs font-mono text-muted-foreground mb-2">Default:</p>
                             <SearchBar
                               value={searchQuery}
                               onChange={setSearchQuery}
@@ -1040,7 +1078,7 @@ export const DesignSystemPage: React.FC = () => {
                             />
                           </div>
                           <div>
-                            <p className="text-xs font-mono text-neutral-500 mb-2">
+                            <p className="text-xs font-mono text-muted-foreground mb-2">
                               Custom placeholder:
                             </p>
                             <SearchBar
@@ -1050,7 +1088,7 @@ export const DesignSystemPage: React.FC = () => {
                             />
                           </div>
                           <div>
-                            <p className="text-xs font-mono text-neutral-500 mb-2">
+                            <p className="text-xs font-mono text-muted-foreground mb-2">
                               Without clear button:
                             </p>
                             <SearchBar
@@ -1062,8 +1100,8 @@ export const DesignSystemPage: React.FC = () => {
                           </div>
                         </div>
                         <Separator />
-                        <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                          <p className="text-sm text-neutral-400 mb-2">Features:</p>
+                        <div className="p-4 bg-muted border border-border rounded-md">
+                          <p className="text-sm text-muted-foreground mb-2">Features:</p>
                           <div className="flex flex-wrap gap-2">
                             <Badge variant="outline">Icon</Badge>
                             <Badge variant="outline">Clear Button</Badge>
@@ -1160,7 +1198,7 @@ export const DesignSystemPage: React.FC = () => {
                             <CardDescription>Card description text</CardDescription>
                           </CardHeader>
                           <CardContent>
-                            <p className="text-sm font-mono text-neutral-400">
+                            <p className="text-sm font-mono text-muted-foreground">
                               This is the card content area.
                             </p>
                           </CardContent>
@@ -1264,8 +1302,8 @@ export const DesignSystemPage: React.FC = () => {
                             />
                           ))}
                         </div>
-                        <div className="mt-6 p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                          <p className="text-sm text-neutral-400 mb-3">
+                        <div className="mt-6 p-4 bg-muted border border-border rounded-md">
+                          <p className="text-sm text-muted-foreground mb-3">
                             Category icons and colors:
                           </p>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -1274,10 +1312,10 @@ export const DesignSystemPage: React.FC = () => {
                               return (
                                 <div
                                   key={category}
-                                  className="flex items-center gap-2 px-2 py-1 bg-neutral-800/40 rounded border border-neutral-700/30"
+                                  className="flex items-center gap-2 px-2 py-1 bg-muted rounded border border-border"
                                 >
                                   <Icon size={14} className={config.color} />
-                                  <span className="text-xs font-mono text-neutral-400">
+                                  <span className="text-xs font-mono text-muted-foreground">
                                     {category}
                                   </span>
                                 </div>
@@ -1298,7 +1336,7 @@ export const DesignSystemPage: React.FC = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {/* Default State */}
                           <div>
-                            <p className="text-xs font-mono text-neutral-500 mb-2">
+                            <p className="text-xs font-mono text-muted-foreground mb-2">
                               Default State:
                             </p>
                             <PresetCard
@@ -1325,7 +1363,7 @@ export const DesignSystemPage: React.FC = () => {
 
                           {/* Selected State */}
                           <div>
-                            <p className="text-xs font-mono text-neutral-500 mb-2">
+                            <p className="text-xs font-mono text-muted-foreground mb-2">
                               Selected State (Multi-select):
                             </p>
                             <PresetCard
@@ -1366,12 +1404,12 @@ export const DesignSystemPage: React.FC = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="p-6 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                          <p className="text-sm text-neutral-400 mb-4">
+                        <div className="p-6 bg-muted border border-border rounded-md">
+                          <p className="text-sm text-muted-foreground mb-4">
                             Navigation sidebar with collapsible sections, mobile support, and active
                             state highlighting.
                           </p>
-                          <div className="flex items-center gap-2 text-xs text-neutral-500">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <Badge variant="outline">Responsive</Badge>
                             <Badge variant="outline">Collapsible</Badge>
                             <Badge variant="outline">Active States</Badge>
@@ -1389,13 +1427,42 @@ export const DesignSystemPage: React.FC = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-6">
+                        <script
+                          type="application/json"
+                          data-component-api="Modal"
+                          dangerouslySetInnerHTML={{
+                            __html: JSON.stringify({
+                              import: "import { Modal } from '@/components/ui/Modal';",
+                              props: {
+                                isOpen: 'boolean',
+                                onClose: '() => void',
+                                title: 'string?',
+                                description: 'string?',
+                                size: "'sm' | 'md' | 'lg' | 'xl' | 'full' | 'auto' (default 'md')",
+                                footer: 'ReactNode?',
+                                headerAction: 'ReactNode?',
+                                showCloseButton: 'boolean (default true)',
+                                closeOnBackdropClick: 'boolean (default true)',
+                                closeOnEscape: 'boolean (default true)',
+                                mobileDrawer: 'boolean (default true; bottom drawer on mobile)',
+                                className: 'string? (backdrop)',
+                                contentClassName: 'string? (panel: width, max-height)',
+                                headerClassName: 'string?',
+                                bodyClassName:
+                                  "string? (scrolling body, merged after 'p-6 sm:p-10 md:p-12'; full-bleed = 'p-0 sm:p-0 md:p-0')",
+                                footerClassName: 'string?',
+                                id: "string (default 'modal'; drives aria ids)",
+                              },
+                            }),
+                          }}
+                        />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-neutral-200 font-mono">
+                            <h3 className="text-sm font-medium text-foreground font-mono">
                               Shared Modal Base
                             </h3>
-                            <div className="p-6 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                              <p className="text-sm text-neutral-400 mb-4">
+                            <div className="p-6 bg-muted border border-border rounded-md">
+                              <p className="text-sm text-muted-foreground mb-4">
                                 Reusable modal component with consistent styling, keyboard handling,
                                 and accessibility.
                               </p>
@@ -1405,23 +1472,33 @@ export const DesignSystemPage: React.FC = () => {
                                 <Badge variant="outline">Backdrop Click</Badge>
                                 <Badge variant="outline">Sizes</Badge>
                                 <Badge variant="outline">Footer</Badge>
+                                <Badge variant="outline">bodyClassName</Badge>
                               </div>
-                              <Button
-                                variant="ghost"
-                                onClick={() => setShowSharedModal(true)}
-                                size="sm"
-                              >
-                                Open Shared Modal
-                              </Button>
+                              <div className="flex flex-wrap gap-2">
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => setShowSharedModal(true)}
+                                  size="sm"
+                                >
+                                  Open Shared Modal
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => setShowBodyModal(true)}
+                                  size="sm"
+                                >
+                                  bodyClassName
+                                </Button>
+                              </div>
                             </div>
                           </div>
 
                           <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-neutral-200 font-mono">
+                            <h3 className="text-sm font-medium text-foreground font-mono">
                               Confirmation Modal
                             </h3>
-                            <div className="p-6 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                              <p className="text-sm text-neutral-400 mb-4">
+                            <div className="p-6 bg-muted border border-border rounded-md">
+                              <p className="text-sm text-muted-foreground mb-4">
                                 Pre-built modal for simple confirmations, warnings, and alerts.
                               </p>
                               <div className="flex flex-wrap gap-2 mb-4">
@@ -1439,29 +1516,41 @@ export const DesignSystemPage: React.FC = () => {
                         <Separator />
 
                         <div className="space-y-4">
-                          <h3 className="text-sm font-semibold text-neutral-200 font-mono">
+                          <h3 className="text-sm font-medium text-foreground font-mono">
                             Modal Sizes
                           </h3>
                           <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                            <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md text-center">
-                              <div className="text-xs font-mono text-neutral-500 mb-1">sm</div>
-                              <div className="text-xs font-mono text-neutral-400">max-w-md</div>
+                            <div className="p-3 bg-muted border border-border rounded-md text-center">
+                              <div className="text-xs font-mono text-muted-foreground mb-1">sm</div>
+                              <div className="text-xs font-mono text-muted-foreground">
+                                max-w-md
+                              </div>
                             </div>
-                            <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md text-center">
-                              <div className="text-xs font-mono text-neutral-500 mb-1">md</div>
-                              <div className="text-xs font-mono text-neutral-400">max-w-lg</div>
+                            <div className="p-3 bg-muted border border-border rounded-md text-center">
+                              <div className="text-xs font-mono text-muted-foreground mb-1">md</div>
+                              <div className="text-xs font-mono text-muted-foreground">
+                                max-w-lg
+                              </div>
                             </div>
-                            <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md text-center">
-                              <div className="text-xs font-mono text-neutral-500 mb-1">lg</div>
-                              <div className="text-xs font-mono text-neutral-400">max-w-2xl</div>
+                            <div className="p-3 bg-muted border border-border rounded-md text-center">
+                              <div className="text-xs font-mono text-muted-foreground mb-1">lg</div>
+                              <div className="text-xs font-mono text-muted-foreground">
+                                max-w-2xl
+                              </div>
                             </div>
-                            <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md text-center">
-                              <div className="text-xs font-mono text-neutral-500 mb-1">xl</div>
-                              <div className="text-xs font-mono text-neutral-400">max-w-4xl</div>
+                            <div className="p-3 bg-muted border border-border rounded-md text-center">
+                              <div className="text-xs font-mono text-muted-foreground mb-1">xl</div>
+                              <div className="text-xs font-mono text-muted-foreground">
+                                max-w-4xl
+                              </div>
                             </div>
-                            <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md text-center">
-                              <div className="text-xs font-mono text-neutral-500 mb-1">full</div>
-                              <div className="text-xs font-mono text-neutral-400">max-w-[90vw]</div>
+                            <div className="p-3 bg-muted border border-border rounded-md text-center">
+                              <div className="text-xs font-mono text-muted-foreground mb-1">
+                                full
+                              </div>
+                              <div className="text-xs font-mono text-muted-foreground">
+                                max-w-[90vw]
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -1494,11 +1583,38 @@ export const DesignSystemPage: React.FC = () => {
                             </>
                           }
                         >
-                          <p className="text-sm text-neutral-400 font-mono">
-                            This modal uses the shared Modal base component. It provides consistent
-                            styling, keyboard handling (Escape to close), backdrop click to close,
-                            and accessibility features.
+                          <p className="text-sm text-muted-foreground">
+                            Elevation --e-modal, surface radius, opaque panel. Only the backdrop
+                            blurs.
                           </p>
+                        </Modal>
+
+                        <Modal
+                          isOpen={showBodyModal}
+                          onClose={() => setShowBodyModal(false)}
+                          id="ds-body-modal"
+                          title="bodyClassName"
+                          description="Full-bleed body: the toolbar sticks to top-0, padding lives in the content."
+                          size="md"
+                          bodyClassName="p-0 sm:p-0 md:p-0"
+                        >
+                          <div className="sticky top-0 z-10 border-b border-border bg-popover px-4 py-3">
+                            <Input
+                              aria-label="Search"
+                              placeholder="Search"
+                              className="h-9 text-xs"
+                            />
+                          </div>
+                          <div className="space-y-2 p-6">
+                            {Array.from({ length: 12 }, (_, i) => (
+                              <div
+                                key={i}
+                                className="rounded-md border border-border bg-muted p-3 text-xs text-muted-foreground"
+                              >
+                                Row {i + 1}
+                              </div>
+                            ))}
+                          </div>
                         </Modal>
 
                         <ConfirmationModal
@@ -1524,7 +1640,7 @@ export const DesignSystemPage: React.FC = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="border border-neutral-800/50 rounded-md overflow-hidden">
+                        <div className="border border-border rounded-md overflow-hidden">
                           <Table>
                             <TableHeader>
                               <TableRow>
@@ -1563,8 +1679,8 @@ export const DesignSystemPage: React.FC = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="p-6 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                          <p className="text-sm text-neutral-400 mb-4">
+                        <div className="p-6 bg-muted border border-border rounded-md">
+                          <p className="text-sm text-muted-foreground mb-4">
                             Advanced data table with sorting, filtering, and search capabilities.
                           </p>
                           <div className="flex flex-wrap gap-2">
@@ -1586,8 +1702,8 @@ export const DesignSystemPage: React.FC = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="p-6 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                          <p className="text-sm text-neutral-400 mb-4">
+                        <div className="p-6 bg-muted border border-border rounded-md">
+                          <p className="text-sm text-muted-foreground mb-4">
                             Chart components for data visualization built on Recharts.
                           </p>
                           <div className="flex flex-wrap gap-2">
@@ -1609,7 +1725,7 @@ export const DesignSystemPage: React.FC = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="border border-neutral-800/50 rounded-md p-4">
+                        <div className="border border-border rounded-md p-4">
                           <BreadcrumbWithBack to="/">
                             <BreadcrumbList>
                               <BreadcrumbItem>
@@ -1638,17 +1754,19 @@ export const DesignSystemPage: React.FC = () => {
                       <CardContent className="space-y-4">
                         <div className="space-y-4">
                           <div>
-                            <p className="text-xs font-mono text-neutral-500 mb-2">
+                            <p className="text-xs font-mono text-muted-foreground mb-2">
                               Rectangular (default):
                             </p>
                             <SkeletonLoader width="100%" height="40px" />
                           </div>
                           <div>
-                            <p className="text-xs font-mono text-neutral-500 mb-2">Circular:</p>
+                            <p className="text-xs font-mono text-muted-foreground mb-2">
+                              Circular:
+                            </p>
                             <SkeletonLoader width="410px" height="410px" variant="circular" />
                           </div>
                           <div>
-                            <p className="text-xs font-mono text-neutral-500 mb-2">Text:</p>
+                            <p className="text-xs font-mono text-muted-foreground mb-2">Text:</p>
                             <SkeletonLoader width="200px" height="16px" variant="text" />
                           </div>
                         </div>
@@ -1671,13 +1789,19 @@ export const DesignSystemPage: React.FC = () => {
                             <TabsTrigger value="tab3">Tab 3</TabsTrigger>
                           </TabsList>
                           <TabsContent value="tab1" className="mt-4">
-                            <p className="text-sm font-mono text-neutral-400">Content for Tab 1</p>
+                            <p className="text-sm font-mono text-muted-foreground">
+                              Content for Tab 1
+                            </p>
                           </TabsContent>
                           <TabsContent value="tab2" className="mt-4">
-                            <p className="text-sm font-mono text-neutral-400">Content for Tab 2</p>
+                            <p className="text-sm font-mono text-muted-foreground">
+                              Content for Tab 2
+                            </p>
                           </TabsContent>
                           <TabsContent value="tab3" className="mt-4">
-                            <p className="text-sm font-mono text-neutral-400">Content for Tab 3</p>
+                            <p className="text-sm font-mono text-muted-foreground">
+                              Content for Tab 3
+                            </p>
                           </TabsContent>
                         </Tabs>
                       </CardContent>
@@ -1693,7 +1817,7 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent className="space-y-6">
                         <div className="space-y-4">
-                          <h4 className="text-sm font-semibold text-neutral-300 font-mono">
+                          <h4 className="text-sm font-medium text-foreground font-mono">
                             Variants
                           </h4>
                           <div className="flex flex-wrap gap-2">
@@ -1704,13 +1828,13 @@ export const DesignSystemPage: React.FC = () => {
                           </div>
                         </div>
 
-                        <Separator className="bg-neutral-800/50" />
+                        <Separator className="bg-border" />
 
                         <div className="space-y-4">
-                          <h4 className="text-sm font-semibold text-neutral-300 font-mono">
+                          <h4 className="text-sm font-medium text-foreground font-mono">
                             Selectable Tags (Common Pattern)
                           </h4>
-                          <p className="text-xs text-neutral-500 font-mono mb-2">
+                          <p className="text-xs text-muted-foreground font-mono mb-2">
                             Used in Branding and Categories sections
                           </p>
                           <div className="flex flex-wrap gap-2">
@@ -1719,13 +1843,13 @@ export const DesignSystemPage: React.FC = () => {
                             </Badge>
                             <Badge
                               variant="outline"
-                              className="cursor-pointer bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300"
+                              className="cursor-pointer bg-muted text-muted-foreground border-border hover:border-border-hover hover:text-foreground"
                             >
                               Unselected Tag
                             </Badge>
                             <Badge
                               variant="outline"
-                              className="opacity-100 cursor-not-allowed bg-neutral-800/50 text-neutral-400 border-neutral-700/50"
+                              className="opacity-100 cursor-not-allowed bg-muted text-muted-foreground border-border"
                             >
                               Disabled Tag
                             </Badge>
@@ -1744,8 +1868,8 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">
+                          <div className="p-4 bg-muted border border-border rounded-md">
+                            <h4 className="text-sm font-medium text-foreground mb-2 font-mono">
                               Features
                             </h4>
                             <div className="flex flex-wrap gap-1.5">
@@ -1763,28 +1887,30 @@ export const DesignSystemPage: React.FC = () => {
                               </Badge>
                             </div>
                           </div>
-                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">
+                          <div className="p-4 bg-muted border border-border rounded-md">
+                            <h4 className="text-sm font-medium text-foreground mb-2 font-mono">
                               Props
                             </h4>
-                            <div className="space-y-1 text-xs font-mono text-neutral-400">
+                            <div className="space-y-1 text-xs font-mono text-muted-foreground">
                               <div>
-                                <span className="text-neutral-500">variant:</span> 'standalone' |
-                                'stacked'
+                                <span className="text-muted-foreground">variant:</span> 'standalone'
+                                | 'stacked'
                               </div>
                               <div>
-                                <span className="text-neutral-500">position:</span> 'left' | 'right'
+                                <span className="text-muted-foreground">position:</span> 'left' |
+                                'right'
                               </div>
                               <div>
-                                <span className="text-neutral-500">experimentalMode:</span> boolean
+                                <span className="text-muted-foreground">experimentalMode:</span>{' '}
+                                boolean
                               </div>
                             </div>
                           </div>
-                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">
+                          <div className="p-4 bg-muted border border-border rounded-md">
+                            <h4 className="text-sm font-medium text-foreground mb-2 font-mono">
                               Handlers
                             </h4>
-                            <div className="text-xs font-mono text-neutral-400 space-y-1">
+                            <div className="text-xs font-mono text-muted-foreground space-y-1">
                               <div>onAddMerge, onAddEdit</div>
                               <div>onAddUpscale, onAddMockup</div>
                               <div>onAddAngle, onAddShader</div>
@@ -1803,8 +1929,8 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">
+                          <div className="p-4 bg-muted border border-border rounded-md">
+                            <h4 className="text-sm font-medium text-foreground mb-2 font-mono">
                               Features
                             </h4>
                             <div className="flex flex-wrap gap-1.5">
@@ -1822,22 +1948,22 @@ export const DesignSystemPage: React.FC = () => {
                               </Badge>
                             </div>
                           </div>
-                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">
+                          <div className="p-4 bg-muted border border-border rounded-md">
+                            <h4 className="text-sm font-medium text-foreground mb-2 font-mono">
                               Actions
                             </h4>
-                            <div className="space-y-1 text-xs font-mono text-neutral-400">
+                            <div className="space-y-1 text-xs font-mono text-muted-foreground">
                               <div>✓ Inline name editing</div>
                               <div>✓ Settings modal</div>
                               <div>✓ Share & collaboration</div>
                               <div>✓ Community presets</div>
                             </div>
                           </div>
-                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">
+                          <div className="p-4 bg-muted border border-border rounded-md">
+                            <h4 className="text-sm font-medium text-foreground mb-2 font-mono">
                               Customization
                             </h4>
-                            <div className="space-y-1 text-xs font-mono text-neutral-400">
+                            <div className="space-y-1 text-xs font-mono text-muted-foreground">
                               <div>Background color</div>
                               <div>Grid settings</div>
                               <div>Display controls</div>
@@ -1857,8 +1983,8 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">
+                          <div className="p-4 bg-muted border border-border rounded-md">
+                            <h4 className="text-sm font-medium text-foreground mb-2 font-mono">
                               Core
                             </h4>
                             <div className="flex flex-wrap gap-1.5 mb-3">
@@ -1869,13 +1995,13 @@ export const DesignSystemPage: React.FC = () => {
                                 Node Based
                               </Badge>
                             </div>
-                            <div className="space-y-1 text-xs font-mono text-neutral-400">
+                            <div className="space-y-1 text-xs font-mono text-muted-foreground">
                               <div>Node & edge management</div>
                               <div>Customizable appearance</div>
                             </div>
                           </div>
-                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">
+                          <div className="p-4 bg-muted border border-border rounded-md">
+                            <h4 className="text-sm font-medium text-foreground mb-2 font-mono">
                               Interactions
                             </h4>
                             <div className="flex flex-wrap gap-1.5 mb-3">
@@ -1886,14 +2012,14 @@ export const DesignSystemPage: React.FC = () => {
                                 Context Menus
                               </Badge>
                             </div>
-                            <div className="space-y-1 text-xs font-mono text-neutral-400">
+                            <div className="space-y-1 text-xs font-mono text-muted-foreground">
                               <div>Image drag-and-drop</div>
                               <div>Pane & node menus</div>
                               <div>Keyboard shortcuts</div>
                             </div>
                           </div>
-                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">
+                          <div className="p-4 bg-muted border border-border rounded-md">
+                            <h4 className="text-sm font-medium text-foreground mb-2 font-mono">
                               Display
                             </h4>
                             <div className="flex flex-wrap gap-1.5 mb-3">
@@ -1904,7 +2030,7 @@ export const DesignSystemPage: React.FC = () => {
                                 Minimap
                               </Badge>
                             </div>
-                            <div className="space-y-1 text-xs font-mono text-neutral-400">
+                            <div className="space-y-1 text-xs font-mono text-muted-foreground">
                               <div>Background color</div>
                               <div>Grid customization</div>
                               <div>Controls toggle</div>
@@ -1972,7 +2098,7 @@ export const DesignSystemPage: React.FC = () => {
                           }}
                         />
                         <GlassPanel padding="md" className="max-w-md">
-                          <p className="text-sm font-mono text-neutral-300">
+                          <p className="text-sm font-mono text-foreground">
                             Glass Panel Content with 'md' padding
                           </p>
                         </GlassPanel>
@@ -2005,13 +2131,406 @@ export const DesignSystemPage: React.FC = () => {
                             }),
                           }}
                         />
-                        <div className="p-6 border border-neutral-800/50 rounded-md bg-neutral-900/30">
+                        <div className="p-6 border border-border rounded-md bg-muted">
                           <MicroTitle as="h3" className="mb-2 block">
                             Settings
                           </MicroTitle>
-                          <p className="text-sm text-neutral-400">
+                          <p className="text-sm text-muted-foreground">
                             Regular text follows the micro title.
                           </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* MediaTile */}
+                    <Card id="media-tile">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.mediaTile.title')}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.mediaTile.description')}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <script
+                          type="application/json"
+                          data-component-api="MediaTile"
+                          dangerouslySetInnerHTML={{
+                            __html: JSON.stringify({
+                              import: "import { MediaTile } from '@/components/ui/MediaTile';",
+                              props: {
+                                src: 'string?',
+                                alt: 'string',
+                                aspectRatio: 'number | string (default 1; masonry = natural)',
+                                layout: "'stacked' | 'overlay' | 'masonry' (default 'stacked')",
+                                density:
+                                  "'default' | 'compact' (default 'default'; compact = px-2 py-1.5 + text-xs title for narrow grids)",
+                                title: 'ReactNode?',
+                                subtitle: 'ReactNode?',
+                                meta: 'ReactNode? (non-interactive)',
+                                actions: 'ReactNode? (hoverReveal; focus + touch visible)',
+                                persistentActions:
+                                  'ReactNode? (always visible, right of actions; e.g. like + count)',
+                                badge: 'ReactNode? (top-left, static)',
+                                onClick: '(e: MouseEvent) => void (e.shiftKey for range select)',
+                                href: 'string (internal = router Link, http = new tab)',
+                                actionLabel: 'string? (accessible name)',
+                                selected: 'boolean?',
+                                fallbackIcon: 'LucideIcon?',
+                                fallbackLabel: 'string?',
+                                '...rest':
+                                  'div attributes on the root (data-*, id, draggable, onDragStart/End)',
+                                onImageLoad: 'ReactEventHandler<HTMLImageElement>?',
+                                onImageError: 'ReactEventHandler<HTMLImageElement>?',
+                                placeholder: 'string? (LQIP data URL until load)',
+                                fallback: 'ReactNode? (custom cover when src is missing/broken)',
+                                leading: 'ReactNode? (avatar/logo beside the title)',
+                                actionsVisible: "'hover' | 'always' (default 'hover')",
+                                subtitleLines: '1 | 2 (default 1)',
+                                footer: 'ReactNode? (interactive bar under the cover)',
+                                busy: 'boolean | ReactNode (overlay on the cover, aria-busy)',
+                                editableTitle:
+                                  'ReactNode? (inline rename above the stretched action)',
+                              },
+                            }),
+                          }}
+                        />
+                        <p className="text-xs text-muted-foreground">stacked</p>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {['brand-guidelines', 'branding-machine', '3d-studio'].map((slug) => (
+                            <MediaTile
+                              key={slug}
+                              src={`/tools/${slug}.webp`}
+                              alt=""
+                              aspectRatio={4 / 3}
+                              title={slug}
+                              subtitle="webp · 1280×960"
+                              selected={selectedTile === slug}
+                              onClick={() => setSelectedTile(selectedTile === slug ? null : slug)}
+                              badge={<Badge variant="neutral">Beta</Badge>}
+                              actions={
+                                <>
+                                  <Button variant="surface" size="icon-sm" aria-label="Download">
+                                    <Download />
+                                  </Button>
+                                  <Button variant="surface" size="icon-sm" aria-label="Delete">
+                                    <Trash2 />
+                                  </Button>
+                                </>
+                              }
+                            />
+                          ))}
+                          <MediaTile
+                            src="/tools/missing.webp"
+                            alt="missing"
+                            aspectRatio={4 / 3}
+                            title="broken src"
+                            subtitle="Thumb fallback"
+                            fallbackLabel="unavailable"
+                            onClick={() => toast('broken src')}
+                          />
+                        </div>
+                        <Separator />
+                        <p className="text-xs text-muted-foreground">overlay · masonry</p>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 items-start">
+                          <MediaTile
+                            src="/tools/ascii-vortex.webp"
+                            alt=""
+                            layout="overlay"
+                            title="ascii-vortex"
+                            onClick={() => toast('overlay')}
+                            actions={
+                              <Button variant="surface" size="icon-sm" aria-label="Download">
+                                <Download />
+                              </Button>
+                            }
+                          />
+                          <MediaTile
+                            src="/tools/budget-machine.webp"
+                            alt=""
+                            layout="masonry"
+                            aspectRatio="3 / 4"
+                            title="budget-machine"
+                            subtitle="3 / 4"
+                            onClick={() => toast('masonry')}
+                          />
+                        </div>
+                        <Separator />
+                        <p className="text-xs text-muted-foreground">
+                          density=&quot;compact&quot; (narrow grids: logo strips)
+                        </p>
+                        <div className="grid grid-cols-4 md:grid-cols-6 gap-2 items-start">
+                          {['primary', 'icon', 'mono', 'wordmark'].map((variant) => (
+                            <MediaTile
+                              key={variant}
+                              src="/tools/brand-guidelines.webp"
+                              alt=""
+                              aspectRatio={1}
+                              density="compact"
+                              title={variant}
+                              imageClassName="object-contain p-2"
+                              onClick={() => toast(variant)}
+                            />
+                          ))}
+                        </div>
+                        <Separator />
+                        <p className="text-xs text-muted-foreground">
+                          leading · subtitleLines · actionsVisible · persistentActions · fallback ·
+                          footer · busy · editableTitle
+                        </p>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 items-start">
+                          <MediaTile
+                            src="/tools/brand-guidelines.webp"
+                            alt=""
+                            aspectRatio={4 / 3}
+                            title="Acme"
+                            subtitle="Two-line description that wraps instead of being cut at the first line."
+                            subtitleLines={2}
+                            leading={
+                              <span className="flex size-6 items-center justify-center rounded-md bg-muted text-2xs font-medium">
+                                A
+                              </span>
+                            }
+                            actionsVisible="always"
+                            actions={
+                              <Button
+                                variant="surface"
+                                size="icon-sm"
+                                aria-label="Like"
+                                aria-pressed={tileLiked}
+                                onClick={() => setTileLiked((v) => !v)}
+                              >
+                                <Heart weight={tileLiked ? 'fill' : 'regular'} />
+                              </Button>
+                            }
+                            onClick={(e) => toast(e.shiftKey ? 'shift-click' : 'click')}
+                          />
+                          <MediaTile
+                            src="/tools/ascii-vortex.webp"
+                            alt=""
+                            aspectRatio={4 / 3}
+                            title="persistentActions"
+                            subtitle="like stays, delete reveals on hover"
+                            actions={
+                              <Button variant="surface" size="icon-sm" aria-label="Delete">
+                                <Trash2 />
+                              </Button>
+                            }
+                            persistentActions={
+                              <Button
+                                variant="surface"
+                                size="sm"
+                                className="h-8 px-2.5"
+                                aria-label="Like"
+                                aria-pressed={tileLiked}
+                                onClick={() => setTileLiked((v) => !v)}
+                              >
+                                <Heart weight={tileLiked ? 'fill' : 'regular'} />
+                                <span className="tabular-nums">{tileLiked ? 13 : 12}</span>
+                              </Button>
+                            }
+                            onClick={() => toast('persistentActions')}
+                          />
+                          <MediaTile
+                            alt="Acme"
+                            aspectRatio={4 / 3}
+                            title="fallback node"
+                            subtitle="no src"
+                            fallback={
+                              <span className="flex size-12 items-center justify-center rounded-full bg-card text-sm font-medium text-foreground">
+                                AC
+                              </span>
+                            }
+                            onClick={() => toast('fallback')}
+                          />
+                          <MediaTile
+                            src="/tools/3d-studio.webp"
+                            alt=""
+                            aspectRatio={4 / 3}
+                            title="footer + busy"
+                            busy
+                            footer={
+                              <div className="flex items-center gap-1 border-t border-border p-1.5">
+                                <Button variant="ghost" size="icon-sm" aria-label="Download">
+                                  <Download />
+                                </Button>
+                                <Button variant="ghost" size="icon-sm" aria-label="Delete">
+                                  <Trash2 />
+                                </Button>
+                              </div>
+                            }
+                            onClick={() => toast('busy tile')}
+                          />
+                          <MediaTile
+                            src="/tools/branding-machine.webp"
+                            alt=""
+                            aspectRatio={4 / 3}
+                            title={tileName}
+                            editableTitle={
+                              <Input
+                                aria-label="Rename"
+                                value={tileName}
+                                onChange={(e) => setTileName(e.target.value)}
+                                className="h-7 text-sm"
+                              />
+                            }
+                            subtitle="editableTitle"
+                            href="/design-system"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* SegmentedControl */}
+                    <Card id="segmented-control">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.segmentedControl.title')}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.segmentedControl.description')}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <script
+                          type="application/json"
+                          data-component-api="SegmentedControl"
+                          dangerouslySetInnerHTML={{
+                            __html: JSON.stringify({
+                              import:
+                                "import { SegmentedControl } from '@/components/ui/SegmentedControl';",
+                              props: {
+                                options: '{ value, label, icon?, disabled?, aria-label? }[]',
+                                value: 'string',
+                                onChange: '(value) => void',
+                                'aria-label': 'string (required)',
+                                size: "'xs' | 'sm' | 'md' (default 'md')",
+                                variant: "'default' | 'accent' (default 'default')",
+                                fullWidth: 'boolean?',
+                                disabled: 'boolean?',
+                                scrollable:
+                                  'boolean? (false = segments shrink + truncate with tooltip; true = horizontal scroll, no scrollbar)',
+                              },
+                            }),
+                          }}
+                        />
+                        {(['md', 'sm', 'xs'] as const).map((size) => (
+                          <div key={size} className="flex flex-wrap items-center gap-4">
+                            <SegmentedControl
+                              aria-label="View"
+                              size={size}
+                              value={segmentedValue}
+                              onChange={setSegmentedValue}
+                              options={[
+                                { value: 'grid', label: 'Grid', icon: LayoutGrid },
+                                { value: 'list', label: 'List', icon: List },
+                                { value: 'board', label: 'Board' },
+                              ]}
+                            />
+                            <SegmentedControl
+                              aria-label="View (accent)"
+                              size={size}
+                              variant="accent"
+                              value={segmentedValue}
+                              onChange={setSegmentedValue}
+                              options={[
+                                { value: 'grid', label: 'Grid' },
+                                { value: 'list', label: 'List' },
+                                { value: 'board', label: 'Board' },
+                              ]}
+                            />
+                            <span className="text-xs text-muted-foreground">{size}</span>
+                          </div>
+                        ))}
+                        <Separator />
+                        <p className="text-xs text-muted-foreground">
+                          5 tabs in a 280px panel: xs + fullWidth (shrink) · xs + scrollable
+                        </p>
+                        <div className="flex flex-wrap gap-4">
+                          <div className="w-[280px] rounded-xl border border-border p-2">
+                            <SegmentedControl
+                              aria-label="Library (shrink)"
+                              size="xs"
+                              fullWidth
+                              value={panelTab}
+                              onChange={setPanelTab}
+                              options={[
+                                { value: 'logos', label: 'Logos' },
+                                { value: 'images', label: 'Images' },
+                                { value: 'videos', label: 'Videos' },
+                                { value: 'fonts', label: 'Typography' },
+                                { value: 'refs', label: 'References' },
+                              ]}
+                            />
+                          </div>
+                          <div className="w-[280px] rounded-xl border border-border p-2">
+                            <SegmentedControl
+                              aria-label="Library (scroll)"
+                              size="xs"
+                              scrollable
+                              value={panelTab}
+                              onChange={setPanelTab}
+                              options={[
+                                { value: 'logos', label: 'Logos' },
+                                { value: 'images', label: 'Images' },
+                                { value: 'videos', label: 'Videos' },
+                                { value: 'fonts', label: 'Typography' },
+                                { value: 'refs', label: 'References' },
+                              ]}
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Dropzone */}
+                    <Card id="dropzone">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.dropzone.title')}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.dropzone.description')}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <script
+                          type="application/json"
+                          data-component-api="Dropzone"
+                          dangerouslySetInnerHTML={{
+                            __html: JSON.stringify({
+                              import: "import { Dropzone } from '@/components/ui/Dropzone';",
+                              props: {
+                                onFiles: '(files: File[]) => void',
+                                accept: 'string?',
+                                multiple: 'boolean?',
+                                disabled: 'boolean?',
+                                label: "ReactNode? (default t('upload.dropOrClick'))",
+                                hint: 'ReactNode? (md only)',
+                                icon: 'LucideIcon?',
+                                size: "'sm' | 'md' (default 'md')",
+                                dropTarget:
+                                  'boolean (default true; false inside a shell that owns DropOverlay)',
+                              },
+                            }),
+                          }}
+                        />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                          <Dropzone
+                            accept="image/*"
+                            multiple
+                            hint="PNG, JPG, WEBP"
+                            onFiles={(files) => setDroppedFiles(files.map((f) => f.name))}
+                          />
+                          <div className="space-y-3">
+                            <Dropzone
+                              size="sm"
+                              accept="image/*"
+                              multiple
+                              onFiles={(files) => setDroppedFiles(files.map((f) => f.name))}
+                            />
+                            <Dropzone size="sm" disabled onFiles={() => {}} />
+                            {droppedFiles.length > 0 && (
+                              <p className="text-xs text-muted-foreground break-all">
+                                {droppedFiles.join(', ')}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -2032,10 +2551,10 @@ export const DesignSystemPage: React.FC = () => {
                         {/* Pattern Documentation */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                           <div className="space-y-4">
-                            <h4 className="text-sm font-semibold text-neutral-300 font-mono">
+                            <h4 className="text-sm font-medium text-foreground font-mono">
                               Usage Guidelines
                             </h4>
-                            <ul className="text-xs text-neutral-500 font-mono space-y-2 list-disc list-inside">
+                            <ul className="text-xs text-muted-foreground font-mono space-y-2 list-disc list-inside">
                               <li>
                                 Use <code className="text-foreground">MicroTitle</code> for section
                                 headers (uppercase, ).
@@ -2057,30 +2576,30 @@ export const DesignSystemPage: React.FC = () => {
                             </ul>
                           </div>
 
-                          <div className="space-y-4 flex flex-col p-6 rounded-xl border border-neutral-800/50 bg-neutral-900/30">
+                          <div className="space-y-4 flex flex-col p-6 rounded-xl border border-border bg-muted">
                             <MicroTitle className="px-1 mb-2">SETUP PREVIEW</MicroTitle>
                             <GlassPanel
                               padding="md"
-                              className="flex-1 min-h-[100px] flex items-center justify-center border-dashed border-white/10"
+                              className="flex-1 min-h-[100px] flex items-center justify-center border-dashed border-border"
                             >
-                              <span className="text-2xs font-mono text-neutral-600">
+                              <span className="text-2xs font-mono text-muted-foreground">
                                 CONFIGURATION AREA
                               </span>
                             </GlassPanel>
-                            <div className="pt-4 border-t border-neutral-800">
+                            <div className="pt-4 border-t border-border">
                               <PremiumButton className="w-full">CONTINUE</PremiumButton>
                             </div>
                           </div>
                         </div>
 
-                        <Separator className="bg-neutral-800/50" />
+                        <Separator className="bg-border" />
 
                         <div className="space-y-4">
-                          <h4 className="text-sm font-semibold text-neutral-300 font-mono">
+                          <h4 className="text-sm font-medium text-foreground font-mono">
                             Real-world Example (Mockup Machine)
                           </h4>
-                          <div className="p-4 bg-neutral-950 border border-neutral-800 rounded-md overflow-x-auto">
-                            <pre className="text-2xs font-mono text-neutral-400">
+                          <div className="p-4 bg-muted border border-border rounded-md overflow-x-auto">
+                            <pre className="text-2xs font-mono text-muted-foreground">
                               {`/* Simplified Structure */
 <div className="flex flex-col h-full gap-8">
   <div className="flex-1 min-h-0 flex flex-col gap-4">
@@ -2090,7 +2609,7 @@ export const DesignSystemPage: React.FC = () => {
     </GlassPanel>
   </div>
   
-  <div className="sticky bottom-0 bg-neutral-900/50 backdrop-blur-sm">
+  <div className="sticky bottom-0 bg-background/80 backdrop-blur-sm">
     <PremiumButton>CONTINUE</PremiumButton>
   </div>
 </div>`}

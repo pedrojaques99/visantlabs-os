@@ -201,7 +201,7 @@ export const MockupOutputConfig: React.FC = () => {
                     border transition-colors duration-150 cursor-pointer
                     ${
                       isSelected
-                        ? 'border-white/20 bg-white/10 text-neutral-200'
+                        ? 'border-ring bg-muted text-foreground'
                         : 'border-neutral-800/50 bg-neutral-900/50 text-neutral-500 hover:border-neutral-700 hover:text-neutral-400'
                     }
                   `}
@@ -211,7 +211,7 @@ export const MockupOutputConfig: React.FC = () => {
                       src={`https://img.logo.dev/${model.providerDomain}?size=32${
                         token ? `&token=${token}` : ''
                       }`}
-                      className="w-3 h-3 rounded-sm"
+                      className="w-3 h-3 rounded-md"
                       onError={(e) => (e.currentTarget.style.display = 'none')}
                       alt=""
                     />

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Upload, Copy, Image as ImageIcon, Check, Download } from '@/lib/ui/icons';
+import { Copy, Image as ImageIcon, Check, Download } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,7 @@ import { encodePngsToIco } from '@/utils/icoEncoder';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
+import { Dropzone } from '@/components/ui/Dropzone';
 import { Input } from '@/components/ui/input';
 import { QuickActions } from '@/components/shared/QuickActions';
 import { BrandToolSelect } from '@/components/shared/BrandToolSelect';
@@ -172,15 +173,6 @@ export const FaviconPage: React.FC = () => {
     [sourceUrl, setSource]
   );
 
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) handleFile(file);
-      if (e.target) e.target.value = '';
-    },
-    [handleFile]
-  );
-
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
@@ -307,7 +299,7 @@ export const FaviconPage: React.FC = () => {
             className={cn(
               'px-2 py-0.5 rounded text-xs transition-colors duration-200 border',
               isTransparentBg
-                ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40'
+                ? 'border-ring bg-muted text-foreground'
                 : 'bg-muted/40 text-muted-foreground border-border hover:border-ring hover:text-foreground'
             )}
           >
@@ -379,7 +371,9 @@ export const FaviconPage: React.FC = () => {
       <Button
         onClick={handleGenerate}
         disabled={isGenerating}
-        className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
+        variant="primary"
+        size="sm"
+        className="w-full text-xs"
       >
         {isGenerating ? <GlitchLoader size={14} color="currentColor" /> : <ImageIcon size={14} />}
         <span className="ml-2">
@@ -439,16 +433,13 @@ export const FaviconPage: React.FC = () => {
         {/* Empty state — centered landing */}
         {!sourceUrl ? (
           <motion.div key="empty" {...fade} className="flex w-full justify-center py-8">
-            <label className="flex h-48 w-full max-w-md cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border px-4 text-center text-sm text-muted-foreground transition-colors duration-200 hover:border-ring hover:text-foreground">
-              <Upload size={20} />
-              {t('miniTools.dropImage')}
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/svg+xml"
-                className="hidden"
-                onChange={handleInputChange}
-              />
-            </label>
+            <Dropzone
+              onFiles={(files) => handleFile(files[0])}
+              accept="image/jpeg,image/png,image/webp,image/svg+xml"
+              label={t('miniTools.dropImage')}
+              dropTarget={false}
+              className="max-w-md"
+            />
           </motion.div>
         ) : (
           /* Working state — centered max-width scrollable column */
@@ -457,7 +448,7 @@ export const FaviconPage: React.FC = () => {
               {/* Source preview */}
               <div className="flex items-center gap-3">
                 <div
-                  className="w-20 h-20 rounded-2xl border border-border overflow-hidden flex items-center justify-center flex-shrink-0"
+                  className="w-20 h-20 rounded-xl border border-border overflow-hidden flex items-center justify-center flex-shrink-0"
                   style={{ background: checkerboard(10) }}
                 >
                   <Thumb src={sourceUrl} alt={fileName} className="w-full h-full object-contain" />
@@ -485,7 +476,7 @@ export const FaviconPage: React.FC = () => {
                         <div
                           key={icon.size}
                           className={cn(
-                            'flex flex-col items-center gap-1.5 p-3 rounded-2xl',
+                            'flex flex-col items-center gap-1.5 p-3 rounded-xl',
                             glassSurface.surface
                           )}
                         >
@@ -520,7 +511,7 @@ export const FaviconPage: React.FC = () => {
                       <div className="relative">
                         <pre
                           className={cn(
-                            'p-3 rounded-2xl text-2xs font-mono text-muted-foreground overflow-x-auto whitespace-pre',
+                            'p-3 rounded-xl text-2xs font-mono text-muted-foreground overflow-x-auto whitespace-pre',
                             glassSurface.surface
                           )}
                         >
@@ -543,7 +534,7 @@ export const FaviconPage: React.FC = () => {
                       <div className="relative">
                         <pre
                           className={cn(
-                            'p-3 rounded-2xl text-2xs font-mono text-muted-foreground overflow-x-auto whitespace-pre',
+                            'p-3 rounded-xl text-2xs font-mono text-muted-foreground overflow-x-auto whitespace-pre',
                             glassSurface.surface
                           )}
                         >

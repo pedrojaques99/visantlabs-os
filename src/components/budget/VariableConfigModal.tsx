@@ -137,7 +137,7 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/60 backdrop-blur-sm">
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 w-full max-w-md mx-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-neutral-200">{label}</h3>
+          <h3 className="text-lg font-semibold text-foreground">{label}</h3>
           <Button variant="ghost" onClick={onClose}>
             <X size={20} />
           </Button>

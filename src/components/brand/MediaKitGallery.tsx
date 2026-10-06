@@ -3,24 +3,14 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import {
-  Plus,
-  Trash2,
-  Image as ImageIcon,
-  FileText,
-  Link2,
-  Copy,
-  Check,
-  MousePointerClick,
-  ChevronDown,
-  Pencil,
-} from '@/lib/ui/icons';
+import { Plus, Trash2, FileText, Link2, Copy, Check, ChevronDown, Pencil } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { getProxiedUrl } from '@/utils/proxyUtils';
 import { useNeedsLightBg } from '@/hooks/useNeedsLightBg';
-import { Thumb } from '@/components/ui/Thumb';
+import { MediaTile } from '@/components/ui/MediaTile';
+import { Badge } from '@/components/ui/badge';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 type MediaCategory = 'background' | 'graphic' | 'stock' | 'product' | 'texture' | 'other';
@@ -80,24 +70,23 @@ const detectFormat = (url?: string): string => {
   return '';
 };
 
-const FormatBadge: React.FC<{ url: string; className?: string }> = ({ url, className }) => {
+const FormatBadge: React.FC<{ url: string }> = ({ url }) => {
   const fmt = detectFormat(url);
   if (!fmt) return null;
-  const isSvg = fmt === 'SVG';
   return (
-    <span
-      className={cn(
-        'absolute text-2xs font-mono px-1 py-px rounded z-10',
-        isSvg
-          ? 'bg-white/15 text-neutral-200 border border-white/20'
-          : 'bg-white/10 text-neutral-400 border border-white/10',
-        className || 'top-1 right-1'
-      )}
-    >
+    // EXCEÇÃO ao ui-slop/mono: extensão de arquivo (SVG/PNG) é valor técnico
+    <Badge variant="neutral" className="px-1 py-px font-mono text-2xs">
       {fmt}
-    </span>
+    </Badge>
   );
 };
+
+/** Selected marker for the MediaTile badge slot (not interactive; the tile is the toggle). */
+const SelectedCheck = () => (
+  <span className="flex size-4 items-center justify-center rounded-full bg-foreground">
+    <Check size={10} className="text-background" strokeWidth={4} />
+  </span>
+);
 
 const ACCEPTED_IMAGE_TYPES = 'image/jpeg,image/png,image/webp,image/gif,image/svg+xml';
 const ACCEPTED_ALL_TYPES = `${ACCEPTED_IMAGE_TYPES},application/pdf`;
@@ -360,7 +349,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
     >
       {/* Bulk Actions Bar */}
       {selectedIds.size > 0 && !readOnly && (
-        <div className="sticky top-0 z-20 flex items-center justify-between p-2 mb-2 bg-background/90 border border-border rounded-lg backdrop-blur-md animate-in fade-in">
+        <div className="sticky top-0 z-20 flex items-center justify-between p-2 mb-2 bg-background/90 border border-border rounded-xl backdrop-blur-md animate-in fade-in">
           <span className="text-xs text-foreground font-medium px-2 tabular-nums">
             {t('mockup.mediaKit.selectedCount', { count: selectedIds.size })}
           </span>
@@ -429,8 +418,11 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                   logo={logo}
                   isSelected={selectedIds.has(logo.id)}
                   readOnly={readOnly}
-                  showClickIndicator={!!onAssetClick}
-                  onClick={(e) => handleItemClick(logo.id, logo.url, 'logo', e)}
+                  onClick={
+                    onAssetClick || !readOnly
+                      ? (e) => handleItemClick(logo.id, logo.url, 'logo', e)
+                      : undefined
+                  }
                   onAssetDragStart={onAssetDragStart}
                 />
               ))}
@@ -469,55 +461,45 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
             >
               {displayedMedia.map((item) => {
                 const isSelected = selectedIds.has(item.id);
+                const isImage = item.type === 'image';
                 return (
-                  <div
+                  <MediaTile
                     key={item.id}
-                    onClick={(e) => handleItemClick(item.id, item.url, 'image', e)}
-                    className={cn(
-                      'group/media relative aspect-[4/3] rounded-md border transition-colors cursor-pointer overflow-hidden',
-                      isSelected ? 'border-brand-cyan bg-brand-cyan/5' : 'border-border bg-muted/40'
-                    )}
-                  >
-                    {item.type === 'image' ? (
-                      <>
-                        <Thumb
-                          src={getProxiedUrl(item.url)}
-                          alt={item.label || 'Media'}
-                          className="w-full h-full object-contain p-2"
-                          loading="lazy"
-                          draggable={!!onAssetDragStart}
-                          onDragStart={(e) => onAssetDragStart?.(e, item.url, 'image')}
-                        />
-                        <FormatBadge url={item.url} className="top-1 left-1" />
-                        {(item.label || item.category) && (
-                          <span
-                            className={cn(
-                              'absolute bottom-0 left-0 right-0 text-2xs text-muted-foreground text-center py-0.5 bg-background/80 truncate px-1 flex items-center justify-center gap-1',
-                              isSelected && 'bg-brand-cyan text-black font-medium'
-                            )}
-                          >
-                            {item.category && !isSelected && (
-                              <span className="text-2xs text-muted-foreground bg-muted px-1 rounded">
-                                {item.category}
-                              </span>
-                            )}
-                            {item.label || ''}
-                          </span>
-                        )}
-                      </>
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-2 bg-black/20">
-                        <FileText size={20} className="text-neutral-500 mb-1" />
-                        <span className="text-2xs text-muted-foreground text-center px-2 truncate w-full">
-                          {item.label || 'PDF'}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Category selector */}
-                    {!readOnly && item.type === 'image' && (
-                      <div className="absolute top-1 right-1 z-10 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/media:opacity-100 group-focus-within/media:opacity-100 transition-opacity">
+                    src={isImage ? getProxiedUrl(item.url) : undefined}
+                    alt={item.label || 'Media'}
+                    aspectRatio="4 / 3"
+                    // Decisão: no compacto a mídia fica em overlay (o nome só acessível). O que
+                    // diferencia uma mídia da outra é a própria imagem; o label é texto livre.
+                    layout={compact ? 'overlay' : 'stacked'}
+                    title={item.label || (isImage ? undefined : 'PDF')}
+                    subtitle={!compact && item.category ? item.category : undefined}
+                    imageClassName="object-contain p-2"
+                    fallbackIcon={isImage ? undefined : FileText}
+                    fallbackLabel={isImage ? undefined : item.label || 'PDF'}
+                    selected={readOnly ? undefined : isSelected}
+                    onClick={
+                      onAssetClick || !readOnly
+                        ? (e) => handleItemClick(item.id, item.url, 'image', e)
+                        : undefined
+                    }
+                    draggable={isImage && !!onAssetDragStart}
+                    onDragStart={
+                      isImage && onAssetDragStart
+                        ? (e) => onAssetDragStart(e, item.url, 'image')
+                        : undefined
+                    }
+                    badge={
+                      isSelected || isImage ? (
+                        <>
+                          {isSelected && <SelectedCheck />}
+                          {isImage && <FormatBadge url={item.url} />}
+                        </>
+                      ) : undefined
+                    }
+                    actions={
+                      !readOnly && isImage ? (
                         <select
+                          aria-label={item.label || 'Media'}
                           value={item.category || ''}
                           onChange={(e) => {
                             e.stopPropagation();
@@ -527,8 +509,8 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                           className={cn(
                             'h-5 pl-1 pr-4 rounded text-2xs appearance-none cursor-pointer',
                             'bg-background/90 border border-border text-foreground',
-                            'hover:border-white/20 focus:border-neutral-600 focus:outline-none transition-colors',
-                            !item.category && 'text-neutral-600'
+                            'hover:border-border-hover focus:border-ring focus:outline-none transition-colors',
+                            !item.category && 'text-muted-foreground'
                           )}
                           style={{
                             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
@@ -543,26 +525,9 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                             </option>
                           ))}
                         </select>
-                      </div>
-                    )}
-
-                    {/* Asset Click Indicator */}
-                    {onAssetClick && item.type === 'image' && (
-                      <div className="absolute inset-0 bg-foreground/0 group-hover/media:bg-foreground/5 flex items-center justify-center opacity-0 group-hover/media:opacity-100 transition-[color,background-color,border-color,box-shadow,opacity] pointer-events-none">
-                        <MousePointerClick size={14} className="text-muted-foreground" />
-                      </div>
-                    )}
-
-                    {isSelected && (
-                      <div
-                        className={cn(
-                          'absolute top-1 left-1 w-4 h-4 rounded-full border border-border bg-brand-cyan flex items-center justify-center shadow-lg'
-                        )}
-                      >
-                        <Check size={10} className="text-black" strokeWidth={4} />
-                      </div>
-                    )}
-                  </div>
+                      ) : undefined
+                    }
+                  />
                 );
               })}
             </div>
@@ -582,8 +547,7 @@ interface LogoTileProps {
   logo: LogoItem;
   isSelected: boolean;
   readOnly: boolean;
-  showClickIndicator: boolean;
-  onClick: (e: React.MouseEvent) => void;
+  onClick?: (e: React.MouseEvent<HTMLElement>) => void;
   onAssetDragStart?: (e: React.DragEvent, url: string, type: 'logo' | 'image') => void;
 }
 
@@ -591,7 +555,6 @@ const LogoTile: React.FC<LogoTileProps> = ({
   logo,
   isSelected,
   readOnly,
-  showClickIndicator,
   onClick,
   onAssetDragStart,
 }) => {
@@ -600,56 +563,28 @@ const LogoTile: React.FC<LogoTileProps> = ({
   const needsLightBg = useNeedsLightBg(getProxiedUrl(logo.url));
 
   return (
-    <div
+    <MediaTile
+      src={getProxiedUrl(logo.url)}
+      alt={logo.label || logo.variant}
+      // Decisão: logo é sempre stacked, com a variante visível. Variantes do mesmo
+      // logo (primária, ícone, mono) se parecem na miniatura; o nome é o que as separa.
+      layout="stacked"
+      // Grade de logos é estreita (4 a 6 colunas): bloco de texto compacto pra
+      // o nome da variante caber sem o padding padrão comer o rótulo.
+      density="compact"
+      title={logo.variant}
+      actionLabel={logo.label || logo.variant}
+      imageClassName={cn('object-contain p-2', needsLightBg && 'bg-white')}
+      selected={readOnly ? undefined : isSelected}
       onClick={onClick}
-      className={cn(
-        'group/logo relative aspect-square rounded-md border transition-colors cursor-pointer overflow-hidden',
-        isSelected
-          ? 'border-brand-cyan bg-brand-cyan/5'
-          : needsLightBg
-            ? 'border-neutral-800 bg-white'
-            : 'border-neutral-800 bg-neutral-900/40'
-      )}
-    >
-      <Thumb
-        src={getProxiedUrl(logo.url)}
-        alt={logo.label || logo.variant}
-        className="w-full h-full object-contain p-2"
-        loading="lazy"
-        draggable={!!onAssetDragStart}
-        onDragStart={(e) => onAssetDragStart?.(e, logo.url, 'logo')}
-      />
-      <FormatBadge url={logo.url} />
-
-      <span
-        className={cn(
-          'absolute bottom-0 left-0 right-0 text-2xs text-muted-foreground text-center py-0.5 bg-background/80',
-          isSelected && 'bg-brand-cyan text-black font-medium'
-        )}
-      >
-        {logo.variant}
-      </span>
-
-      {/* Asset Click Indicator (Subtle) */}
-      {showClickIndicator && (
-        <div className="absolute inset-0 bg-foreground/0 group-hover/logo:bg-foreground/5 flex items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-[color,background-color,border-color,box-shadow,opacity] pointer-events-none">
-          <MousePointerClick size={14} className="text-muted-foreground" />
-        </div>
-      )}
-
-      {/* Selection Checkbox */}
-      {!readOnly && (
-        <div
-          className={cn(
-            'absolute top-1 left-1 w-4 h-4 rounded-full border flex items-center justify-center transition-opacity shadow-lg',
-            isSelected
-              ? 'bg-brand-cyan border-brand-cyan opacity-100'
-              : 'bg-black/40 border-white/20 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/logo:opacity-100 group-focus-within/logo:opacity-100'
-          )}
-        >
-          {isSelected && <Check size={10} className="text-black" strokeWidth={4} />}
-        </div>
-      )}
-    </div>
+      draggable={!!onAssetDragStart}
+      onDragStart={onAssetDragStart ? (e) => onAssetDragStart(e, logo.url, 'logo') : undefined}
+      badge={
+        <>
+          {isSelected && <SelectedCheck />}
+          <FormatBadge url={logo.url} />
+        </>
+      }
+    />
   );
 };

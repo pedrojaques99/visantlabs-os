@@ -122,7 +122,7 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({
         variant="ghost"
         className={cn(
           className ||
-            'h-8 px-3 gap-1.5 text-xs border border-white/10 text-neutral-400 hover:text-neutral-200'
+            'h-8 px-3 gap-1.5 text-xs border border-border text-muted-foreground hover:text-foreground'
         )}
         disabled={isBusy}
         onClick={() => setShowDropZoneModal(true)}

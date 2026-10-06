@@ -123,4 +123,22 @@ export default [
       'no-prototype-builtins': 'off',
     },
   },
+  {
+    // Fallback morto do i18n. `translate` devolve a PRÓPRIA CHAVE quando ela
+    // falta (string truthy), então `t('a.b') || 'Texto'` nunca cai no texto:
+    // o usuário vê "a.b" na tela. `tOr(chave, fallback)` é o caminho certo pra
+    // chave dinâmica; chave fixa vai nos dois locales e o `||` sai.
+    files: ['src/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "LogicalExpression:matches([operator='||'], [operator='??'])[left.type='CallExpression']:matches([left.callee.name='t'], [left.callee.name='translate']):matches([right.type='Literal'], [right.type='TemplateLiteral'])",
+          message:
+            "Fallback morto: t()/translate() devolve a própria chave quando ela falta, então o '|| texto' nunca dispara. Chave fixa: cadastre nos dois locales (pt-BR e en-US) e remova o fallback. Chave dinâmica: use tOr(chave, fallback).",
+        },
+      ],
+    },
+  },
 ];

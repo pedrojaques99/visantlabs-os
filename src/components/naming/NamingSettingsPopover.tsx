@@ -93,7 +93,7 @@ export const NamingSettingsPopover: React.FC<NamingSettingsPopoverProps> = ({
           'flex h-8 w-8 items-center justify-center rounded-full border transition-colors',
           open
             ? 'border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan'
-            : 'border-neutral-800 bg-white/[0.03] text-neutral-500 hover:border-white/10 hover:text-neutral-300'
+            : 'border-border bg-muted text-muted-foreground hover:border-border-hover hover:text-foreground'
         )}
       >
         <SlidersHorizontal size={14} />
@@ -294,7 +294,7 @@ function Chip({
         'flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-2xs transition-colors',
         active
           ? 'border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan'
-          : 'border-neutral-800 text-neutral-400 hover:border-white/10 hover:text-neutral-200',
+          : 'border-border text-muted-foreground hover:border-border-hover hover:text-foreground',
         className
       )}
     >

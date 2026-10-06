@@ -1,9 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { Upload, Gem } from '@/lib/ui/icons';
+import { Gem } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Thumb } from '@/components/ui/Thumb';
+import { Dropzone } from '@/components/ui/Dropzone';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { useUpdateGuideline } from '@/hooks/queries/useBrandGuidelines';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -36,7 +37,6 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
   const media = (guideline.media ?? []).filter((m) => m.type === 'image');
   const updateGuideline = useUpdateGuideline();
   const [busy, setBusy] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const fileToBase64 = (f: File) =>
     new Promise<string>((res, rej) => {
@@ -113,19 +113,11 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
           )}
         >
           {/* Upload */}
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="w-full h-24 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border text-muted-foreground hover:border-ring hover:text-foreground transition-colors"
-          >
-            <Upload size={18} />
-            <span className="text-xs">{t('cockpit.changeLogoDialog.upload')}</span>
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
+          <Dropzone
             accept="image/*,.svg"
-            className="hidden"
-            onChange={(e) => onFile(e.target.files?.[0])}
+            onFiles={(files) => onFile(files[0])}
+            label={t('cockpit.changeLogoDialog.upload')}
+            className="h-24 text-xs"
           />
 
           {/* Logos existentes → promover a principal */}
@@ -149,7 +141,7 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
                     className={cn(
                       'relative aspect-square rounded-md border p-2 flex items-center justify-center bg-muted/40 transition-colors',
                       l.variant === 'primary'
-                        ? 'border-brand-cyan/50 ring-1 ring-brand-cyan/20 cursor-default'
+                        ? 'border-ring cursor-default'
                         : 'border-border hover:border-ring'
                     )}
                   >
@@ -157,7 +149,8 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
                     {l.variant === 'primary' && (
                       <Gem
                         size={11}
-                        className="absolute top-1 left-1 text-foreground fill-brand-cyan"
+                        weight="fill"
+                        className="absolute top-1 left-1 text-foreground"
                       />
                     )}
                   </button>

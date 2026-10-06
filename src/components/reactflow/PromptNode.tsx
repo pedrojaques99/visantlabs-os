@@ -626,9 +626,9 @@ export const PromptNode = memo(
             >
               <div
                 className={cn(
-                  'flex items-center gap-2 px-2.5 py-1.5 rounded-lg border-node text-2xs font-mono transition-[color,background-color,border-color,box-shadow,opacity] duration-300',
+                  'flex items-center gap-2 px-2.5 py-1.5 rounded-xl border-node text-2xs font-mono transition-[color,background-color,border-color,box-shadow,opacity] duration-300',
                   isBrandActive
-                    ? 'bg-foreground/10 border-neutral-700 text-foreground shadow-[0_0_15px_rgba(255,255,255,0.05)]'
+                    ? 'bg-accent border-neutral-700 text-foreground shadow-[0_0_15px_rgba(255,255,255,0.05)]'
                     : 'bg-neutral-900/40 border-neutral-800/40 text-neutral-400 opacity-80'
                 )}
               >
@@ -641,17 +641,17 @@ export const PromptNode = memo(
                     )}
                   />
                 </div>
-                <span className="text-2xs font-bold">
+                <span className="text-2xs font-medium">
                   {t('canvasNodes.promptNode.brandConnected')}
                 </span>
                 <div className="flex items-center gap-1.5 ml-auto">
                   {connectedLogo && (
-                    <span className="px-1.5 py-0.5 bg-black/20 rounded border-node border-neutral-800 text-2xs">
+                    <span className="px-1.5 py-0.5 bg-muted rounded border-node border-neutral-800 text-2xs">
                       LOGO
                     </span>
                   )}
                   {connectedIdentity && (
-                    <span className="px-1.5 py-0.5 bg-black/20 rounded border-node border-neutral-800 text-2xs">
+                    <span className="px-1.5 py-0.5 bg-muted rounded border-node border-neutral-800 text-2xs">
                       IDENTITY
                     </span>
                   )}
@@ -664,7 +664,7 @@ export const PromptNode = memo(
         {/* Prompt Input */}
         <div className="node-margin">
           {hasTextNodeConnection && (
-            <div className="mb-1.5 text-2xs font-mono text-foreground/80 flex items-center gap-1">
+            <div className="mb-1.5 text-2xs font-mono text-foreground flex items-center gap-1">
               <span>•</span>
               <span>{t('canvasNodes.promptNode.connectedToTextNode')}</span>
             </div>
@@ -752,7 +752,7 @@ export const PromptNode = memo(
                 exit={{ height: 0, opacity: 0 }}
                 className="mt-2 space-y-1.5 overflow-hidden"
               >
-                <div className="text-2xs font-mono text-foreground/80 mb-1.5 flex items-center gap-2">
+                <div className="text-2xs font-mono text-foreground mb-1.5 flex items-center gap-2">
                   <Diamond size={10} />
                   {t('canvasNodes.promptNode.aiSuggestions')}
                 </div>
@@ -898,10 +898,10 @@ export const PromptNode = memo(
             ) : (
               <div className="flex items-center justify-center gap-2">
                 <ImageIcon size={14} className="group-hover/gen:rotate-12 transition-transform" />
-                <span className="font-semibold tracking-tight">
+                <span className="font-medium tracking-tight">
                   {t('canvasNodes.promptNode.generateImage')}
                 </span>
-                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-2xs text-foreground">
+                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-background/50 text-2xs text-foreground">
                   <Diamond size={10} className="opacity-70 fill-current" />
                   {creditsRequired}
                 </div>

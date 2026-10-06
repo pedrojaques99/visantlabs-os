@@ -230,7 +230,7 @@ export const OnboardingWizardV2: React.FC = () => {
   };
 
   const pathCard =
-    'w-full flex items-start gap-3 p-4 rounded-lg border text-left transition-[color,background-color,border-color,opacity] border-border bg-muted/40 hover:border-border-hover disabled:opacity-50';
+    'w-full flex items-start gap-3 p-4 rounded-xl border text-left transition-[color,background-color,border-color,opacity] border-border bg-muted/40 hover:border-border-hover disabled:opacity-50';
 
   return (
     <div className="flex items-center justify-center min-h-[70vh]">
@@ -306,7 +306,7 @@ export const OnboardingWizardV2: React.FC = () => {
                 <button
                   onClick={() => setShowMiniForm((v) => !v)}
                   disabled={isBusy}
-                  className={cn(pathCard, showMiniForm && 'border-brand-cyan/40 bg-brand-cyan/5')}
+                  className={cn(pathCard, showMiniForm && 'border-ring bg-muted')}
                 >
                   <PencilLine className="w-5 h-5 mt-0.5 shrink-0 text-muted-foreground" />
                   <span className="min-w-0">
@@ -322,7 +322,7 @@ export const OnboardingWizardV2: React.FC = () => {
                 {showMiniForm && (
                   <form
                     onSubmit={handleCreateMinimal}
-                    className="flex flex-col gap-3 p-4 rounded-lg border border-border bg-muted/30"
+                    className="flex flex-col gap-3 p-4 rounded-xl border border-border bg-muted/30"
                   >
                     <div className="flex flex-col gap-1.5">
                       <label

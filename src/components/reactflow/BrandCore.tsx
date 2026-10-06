@@ -542,7 +542,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               <div className="p-1.5 rounded-full bg-muted-foreground/15">
                 <GlitchLoader size={12} />
               </div>
-              <span className="text-2xs text-foreground font-semibold">
+              <span className="text-2xs text-foreground font-medium">
                 {t('canvasNodes.brandCore.analyzing')}
               </span>
             </div>
@@ -569,7 +569,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               onClick={() => setIsExpandedBrandIdentity(!isExpandedBrandIdentity)}
               className="flex items-center justify-between group/expand px-1"
             >
-              <span className="text-2xs font-semibold text-neutral-500 group-hover/expand:text-neutral-300 transition-colors">
+              <span className="text-2xs font-medium text-neutral-500 group-hover/expand:text-neutral-300 transition-colors">
                 {t('canvasNodes.brandCore.identity')}
               </span>
               <div className="p-1 rounded-full bg-neutral-900/50 group-hover/expand:bg-neutral-800 transition-colors">
@@ -588,7 +588,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   brandIdentity.logo.style ||
                   brandIdentity.logo.elements.length > 0) && (
                   <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
-                    <div className="text-2xs font-semibold text-neutral-500 mb-2">
+                    <div className="text-2xs font-medium text-neutral-500 mb-2">
                       {t('canvasNodes.brandCore.logoDna')}
                     </div>
                     <div className="space-y-3">
@@ -600,7 +600,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                               className="flex items-center gap-1.5 px-2 py-1 bg-neutral-950/40 rounded border-node border-neutral-700/30 shadow-sm"
                             >
                               <div
-                                className="w-2.5 h-2.5 rounded border-node border-white/10 shadow-sm"
+                                className="w-2.5 h-2.5 rounded border-node border-border shadow-sm"
                                 style={{ backgroundColor: color }}
                               />
                               <span className="text-neutral-400 font-mono text-2xs">{color}</span>
@@ -645,7 +645,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   brandIdentity.colors.secondary.length > 0 ||
                   brandIdentity.colors.accent.length > 0) && (
                   <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
-                    <div className="text-2xs font-semibold text-neutral-500 mb-2">
+                    <div className="text-2xs font-medium text-neutral-500 mb-2">
                       {t('canvasNodes.brandCore.palettes')}
                     </div>
                     <div className="space-y-3">
@@ -671,7 +671,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                                 {palette.map((color, idx) => (
                                   <div key={idx} className="group/color relative">
                                     <div
-                                      className="w-6 h-6 rounded border-node border-white/10"
+                                      className="w-6 h-6 rounded border-node border-border"
                                       title={color}
                                       style={{ backgroundColor: color }}
                                     />
@@ -690,7 +690,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   brandIdentity.personality.feeling ||
                   brandIdentity.personality.values?.length > 0) && (
                   <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
-                    <div className="text-2xs font-semibold text-neutral-500 mb-2">
+                    <div className="text-2xs font-medium text-neutral-500 mb-2">
                       {t('canvasNodes.brandCore.personality')}
                     </div>
                     <div className="space-y-2.5 text-neutral-400">

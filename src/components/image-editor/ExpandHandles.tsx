@@ -156,7 +156,7 @@ export const ExpandHandles: React.FC<Props> = ({ imageWidth, imageHeight, zoom, 
       {/* Dimension label */}
       {hasExpansion && (
         <div
-          className="absolute z-20 flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-900/80 text-2xs font-mono text-neutral-400 pointer-events-none"
+          className="absolute z-20 flex items-center gap-1 px-2 py-0.5 rounded bg-popover/80 text-2xs font-mono text-muted-foreground pointer-events-none"
           style={{
             left: imgLeft + imgW / 2 - 60,
             top: imgTop - t - 24,

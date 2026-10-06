@@ -49,7 +49,7 @@ interface ProfileOverviewProps {
 }
 
 // Shared surface for a card section.
-const cardClass = cn('rounded-2xl p-5 sm:p-6 flex flex-col gap-5', glassSurface.panel);
+const cardClass = cn('rounded-xl p-5 sm:p-6 flex flex-col gap-5', glassSurface.panel);
 const tileClass = cn('rounded-xl', glassSurface.surface);
 const controlClass = cn('rounded-xl', glassSurface.control);
 
@@ -84,7 +84,7 @@ const NavRow: React.FC<{
 // Section header: just the title.
 const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
   <div className="border-b border-border pb-4">
-    <MicroTitle as="h3" className="text-sm font-semibold text-foreground">
+    <MicroTitle as="h3" className="text-sm font-medium text-foreground">
       {title}
     </MicroTitle>
   </div>
@@ -190,7 +190,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
           />
           <button
             type="button"
-            className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-muted border border-border overflow-hidden flex items-center justify-center cursor-pointer transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait"
+            className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-muted border border-border overflow-hidden flex items-center justify-center cursor-pointer transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploadingPicture}
             title={t('profile.uploadPicture')}
@@ -206,12 +206,12 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                 className="w-full h-full object-cover"
               />
             )}
-            <span className="absolute bottom-2 right-2 bg-background/90 text-foreground border border-border rounded-lg p-1.5">
+            <span className="absolute bottom-2 right-2 bg-background/90 text-foreground border border-border rounded-xl p-1.5">
               <Camera size={14} />
             </span>
           </button>
           <div className="text-center space-y-1 min-w-0 max-w-full">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight truncate">
+            <h2 className="text-xl sm:text-2xl font-semibold text-foreground tracking-tight truncate">
               {user.name || t('profile.name')}
             </h2>
             <p className="text-sm text-muted-foreground truncate">{user.email}</p>
@@ -244,7 +244,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                   variant="brand"
                   size="icon-sm"
                   onClick={onBuyCredits}
-                  className="absolute top-4 right-4 rounded-lg"
+                  className="absolute top-4 right-4 rounded-xl"
                   title={t('credits.buyCredits')}
                   aria-label={t('credits.buyCredits')}
                 >
@@ -253,14 +253,14 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                 <MicroTitle as="p" className="mb-1">
                   {t('credits.available')}
                 </MicroTitle>
-                <p className="text-4xl font-bold text-foreground font-mono tracking-tight">
+                <p className="text-4xl font-semibold text-foreground font-mono tracking-tight">
                   {totalCreditsAvailable}
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <StatTile label={t('profile.totalCreditsUsed')}>
-                  <p className="text-lg font-bold text-foreground font-mono">
+                  <p className="text-lg font-medium text-foreground font-mono">
                     {subscriptionStatus.creditsUsed ?? 0}
                   </p>
                 </StatTile>
@@ -278,7 +278,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                     </div>
                     <div className="w-full bg-muted rounded-full h-1.5 mb-1.5">
                       <div
-                        className="bg-foreground/70 h-1.5 rounded-full"
+                        className="bg-muted-foreground h-1.5 rounded-full"
                         style={{ width: `${Math.min(storageUsage.percentage, 100)}%` }}
                       />
                     </div>
@@ -372,7 +372,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                   'p-4 flex flex-col items-center justify-center text-center'
                 )}
               >
-                <p className="text-xl font-bold text-foreground font-mono mb-1">
+                <p className="text-xl font-medium text-foreground font-mono mb-1">
                   {referralStats.referredUsersCount || 0}
                 </p>
                 <MicroTitle as="p">{t('referral.friendsReferred')}</MicroTitle>
@@ -383,7 +383,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                   'p-4 flex flex-col items-center justify-center text-center'
                 )}
               >
-                <p className="text-xl font-bold text-foreground font-mono mb-1">
+                <p className="text-xl font-medium text-foreground font-mono mb-1">
                   {referralStats.totalCreditsEarned || 0}
                 </p>
                 <MicroTitle as="p">{t('referral.totalEarned')}</MicroTitle>

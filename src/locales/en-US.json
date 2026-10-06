@@ -1188,7 +1188,8 @@
       "name": "A-Z",
       "hintDefault": "Sort",
       "hintRecent": "Most used first",
-      "hintName": "Sorted A-Z"
+      "hintName": "Sorted A-Z",
+      "default": "By category"
     },
     "empty": {
       "noResultsTitle": "No results found",
@@ -1298,7 +1299,13 @@
     "smartAnalyzer": {
       "name": "Smart Analyzer",
       "description": "Reads the image, detects its type and writes prompts ready for the Figma plugin or image generation."
-    }
+    },
+    "hide": "Hide from the apps page",
+    "show": "Show on the apps page",
+    "hiddenToast": "App hidden. Only admins see it.",
+    "shownToast": "App visible to everyone.",
+    "undo": "Undo",
+    "visibilityFailed": "Couldn't change visibility. Try again."
   },
   "auth": {
     "accountCreatedSuccess": "Account created successfully!",
@@ -2212,7 +2219,43 @@
     "noMediaInNode": "No media found in this node.",
     "imageFetchHttpError": "Couldn't download the image (error {status}). Try again.",
     "imageProcessUnknownError": "Something went wrong while processing the image.",
-    "imported": "Imported \"{name}\": {nodes} nodes, {edges} edges"
+    "imported": "Imported \"{name}\": {nodes} nodes, {edges} edges",
+    "renameProject": "Rename project",
+    "mediaLibrary": {
+      "tabsLabel": "Library sections",
+      "viewModeLabel": "View mode",
+      "viewGrid": "Grid",
+      "viewList": "List",
+      "addReference": "Add {name} to board",
+      "referenceAdded": "Reference added",
+      "match": "Match",
+      "sanitize": "Sanitize: remove studio branding",
+      "addToBoard": "Add to board",
+      "typeLogo": "Logo",
+      "typeImage": "Image",
+      "noReferences": "No references found",
+      "noAssets": "No assets found",
+      "assetReferenced": "Asset referenced",
+      "assetAdded": "Asset added to board",
+      "backgroundUpdated": "Canvas background updated",
+      "primaryUpdated": "Brand primary color updated",
+      "sanitizing": "Sanitizing reference...",
+      "sanitized": "Reference sanitized",
+      "sanitizeFailed": "Couldn't sanitize the reference",
+      "noBrandTitle": "No brand selected",
+      "noBrandBody": "Pick a brand or browse references.",
+      "searchReferences": "Search references...",
+      "searchAssets": "Search assets...",
+      "sectionLogos": "Logotypes",
+      "sectionMedia": "Brand assets",
+      "sectionPalette": "Palette",
+      "copiedHex": "Copied {hex}",
+      "applyAsBackground": "Apply as background",
+      "setAsPrimary": "Set as primary",
+      "smartReferences": "Smart references",
+      "curatedReferences": "Curated references",
+      "clearFilters": "Clear"
+    }
   },
   "canvasBottomToolbar": {
     "color": "Color",
@@ -2383,7 +2426,8 @@
       "thinking": "Thinking...",
       "title": "Chat Node",
       "typeYourMessage": "Type your message...",
-      "openAsPanel": "Open As Panel"
+      "openAsPanel": "Open As Panel",
+      "replyingInPanel": "This chat is open in the side panel. Reply there."
     },
     "colorExtractorNode": {
       "clickToCopy": "Click to copy hex code",
@@ -3729,7 +3773,8 @@
       },
       "buttons": {
         "description": "Button component variants and sizes",
-        "title": "Buttons"
+        "title": "Buttons",
+        "ctaNote": "Cyan CTAs: primary is the tool's main action; brand (filled) is for showcase moments only. Never both on the same panel."
       },
       "canvasFlow": {
         "description": "Main React Flow canvas component with drag-and-drop, node management, and image handling",
@@ -3818,6 +3863,18 @@
       "microTitle": {
         "title": "Micro Title",
         "description": "Technical label in spaced uppercase mono"
+      },
+      "mediaTile": {
+        "title": "Media Tile",
+        "description": "The one media card: cover with a reserved ratio, a stretched main action, and actions revealed on hover, focus and touch."
+      },
+      "segmentedControl": {
+        "title": "Segmented Control",
+        "description": "Single choice among a few options. Arrow keys move, Space selects; cyan only in the accent variant."
+      },
+      "dropzone": {
+        "title": "Dropzone",
+        "description": "Upload zone backed by a real file input: click, keyboard or drag. Inside a shell that already handles dragging, turn it off with dropTarget={false}."
       }
     },
     "deleteConfirmation": {
@@ -4545,7 +4602,24 @@
     },
     "removeColor": "Remove {color}",
     "selectModelToCompare": "Pick at least one model to compare",
-    "userApiKeyInUse": "Using your own API key"
+    "userApiKeyInUse": "Using your own API key",
+    "card": {
+      "feedbackUp": "Like it (improves the model)",
+      "feedbackUpRemove": "Remove positive feedback",
+      "feedbackDown": "Didn't like it (report noise)",
+      "feedbackDownRemove": "Remove negative feedback",
+      "promptStep1": "Preparing",
+      "promptStep2": "Analyzing",
+      "promptStep3": "Composing",
+      "promptStep4": "Conceptualizing",
+      "promptStep5": "Synthesizing",
+      "imageStep1": "Creating",
+      "imageStep2": "Drawing",
+      "imageStep3": "Sculpting",
+      "imageStep4": "Refining",
+      "imageStep5": "Shaping",
+      "imageStep6": "Polishing"
+    }
   },
   "mockupsPage": {
     "cannotConnectServer": "Cannot connect to server. Please check your connection and try again.",
@@ -5884,7 +5958,8 @@
     "releaseToUpload": "Release to upload",
     "startBlankMockup": "Start with a Blank Mockup",
     "supportedFormats": "PNG, JPG, WEBP",
-    "unsupportedFileType": "Unsupported file type. Please upload a PNG, JPG, WEBP, or GIF."
+    "unsupportedFileType": "Unsupported file type. Please upload a PNG, JPG, WEBP, or GIF.",
+    "dropOrClick": "Drag or click to upload"
   },
   "usage": {
     "lastUpdated": "Last updated: {date}",
@@ -6264,6 +6339,14 @@
       "createFirst": "Create your first creative",
       "untitled": "Untitled creative",
       "loadFailed": "Could not load your creatives"
+    },
+    "pages": {
+      "defaultName": "Page {n}",
+      "duplicate": "Duplicate (Ctrl+Shift+D)",
+      "remove": "Remove page",
+      "rename": "Page name",
+      "doubleClickRename": "Double-click to rename",
+      "add": "Add page"
     }
   },
   "mockups": {
@@ -6310,7 +6393,8 @@
       "textPlaceholder": "Type your text...",
       "loaded": "Loaded {fileName}",
       "converted": "Converted {fileName} to SVG",
-      "processFailed": "Failed to process image"
+      "processFailed": "Failed to process image",
+      "dropModel": "Click or drop GLB / GLTF"
     },
     "geometry": {
       "title": "Geometry",
@@ -6355,7 +6439,11 @@
       "qualityHigh": "Quality"
     },
     "scenePresets": {
-      "title": "Scene presets"
+      "title": "Scene presets",
+      "surprise": "Scene shuffled",
+      "random": "Random",
+      "brandScenes": "{name} scenes",
+      "brand": "Brand"
     },
     "material": {
       "title": "Material",
@@ -6412,7 +6500,11 @@
       },
       "angle": "Angle",
       "color1": "Color 1",
-      "color2": "Color 2"
+      "color2": "Color 2",
+      "uploadImage": "Upload image",
+      "maxSize": "Max 10MB",
+      "image": "Background image",
+      "removeImage": "Remove background image"
     },
     "animation": {
       "type": "Type",
@@ -6634,7 +6726,13 @@
       "png_exported_2x": "PNG exported (2x)",
       "only_svg_files_are_supported": "Only SVG files are supported",
       "please_upload_an_svg_file": "Upload an SVG file",
-      "loaded_name_anchors_anchors_handles_h": "Loaded ${name}, ${anchors} anchors, ${handles} handles"
+      "loaded_name_anchors_anchors_handles_h": "Loaded ${name}, ${anchors} anchors, ${handles} handles",
+      "loaded": "{name} loaded: {anchors} anchors, {handles} handles",
+      "anchorsCount": "{count} anchors",
+      "handlesCount": "{count} handles",
+      "clear": "Clear",
+      "openSvg": "Open SVG",
+      "openSvgShortcut": "Open SVG (Ctrl+O)"
     }
   },
   "extractor": {
@@ -6811,7 +6909,8 @@
       "animationPrompt": "Describe the motion",
       "animate": "Animate",
       "regenerate": "Regenerate with AI",
-      "ready4k": "4K ready"
+      "ready4k": "4K ready",
+      "fullscreen": "View fullscreen"
     },
     "frame": {
       "title": "Animate between frames",
@@ -7328,7 +7427,8 @@
       "original": "Original",
       "result": "Result",
       "showOriginal": "Show original",
-      "showResult": "Show result"
+      "showResult": "Show result",
+      "mode": "Mode"
     },
     "converter": {
       "addImagesPdf": "Add images or PDF",
@@ -7403,7 +7503,8 @@
       "optimize": "Optimize",
       "preview": "Preview",
       "code": "Code",
-      "summary": "Optimized: {count} · {saved} saved ({percent}%)"
+      "summary": "Optimized: {count} · {saved} saved ({percent}%)",
+      "viewMode": "View"
     },
     "pdf": {
       "presetLabel": "Preset",
@@ -7458,6 +7559,36 @@
       "details": "Details",
       "nearestRal": "Nearest RAL:",
       "nearestPantone": "Nearest Pantone:"
+    },
+    "og": {
+      "template": "Template",
+      "templates": {
+        "minimal": "Minimal",
+        "gradient": "Gradient",
+        "photo": "Photo",
+        "split": "Split"
+      },
+      "title": "Title",
+      "titlePlaceholder": "Your blog post title",
+      "subtitle": "Subtitle",
+      "subtitlePlaceholder": "What the page is about",
+      "author": "Author",
+      "authorPlaceholder": "Author name",
+      "logo": "Logo",
+      "upload": "Upload image",
+      "backgroundImage": "Background image",
+      "colors": "Colors",
+      "colorBg": "Background",
+      "colorAccent": "Accent",
+      "colorText": "Text",
+      "generated": "OG image ready",
+      "downloadPng": "Download PNG",
+      "copyImage": "Copy image",
+      "copyMeta": "Copy meta tags",
+      "metaCopied": "Meta tags copied",
+      "configure": "Set up your OG image in the panel",
+      "preview": "Preview",
+      "previewAlt": "OG image preview"
     }
   },
   "fullScreenViewer": {
@@ -7930,6 +8061,13 @@
         "description": "Audit your brand guideline completeness with charts",
         "prompt": "A brand audit scorecard dashboard that loads my brand guideline and shows completeness metrics for colors, typography, voice, imagery, and logos as a pie chart, plus a bar chart of asset counts per category, with a compliance score metric card and tips for improvement in a collapsible section"
       }
+    },
+    "card": {
+      "like": "Like",
+      "fork": "Fork",
+      "likeFailed": "Couldn't like it",
+      "forked": "Forked",
+      "forkFailed": "Couldn't fork it"
     }
   },
   "imageEditor": {
@@ -7971,7 +8109,10 @@
     "removeBgInfo": "Removes the background with AI in one click.",
     "generating": "Generating",
     "generate": "Generate",
-    "selectionTooSmall": "Selection too small. Try a larger area."
+    "selectionTooSmall": "Selection too small. Try a larger area.",
+    "result": "Result",
+    "rejectRetry": "Reject and retry",
+    "acceptApply": "Accept and apply"
   },
   "canvasChat": {
     "toggleDetails": "Show or hide details",
@@ -8012,12 +8153,152 @@
     "yieldImages": "Images",
     "videoCount": "{count} videos",
     "openSource": "Open source",
-    "community": "Community"
+    "community": "Community",
+    "tabsLabel": "Credit sections"
   },
   "byok": {
     "activeCharges": "BYOK active: charges go to your Google account"
   },
   "modelSelector": {
     "unstable": "{provider} (unstable right now)"
+  },
+  "storageLimitModal": {
+    "title": "Storage limit exceeded",
+    "usage": "You've exceeded your storage limit ({used} MB of {limit} MB).",
+    "body": "Upgrade your plan for more space and keep uploading images.",
+    "upgrade": "Upgrade"
+  },
+  "toolEditor": {
+    "export": {
+      "title": "Export",
+      "scale": "Scale",
+      "quality": "Quality",
+      "duration": "Duration",
+      "output": "Output",
+      "copy": "Copy to clipboard",
+      "copied": "Copied to clipboard",
+      "copyFailed": "Couldn't copy. Download the file instead.",
+      "exported": "Exported {format}",
+      "exportedSvg": "Exported SVG (vector)",
+      "exportedDims": "Exported {format} ({dims})",
+      "failed": "Export failed. Try again.",
+      "presets": {
+        "productShot": "Product shot",
+        "socialPost": "Social post",
+        "instagramReel": "Instagram Reel",
+        "webPreview": "Web preview"
+      }
+    },
+    "presets": {
+      "empty": "No presets found",
+      "emptyHint": "Be the first to share one.",
+      "saveHint": "Save presets from the right panel",
+      "by": "by {name}",
+      "applied": "Applied \"{name}\"",
+      "loaded": "Loaded \"{name}\"",
+      "namePlaceholder": "Preset name",
+      "saved": "Preset saved",
+      "saveFailed": "Couldn't save the preset",
+      "deleted": "Preset deleted",
+      "deleteFailed": "Couldn't delete"
+    },
+    "compare": {
+      "original": "Original",
+      "processed": "Processed"
+    },
+    "undo": "Undo",
+    "redo": "Redo",
+    "undoHint": "Undo (Ctrl+Z)",
+    "redoHint": "Redo (Ctrl+Shift+Z)",
+    "resetHint": "Reset settings (R)",
+    "hidePanelHint": "Hide panel (Tab)",
+    "showPanelHint": "Show panel (Tab)",
+    "uploadImage": "Upload image",
+    "loadedFile": "Loaded {name}",
+    "parameters": "Parameters",
+    "eyedropper": "Eyedropper",
+    "eyedropperHint": "Pick color from screen"
+  },
+  "smartAnalyzerPage": {
+    "toast": {
+      "adminRequired": "Admin access required",
+      "invalidType": "Invalid file type. Use PNG, JPG, or WebP.",
+      "tooLarge": "File too large. Max 5MB.",
+      "analyzeFirst": "Analyze the image first",
+      "generationFailed": "Generation failed",
+      "generated": "Image generated",
+      "noImage": "No image returned from server",
+      "generateFailed": "Failed to generate image",
+      "variationsLoading": "Generating variations…",
+      "variationsDone": "{count} variations generated",
+      "variationsAllFailed": "Generation failed for all variations",
+      "variationsFailed": "Failed to generate variations",
+      "saved": "Saved to your library",
+      "saveFailed": "Failed to save media",
+      "favAdded": "Added to favorites",
+      "favRemoved": "Removed from favorites",
+      "favFailed": "Failed to update favorite",
+      "pasted": "Image pasted from clipboard",
+      "refining": "Refining prompt…",
+      "analysisFailed": "Analysis failed",
+      "refined": "Prompt refined",
+      "analysisDone": "Analysis complete",
+      "opsCopied": "Operations JSON copied",
+      "promptCopied": "Prompt copied",
+      "nameRequired": "Name is required",
+      "publishFailed": "Failed to publish",
+      "published": "Published to Community"
+    },
+    "reset": "Reset",
+    "seoDescription": "AI-powered image analysis and prompt generation",
+    "title": "Image Analyzer",
+    "description": "Extract a reusable prompt from any image.",
+    "breadcrumb": "Smart Analyzer",
+    "idle": {
+      "title": "Analyze an image",
+      "paste": "Or paste one with"
+    },
+    "analyzing": {
+      "title": "Extracting prompt",
+      "subtitle": "Analyzing visual patterns…"
+    },
+    "result": {
+      "variations": "Variations",
+      "result": "Result",
+      "variationsCount": "{count} variations"
+    },
+    "prompt": {
+      "save": "Save",
+      "edit": "Edit",
+      "editPlaceholder": "Edit your prompt…",
+      "copied": "Copied",
+      "copy": "Copy prompt",
+      "generating": "Generating…",
+      "generate": "Generate",
+      "variations4x": "4x variations"
+    },
+    "refinements": {
+      "title": "Refinements",
+      "custom": "Custom…"
+    },
+    "sidebar": {
+      "source": "Source",
+      "analyzeAnother": "Analyze another",
+      "keywords": "Visual keywords",
+      "palette": "Extracted palette"
+    },
+    "publish": {
+      "title": "Save to Community",
+      "name": "Title",
+      "namePlaceholder": "E.g. Professional Dashboard Dark",
+      "tags": "Tags",
+      "noTags": "No tags yet",
+      "tagPlaceholder": "Add a tag…",
+      "cancel": "Cancel",
+      "submit": "Publish"
+    },
+    "preview": {
+      "alt": "Preview"
+    }
   }
 }

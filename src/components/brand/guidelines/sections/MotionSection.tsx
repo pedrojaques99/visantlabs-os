@@ -88,8 +88,8 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
                 className={cn(
                   'flex-1 h-6 rounded border text-2xs uppercase transition-colors',
                   motion.philosophy === opt.value
-                    ? 'border-white/20 bg-white/5 text-neutral-200'
-                    : 'border-neutral-800 text-neutral-600 hover:border-white/10'
+                    ? 'border-border-hover bg-muted text-foreground'
+                    : 'border-border text-muted-foreground hover:border-border-hover'
                 )}
               >
                 {opt.label}
@@ -130,8 +130,8 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
                   className={cn(
                     'px-2 h-5 rounded border text-2xs font-mono transition-colors',
                     motion.easing === p.value
-                      ? 'border-white/20 bg-white/5 text-neutral-200'
-                      : 'border-neutral-800 text-neutral-600 hover:border-white/10'
+                      ? 'border-border-hover bg-muted text-foreground'
+                      : 'border-border text-muted-foreground hover:border-border-hover'
                   )}
                 >
                   {p.label}
@@ -156,8 +156,8 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
               className={cn(
                 'w-7 h-3.5 rounded-full border transition-colors cursor-pointer relative shrink-0',
                 motion.respectsReducedMotion
-                  ? 'bg-white/10 border-white/20'
-                  : 'bg-white/[0.03] border-white/10'
+                  ? 'bg-accent border-border-hover'
+                  : 'bg-muted border-border'
               )}
               aria-label="Toggle reduced motion"
             >

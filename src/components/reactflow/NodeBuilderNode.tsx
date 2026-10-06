@@ -116,7 +116,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
       {/* Header */}
       <div className="flex items-center justify-between node-margin-lg border-b border-neutral-800 pb-3">
         <div className="flex items-center gap-3">
-          <div className="p-1.5 rounded-lg bg-muted ring-1 ring-ring">
+          <div className="p-1.5 rounded-xl bg-muted ring-1 ring-ring">
             <Blocks size={18} className="text-muted-foreground" />
           </div>
           <div>
@@ -156,7 +156,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                     className={cn(
                       'flex items-center gap-3 px-3 py-2 rounded-md border-node transition-[color,background-color,border-color,box-shadow,opacity] duration-500',
                       isActive
-                        ? 'bg-white/5 border-neutral-700'
+                        ? 'bg-muted border-neutral-700'
                         : isPast
                           ? 'bg-neutral-900/30 border-neutral-800 opacity-40'
                           : 'bg-transparent border-transparent opacity-20'
@@ -210,7 +210,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                       onClick={() => setActiveCategory(cat.id)}
                       className="nodrag nopan flex items-center gap-3 p-2.5 rounded-md bg-neutral-900/50 border-node border-neutral-800 hover:border-neutral-700 hover:bg-neutral-900 transition-colors group text-left"
                     >
-                      <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
+                      <div className="p-2 rounded-xl bg-muted group-hover:bg-accent transition-colors">
                         <cat.icon size={16} className="text-neutral-400" />
                       </div>
                       <span className="text-2xs font-medium text-neutral-300">
@@ -223,7 +223,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
             ) : (
               <div className="space-y-3 animate-in fade-in slide-in-from-left-2 duration-300">
                 <div className="flex items-center justify-between px-1">
-                  <p className="text-2xs font-semibold text-neutral-300">
+                  <p className="text-2xs font-medium text-neutral-300">
                     {categoryName(activeCategory)}
                   </p>
                   <button
@@ -268,7 +268,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
               >
                 <div
                   className={cn(
-                    'rounded-2xl px-3 py-2 text-2xs leading-relaxed border-node',
+                    'rounded-xl px-3 py-2 text-2xs leading-relaxed border-node',
                     msg.role === 'user'
                       ? 'bg-neutral-900 border-neutral-800 text-neutral-200 rounded-tr-none'
                       : 'bg-neutral-800/50 border-neutral-800 text-neutral-200 rounded-tl-none'
@@ -279,7 +279,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
               </div>
             ))}
             {isLoading && (
-              <div className="flex items-center gap-3 px-3 py-2 bg-neutral-800/50 border-node border-neutral-800 rounded-2xl rounded-tl-none mr-8">
+              <div className="flex items-center gap-3 px-3 py-2 bg-neutral-800/50 border-node border-neutral-800 rounded-xl rounded-tl-none mr-8">
                 <GlitchLoader size={14} />
                 <span className="text-muted-foreground text-2xs">{stepLabel(processingStep)}</span>
               </div>
@@ -294,7 +294,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
         <div className="node-margin pt-2 animate-in zoom-in-95 duration-300">
           <div
             className={cn(
-              'flex flex-col gap-3 p-4 rounded-2xl border-node bg-neutral-900/50 border-neutral-700'
+              'flex flex-col gap-3 p-4 rounded-xl border-node bg-neutral-900/50 border-neutral-700'
             )}
           >
             <div className="flex items-start gap-3">
@@ -302,7 +302,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                 <Zap size={20} className="text-foreground" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-foreground tracking-tight">
+                <p className="text-xs font-medium text-foreground tracking-tight">
                   {pendingDefinition.name}
                 </p>
                 <p className="text-2xs text-muted-foreground leading-tight mt-0.5">
@@ -314,7 +314,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
             <div className="pt-2 border-t border-neutral-800">
               <button
                 onClick={handleSpawn}
-                className="nodrag nopan w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-md bg-brand-cyan hover:bg-brand-cyan/90 text-black font-semibold text-xs transition-colors"
+                className="nodrag nopan w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-md bg-brand-cyan hover:bg-brand-cyan/90 text-black font-medium text-xs transition-colors"
               >
                 <Plus size={14} strokeWidth={3} />
                 {t('canvasNodes.nodeBuilderNode.deploy')}
@@ -328,11 +328,11 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
       <div className="node-margin mt-auto">
         <div
           className={cn(
-            'relative flex items-end gap-2 p-2 rounded-2xl border-node bg-black/40 transition-[color,background-color,border-color,box-shadow,opacity] duration-300',
+            'relative flex items-end gap-2 p-2 rounded-xl border-node bg-background/80 transition-[color,background-color,border-color,box-shadow,opacity] duration-300',
             isLoading || !!pendingDefinition
               ? 'opacity-50 pointer-events-none'
               : 'hover:border-neutral-700',
-            selected ? 'border-neutral-600' : 'border-white/10'
+            selected ? 'border-neutral-600' : 'border-border'
           )}
         >
           <textarea

@@ -448,6 +448,8 @@ export const WindTunnelCanvas = forwardRef<
       const oc = offscreen.getContext('2d')!;
       oc.scale(multiplier, multiplier);
       const cfg = configRef.current;
+      // EXCEÇÃO ao audit:design/hardcoded-hex-color: fundo padrão do frame EXPORTADO (canvas 2D),
+      // não cromo; o usuário troca em cfg.bgColor.
       oc.fillStyle = cfg.bgColor || '#0a0a0a';
       oc.fillRect(0, 0, w, h);
 
@@ -820,6 +822,8 @@ export const WindTunnelCanvas = forwardRef<
 
       activeCountRef.current = particles.getActiveCount();
 
+      // EXCEÇÃO ao audit:design/hardcoded-hex-color: fundo padrão da simulação em canvas 2D;
+      // o usuário troca em cfg.bgColor.
       ctx.fillStyle = cfg.bgColor || '#0a0a0a';
       ctx.fillRect(0, 0, cw, ch);
 
@@ -925,6 +929,8 @@ export const WindTunnelCanvas = forwardRef<
 
       if (recordingRef.current) {
         ctx.save();
+        // EXCEÇÃO ao audit:design/hardcoded-hex-color: ponto REC desenhado em canvas 2D, sem
+        // acesso a token CSS.
         ctx.fillStyle = '#ff3333';
         ctx.globalAlpha = 0.6 + Math.sin(now * 0.005) * 0.4;
         ctx.beginPath();

@@ -1298,7 +1298,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 handleSave();
               }}
               disabled={!hasData || isGenerating}
-              className="bg-brand-cyan/20 hover:bg-brand-cyan/30 text-foreground font-semibold nodrag nopan"
+              className="bg-brand-cyan/20 hover:bg-brand-cyan/30 text-foreground font-medium nodrag nopan"
               title={t('common.save')}
             >
               <Save size={14} />
@@ -1583,13 +1583,13 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                           section:
                             sections.find((s) => s.type === generatingSteps[0])?.label ||
                             generatingSteps[0],
-                        }) || `Generating ${generatingSteps[0]}...`
+                        })
                       : generatingStep
                         ? t('canvasNodes.strategyNode.generatingSection', {
                             section:
                               sections.find((s) => s.type === generatingStep)?.label ||
                               generatingStep,
-                          }) || `Generating ${generatingStep}...`
+                          })
                         : t('canvasNodes.strategyNode.generating')}
               </span>
             </div>

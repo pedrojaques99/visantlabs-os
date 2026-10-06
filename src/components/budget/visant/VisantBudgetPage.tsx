@@ -1,4 +1,5 @@
 import React from 'react';
+// ui-scale-ignore-file: peso-pesado — o orçamento renderizado é superfície de marca do cliente: o peso é tipografia do documento (vai pro PDF), não cromo do app.
 import type { BudgetData, Deliverable, Signature } from '@/types/types';
 import { InlineEditor } from '../InlineEditor';
 import { ArrowRight } from '@/lib/ui/icons';

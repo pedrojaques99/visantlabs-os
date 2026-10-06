@@ -843,7 +843,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
       >
         {/* Zoom controls - top right */}
         <div className="sticky top-0 z-40 mb-4 flex justify-end">
-          <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-neutral-300/50 rounded-md px-2 py-1.5 shadow-sm">
+          <div className="flex items-center gap-2 bg-popover/90 backdrop-blur-sm border border-border rounded-md px-2 py-1.5 shadow-sm">
             <Button
               variant="ghost"
               onClick={handleZoomOut}

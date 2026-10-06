@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, Film, Send, Volume2, VolumeX } from '@/lib/ui/icons';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
+import { Thumb } from '@/components/ui/Thumb';
 import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -59,7 +60,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
 
   if (!isOpen) return null;
 
-  const frameLabel = 'text-xs font-medium text-neutral-500';
+  const frameLabel = 'text-xs font-medium text-muted-foreground';
 
   return (
     <AnimatePresence>
@@ -68,7 +69,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+          className="absolute inset-0 bg-background/80 backdrop-blur-sm"
           onClick={onClose}
         />
         <motion.div
@@ -78,16 +79,16 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 16 }}
-          className="relative w-full max-w-4xl bg-neutral-950 rounded-2xl overflow-hidden flex flex-col max-h-[85vh] border border-border shadow-2xl"
+          className="relative w-full max-w-4xl bg-popover rounded-xl overflow-hidden flex flex-col max-h-[85vh] border border-border shadow-2xl"
         >
           <div className="px-6 py-5 border-b border-border flex items-center justify-between">
-            <h2 id="frame-animate-title" className="text-lg font-semibold text-white">
+            <h2 id="frame-animate-title" className="text-lg font-semibold text-foreground">
               {t('moodboard.frame.title')}
             </h2>
             <button
               onClick={onClose}
               aria-label={t('common.close')}
-              className="p-2 hover:bg-neutral-800 rounded-full transition-colors text-neutral-400 hover:text-white"
+              className="p-2 hover:bg-accent rounded-full transition-colors text-muted-foreground hover:text-foreground"
             >
               <X size={18} strokeWidth={1.5} />
             </button>
@@ -97,8 +98,8 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
             <div className="grid grid-cols-2 gap-6">
               <div className="flex flex-col gap-2">
                 <span className={frameLabel}>{t('moodboard.frame.start')}</span>
-                <div className="relative aspect-video rounded-2xl overflow-hidden bg-neutral-900 border border-border">
-                  <img src={startImage} className="w-full h-full object-cover" alt="" />
+                <div className="relative aspect-video rounded-xl overflow-hidden bg-muted border border-border">
+                  <Thumb src={startImage} className="w-full h-full object-cover" alt="" />
                 </div>
               </div>
 
@@ -107,13 +108,14 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
                 <button
                   type="button"
                   onClick={() => endInputRef.current?.click()}
-                  className="relative aspect-video rounded-2xl overflow-hidden bg-neutral-900 border border-dashed border-border/70 hover:border-neutral-500 transition-colors cursor-pointer flex flex-col items-center justify-center gap-3 group"
+                  className="relative aspect-video rounded-xl overflow-hidden bg-muted border border-dashed border-border/70 hover:border-border-hover transition-colors cursor-pointer flex flex-col items-center justify-center gap-3 group"
                 >
                   {endImage ? (
                     <>
-                      <img src={endImage} className="w-full h-full object-cover" alt="" />
+                      <Thumb src={endImage} className="w-full h-full object-cover" alt="" />
                       <span
                         className={cn(
+                          // EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia
                           'absolute inset-0 bg-black/50 flex items-center justify-center gap-2 text-xs font-medium text-white',
                           hoverReveal
                         )}
@@ -125,9 +127,9 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
                     <>
                       <Upload
                         size={20}
-                        className="text-neutral-500 group-hover:text-white transition-colors"
+                        className="text-muted-foreground group-hover:text-foreground transition-colors"
                       />
-                      <span className="text-xs font-medium text-neutral-500 group-hover:text-white transition-colors">
+                      <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                         {t('moodboard.frame.uploadEnd')}
                       </span>
                     </>
@@ -153,7 +155,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
                     <button
                       key={p.id}
                       onClick={() => setPrompt(p.prompt)}
-                      className="px-3 py-1.5 rounded-full bg-neutral-800/50 border border-border/70 text-xs font-medium text-neutral-400 hover:bg-neutral-700 hover:text-white transition-colors"
+                      className="px-3 py-1.5 rounded-full bg-muted border border-border/70 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                     >
                       {t(`moodboard.frame.presets.${p.id}`)}
                     </button>
@@ -165,7 +167,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder={t('moodboard.frame.promptPlaceholder')}
-                className="w-full bg-neutral-900/50 border border-border focus:border-neutral-600 rounded-2xl p-5 text-sm outline-none transition-colors min-h-[140px] resize-none text-white placeholder:text-neutral-700"
+                className="w-full bg-muted border border-border focus:border-ring rounded-xl p-5 text-sm outline-none transition-colors min-h-[140px] resize-none text-foreground placeholder:text-muted-foreground"
               />
             </div>
           </div>
@@ -178,8 +180,8 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
               title={t('moodboard.frame.sound')}
               className={`p-3 rounded-xl border transition-colors ${
                 allowSound
-                  ? 'bg-white text-black border-white'
-                  : 'bg-neutral-900 text-neutral-500 border-border hover:border-neutral-600'
+                  ? 'bg-foreground text-background border-foreground'
+                  : 'bg-muted text-muted-foreground border-border hover:border-border-hover'
               }`}
             >
               {allowSound ? <Volume2 size={18} /> : <VolumeX size={18} />}

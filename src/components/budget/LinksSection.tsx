@@ -18,7 +18,7 @@ export const LinksSection: React.FC<LinksSectionProps> = ({ links, onChange }) =
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-neutral-200">{t('budget.links')}</h3>
+      <h3 className="text-lg font-medium text-foreground">{t('budget.links')}</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="block text-xs text-neutral-400 mb-2 flex items-center gap-2">

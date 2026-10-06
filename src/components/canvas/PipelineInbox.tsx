@@ -55,7 +55,7 @@ export const PipelineInbox: React.FC<PipelineInboxProps> = ({ onUseAsset }) => {
         aria-label={t('pipeline.inbox.title')}
         aria-expanded={open}
         className={cn(
-          'relative flex items-center justify-center w-8 h-8 rounded-lg border transition-colors',
+          'relative flex items-center justify-center w-8 h-8 rounded-xl border transition-colors',
           count > 0
             ? 'bg-neutral-800/50 border-neutral-600 text-neutral-300 hover:bg-neutral-700/50'
             : 'bg-neutral-900/50 border-neutral-700/30 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50'
@@ -63,7 +63,7 @@ export const PipelineInbox: React.FC<PipelineInboxProps> = ({ onUseAsset }) => {
       >
         <Inbox size={14} strokeWidth={2} />
         {count > 0 && (
-          <span className="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 rounded-full bg-neutral-600 text-neutral-100 text-3xs font-bold">
+          <span className="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 rounded-full bg-neutral-600 text-neutral-100 text-3xs font-semibold">
             {count}
           </span>
         )}

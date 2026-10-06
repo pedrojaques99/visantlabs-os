@@ -84,7 +84,7 @@ export const AnimationTab: React.FC = React.memo(() => {
   return (
     <>
       {/* Essentials — Animation Type */}
-      <span className="text-2xs text-neutral-400">{t('studio3d.animation.type')}</span>
+      <span className="text-2xs text-muted-foreground">{t('studio3d.animation.type')}</span>
       <Select
         options={ANIMATION_TYPE_OPTIONS}
         value={store.animate}
@@ -103,7 +103,7 @@ export const AnimationTab: React.FC = React.memo(() => {
             onChange={setAnimateSpeed}
           />
 
-          <span className="text-2xs text-neutral-400">{t('studio3d.animation.easing')}</span>
+          <span className="text-2xs text-muted-foreground">{t('studio3d.animation.easing')}</span>
           <Select
             options={easingOptions}
             value={store.animateEasing}

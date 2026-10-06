@@ -15,7 +15,7 @@ import { BrandAvatar } from '@/components/brand/BrandAvatar';
 import { Badge } from '@/components/ui/badge';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { Input } from '@/components/ui/input';
-import { Thumb } from '@/components/ui/Thumb';
+import { MediaTile } from '@/components/ui/MediaTile';
 import { getProxiedUrl } from '@/utils/proxyUtils';
 import { computeBrandCompleteness } from '@/lib/brandCompleteness';
 import {
@@ -33,7 +33,7 @@ import {
   Pencil,
 } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
-import { hoverReveal } from '@/lib/ui/hoverReveal';
+
 import type { BrandGuideline } from '@/lib/figma-types';
 import {
   DropdownMenu,
@@ -108,132 +108,94 @@ const BrandCard = ({
   onQuickEdit?: (g: BrandGuideline) => void;
 }) => {
   const { t } = useTranslation();
-  const [coverLoaded, setCoverLoaded] = useState(false);
-  // Capa que falha cai no logo, nunca num tile vazio ou num skeleton eterno.
-  const [coverFailed, setCoverFailed] = useState(false);
   const coverUrl = getCoverUrl(guideline);
-  const showCover = !!coverUrl && !coverFailed;
   const brandName = guideline.identity?.name || guideline.name || t('brandGuidelines.untitled');
 
+  const hasMenu = !!(onArchive || onUnarchive || onQuickEdit);
+
   return (
-    <div
-      className={cn(
-        'group relative flex flex-col rounded-xl border border-border bg-card hover:border-border-hover transition-[border-color,opacity,filter] duration-200 overflow-hidden text-left',
-        archived && 'opacity-60 grayscale-[0.6] hover:opacity-80'
-      )}
-    >
-      {/* Ação principal como "stretched link": cobre o card inteiro SEM aninhar
-          interativos. O menu ⋮ é irmão, num z acima. */}
-      <button
-        type="button"
-        onClick={() => onSelect(guideline)}
-        aria-label={brandName}
-        className="absolute inset-0 z-[1] rounded-xl cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      />
-
-      {/* Capa: imagem de marca real, ou o logo centrado sobre bg-muted */}
-      <div className="relative w-full h-32 sm:h-40 shrink-0 overflow-hidden bg-muted border-b border-border">
-        {showCover ? (
-          <>
-            {!coverLoaded && <div className="absolute inset-0 animate-pulse bg-muted" />}
-            <Thumb
-              src={getProxiedUrl(coverUrl)}
-              alt=""
-              loading="lazy"
-              onLoad={() => setCoverLoaded(true)}
-              onError={() => setCoverFailed(true)}
-              className={cn(
-                'w-full h-full object-cover transition-opacity duration-300',
-                coverLoaded ? 'opacity-100' : 'opacity-0'
-              )}
-            />
-          </>
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <BrandAvatar brand={guideline} size={64} rounded="md" preference="primary" />
-          </div>
-        )}
-
-        <div className="absolute top-2 right-2 z-[2] flex items-center gap-1.5">
-          {guideline.isPublic && (
-            <Badge
-              variant="secondary"
-              className="bg-background/80 border-border text-muted-foreground text-2xs px-1.5 py-0 h-5 gap-1"
-            >
-              <Globe size={9} />
-              {t('brandGuidelines.public')}
-            </Badge>
-          )}
-          {(onArchive || onUnarchive || onQuickEdit) && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  aria-label={t('brandQuota.brandActions')}
-                  className={cn(hoverReveal, 'h-6 w-6 bg-background/80')}
-                  onClick={(e) => e.stopPropagation()}
+    <MediaTile
+      src={coverUrl ? getProxiedUrl(coverUrl) : undefined}
+      alt={brandName}
+      aspectRatio="16 / 7"
+      onClick={() => onSelect(guideline)}
+      actionLabel={brandName}
+      // Sem capa (ou capa que falha): o próprio logo, grande, no lugar da imagem.
+      // Dado real da marca, nunca um degradê inventado nem o ícone de imagem quebrada.
+      fallback={<BrandAvatar brand={guideline} size={64} rounded="md" preference="primary" />}
+      // Com capa real o logo vai ao lado do nome; sem capa ele já é a capa.
+      leading={
+        coverUrl ? (
+          <BrandAvatar brand={guideline} size={24} rounded="md" preference="primary" />
+        ) : undefined
+      }
+      className={cn(archived && 'opacity-60 grayscale-[0.6] hover:opacity-80')}
+      title={brandName}
+      subtitle={guideline.identity?.tagline || undefined}
+      badge={
+        guideline.isPublic ? (
+          <Badge variant="neutral" className="gap-1">
+            <Globe size={9} />
+            {t('brandGuidelines.public')}
+          </Badge>
+        ) : undefined
+      }
+      actions={
+        hasMenu ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="surface"
+                size="icon-sm"
+                aria-label={t('brandQuota.brandActions')}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreVertical size={12} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[130px]">
+              {!archived && onQuickEdit && (
+                <DropdownMenuItem
+                  className="text-xs gap-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onQuickEdit(guideline);
+                  }}
                 >
-                  <MoreVertical size={12} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-[130px]">
-                {!archived && onQuickEdit && (
-                  <DropdownMenuItem
-                    className="text-xs gap-2"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onQuickEdit(guideline);
-                    }}
-                  >
-                    <Pencil size={12} />
-                    {t('brandQuota.quickEdit')}
-                  </DropdownMenuItem>
-                )}
-                {archived
-                  ? onUnarchive && (
-                      <DropdownMenuItem
-                        className="text-xs gap-2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onUnarchive(guideline.id!);
-                        }}
-                      >
-                        <ArchiveRestore size={12} />
-                        {t('brandQuota.unarchive')}
-                      </DropdownMenuItem>
-                    )
-                  : onArchive && (
-                      <DropdownMenuItem
-                        className="text-xs gap-2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onArchive(guideline.id!);
-                        }}
-                      >
-                        <Archive size={12} />
-                        {t('brandQuota.archive')}
-                      </DropdownMenuItem>
-                    )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-      </div>
-
-      {/* Info. Com capa real o logo vem inline; sem capa ele já está na capa. */}
-      <div className="flex-1 px-3 sm:px-4 py-3 min-w-0 flex items-center gap-2.5">
-        {showCover && <BrandAvatar brand={guideline} size={28} rounded="md" preference="primary" />}
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-foreground truncate">{brandName}</p>
-          {guideline.identity?.tagline && (
-            <p className="text-2xs text-muted-foreground truncate mt-0.5 leading-tight">
-              {guideline.identity.tagline}
-            </p>
-          )}
-        </div>
-      </div>
-    </div>
+                  <Pencil size={12} />
+                  {t('brandQuota.quickEdit')}
+                </DropdownMenuItem>
+              )}
+              {archived
+                ? onUnarchive && (
+                    <DropdownMenuItem
+                      className="text-xs gap-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onUnarchive(guideline.id!);
+                      }}
+                    >
+                      <ArchiveRestore size={12} />
+                      {t('brandQuota.unarchive')}
+                    </DropdownMenuItem>
+                  )
+                : onArchive && (
+                    <DropdownMenuItem
+                      className="text-xs gap-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onArchive(guideline.id!);
+                      }}
+                    >
+                      <Archive size={12} />
+                      {t('brandQuota.archive')}
+                    </DropdownMenuItem>
+                  )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : undefined
+      }
+    />
   );
 };
 

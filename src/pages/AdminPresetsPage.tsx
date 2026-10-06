@@ -27,6 +27,7 @@ import { CATEGORY_CONFIG } from '@/components/PresetCard';
 import { AdminImageUploader } from '../components/ui/AdminImageUploader';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
+import { Thumb } from '../components/ui/Thumb';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
@@ -332,7 +333,7 @@ export const AdminPresetsPage: React.FC = () => {
             <div className="w-10 h-10 rounded overflow-hidden bg-neutral-800 flex items-center justify-center group relative">
               {imageUrl ? (
                 <>
-                  <img
+                  <Thumb
                     src={imageUrl}
                     alt={row.getValue('name')}
                     className="w-full h-full object-cover"

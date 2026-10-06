@@ -127,8 +127,8 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
                   className={cn(
                     'flex-1 h-6 rounded border text-2xs font-mono transition-colors',
                     local.person === opt.value
-                      ? 'border-white/20 bg-white/5 text-neutral-200'
-                      : 'border-neutral-800 text-neutral-600 hover:border-white/10 hover:text-neutral-400'
+                      ? 'border-border-hover bg-muted text-foreground'
+                      : 'border-border text-muted-foreground hover:border-border-hover hover:text-foreground'
                   )}
                 >
                   {opt.label}
@@ -147,8 +147,8 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
                   className={cn(
                     'flex-1 h-6 rounded border text-2xs font-mono transition-colors',
                     local.emojiPolicy === opt.value
-                      ? 'border-white/20 bg-white/5 text-neutral-200'
-                      : 'border-neutral-800 text-neutral-600 hover:border-white/10 hover:text-neutral-400'
+                      ? 'border-border-hover bg-muted text-foreground'
+                      : 'border-border text-muted-foreground hover:border-border-hover hover:text-foreground'
                   )}
                 >
                   {opt.label}

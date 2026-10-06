@@ -61,8 +61,20 @@ const locales = Object.fromEntries(
 const added = Object.fromEntries(LOCALES.map((l) => [l, 0]));
 const problems = [];
 
+// Agente às vezes escreve o fragmento aninhado ({a:{b:"x"}}) em vez de plano
+// ({"a.b":"x"}). Sem achatar, o objeto inteiro colidia com o nó existente.
+const flatten = (obj, prefix = '', out = {}) => {
+  for (const [k, v] of Object.entries(obj || {})) {
+    const key = prefix ? `${prefix}.${k}` : k;
+    if (v && typeof v === 'object' && !Array.isArray(v)) flatten(v, key, out);
+    else out[key] = v;
+  }
+  return out;
+};
+
 for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.json'))) {
-  const frag = readJson(path.join(dir, file));
+  const raw = readJson(path.join(dir, file));
+  const frag = Object.fromEntries(LOCALES.map((l) => [l, flatten(raw[l])]));
   const keys = new Set(LOCALES.flatMap((l) => Object.keys(frag[l] || {})));
   for (const key of keys) {
     for (const l of LOCALES) {

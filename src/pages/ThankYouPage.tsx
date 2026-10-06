@@ -152,7 +152,7 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
+    <div className="min-h-screen bg-background text-foreground pt-12 md:pt-14 relative">
       <div className="fixed inset-0 z-0"></div>
       <div className="max-w-2xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
         <div className="text-center mb-12">
@@ -163,11 +163,13 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
             </div>
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-bold text-neutral-200 mb-4">
+          <h1 className="text-4xl md:text-5xl font-semibold text-foreground mb-4">
             {t('thankYou.title')}
           </h1>
 
-          <p className="text-neutral-400 text-base md:text-lg mb-2">{t('thankYou.subtitle')}</p>
+          <p className="text-muted-foreground text-base md:text-lg mb-2">
+            {t('thankYou.subtitle')}
+          </p>
 
           {isCheckingAuth || isLoading ? (
             <div className="flex items-center justify-center gap-2 mt-4">
@@ -189,15 +191,15 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
         </div>
 
         {(subscriptionStatus?.hasActiveSubscription || planName || purchasedCredits) && (
-          <div className="bg-neutral-900 border border-white/10 rounded-md p-6 mb-8">
+          <div className="bg-card border border-border rounded-md p-6 mb-8">
             <div className="flex items-center gap-3 mb-4">
-              <Pickaxe size={24} className="text-neutral-400" />
-              <h2 className="text-xl font-semibold text-neutral-200">{t('thankYou.whatsNext')}</h2>
+              <Pickaxe size={24} className="text-muted-foreground" />
+              <h2 className="text-xl font-medium text-foreground">{t('thankYou.whatsNext')}</h2>
             </div>
 
-            <ul className="space-y-3 text-sm text-neutral-300">
+            <ul className="space-y-3 text-sm text-foreground">
               <li className="flex items-start gap-3">
-                <CheckCircle size={18} className="text-neutral-500 mt-0.5 flex-shrink-0" />
+                <CheckCircle size={18} className="text-muted-foreground mt-0.5 flex-shrink-0" />
                 <span>
                   {t('thankYou.benefit1', {
                     credits:
@@ -212,38 +214,40 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
                 </span>
               </li>
               <li className="flex items-start gap-3">
-                <CheckCircle size={18} className="text-neutral-500 mt-0.5 flex-shrink-0" />
+                <CheckCircle size={18} className="text-muted-foreground mt-0.5 flex-shrink-0" />
                 <span>{t('thankYou.benefit2')}</span>
               </li>
               {planName?.toLowerCase().includes('pro') && (
                 <li className="flex items-start gap-3">
-                  <CheckCircle size={18} className="text-neutral-500 mt-0.5 flex-shrink-0" />
+                  <CheckCircle size={18} className="text-muted-foreground mt-0.5 flex-shrink-0" />
                   <span>{t('thankYou.benefitPro')}</span>
                 </li>
               )}
               {planName?.toLowerCase().includes('vision') && (
                 <li className="flex items-start gap-3">
-                  <CheckCircle size={18} className="text-neutral-500 mt-0.5 flex-shrink-0" />
+                  <CheckCircle size={18} className="text-muted-foreground mt-0.5 flex-shrink-0" />
                   <span>{t('thankYou.benefitVision')}</span>
                 </li>
               )}
               <li className="flex items-start gap-3">
-                <CheckCircle size={18} className="text-neutral-500 mt-0.5 flex-shrink-0" />
+                <CheckCircle size={18} className="text-muted-foreground mt-0.5 flex-shrink-0" />
                 <span>{t('thankYou.benefit3')}</span>
               </li>
             </ul>
 
             {!planName && subscriptionStatus?.totalCredits !== undefined && (
-              <div className="mt-6 pt-6 border-t border-white/10">
+              <div className="mt-6 pt-6 border-t border-border">
                 <div className="flex items-center justify-between">
-                  <span className="text-neutral-400 text-sm">{t('thankYou.creditsAvailable')}</span>
-                  <span className="text-neutral-100 font-semibold tabular-nums">
+                  <span className="text-muted-foreground text-sm">
+                    {t('thankYou.creditsAvailable')}
+                  </span>
+                  <span className="text-foreground font-semibold tabular-nums">
                     {t('thankYou.creditsCount', { count: subscriptionStatus.totalCredits })}
                   </span>
                 </div>
-                <div className="mt-2 bg-neutral-800 rounded-md h-2 overflow-hidden">
+                <div className="mt-2 bg-muted rounded-md h-2 overflow-hidden">
                   <div
-                    className="h-full bg-neutral-400 transition-colors duration-300 progress-fill"
+                    className="h-full bg-muted-foreground transition-colors duration-300 progress-fill"
                     style={creditsUsageStyle}
                   />
                 </div>
@@ -263,7 +267,7 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-neutral-500 text-xs">{t('thankYou.support')}</p>
+          <p className="text-muted-foreground text-xs">{t('thankYou.support')}</p>
         </div>
       </div>
     </div>

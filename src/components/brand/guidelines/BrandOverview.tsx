@@ -69,12 +69,12 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
       {/* ── Hero ── */}
       <div className="flex flex-col sm:flex-row items-start gap-6 sm:gap-8">
         {primaryLogo && (
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-neutral-800 bg-white/[0.03] shrink-0 flex items-center justify-center">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-border bg-muted shrink-0 flex items-center justify-center">
             <img src={primaryLogo.url} alt="" className="w-full h-full object-contain p-2" />
           </div>
         )}
         <div className="flex-1 min-w-0 space-y-2">
-          <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-100 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
             {identity?.name || g.name || 'Untitled'}
           </h2>
           {(identity?.tagline || g.tagline) && (
@@ -110,7 +110,7 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
           <span className="text-xs font-medium text-neutral-500">Manifesto</span>
 
           {manifesto.full ? (
-            <blockquote className="text-base sm:text-lg leading-relaxed text-neutral-300 max-w-3xl border-l-2 border-white/10 pl-6 py-1 whitespace-pre-line">
+            <blockquote className="text-base sm:text-lg leading-relaxed text-foreground max-w-3xl border-l-2 border-border pl-6 py-1 whitespace-pre-line">
               {manifesto.full}
             </blockquote>
           ) : (
@@ -196,7 +196,7 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
               <span className="text-xs font-medium text-neutral-500">Archetypes</span>
               <div className="flex flex-wrap gap-2">
                 {archetypes.map((a, i) => (
-                  <GlassPanel key={i} intensity="subtle" className="px-3 py-2 rounded-lg">
+                  <GlassPanel key={i} intensity="subtle" className="px-3 py-2 rounded-xl">
                     <p className="text-xs font-medium text-neutral-200">{a.name}</p>
                     {a.role && <p className="text-2xs text-neutral-600 mt-0.5">{a.role}</p>}
                   </GlassPanel>
@@ -211,7 +211,7 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
                 {voiceValues.slice(0, 4).map((v, i) => (
                   <span
                     key={i}
-                    className="text-xs text-neutral-400 px-2.5 py-1 rounded-md border border-neutral-800 bg-white/[0.03]"
+                    className="text-xs text-muted-foreground px-2.5 py-1 rounded-md border border-border bg-muted"
                   >
                     {v.title}
                   </span>
@@ -232,7 +232,7 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
                 {colors.slice(0, 8).map((c, i) => (
                   <div key={i} className="flex items-center gap-2.5">
                     <div
-                      className="w-8 h-8 rounded-lg border border-neutral-800 shrink-0"
+                      className="w-8 h-8 rounded-xl border border-neutral-800 shrink-0"
                       style={{ backgroundColor: c.hex }}
                     />
                     <div className="hidden sm:block">

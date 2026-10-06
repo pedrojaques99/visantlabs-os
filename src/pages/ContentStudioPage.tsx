@@ -25,6 +25,7 @@ import {
   type ContentAsset,
 } from '@/services/contentStudioApi';
 import type { ImageProvider } from '@/types/types';
+import { Thumb } from '@/components/ui/Thumb';
 
 const STORAGE_KEY = 'content-studio-job';
 const MAX_POLLS = 200;
@@ -224,22 +225,24 @@ export const ContentStudioPage: React.FC = () => {
   const progress = job ? Math.round((job.completedCount / job.totalCount) * 100) : 0;
 
   return (
-    <div className="flex flex-col h-full bg-neutral-950 text-white">
+    <div className="flex flex-col h-full bg-background text-foreground">
       {/* Marca demo ativa → lembrete persistente de trazer a marca real. O título
           da página vem da AppSpine (shell) — sem header próprio aqui. */}
       <DemoBrandBanner brandId={brandGuidelineId} />
 
       <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* Sidebar — Brief + Config */}
-        <aside className="w-full md:w-[380px] flex-shrink-0 border-r border-white/10 overflow-y-auto custom-scrollbar p-5 space-y-5 md:max-h-full max-h-[50vh]">
+        <aside className="w-full md:w-[380px] flex-shrink-0 border-r border-border overflow-y-auto custom-scrollbar p-5 space-y-5 md:max-h-full max-h-[50vh]">
           {/* Brief */}
           <div className="space-y-2">
-            <label className="text-xs text-neutral-500">{t('contentStudio.campaignBrief')}</label>
+            <label className="text-xs text-muted-foreground">
+              {t('contentStudio.campaignBrief')}
+            </label>
             <textarea
               value={brief}
               onChange={(e) => setBrief(e.target.value)}
               placeholder={t('contentStudio.briefPlaceholder')}
-              className="w-full h-28 px-3 py-2.5 rounded-lg bg-neutral-900/80 border border-white/10 text-sm text-neutral-200 placeholder:text-neutral-600 resize-none focus:outline-none focus:border-white/20 transition-colors"
+              className="w-full h-28 px-3 py-2.5 rounded-xl bg-muted border border-border text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-border-hover transition-colors"
             />
           </div>
 
@@ -248,7 +251,7 @@ export const ContentStudioPage: React.FC = () => {
 
           {/* Tone */}
           <div className="space-y-2">
-            <label className="text-xs text-neutral-500">{t('contentStudio.tone')}</label>
+            <label className="text-xs text-muted-foreground">{t('contentStudio.tone')}</label>
             <div className="flex flex-wrap gap-1.5">
               {toneOptions.map((opt) => (
                 <button
@@ -257,8 +260,8 @@ export const ContentStudioPage: React.FC = () => {
                   className={cn(
                     'px-2.5 py-1.5 rounded-md text-2xs font-mono border transition-colors',
                     tone === opt.value
-                      ? 'border-white/20 bg-white/10 text-neutral-200'
-                      : 'border-white/10 bg-neutral-900/50 text-neutral-500 hover:border-neutral-700'
+                      ? 'border-ring bg-accent text-foreground'
+                      : 'border-border bg-muted text-muted-foreground hover:border-border-hover'
                   )}
                 >
                   {opt.label}
@@ -269,7 +272,7 @@ export const ContentStudioPage: React.FC = () => {
 
           {/* Model */}
           <div className="space-y-2">
-            <label className="text-xs text-neutral-500">{t('contentStudio.imageModel')}</label>
+            <label className="text-xs text-muted-foreground">{t('contentStudio.imageModel')}</label>
             <ModelSelector
               type="image"
               selectedModel={model}
@@ -280,7 +283,7 @@ export const ContentStudioPage: React.FC = () => {
 
           {/* Formats */}
           <div className="space-y-2">
-            <label className="text-xs text-neutral-500">
+            <label className="text-xs text-muted-foreground">
               {t('contentStudio.platforms')} ({selectedFormats.length}/{SOCIAL_FORMATS.length})
             </label>
             <div className="flex flex-wrap gap-1.5">
@@ -293,8 +296,8 @@ export const ContentStudioPage: React.FC = () => {
                     className={cn(
                       'px-2.5 py-1.5 rounded-md text-2xs font-mono border transition-colors',
                       isSelected
-                        ? 'border-white/20 bg-white/10 text-neutral-200'
-                        : 'border-white/10 bg-neutral-900/50 text-neutral-500 hover:border-neutral-700'
+                        ? 'border-ring bg-accent text-foreground'
+                        : 'border-border bg-muted text-muted-foreground hover:border-border-hover'
                     )}
                   >
                     {fmt.label}
@@ -309,10 +312,10 @@ export const ContentStudioPage: React.FC = () => {
             onClick={handleGenerate}
             disabled={isGenerating}
             className={cn(
-              'w-full py-3 rounded-lg font-mono text-sm font-bold tracking-wide transition-colors',
+              'w-full py-3 rounded-xl text-sm font-medium transition-colors',
               'flex items-center justify-center gap-2',
               isGenerating
-                ? 'bg-neutral-800 text-neutral-400 cursor-wait'
+                ? 'bg-muted text-muted-foreground cursor-wait'
                 : 'bg-brand-cyan text-black hover:bg-brand-cyan/90'
             )}
           >
@@ -348,11 +351,13 @@ export const ContentStudioPage: React.FC = () => {
           {!hasResults && !isGenerating && !jobErrored && (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <GlassPanel padding="lg" className="max-w-md">
-                <Sparkles size={32} className="text-neutral-600 mx-auto mb-4" />
-                <MicroTitle as="h3" className="text-lg text-neutral-300 mb-2">
+                <Sparkles size={32} className="text-muted-foreground mx-auto mb-4" />
+                <MicroTitle as="h3" className="text-lg text-foreground mb-2">
                   {t('contentStudio.emptyTitle')}
                 </MicroTitle>
-                <p className="text-sm text-neutral-500">{t('contentStudio.emptyDescription')}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t('contentStudio.emptyDescription')}
+                </p>
               </GlassPanel>
             </div>
           )}
@@ -388,14 +393,14 @@ function BrandSelect({
 
   return (
     <div className="space-y-2">
-      <label className="text-xs text-neutral-500">{t('contentStudio.brandGuideline')}</label>
+      <label className="text-xs text-muted-foreground">{t('contentStudio.brandGuideline')}</label>
       {isLoading ? (
-        <div className="w-full h-[38px] rounded-lg bg-neutral-900/80 border border-white/10 animate-pulse" />
+        <div className="w-full h-[38px] rounded-xl bg-muted border border-border animate-pulse" />
       ) : (
         <select
           value={value || ''}
           onChange={(e) => onChange(e.target.value || null)}
-          className="w-full px-3 py-2 rounded-lg bg-neutral-900/80 border border-white/10 text-sm text-neutral-300 focus:outline-none focus:border-white/20 transition-colors appearance-none cursor-pointer"
+          className="w-full px-3 py-2 rounded-xl bg-muted border border-border text-sm text-foreground focus:outline-none focus:border-border-hover transition-colors appearance-none cursor-pointer"
         >
           <option value="">{t('contentStudio.noBrand')}</option>
           {guidelines.map((g: any) => (
@@ -426,26 +431,26 @@ function ContentAssetCard({
   const isDone = asset.status === 'done';
 
   return (
-    <div className="rounded-xl border border-white/10 bg-neutral-900/30 overflow-hidden">
+    <div className="rounded-xl border border-border bg-muted overflow-hidden">
       {/* Image area */}
       <div
-        className="relative bg-neutral-900 flex items-center justify-center"
+        className="relative bg-muted flex items-center justify-center"
         style={{ aspectRatio: `${asset.width}/${asset.height}`, maxHeight: 360 }}
       >
-        {/* Platform badge */}
+        {/* Platform badge. EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
         <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm border border-white/10">
           <span className="text-2xs font-mono text-neutral-300 tracking-wide">{asset.label}</span>
         </div>
 
-        {/* Ratio badge */}
+        {/* Ratio badge. EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
         <div className="absolute top-2 right-2 z-10 px-1.5 py-0.5 rounded bg-black/50 border border-neutral-800">
           <span className="text-2xs font-mono text-neutral-500">{asset.ratio}</span>
         </div>
 
         {isLoading && (
           <div className="flex flex-col items-center gap-2">
-            <Loader2 size={24} className="animate-spin text-neutral-600" />
-            <span className="text-2xs font-mono text-neutral-600">
+            <Loader2 size={24} className="animate-spin text-muted-foreground" />
+            <span className="text-2xs font-mono text-muted-foreground">
               {asset.status === 'generating'
                 ? t('contentStudio.generating')
                 : t('contentStudio.queued')}
@@ -461,7 +466,7 @@ function ContentAssetCard({
         )}
 
         {isDone && asset.imageUrl && (
-          <img
+          <Thumb
             src={asset.imageUrl}
             alt={asset.label}
             className="w-full h-full object-cover"
@@ -471,19 +476,19 @@ function ContentAssetCard({
       </div>
 
       {/* Copy area */}
-      <div className="p-3 space-y-2 border-t border-white/10">
+      <div className="p-3 space-y-2 border-t border-border">
         {asset.caption ? (
           <>
             <div className="flex items-start gap-2">
-              <Type size={10} className="text-neutral-600 mt-1 flex-shrink-0" />
-              <p className="text-2xs text-neutral-400 leading-relaxed line-clamp-4">
+              <Type size={10} className="text-muted-foreground mt-1 flex-shrink-0" />
+              <p className="text-2xs text-muted-foreground leading-relaxed line-clamp-4">
                 {asset.caption}
               </p>
             </div>
             {asset.hashtags && asset.hashtags.length > 0 && (
               <div className="flex items-start gap-2">
-                <Hash size={10} className="text-neutral-600 mt-0.5 flex-shrink-0" />
-                <p className="text-2xs text-neutral-500 leading-relaxed">
+                <Hash size={10} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+                <p className="text-2xs text-muted-foreground leading-relaxed">
                   {asset.hashtags.map((h) => (h.startsWith('#') ? h : `#${h}`)).join(' ')}
                 </p>
               </div>
@@ -501,7 +506,7 @@ function ContentAssetCard({
                     index
                   )
                 }
-                className="flex items-center gap-1 px-2 py-1 rounded text-2xs font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-colors"
+                className="flex items-center gap-1 px-2 py-1 rounded text-2xs font-mono text-muted-foreground hover:text-foreground border border-border hover:border-border-hover transition-colors"
               >
                 {copiedIndex === index ? <Check size={10} /> : <Copy size={10} />}
                 {copiedIndex === index ? t('contentStudio.copied') : t('contentStudio.copy')}
@@ -512,7 +517,7 @@ function ContentAssetCard({
                   download={`${asset.formatId}.png`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 px-2 py-1 rounded text-2xs font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-colors"
+                  className="flex items-center gap-1 px-2 py-1 rounded text-2xs font-mono text-muted-foreground hover:text-foreground border border-border hover:border-border-hover transition-colors"
                 >
                   <Download size={10} />
                   {t('contentStudio.image')}
@@ -522,7 +527,7 @@ function ContentAssetCard({
           </>
         ) : isLoading ? (
           <div className="flex items-center gap-2">
-            <div className="h-2.5 w-32 bg-neutral-800 rounded animate-pulse" />
+            <div className="h-2.5 w-32 bg-muted rounded animate-pulse" />
           </div>
         ) : null}
       </div>

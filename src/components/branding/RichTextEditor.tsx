@@ -296,21 +296,11 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           }}
         >
           {value ? (
-            <div
-              className={`text-sm font-manrope leading-relaxed ${
-                theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
-              }`}
-            >
+            <div className="text-sm font-manrope leading-relaxed text-foreground">
               {renderMarkdownWithLines(value)}
             </div>
           ) : (
-            <span
-              className={`font-manrope ${
-                theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
-              }`}
-            >
-              {placeholder}
-            </span>
+            <span className="font-manrope text-muted-foreground">{placeholder}</span>
           )}
         </div>
       </div>

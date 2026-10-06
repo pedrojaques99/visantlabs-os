@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Plus, Copy, Trash2, GripVertical, Pencil } from '@/lib/ui/icons';
 import { useCreativeStore } from './store/creativeStore';
+import { useTranslation } from '@/hooks/useTranslation';
 import { FORMAT_DIMENSIONS } from './lib/formatDimensions';
 import type { CreativePage } from './store/creativeTypes';
 
@@ -38,10 +39,12 @@ const Thumb: React.FC<ThumbProps> = ({
   onDragEnter,
   onDrop,
 }) => {
+  const { t } = useTranslation();
+  const defaultName = t('creative.pages.defaultName', { n: index + 1 });
   const aspect = formatAspect(page.format);
   const width = THUMB_HEIGHT * aspect;
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(page.name ?? `Página ${index + 1}`);
+  const [draft, setDraft] = useState(page.name ?? defaultName);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -49,7 +52,7 @@ const Thumb: React.FC<ThumbProps> = ({
   }, [editing]);
 
   // Keep draft in sync when page name changes externally (rename, reorder).
-  useEffect(() => setDraft(page.name ?? `Página ${index + 1}`), [page.name, index]);
+  useEffect(() => setDraft(page.name ?? defaultName), [page.name, defaultName]);
 
   const commit = () => {
     setEditing(false);
@@ -72,14 +75,14 @@ const Thumb: React.FC<ThumbProps> = ({
       onClick={() => !isActive && onActivate()}
       className={`group/thumb shrink-0 relative cursor-pointer transition-[color,background-color,border-color,opacity] duration-200 ${
         isActive
-          ? 'ring-2 ring-brand-cyan ring-offset-2 ring-offset-neutral-950'
+          ? 'ring-2 ring-ring ring-offset-2 ring-offset-background'
           : 'opacity-60 hover:opacity-100'
       }`}
       style={{ width }}
     >
       {/* Thumbnail body — placeholder canvas. Real render is too heavy at 56px. */}
       <div
-        className="rounded-md overflow-hidden border border-white/10 bg-neutral-900 flex items-center justify-center text-2xs font-mono tabular-nums text-neutral-600"
+        className="rounded-md overflow-hidden border border-border bg-muted flex items-center justify-center text-2xs font-mono tabular-nums text-muted-foreground"
         style={{ height: THUMB_HEIGHT }}
       >
         {page.format}
@@ -95,8 +98,9 @@ const Thumb: React.FC<ThumbProps> = ({
             e.stopPropagation();
             onDuplicate();
           }}
-          title="Duplicar (Ctrl+Shift+D)"
-          className="w-5 h-5 rounded bg-neutral-900/90 border border-white/10 hover:border-neutral-700 flex items-center justify-center text-neutral-400 hover:text-brand-cyan"
+          title={t('creative.pages.duplicate')}
+          aria-label={t('creative.pages.duplicate')}
+          className="w-5 h-5 rounded bg-card border border-border hover:border-border-hover flex items-center justify-center text-muted-foreground hover:text-foreground"
         >
           <Copy size={9} />
         </button>
@@ -107,8 +111,9 @@ const Thumb: React.FC<ThumbProps> = ({
               e.stopPropagation();
               onRemove();
             }}
-            title="Remover"
-            className="w-5 h-5 rounded bg-neutral-900/90 border border-white/10 hover:border-destructive/50 flex items-center justify-center text-neutral-400 hover:text-destructive"
+            title={t('creative.pages.remove')}
+            aria-label={t('creative.pages.remove')}
+            className="w-5 h-5 rounded bg-card border border-border hover:border-destructive/50 flex items-center justify-center text-muted-foreground hover:text-destructive"
           >
             <Trash2 size={9} />
           </button>
@@ -116,7 +121,7 @@ const Thumb: React.FC<ThumbProps> = ({
       </div>
 
       {/* Drag handle (left) */}
-      <div className="absolute top-1 left-1 opacity-0 group-hover/thumb:opacity-100 transition-opacity text-neutral-500 pointer-events-none">
+      <div className="absolute top-1 left-1 opacity-0 group-hover/thumb:opacity-100 transition-opacity text-muted-foreground pointer-events-none">
         <GripVertical size={10} />
       </div>
 
@@ -124,7 +129,7 @@ const Thumb: React.FC<ThumbProps> = ({
       <div className="mt-1 flex items-center justify-between gap-1 px-0.5">
         <span
           className={`text-2xs font-mono tabular-nums ${
-            isActive ? 'text-brand-cyan' : 'text-neutral-500'
+            isActive ? 'text-foreground' : 'text-muted-foreground'
           }`}
         >
           {index + 1}
@@ -138,13 +143,14 @@ const Thumb: React.FC<ThumbProps> = ({
             onKeyDown={(e) => {
               if (e.key === 'Enter') commit();
               if (e.key === 'Escape') {
-                setDraft(page.name ?? `Página ${index + 1}`);
+                setDraft(page.name ?? defaultName);
                 setEditing(false);
               }
               e.stopPropagation();
             }}
             onClick={(e) => e.stopPropagation()}
-            className="flex-1 min-w-0 bg-neutral-800/60 border border-brand-cyan/40 rounded px-1 text-2xs text-white outline-none"
+            aria-label={t('creative.pages.rename')}
+            className="flex-1 min-w-0 bg-muted border border-ring rounded px-1 text-2xs text-foreground outline-none"
           />
         ) : (
           <button
@@ -153,10 +159,10 @@ const Thumb: React.FC<ThumbProps> = ({
               e.stopPropagation();
               setEditing(true);
             }}
-            className="flex-1 min-w-0 text-left truncate text-2xs text-neutral-400 hover:text-white flex items-center gap-1"
-            title="Duplo-clique pra renomear"
+            className="flex-1 min-w-0 text-left truncate text-2xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+            title={t('creative.pages.doubleClickRename')}
           >
-            <span className="truncate">{page.name ?? `Página ${index + 1}`}</span>
+            <span className="truncate">{page.name ?? defaultName}</span>
             <Pencil
               size={8}
               className="opacity-0 group-hover/thumb:opacity-50 transition-opacity shrink-0"
@@ -174,6 +180,7 @@ const Thumb: React.FC<ThumbProps> = ({
  * remove. Single source of truth: useCreativeStore pages + page actions.
  */
 export const PagesPanel: React.FC = () => {
+  const { t } = useTranslation();
   const pages = useCreativeStore((s) => s.pages);
   const activePageIndex = useCreativeStore((s) => s.activePageIndex);
   const setActivePageIndex = useCreativeStore((s) => s.setActivePageIndex);
@@ -204,7 +211,7 @@ export const PagesPanel: React.FC = () => {
   };
 
   return (
-    <div className="border-t border-neutral-800 bg-neutral-950/80 backdrop-blur-xl">
+    <div className="border-t border-border bg-background">
       <div className="flex items-end gap-2 px-4 py-2 overflow-x-auto custom-scrollbar-h">
         {pages.map((page, idx) => (
           <Thumb
@@ -225,8 +232,9 @@ export const PagesPanel: React.FC = () => {
         <button
           type="button"
           onClick={() => addPage()}
-          title="Adicionar página"
-          className="shrink-0 w-10 rounded-md border border-dashed border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/5 flex items-center justify-center text-neutral-500 hover:text-brand-cyan transition-colors"
+          title={t('creative.pages.add')}
+          aria-label={t('creative.pages.add')}
+          className="shrink-0 w-10 rounded-md border border-dashed border-border hover:border-border-hover hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
           style={{ height: THUMB_HEIGHT }}
         >
           <Plus size={14} />

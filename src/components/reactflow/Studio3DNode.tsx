@@ -322,7 +322,7 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
                   className={cn(
                     'px-2 py-0.5 rounded text-2xs border-node transition-colors',
                     material === m
-                      ? 'bg-white/10 text-white border-white/20'
+                      ? 'bg-accent text-foreground border-border-hover'
                       : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
                   )}
                 >
@@ -342,7 +342,7 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
 
             <button
               onClick={openEditor}
-              className="w-full px-2 py-1 rounded text-2xs border-node bg-white/5 text-foreground border-white/20 hover:bg-white/10 transition-colors text-center"
+              className="w-full px-2 py-1 rounded text-2xs border-node bg-muted text-foreground border-border-hover hover:bg-accent transition-colors text-center"
             >
               {t('canvasNodes.studio3dNode.fullEditor')}
             </button>

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Clipboard, Download, Edit2, Trash2, Heart, Copy, Check } from '@/lib/ui/icons';
 import { cn } from '../lib/utils';
-import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { migrateLegacyPreset } from '../types/communityPrompts';
 import type { CommunityPrompt, PromptCategory } from '../types/communityPrompts';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { MediaTile } from '@/components/ui/MediaTile';
 import { useGlitchCopy } from '@/hooks/useGlitchCopy';
 import {
   LayoutGrid,
@@ -24,17 +25,17 @@ import { glassSurface } from '@/lib/ui/glass';
 export const CATEGORY_CONFIG: Record<PromptCategory, { icon: any; color: string; label: string }> =
   {
     all: { icon: LayoutGrid, color: 'text-neutral-400', label: 'All' },
-    '3d': { icon: Box, color: 'text-purple-400', label: '3D' },
-    presets: { icon: Settings, color: 'text-blue-400', label: 'Presets' },
-    aesthetics: { icon: Palette, color: 'text-pink-400', label: 'Aesthetics' },
+    '3d': { icon: Box, color: 'text-chart-4', label: '3D' },
+    presets: { icon: Settings, color: 'text-chart-1', label: 'Presets' },
+    aesthetics: { icon: Palette, color: 'text-chart-5', label: 'Aesthetics' },
     themes: { icon: Diamond, color: 'text-warning', label: 'Themes' },
-    mockup: { icon: ImageIcon, color: 'text-blue-400', label: 'Mockup' },
+    mockup: { icon: ImageIcon, color: 'text-chart-1', label: 'Mockup' },
     angle: { icon: Camera, color: 'text-neutral-400', label: 'Angle' },
     texture: { icon: Layers, color: 'text-success', label: 'Texture' },
-    ambience: { icon: MapPin, color: 'text-orange-400', label: 'Ambience' },
+    ambience: { icon: MapPin, color: 'text-chart-3', label: 'Ambience' },
     luminance: { icon: Sun, color: 'text-warning', label: 'Luminance' },
-    'ui-prompts': { icon: ImageIcon, color: 'text-purple-400', label: 'UI Prompts' },
-    'figma-prompts': { icon: ClipboardIcon, color: 'text-pink-400', label: 'Figma Prompts' },
+    'ui-prompts': { icon: ImageIcon, color: 'text-chart-4', label: 'UI Prompts' },
+    'figma-prompts': { icon: ClipboardIcon, color: 'text-chart-5', label: 'Figma Prompts' },
   };
 
 interface PresetCardProps {
@@ -50,6 +51,8 @@ interface PresetCardProps {
   t: (key: string) => string;
   selected?: boolean;
   selectionIndex?: number;
+  /** Static marker shown top-left before the selection badge (e.g. "Official"). */
+  badge?: React.ReactNode;
 }
 
 export const PresetCard: React.FC<PresetCardProps> = ({
@@ -65,167 +68,120 @@ export const PresetCard: React.FC<PresetCardProps> = ({
   t,
   selected,
   selectionIndex,
+  badge,
 }) => {
   const migrated = migrateLegacyPreset(preset);
-  const hasImage = !!migrated.referenceImageUrl;
   const config = CATEGORY_CONFIG[migrated.category] ?? CATEGORY_CONFIG['all'];
-  const Icon = config.icon;
   const isLiked = migrated.isLikedByUser ?? false;
   const likesCount = migrated.likesCount ?? 0;
   const isOwner = currentUserId && migrated.userId && currentUserId === migrated.userId;
   const { isCopying, glitchText, handleCopy } = useGlitchCopy(migrated.prompt);
+  // The like toggle carries the count and is the only control that stays visible
+  // (persistentActions); copy/duplicate/edit/delete keep the hover reveal. Meta
+  // only shows the count when there is no toggle, so it is never repeated.
+  const showLikeToggle = isAuthenticated && !!onToggleLike;
+
+  // Card controls are siblings of MediaTile's stretched main action: every one
+  // stops propagation so it never also triggers onClick.
+  const stop =
+    (fn: () => void) =>
+    (e: React.MouseEvent): void => {
+      e.stopPropagation();
+      fn();
+    };
 
   return (
-    <div
-      className={cn(
-        'group relative flex flex-col bg-neutral-900/30 border rounded-xl overflow-hidden cursor-pointer transition-colors duration-150',
-        selected
-          ? 'border-white/20 bg-white/5'
-          : 'border-neutral-800 hover:border-white/10 hover:bg-neutral-900/50'
-      )}
+    <MediaTile
+      src={migrated.referenceImageUrl || undefined}
+      alt={migrated.name}
+      aspectRatio={4 / 3}
+      title={migrated.name}
+      subtitle={migrated.description || migrated.prompt}
       onClick={onClick}
-    >
-      {/* Thumbnail */}
-      <div className="relative w-full aspect-[4/3] bg-neutral-900/50 overflow-hidden">
-        {hasImage ? (
-          <img
-            src={migrated.referenceImageUrl}
-            alt={migrated.name}
-            loading="lazy"
-            decoding="async"
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Icon size={28} className={cn('opacity-30', config.color)} />
-          </div>
-        )}
-
-        {/* Selection badge */}
-        {selected && (
-          <div className="absolute top-2 right-2 w-5 h-5 bg-white rounded flex items-center justify-center shadow-sm z-10">
-            {selectionIndex !== undefined ? (
-              <span className="text-2xs font-mono font-bold text-black">{selectionIndex}</span>
-            ) : (
-              <Check size={10} className="text-black" strokeWidth={3} />
+      selected={selected}
+      fallbackIcon={config.icon}
+      className="h-full"
+      badge={
+        badge || selected ? (
+          <>
+            {badge}
+            {selected && (
+              <Badge variant="neutral" className="px-1.5 tabular-nums">
+                {selectionIndex !== undefined ? selectionIndex : <Check size={10} />}
+              </Badge>
             )}
-          </div>
-        )}
-
-        {/* Hover actions overlay */}
-        <div
-          className={cn(
-            hoverReveal,
-            'absolute inset-x-0 bottom-0 p-2 flex items-center justify-end gap-1'
-          )}
-        >
-          <button
-            aria-label="Copy prompt"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleCopy('Copied', 'Failed');
-            }}
-            className="p-1.5 rounded-md bg-neutral-950/70 backdrop-blur-sm border border-white/10 text-neutral-400 hover:text-white transition-colors"
+          </>
+        ) : undefined
+      }
+      actions={
+        <>
+          <Button
+            variant="surface"
+            size={isCopying ? 'xs' : 'icon-sm'}
+            aria-label={t('common.copy')}
+            onClick={stop(() => handleCopy('Copied', 'Failed'))}
           >
-            {isCopying ? (
-              <span className="text-2xs font-mono">{glitchText}</span>
-            ) : (
-              <Clipboard size={12} />
-            )}
-          </button>
+            {isCopying ? <span className="font-mono">{glitchText}</span> : <Clipboard />}
+          </Button>
           {isAuthenticated && onDuplicate && (
-            <button
-              aria-label="Duplicate"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDuplicate();
-              }}
-              className="p-1.5 rounded-md bg-neutral-950/70 backdrop-blur-sm border border-white/10 text-neutral-400 hover:text-white transition-colors"
+            <Button
+              variant="surface"
+              size="icon-sm"
+              aria-label={t('communityPresets.actions.duplicate')}
+              onClick={stop(onDuplicate)}
             >
-              {canEdit ? <Download size={12} /> : <Copy size={12} />}
-            </button>
+              {canEdit ? <Download /> : <Copy />}
+            </Button>
           )}
           {(isOwner || canEdit) && onEdit && (
-            <button
+            <Button
+              variant="surface"
+              size="icon-sm"
               aria-label={t('common.edit')}
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit();
-              }}
-              className="p-1.5 rounded-md bg-neutral-950/70 backdrop-blur-sm border border-white/10 text-neutral-400 hover:text-white transition-colors"
+              onClick={stop(onEdit)}
             >
-              <Edit2 size={12} />
-            </button>
+              <Edit2 />
+            </Button>
           )}
           {canEdit && onDelete && (
-            <button
+            <Button
+              variant="surface"
+              size="icon-sm"
               aria-label={t('common.delete')}
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-              className="p-1.5 rounded-md bg-neutral-950/70 backdrop-blur-sm border border-white/10 text-neutral-400 hover:text-destructive transition-colors"
+              onClick={stop(onDelete)}
+              className="hover:text-destructive"
             >
-              <Trash2 size={12} />
-            </button>
+              <Trash2 />
+            </Button>
           )}
-        </div>
-      </div>
-
-      {/* Body */}
-      <div className="flex flex-col gap-2 p-3 flex-1">
-        {/* Title + like */}
-        <div className="flex items-start justify-between gap-2">
-          <h3
-            className={cn(
-              'text-xs font-semibold leading-snug line-clamp-1',
-              selected ? 'text-white' : 'text-neutral-200'
-            )}
+        </>
+      }
+      persistentActions={
+        showLikeToggle && onToggleLike ? (
+          <Button
+            variant="surface"
+            size={likesCount > 0 ? 'xs' : 'icon-sm'}
+            aria-label={
+              isLiked ? t('communityPresets.actions.unlike') : t('communityPresets.actions.like')
+            }
+            aria-pressed={isLiked}
+            onClick={stop(onToggleLike)}
+            className="tabular-nums"
           >
-            {migrated.name}
-          </h3>
-          {isAuthenticated && onToggleLike && (
-            <button
-              aria-label={
-                isLiked ? t('communityPresets.actions.unlike') : t('communityPresets.actions.like')
-              }
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleLike();
-              }}
-              className="flex items-center gap-1 shrink-0 text-neutral-600 hover:text-neutral-300 transition-colors"
-            >
-              <Heart size={11} className={isLiked ? 'fill-current text-neutral-400' : ''} />
-              {likesCount > 0 && (
-                <span className="text-2xs font-mono tabular-nums">{likesCount}</span>
-              )}
-            </button>
-          )}
-        </div>
-
-        {/* Description */}
-        <p className="text-2xs text-muted-foreground leading-relaxed line-clamp-2 flex-1">
-          {migrated.description || migrated.prompt}
-        </p>
-
-        {/* Footer chips */}
-        <div className="flex items-center gap-1.5 flex-wrap mt-auto pt-1">
-          <span
-            className={cn(
-              'text-2xs px-1.5 py-0.5 rounded border',
-              config.color,
-              'bg-muted border-border'
-            )}
-          >
+            <Heart className={isLiked ? 'fill-current' : undefined} />
+            {likesCount > 0 && likesCount}
+          </Button>
+        ) : undefined
+      }
+      meta={
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className={cn('rounded border border-border bg-muted px-1.5 py-0.5', config.color)}>
             {config.label}
           </span>
           {migrated.difficulty && (
             <span
               className={cn(
-                'text-2xs px-1.5 py-0.5 rounded border bg-muted border-border',
+                'rounded border border-border bg-muted px-1.5 py-0.5',
                 migrated.difficulty === 'beginner'
                   ? 'text-success'
                   : migrated.difficulty === 'intermediate'
@@ -236,32 +192,25 @@ export const PresetCard: React.FC<PresetCardProps> = ({
               {migrated.difficulty.slice(0, 3)}
             </span>
           )}
-          <span
-            className={cn(
-              'text-2xs font-mono text-neutral-700 px-1.5 py-0.5 rounded',
-              glassSurface.control
-            )}
-          >
-            {migrated.aspectRatio}
-          </span>
+          {migrated.aspectRatio && (
+            <span className={cn('rounded px-1.5 py-0.5 font-mono', glassSurface.control)}>
+              {migrated.aspectRatio}
+            </span>
+          )}
           {migrated.tags?.slice(0, 2).map((tag) => (
-            <span
-              key={tag}
-              className={cn(
-                'text-2xs text-muted-foreground px-1.5 py-0.5 rounded',
-                glassSurface.control
-              )}
-            >
+            <span key={tag} className={cn('rounded px-1.5 py-0.5', glassSurface.control)}>
               #{tag}
             </span>
           ))}
-          {(migrated.tags?.length ?? 0) > 2 && (
-            <span className="text-2xs text-muted-foreground">
-              +{(migrated.tags?.length ?? 0) - 2}
+          {(migrated.tags?.length ?? 0) > 2 && <span>+{(migrated.tags?.length ?? 0) - 2}</span>}
+          {!showLikeToggle && likesCount > 0 && (
+            <span className="inline-flex items-center gap-1 tabular-nums">
+              <Heart size={10} />
+              {likesCount}
             </span>
           )}
         </div>
-      </div>
-    </div>
+      }
+    />
   );
 };

@@ -23,6 +23,9 @@ import { GEMINI_MODELS } from '@/constants/geminiModels';
 import type { ImageProvider } from '@/types/types';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dropzone } from '@/components/ui/Dropzone';
 import { useTranslation } from '@/hooks/useTranslation';
 interface BentoItemProps {
   crop: CroppedImage;
@@ -50,7 +53,9 @@ const Timer: React.FC<{ startTime: number }> = ({ startTime }) => {
     return () => clearInterval(i);
   }, [startTime]);
   return (
-    <span className="font-mono text-2xs tabular-nums text-neutral-600">{elapsed.toFixed(1)}s</span>
+    <span className="font-mono text-2xs tabular-nums text-muted-foreground">
+      {elapsed.toFixed(1)}s
+    </span>
   );
 };
 
@@ -85,53 +90,62 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
 
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={`group relative overflow-hidden bg-neutral-900/40 transition-colors rounded-2xl border ${
-          isSelected ? 'border-white ring-1 ring-white/20' : 'border-border hover:border-border/70'
-        }`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className={cn(
+          'group relative overflow-hidden rounded-xl border bg-card transition-colors',
+          isSelected ? 'border-ring' : 'border-border hover:border-border-hover'
+        )}
       >
         <div className="flex flex-col sm:flex-row h-full min-h-[220px]">
           {/* Left — Image */}
-          <div className="relative w-full sm:w-[42%] overflow-hidden cursor-zoom-in border-r border-border bg-neutral-950">
+          <div className="relative w-full sm:w-[42%] overflow-hidden border-r border-border bg-muted">
             {crop.url ? (
               <>
                 <Thumb
                   src={crop.regeneratedUrl || crop.thumbnailUrl || crop.url}
                   alt={t('moodboard.item.label', { n: index + 1 })}
                   className="w-full h-full object-cover"
-                  onClick={() => onFullscreen(crop.regeneratedUrl || crop.upscaledUrl || crop.url)}
                   loading="lazy"
                 />
+                <button
+                  type="button"
+                  onClick={() => onFullscreen(crop.regeneratedUrl || crop.upscaledUrl || crop.url)}
+                  aria-label={t('moodboard.item.fullscreen')}
+                  className="absolute inset-0 z-10 cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                />
                 {crop.regeneratedUrl && (
-                  <div className="absolute bottom-0 inset-x-0 bg-black/80 p-2 flex items-center justify-between gap-2 z-20">
-                    <span className="text-xs font-medium text-neutral-200 flex items-center gap-1">
+                  <div className="absolute bottom-0 inset-x-0 z-20 flex items-center justify-between gap-2 border-t border-border bg-card p-2">
+                    <span className="flex items-center gap-1 text-xs font-medium text-foreground">
                       <Zap size={10} />
                       {t('moodboard.item.aiResult')}
                     </span>
                     <div className="flex gap-1.5">
-                      <button
+                      <Button
+                        variant="surface"
+                        size="icon-sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           onDiscardRegenerated?.(crop.id);
                         }}
-                        className="p-1.5 rounded-lg bg-neutral-800 border border-border/70 text-neutral-400 hover:text-destructive hover:border-destructive/40 transition-[color,background-color,border-color,opacity]"
+                        className="hover:text-destructive"
                         title={t('moodboard.item.discard')}
                         aria-label={t('moodboard.item.discard')}
                       >
-                        <RotateCcw size={11} />
-                      </button>
-                      <button
+                        <RotateCcw size={12} />
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="icon-sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           onAcceptRegenerated?.(crop.id);
                         }}
-                        className="p-1.5 rounded-lg bg-white text-black hover:opacity-90 transition-[color,background-color,border-color,opacity]"
                         title={t('moodboard.item.accept')}
                         aria-label={t('moodboard.item.accept')}
                       >
-                        <Check size={11} />
-                      </button>
+                        <Check size={12} />
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -143,10 +157,13 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                   aria-label={t('moodboard.item.select')}
                   aria-pressed={isSelected}
                   className={cn(
-                    'absolute top-3 left-3 p-2 rounded-xl transition-colors z-20 border shadow-lg',
+                    'absolute top-3 left-3 z-20 rounded-md border p-2 transition-colors',
                     isSelected
-                      ? 'bg-white text-black border-white'
-                      : cn('bg-black/40 text-white border-white/20', hoverReveal)
+                      ? 'border-ring bg-card text-foreground'
+                      : cn(
+                          'border-border bg-card text-muted-foreground hover:text-foreground',
+                          hoverReveal
+                        )
                   )}
                 >
                   {isSelected ? (
@@ -157,24 +174,17 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                 </button>
               </>
             ) : (
-              <div className="h-full flex items-center justify-center p-8 text-center hover:bg-neutral-800/30 transition-colors group/upload relative cursor-pointer">
-                <input
-                  type="file"
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
+              <div className="flex h-full items-center justify-center p-4">
+                <Dropzone
+                  accept="image/*"
+                  icon={Plus}
+                  label={t('moodboard.item.addImage')}
+                  onFiles={(files) => {
+                    const f = files[0];
                     if (f && onUpdateImage) onUpdateImage(f);
                   }}
-                  accept="image/*"
+                  className="h-full min-h-[180px] w-full"
                 />
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-neutral-800 border border-dashed border-border/70 flex items-center justify-center">
-                    <Plus size={18} className="text-neutral-500" />
-                  </div>
-                  <span className="text-xs font-medium text-neutral-500">
-                    {t('moodboard.item.addImage')}
-                  </span>
-                </div>
               </div>
             )}
 
@@ -184,18 +194,18 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                 onRemove(crop.id);
               }}
               className={cn(
-                'absolute top-3 right-3 p-1.5 rounded-lg bg-black/60 text-neutral-300 border border-white/10 hover:bg-destructive/80 hover:text-white z-10',
+                'absolute top-3 right-3 z-20 rounded-md border border-border bg-card p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive',
                 hoverReveal
               )}
             >
-              <X size={14} strokeWidth={1.5} />
+              <X size={14} strokeWidth={1.5} aria-hidden="true" />
               <span className="sr-only">{t('common.delete')}</span>
             </button>
 
             {crop.isUpscaling && (
-              <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-2">
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-background/80">
                 <GlitchLoader size={20} />
-                <span className="text-xs font-medium text-neutral-300">
+                <span className="text-xs font-medium text-foreground">
                   {t('moodboard.item.upscaling')}
                 </span>
                 {crop.upscaleStartTime && <Timer startTime={crop.upscaleStartTime} />}
@@ -203,29 +213,25 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
             )}
 
             {crop.isAnimating && (
-              <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-2">
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-background/80">
                 <GlitchLoader size={20} />
-                <span className="text-xs font-medium text-neutral-300">
+                <span className="text-xs font-medium text-foreground">
                   {t('moodboard.item.animating')}
                 </span>
                 {crop.animationStartTime && <Timer startTime={crop.animationStartTime} />}
               </div>
             )}
 
+            {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
             {crop.videoUrl && !crop.isAnimating && (
-              <div
-                className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors cursor-pointer"
+              <button
+                type="button"
+                className="absolute inset-0 z-10 flex cursor-pointer items-center justify-center bg-black/20 transition-colors hover:bg-black/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                 onClick={() => onViewVideo(crop.videoUrl!)}
-                role="button"
-                tabIndex={0}
                 aria-label={t('moodboard.item.viewVideo')}
               >
-                <Play
-                  size={28}
-                  className="text-white drop-shadow-2xl translate-x-0.5"
-                  fill="currentColor"
-                />
-              </div>
+                <Play size={28} className="translate-x-0.5 text-white" fill="currentColor" />
+              </button>
             )}
           </div>
 
@@ -233,20 +239,24 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
           <div className="flex-1 p-5 flex flex-col justify-between gap-4">
             <div className="space-y-5">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-neutral-500 tabular-nums">
+                <span className="text-xs text-muted-foreground tabular-nums">
                   {t('moodboard.item.label', { n: index + 1 })}
                 </span>
                 <div className="flex gap-1.5">
                   {!crop.upscaledUrl && !crop.isUpscaling && crop.url && (
-                    <button
+                    <Button
+                      variant="surface"
+                      size="sm"
                       onClick={() => onUpscale(crop.id)}
                       title={t('moodboard.item.upscale4k')}
-                      className="p-2 rounded-lg bg-neutral-800/50 border border-border/70 text-neutral-400 hover:text-white hover:border-neutral-500 transition-colors text-2xs font-bold flex items-center gap-1"
+                      className="h-8 gap-1 px-2 text-xs"
                     >
                       <Maximize2 size={13} strokeWidth={1.5} /> 4K
-                    </button>
+                    </Button>
                   )}
-                  <button
+                  <Button
+                    variant="surface"
+                    size="icon-sm"
                     onClick={() =>
                       onDownload(
                         crop.upscaledUrl || crop.url,
@@ -256,10 +266,9 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                     disabled={!crop.url}
                     aria-label={t('common.download')}
                     title={t('common.download')}
-                    className="p-2 rounded-lg bg-neutral-800/50 border border-border/70 text-neutral-400 hover:text-white hover:border-neutral-500 transition-[color,background-color,border-color,opacity] disabled:opacity-30"
                   >
                     <Download size={13} strokeWidth={1.5} />
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -267,8 +276,8 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <div className="flex items-center gap-1.5">
-                      <Film size={11} className="text-neutral-600" />
-                      <span className="text-xs font-medium text-neutral-500">
+                      <Film size={11} className="text-muted-foreground" />
+                      <span className="text-xs font-medium text-muted-foreground">
                         {t('moodboard.item.motion')}
                       </span>
                     </div>
@@ -276,50 +285,53 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                       {(
                         ['zoom-in', 'zoom-out', 'pan-lr', 'pan-rl', 'fade-in'] as AnimationPreset[]
                       ).map((p) => (
-                        <button
+                        <Button
                           key={p}
+                          variant="surface"
+                          size="xs"
                           onClick={() => onRemotionAnimate(crop.upscaledUrl || crop.url, p)}
-                          className="px-2.5 py-1 rounded-lg border border-border bg-neutral-900/50 text-2xs font-medium text-neutral-400 hover:bg-white hover:text-black hover:border-white transition-colors"
                         >
                           {t(`moodboard.item.presets.${p}`)}
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <div className="flex items-center gap-1.5">
-                      <Video size={11} className="text-neutral-600" />
-                      <span className="text-xs font-medium text-neutral-500">
+                      <Video size={11} className="text-muted-foreground" />
+                      <span className="text-xs font-medium text-muted-foreground">
                         {t('moodboard.item.veo')}
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      <input
+                      <Input
                         type="text"
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                         placeholder={t('moodboard.item.animationPrompt')}
-                        className="flex-1 bg-neutral-900/50 border border-border focus:border-neutral-600 rounded-lg px-3 py-2 text-2xs text-white placeholder:text-neutral-700 outline-none transition-[color,background-color,border-color,opacity]"
+                        aria-label={t('moodboard.item.animationPrompt')}
+                        className="h-9 flex-1 text-xs"
                         onKeyDown={(e) => e.key === 'Enter' && handleAnimate()}
                       />
-                      <button
+                      <Button
+                        variant="primary"
+                        size="icon-md"
                         onClick={handleAnimate}
                         disabled={!prompt.trim() || !crop.url || crop.isAnimating}
                         aria-label={t('moodboard.item.animate')}
                         title={t('moodboard.item.animate')}
-                        className="px-3 py-2 rounded-lg bg-white text-black hover:opacity-90 transition-opacity disabled:opacity-30"
                       >
                         <Video size={13} />
-                      </button>
+                      </Button>
                     </div>
                   </div>
 
                   {onRegenerate && (
                     <div className="space-y-2">
                       <div className="flex items-center gap-1.5">
-                        <Zap size={11} className="text-neutral-600" />
-                        <span className="text-xs font-medium text-neutral-500">
+                        <Zap size={11} className="text-muted-foreground" />
+                        <span className="text-xs font-medium text-muted-foreground">
                           {t('moodboard.item.regenerate')}
                         </span>
                       </div>
@@ -334,15 +346,17 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                           }}
                           className="flex-1"
                         />
-                        <button
+                        <Button
+                          variant="surface"
+                          size="icon-md"
                           onClick={() => onRegenerate(crop.id, regenModel, regenProvider)}
                           disabled={!crop.url || isRegenerating}
                           aria-label={t('moodboard.item.regenerate')}
                           title={t('moodboard.item.regenerate')}
-                          className="px-3 py-2 rounded-lg bg-neutral-800 border border-border text-neutral-300 hover:bg-white hover:text-black transition-[color,background-color,border-color,opacity] disabled:opacity-30 flex items-center gap-1.5 shrink-0"
+                          className="shrink-0"
                         >
                           {isRegenerating ? <GlitchLoader size={13} /> : <Zap size={13} />}
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -353,7 +367,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
             {crop.upscaledUrl && (
               <div className="flex items-center gap-2 pt-3 border-t border-border">
                 <span className="w-1.5 h-1.5 rounded-full bg-success" />
-                <span className="text-xs font-medium text-neutral-500">
+                <span className="text-xs font-medium text-muted-foreground">
                   {t('moodboard.item.ready4k')}
                 </span>
               </div>

@@ -334,9 +334,11 @@ export default function ConnectPage() {
             transition={dur}
             className="max-w-sm w-full text-center space-y-5"
           >
-            <div className="text-5xl font-mono font-bold text-foreground/10 select-none">?</div>
+            <div className="text-5xl font-mono font-medium text-muted-foreground/30 select-none">
+              ?
+            </div>
             <div className="space-y-1.5">
-              <p className="text-sm text-foreground/80">{error}</p>
+              <p className="text-sm text-foreground">{error}</p>
               <p className="text-xs text-muted-foreground leading-relaxed">{L.errorHint}</p>
             </div>
             <Button
@@ -372,12 +374,12 @@ export default function ConnectPage() {
                   <img
                     src={logo}
                     alt={brandName}
-                    className="w-16 h-16 rounded-2xl object-contain bg-muted/50 ring-1 ring-border"
+                    className="w-16 h-16 rounded-xl object-contain bg-muted/50 ring-1 ring-border"
                     onError={() => setLogoFailed(true)}
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded-2xl bg-muted/50 ring-1 ring-border flex items-center justify-center">
-                    <span className="text-2xl font-semibold text-muted-foreground">
+                  <div className="w-16 h-16 rounded-xl bg-muted/50 ring-1 ring-border flex items-center justify-center">
+                    <span className="text-2xl font-medium text-muted-foreground">
                       {brandName[0]?.toUpperCase()}
                     </span>
                   </div>
@@ -675,13 +677,13 @@ function AssistantCard({
       <ol className="space-y-1.5">
         {a.steps.map((s, i) => (
           <li key={i} className="flex gap-2 text-xs text-muted-foreground leading-snug">
-            <span className="text-foreground/40 font-mono shrink-0">{i + 1}.</span>
+            <span className="text-muted-foreground font-mono shrink-0">{i + 1}.</span>
             <span>{s}</span>
           </li>
         ))}
       </ol>
-      <div className="flex items-center gap-2 h-9 px-3 rounded-lg bg-muted/40 border border-border/60">
-        <code className="flex-1 text-2xs font-mono text-foreground/70 truncate select-all">
+      <div className="flex items-center gap-2 h-9 px-3 rounded-xl bg-muted/40 border border-border/60">
+        <code className="flex-1 text-2xs font-mono text-muted-foreground truncate select-all">
           {MCP_URL}
         </code>
         <CopyBtn text={MCP_URL} id={`url-${a.id}`} copied={copied} onCopy={onCopy} />
@@ -706,13 +708,13 @@ function PromptChip({
       type="button"
       onClick={() => onCopy(text, id)}
       className={cn(
-        'group w-full text-left flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 transition-[color,background-color,border-color,opacity] duration-200',
+        'group w-full text-left flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5 transition-[color,background-color,border-color,opacity] duration-200',
         isCopied
           ? 'border-success/30 bg-success/5'
           : 'border-border/60 hover:border-border hover:bg-muted/20'
       )}
     >
-      <span className="text-xs text-foreground/80 leading-snug">{text}</span>
+      <span className="text-xs text-foreground leading-snug">{text}</span>
       {isCopied ? (
         <Check className="w-3.5 h-3.5 text-success shrink-0" />
       ) : (
@@ -759,9 +761,9 @@ function ProviderRow({
           <a
             href={p.href}
             className={cn(
-              'inline-flex items-center gap-1.5 text-xs font-medium rounded-lg px-3 py-1.5',
-              'bg-foreground text-background hover:bg-foreground/90',
-              'transition-colors duration-200'
+              'inline-flex items-center gap-1.5 text-xs font-medium rounded-xl px-3 py-1.5',
+              'bg-foreground text-background hover:opacity-90',
+              'transition-opacity duration-200'
             )}
           >
             Connect
@@ -776,11 +778,11 @@ function ProviderRow({
 }
 
 function ProviderIcon({ id }: { id: string }) {
-  const base = 'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors';
+  const base = 'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors';
 
   if (id === 'cursor') {
     return (
-      <div className={cn(base, 'bg-neutral-900 dark:bg-white/10')}>
+      <div className={cn(base, 'bg-neutral-900 dark:bg-muted')}>
         {/* EXCEÇÃO ao ruido-scan/icone-desenhado-a-mao: logo oficial do Cursor, não ícone genérico */}
         <svg viewBox="0 0 24 24" className="w-4 h-4 text-white" fill="currentColor">
           <path d="M11.503.131 1.891 5.678a.84.84 0 0 0-.42.726v11.188c0 .3.162.575.42.724l9.609 5.55a1 1 0 0 0 .998 0l9.61-5.55a.84.84 0 0 0 .42-.724V6.404a.84.84 0 0 0-.42-.726L12.497.131a1.01 1.01 0 0 0-.996 0M2.657 6.338h18.55c.263 0 .43.287.297.515L12.23 22.918c-.062.107-.229.064-.229-.06V12.335a.59.59 0 0 0-.295-.51l-9.11-5.257c-.109-.063-.064-.23.061-.23" />

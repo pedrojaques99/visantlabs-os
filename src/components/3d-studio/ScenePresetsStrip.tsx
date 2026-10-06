@@ -15,6 +15,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { generateBrandScenes } from '@/lib/studio3d/brandScenes';
 import { usePresetPreviews } from './usePresetPreviews';
+import { Thumb } from '@/components/ui/Thumb';
 
 const selector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   applyScenePreset: s.applyScenePreset,
@@ -64,7 +65,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
         label={t('studio3d.scenePresets.title')}
         icon={<Shuffle size={13} />}
       >
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent -mx-0.5 px-0.5 pb-0.5">
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-track-transparent -mx-0.5 px-0.5 pb-0.5">
           {Object.entries(SCENE_PRESETS).map(([name, preset]) => (
             <button
               key={name}
@@ -72,21 +73,21 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
               className="shrink-0 flex flex-col items-center gap-1 group transition-colors duration-150"
             >
               <div
-                className="w-14 h-14 rounded-md overflow-hidden border border-white/10 group-hover:border-white/30 transition-colors"
+                className="w-14 h-14 rounded-md overflow-hidden border border-border group-hover:border-border-hover transition-colors"
                 style={{ background: preset.background }}
               >
                 {presetThumbs[name] ? (
-                  <img
+                  <Thumb
                     src={presetThumbs[name]}
                     alt={preset.label}
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
                 ) : (
-                  <div className="w-full h-full animate-pulse bg-white/5" />
+                  <div className="w-full h-full animate-pulse bg-muted" />
                 )}
               </div>
-              <span className="text-3xs text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
+              <span className="text-3xs text-muted-foreground group-hover:text-muted-foreground transition-colors max-w-14 truncate">
                 {preset.label}
               </span>
             </button>
@@ -97,19 +98,19 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
                 setShowRandomizeConfirm(true);
               } else {
                 store.randomize();
-                toast.success('Surprise!');
+                toast.success(t('studio3d.scenePresets.surprise'));
               }
             }}
             className="shrink-0 flex flex-col items-center gap-1 group transition-colors duration-150"
           >
-            <div className="w-14 h-14 rounded-md overflow-hidden border border-dashed border-white/10 group-hover:border-white/30 flex items-center justify-center transition-colors">
+            <div className="w-14 h-14 rounded-md overflow-hidden border border-dashed border-border group-hover:border-border-hover flex items-center justify-center transition-colors">
               <Shuffle
                 size={16}
-                className="text-neutral-500 group-hover:text-neutral-300 transition-colors"
+                className="text-muted-foreground group-hover:text-muted-foreground transition-colors"
               />
             </div>
-            <span className="text-3xs text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
-              Random
+            <span className="text-3xs text-muted-foreground group-hover:text-muted-foreground transition-colors max-w-14 truncate">
+              {t('studio3d.scenePresets.random')}
             </span>
           </button>
         </div>
@@ -119,10 +120,15 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
       {brandScenes.length > 0 && (
         <PresetGroup
           flat={flat}
-          label={`${appliedBrand?.identity?.name || appliedBrand?.name || 'Brand'} Scenes`}
+          label={t('studio3d.scenePresets.brandScenes', {
+            name:
+              appliedBrand?.identity?.name ||
+              appliedBrand?.name ||
+              t('studio3d.scenePresets.brand'),
+          })}
           icon={<Palette size={13} />}
         >
-          <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent -mx-0.5 px-0.5 pb-0.5">
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-track-transparent -mx-0.5 px-0.5 pb-0.5">
             {brandScenes.map((scene) => (
               <button
                 key={scene.key}
@@ -133,7 +139,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
                 title={scene.label}
               >
                 <div
-                  className="w-14 h-14 rounded-md overflow-hidden border border-white/10 group-hover:border-white/30 transition-colors flex items-center justify-center"
+                  className="w-14 h-14 rounded-md overflow-hidden border border-border group-hover:border-border-hover transition-colors flex items-center justify-center"
                   style={{ background: scene.swatches[0] }}
                 >
                   <div
@@ -144,7 +150,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
                     }}
                   />
                 </div>
-                <span className="text-3xs text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
+                <span className="text-3xs text-muted-foreground group-hover:text-muted-foreground transition-colors max-w-14 truncate">
                   {scene.label}
                 </span>
               </button>
@@ -160,7 +166,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
           setHasRandomizedOnce(true);
           setShowRandomizeConfirm(false);
           store.randomize();
-          toast.success('Surprise!');
+          toast.success(t('studio3d.scenePresets.surprise'));
         }}
         title={t('studio3d.randomizeTitle')}
         message={t('studio3d.randomizeMessage')}

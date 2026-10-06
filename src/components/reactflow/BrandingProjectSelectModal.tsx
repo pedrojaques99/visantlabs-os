@@ -195,7 +195,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
           <Button
             variant="brand"
             onClick={handleCreateNew}
-            className="flex-1 px-4 py-2 font-semibold rounded-md text-sm flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2 font-medium rounded-md text-sm flex items-center justify-center gap-2"
           >
             <Plus size={16} />
             {t('canvasNodes.brandingProjectSelectModal.createNewProject')}

@@ -175,7 +175,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
 
   if (historyError && usageHistory.length === 0 && !isLoadingHistory) {
     return (
-      <div className="border border-border rounded-2xl bg-card">
+      <div className="border border-border rounded-xl bg-card">
         <ErrorState
           title={t('usageHistory.loadErrorTitle')}
           description={historyError}
@@ -188,7 +188,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
 
   if (usageHistory.length === 0 && !isLoadingHistory) {
     return (
-      <div className="border border-border rounded-2xl bg-card p-12 flex flex-col items-center gap-4">
+      <div className="border border-border rounded-xl bg-card p-12 flex flex-col items-center gap-4">
         <p className="text-sm text-muted-foreground">{t('usageHistory.noRecords')}</p>
       </div>
     );
@@ -198,7 +198,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
     <div className="space-y-4 animate-in fade-in duration-300">
       {/* Section header */}
       <div className="mb-2">
-        <h2 className="text-sm font-semibold text-foreground">{t('usageHistory.title')}</h2>
+        <h2 className="text-sm font-medium text-foreground">{t('usageHistory.title')}</h2>
         <p className="text-xs text-muted-foreground mt-0.5">{t('usageHistory.subtitle')}</p>
       </div>
 
@@ -252,7 +252,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
           .filter((stat, index) => index < 2 || stat.value > 0)
           .map((stat) => (
             <div key={stat.label} className="flex-1 px-4 py-4 min-w-0">
-              <p className="text-xl font-bold text-foreground font-mono tabular-nums leading-none">
+              <p className="text-xl font-semibold text-foreground font-mono tabular-nums leading-none">
                 {stat.value}
               </p>
               <p className="text-2xs text-muted-foreground mt-1.5 truncate">{stat.label}</p>
@@ -261,7 +261,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
       </div>
 
       {/* Filter strip + table — unified container */}
-      <div className="border border-border rounded-2xl overflow-hidden">
+      <div className="border border-border rounded-xl overflow-hidden">
         {/* Filter strip */}
         <div className="flex flex-wrap gap-1.5 px-4 py-3 border-b border-border bg-muted/40">
           {FILTER_OPTIONS.map((opt) => (

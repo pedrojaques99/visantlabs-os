@@ -106,7 +106,7 @@ export const ShortlistPanel: React.FC<ShortlistPanelProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 onClick={onShowFinalists}
-                className="mb-2 flex w-full items-center gap-2 rounded-lg border border-brand-cyan/20 bg-brand-cyan/[0.06] px-3 py-2 text-left text-xs text-foreground hover:bg-brand-cyan/10 transition-colors"
+                className="mb-2 flex w-full items-center gap-2 rounded-xl border border-brand-cyan/20 bg-brand-cyan/[0.06] px-3 py-2 text-left text-xs text-foreground hover:bg-brand-cyan/10 transition-colors"
               >
                 <Zap size={13} className="shrink-0" />
                 Seu gosto está claro. Ver 3 finalistas?
@@ -212,7 +212,7 @@ function ShortlistRow({
   return (
     <div
       className={cn(
-        'rounded-lg border bg-white/[0.03] transition-colors hover:bg-white/[0.035]',
+        'rounded-xl border bg-muted transition-colors hover:bg-accent',
         highlighted ? 'border-brand-cyan/40' : 'border-neutral-800'
       )}
     >

@@ -129,7 +129,7 @@ const BentoCard = ({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
       className={cn(
-        'group relative flex flex-col gap-4 p-4 rounded-lg bg-white/[0.01] border border-white/[0.05] hover:border-white/[0.1] transition-colors overflow-hidden',
+        'group relative flex flex-col gap-4 p-4 rounded-xl bg-white/[0.01] border border-white/[0.05] hover:border-white/[0.1] transition-colors overflow-hidden',
         viewMode === 'bento' ? SPANS[format.id] : 'col-span-full'
       )}
     >
@@ -151,7 +151,7 @@ const BentoCard = ({
               {isExporting ? <GlitchLoader size={11} /> : <Download size={11} strokeWidth={1.5} />}
             </button>
             {showExport && (
-              <div className="absolute right-0 top-full mt-1 z-50 bg-neutral-900 border border-white/10 rounded-lg shadow-2xl overflow-hidden min-w-[80px]">
+              <div className="absolute right-0 top-full mt-1 z-50 bg-neutral-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden min-w-[80px]">
                 {EXPORT_FORMATS.map((f) => (
                   <button
                     key={f.id}

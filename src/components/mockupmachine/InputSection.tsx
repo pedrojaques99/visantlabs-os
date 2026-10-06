@@ -239,22 +239,23 @@ export const InputSection: React.FC<InputSectionProps> = ({
   }) => (
     <div
       className={cn(
-        'relative flex flex-col p-2 rounded-2xl border transition-[color,background-color,border-color,box-shadow] group w-full animate-in fade-in zoom-in-95 duration-500',
+        'relative flex flex-col p-2 rounded-xl border transition-[color,background-color,border-color,box-shadow] group w-full animate-in fade-in zoom-in-95 duration-500',
         highlight
           ? 'bg-neutral-900/30 border-border'
-          : 'bg-neutral-900/20 border-white/[0.03] hover:border-white/10'
+          : 'bg-neutral-900/20 border-border hover:border-border-hover'
       )}
     >
       {/* Image Container */}
-      <div className="relative h-32 sm:h-40 md:h-48 w-full rounded-xl overflow-hidden flex items-center justify-center group/img-container bg-black/20 p-4">
+      <div className="relative h-32 sm:h-40 md:h-48 w-full rounded-xl overflow-hidden flex items-center justify-center group/img-container bg-muted p-4">
         <Thumb
           src={getImageSrc(img)}
           alt={label}
           loading="lazy"
-          className="max-h-full max-w-full object-contain rounded-lg"
+          className="max-h-full max-w-full object-contain rounded-xl"
         />
 
         {/* Hover Overlay with Replace Action */}
+        {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
         <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 bg-black/40 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/img-container:opacity-100 group-focus-within/img-container:opacity-100">
           <button
             type="button"
@@ -262,12 +263,12 @@ export const InputSection: React.FC<InputSectionProps> = ({
               e.stopPropagation();
               onReplace();
             }}
-            className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex flex-col items-center gap-3 p-4 rounded-xl bg-popover border border-border hover:bg-accent hover:border-border-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <div className="p-3 rounded-full bg-white/10 text-white">
+            <div className="p-3 rounded-full bg-muted text-foreground">
               <ArrowLeftRight size={20} />
             </div>
-            <span className="text-xs font-semibold text-white">{t('mockup.replace')}</span>
+            <span className="text-xs font-medium text-foreground">{t('mockup.replace')}</span>
           </button>
         </div>
       </div>
@@ -277,10 +278,10 @@ export const InputSection: React.FC<InputSectionProps> = ({
   return (
     <section className={cn('flex flex-col gap-8 w-full', className)}>
       {/* Header Area: Metadata + Settings */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/[0.03] pb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border pb-6">
         <div className="flex items-center gap-4">
           <div className="flex flex-col">
-            <p className="text-sm font-semibold text-foreground">
+            <p className="text-sm font-medium text-foreground">
               {t('mockup.filesLoaded', { count: referenceImages.length + 1 })}
             </p>
           </div>
@@ -293,9 +294,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
               <button
                 onClick={() => onDesignTypeChange('layout')}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                  'px-3 py-1.5 rounded-xl text-xs font-medium transition-colors',
                   designType === 'layout'
-                    ? 'bg-white/10 text-foreground'
+                    ? 'bg-muted text-foreground'
                     : 'text-neutral-500 hover:text-neutral-300'
                 )}
                 aria-pressed={designType === 'layout'}
@@ -305,9 +306,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
               <button
                 onClick={() => onDesignTypeChange('logo')}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                  'px-3 py-1.5 rounded-xl text-xs font-medium transition-colors',
                   designType === 'logo'
-                    ? 'bg-white/10 text-foreground'
+                    ? 'bg-muted text-foreground'
                     : 'text-neutral-500 hover:text-neutral-300'
                 )}
                 aria-pressed={designType === 'logo'}
@@ -344,7 +345,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
           <div className="relative">
             <Textarea
               placeholder={t('mockup.instructionsPlaceholder')}
-              className="relative min-h-[100px] bg-neutral-900/40 border-white/10 rounded-2xl text-sm focus:border-neutral-600 transition-colors placeholder:text-neutral-600 custom-scrollbar"
+              className="relative min-h-[100px] bg-neutral-900/40 border-border rounded-xl text-sm focus:border-neutral-600 transition-colors placeholder:text-neutral-600 custom-scrollbar"
               value={mockupContext.instructions}
               onChange={(e) => mockupContext.setInstructions(e.target.value)}
             />
@@ -380,9 +381,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
         ) : (
           <label
             htmlFor="image-upload-blank"
-            className="flex flex-col items-center justify-center p-12 rounded-3xl border-2 border-dashed border-neutral-800 hover:border-neutral-700 bg-white/[0.03] hover:bg-white/[0.05] transition-colors cursor-pointer group"
+            className="flex flex-col items-center justify-center p-12 rounded-xl border-2 border-dashed border-neutral-800 hover:border-neutral-700 bg-muted hover:bg-accent transition-colors cursor-pointer group"
           >
-            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
               <Plus
                 className="text-neutral-500 group-hover:text-foreground transition-colors"
                 size={20}
@@ -412,7 +413,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
         {canAddMoreReferences && (
           <label
             htmlFor="multiple-image-upload"
-            className="flex flex-col items-center justify-center p-6 rounded-2xl border border-dashed border-neutral-800 hover:border-white/10 bg-white/[0.03] hover:bg-white/[0.03] transition-colors cursor-pointer group"
+            className="flex flex-col items-center justify-center p-6 rounded-xl border border-dashed border-neutral-800 hover:border-border-hover bg-muted hover:bg-accent transition-colors cursor-pointer group"
           >
             <Plus className="text-neutral-700 group-hover:text-neutral-500 mb-2" size={16} />
             <span className="text-2xs font-medium text-neutral-600 group-hover:text-neutral-400">

@@ -57,7 +57,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             <p dangerouslySetInnerHTML={{ __html: t('privacy.overview') }} />
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.informationWeCollect.title')}
               </h2>
 
@@ -161,7 +161,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             </div>
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.howWeUseData.title')}
               </h2>
               <p className="text-muted-foreground mb-3">
@@ -220,7 +220,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             </div>
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.dataSharing.title')}
               </h2>
               <p className="text-muted-foreground mb-3">
@@ -286,7 +286,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             </div>
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.storageAndSecurity.title')}
               </h2>
               <p className="text-muted-foreground mb-3">
@@ -333,7 +333,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             </div>
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.yourRights.title')}
               </h2>
               <p className="text-muted-foreground mb-3">{t('privacy.sections.yourRights.intro')}</p>
@@ -348,7 +348,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             </div>
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.cookiesAndTracking.title')}
               </h2>
               <p className="text-muted-foreground mb-3">
@@ -414,7 +414,7 @@ export const PrivacyPolicyPage: React.FC = () => {
             </div>
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.dataRetention.title')}
               </h2>
               <h3 className="text-base font-medium text-foreground mt-4 mb-2">
@@ -504,14 +504,14 @@ export const PrivacyPolicyPage: React.FC = () => {
             </div>
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.changesToPolicy.title')}
               </h2>
               <p className="text-muted-foreground">{t('privacy.sections.changesToPolicy.note')}</p>
             </div>
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.contact.title')}
               </h2>
               <p

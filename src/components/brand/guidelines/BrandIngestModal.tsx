@@ -69,14 +69,14 @@ const ItemCheck: React.FC<{
   dim?: boolean;
 }> = ({ checked, onToggle, children, dim }) => (
   <div
-    className={`flex items-center gap-2 cursor-pointer rounded px-1.5 py-1 hover:bg-white/[0.03] transition-[color,background-color,border-color,opacity] ${
+    className={`flex items-center gap-2 cursor-pointer rounded px-1.5 py-1 hover:bg-accent transition-[color,background-color,border-color,opacity] ${
       dim && !checked ? 'opacity-30' : ''
     }`}
     onClick={onToggle}
   >
     <div
       className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center transition-colors ${
-        checked ? 'bg-white/15 border-white/30' : 'border-white/15'
+        checked ? 'bg-accent border-border-hover' : 'border-border'
       }`}
     >
       {checked && <Check size={9} className="text-neutral-200" />}
@@ -96,7 +96,7 @@ const SectionShell: React.FC<{
 }> = ({ label, loading, allChecked, someChecked, onToggleAll, children }) => (
   <div
     className={`rounded-md border transition-colors ${
-      someChecked ? 'border-white/10 bg-white/[0.03]' : 'border-neutral-800'
+      someChecked ? 'border-border bg-muted' : 'border-border'
     }`}
   >
     <div
@@ -114,10 +114,10 @@ const SectionShell: React.FC<{
       <div
         className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${
           allChecked
-            ? 'bg-white/10 border-white/20'
+            ? 'bg-accent border-border-hover'
             : someChecked
-              ? 'bg-white/5 border-white/15'
-              : 'border-white/10'
+              ? 'bg-muted border-border'
+              : 'border-border'
         }`}
       >
         {allChecked ? (
@@ -135,7 +135,7 @@ const SectionShell: React.FC<{
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 const Skeleton = ({ className = '' }: { className?: string }) => (
-  <div className={`rounded bg-white/5 animate-pulse ${className}`} />
+  <div className={`rounded bg-muted animate-pulse ${className}`} />
 );
 
 // ─── Content renderers ────────────────────────────────────────────────────────
@@ -149,7 +149,7 @@ const ColorsSection: React.FC<{ data: any[]; sel: Set<number>; toggle: (i: numbe
     {data.map((c, i) => (
       <ItemCheck key={i} checked={sel.has(i)} onToggle={() => toggle(i)} dim>
         <div
-          className="w-5 h-5 rounded border border-white/10 flex-shrink-0"
+          className="w-5 h-5 rounded border border-border flex-shrink-0"
           style={{ backgroundColor: c.hex }}
         />
         <span className="text-xs text-neutral-300 truncate">{c.name || c.hex}</span>
@@ -301,13 +301,13 @@ const AssetsSection: React.FC<{
       <div
         key={i}
         className={`relative aspect-square rounded border overflow-hidden cursor-pointer transition-[color,background-color,border-color,opacity] ${
-          sel.has(i) ? 'border-white/20' : 'border-neutral-800 opacity-30'
+          sel.has(i) ? 'border-border-hover' : 'border-border opacity-30'
         }`}
         onClick={() => toggle(i)}
       >
         <img src={src} alt="" className="w-full h-full object-contain bg-neutral-900/60 p-0.5" />
         {sel.has(i) && (
-          <div className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-white/20 border border-white/30 flex items-center justify-center">
+          <div className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-accent border border-border-hover flex items-center justify-center">
             <Check size={8} className="text-white" />
           </div>
         )}

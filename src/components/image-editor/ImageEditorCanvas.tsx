@@ -94,6 +94,8 @@ export const ImageEditorCanvas: React.FC<Props> = ({ imageUrl, imageWidth, image
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     // Clear
+    // EXCEÇÃO ao audit:design/hardcoded-hex-color: canvas 2D não lê classe Tailwind; é o
+    // fundo do palco de edição (dark-first), pintado em pixel.
     ctx.fillStyle = '#0a0a0a';
     ctx.fillRect(0, 0, container.clientWidth, container.clientHeight);
 

@@ -49,7 +49,7 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
           />
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('refund.sections.rightOfWithdrawal.title')}
             </h2>
             <p
@@ -62,10 +62,10 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('refund.sections.procedure.title')}
             </h2>
-            <h3 className="text-lg font-semibold text-muted-foreground mt-6 mb-3">
+            <h3 className="text-lg font-medium text-muted-foreground mt-6 mb-3">
               {t('refund.sections.procedure.howToRequest.title')}
             </h3>
             <p className="text-muted-foreground mb-3">
@@ -88,7 +88,7 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
               })}
             </ul>
 
-            <h3 className="text-lg font-semibold text-muted-foreground mt-6 mb-3">
+            <h3 className="text-lg font-medium text-muted-foreground mt-6 mb-3">
               {t('refund.sections.procedure.processing.title')}
             </h3>
             <p
@@ -100,10 +100,10 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('refund.sections.subscriptionRefund.title')}
             </h2>
-            <h3 className="text-lg font-semibold text-muted-foreground mt-6 mb-3">
+            <h3 className="text-lg font-medium text-muted-foreground mt-6 mb-3">
               {t('refund.sections.subscriptionRefund.partial.title')}
             </h3>
             <p className="text-muted-foreground mb-3">
@@ -115,7 +115,7 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
               ))}
             </ul>
 
-            <h3 className="text-lg font-semibold text-muted-foreground mt-6 mb-3">
+            <h3 className="text-lg font-medium text-muted-foreground mt-6 mb-3">
               {t('refund.sections.subscriptionRefund.full.title')}
             </h3>
             <p
@@ -127,17 +127,17 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('refund.sections.creditRefund.title')}
             </h2>
-            <h3 className="text-lg font-semibold text-muted-foreground mt-6 mb-3">
+            <h3 className="text-lg font-medium text-muted-foreground mt-6 mb-3">
               {t('refund.sections.creditRefund.unused.title')}
             </h3>
             <p className="text-muted-foreground mb-3">
               {t('refund.sections.creditRefund.unused.content')}
             </p>
 
-            <h3 className="text-lg font-semibold text-muted-foreground mt-6 mb-3">
+            <h3 className="text-lg font-medium text-muted-foreground mt-6 mb-3">
               {t('refund.sections.creditRefund.partiallyUsed.title')}
             </h3>
             <p
@@ -149,7 +149,7 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('refund.sections.processingTimes.title')}
             </h2>
             <p className="text-muted-foreground mb-3">
@@ -163,17 +163,17 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('refund.sections.specialCases.title')}
             </h2>
-            <h3 className="text-lg font-semibold text-muted-foreground mt-6 mb-3">
+            <h3 className="text-lg font-medium text-muted-foreground mt-6 mb-3">
               {t('refund.sections.specialCases.technicalIssues.title')}
             </h3>
             <p className="text-muted-foreground mb-3">
               {t('refund.sections.specialCases.technicalIssues.content')}
             </p>
 
-            <h3 className="text-lg font-semibold text-muted-foreground mt-6 mb-3">
+            <h3 className="text-lg font-medium text-muted-foreground mt-6 mb-3">
               {t('refund.sections.specialCases.purchaseError.title')}
             </h3>
             <p className="text-muted-foreground">
@@ -182,7 +182,7 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('refund.sections.exceptions.title')}
             </h2>
             <p
@@ -197,7 +197,7 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('refund.sections.cancellation.title')}
             </h2>
             <p className="text-muted-foreground mb-3">
@@ -207,7 +207,7 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('refund.sections.contact.title')}
             </h2>
             <p className="text-muted-foreground mb-3">{t('refund.sections.contact.intro')}</p>
@@ -228,7 +228,7 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
           </section>
 
           <section className="pt-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4">
+            <h2 className="text-xl font-medium text-foreground mb-4">
               {t('refund.sections.changes.title')}
             </h2>
             <p className="text-muted-foreground">{t('refund.sections.changes.content')}</p>

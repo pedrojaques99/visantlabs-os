@@ -65,7 +65,7 @@ export const BrandSwitcher: React.FC<BrandSwitcherProps> = ({
   return (
     <div
       className={cn(
-        'flex min-w-0 items-center px-1.5 bg-muted/40 border border-border rounded-lg hover:bg-muted hover:border-border transition-[color,background-color,border-color,box-shadow] duration-200 shadow-sm h-9',
+        'flex min-w-0 items-center px-1.5 bg-muted/40 border border-border rounded-xl hover:bg-muted hover:border-border transition-[color,background-color,border-color,box-shadow] duration-200 shadow-sm h-9',
         className
       )}
       data-vsn-component="BrandSwitcher"

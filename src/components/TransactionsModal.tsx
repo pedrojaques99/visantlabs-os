@@ -47,13 +47,13 @@ const getStatusColor = (status: string) => {
     case 'past_due':
       return 'text-destructive bg-destructive/10 border-destructive/30';
     default:
-      return 'text-neutral-400 bg-neutral-500/10 border-neutral-500/30';
+      return 'text-muted-foreground bg-muted border-border';
   }
 };
 
 export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, onClose }) => {
   useScrollLock(isOpen);
-  const { t } = useTranslation();
+  const { t, tOr } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -107,19 +107,21 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 px-4 py-8 backdrop-blur-md">
-      <div className="w-full max-w-3xl bg-neutral-950 border border-neutral-800/60 rounded-xl shadow-2xl relative">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800/60">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4 py-8 backdrop-blur-md">
+      <div className="w-full max-w-3xl bg-popover border border-border rounded-xl shadow-[var(--e-modal)] relative">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <div>
-            <MicroTitle className="text-neutral-500 mb-1">{t('transactions.title')}</MicroTitle>
-            <h2 className="text-2xl font-bold tracking-tight text-neutral-100">
+            <MicroTitle className="text-muted-foreground mb-1">
+              {t('transactions.title')}
+            </MicroTitle>
+            <h2 className="text-2xl font-medium tracking-tight text-foreground">
               {t('transactions.subtitle')}
             </h2>
           </div>
           <Button
             variant="ghost"
             onClick={onClose}
-            className="p-2 rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/60 transition-colors"
+            className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             aria-label="Close"
           >
             <X size={18} />
@@ -128,61 +130,61 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
 
         <div className="p-6 max-h-[70vh] overflow-y-auto space-y-4">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-12 text-neutral-400 gap-3">
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-3">
               <GlitchLoader size={28} />
-              <p className="font-mono text-sm">{t('common.loading')}</p>
+              <p className="text-sm">{t('common.loading')}</p>
             </div>
           ) : error ? (
-            <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive font-mono">
+            <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive">
               {error}
             </div>
           ) : transactions.length === 0 ? (
-            <div className="text-center text-neutral-500 font-mono text-sm py-12">
+            <div className="text-center text-muted-foreground text-sm py-12">
               {t('transactions.empty')}
             </div>
           ) : (
             groupedTransactions.map(([date, items]) => (
               <div key={date} className="mb-6 last:mb-0">
-                <MicroTitle className="text-neutral-600 mb-3 border-b border-neutral-800/20 pb-1">
+                <MicroTitle className="text-muted-foreground mb-3 border-b border-border pb-1">
                   {date}
                 </MicroTitle>
                 <div className="space-y-3">
                   {items.map((transaction) => (
                     <div
                       key={`${transaction.id}-${transaction.createdAt}`}
-                      className="bg-neutral-950/70 border border-neutral-800/60 rounded-md p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                      className="bg-card border border-border rounded-md p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-md bg-brand-cyan/10 flex items-center justify-center text-foreground">
+                        <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center text-foreground">
                           <CreditCard size={18} />
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-neutral-100">
+                          <p className="text-sm font-medium text-foreground">
                             {transaction.description ||
                               (transaction.type === 'purchase'
                                 ? t('transactions.type.purchase')
                                 : t('transactions.type.subscription'))}
                           </p>
-                          <p className="text-xs text-neutral-500 font-mono">
+                          <p className="text-xs text-muted-foreground tabular-nums">
                             {formatDate(transaction.createdAt)}
                           </p>
                           {transaction.credits !== null && (
-                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                            <p className="text-xs text-muted-foreground tabular-nums mt-1">
                               {t('transactions.credits', { count: transaction.credits })}
                             </p>
                           )}
                         </div>
                       </div>
                       <div className="flex flex-col md:items-end gap-2">
-                        <span className="text-lg font-semibold font-mono text-neutral-100">
+                        <span className="text-lg font-semibold tabular-nums text-foreground">
                           {formatCurrency(transaction.amount, transaction.currency)}
                         </span>
                         <span
-                          className={`text-xs font-semibold font-mono px-2 py-1 rounded-md border ${getStatusColor(
+                          className={`text-xs font-medium px-2 py-1 rounded-md border ${getStatusColor(
                             transaction.status
                           )}`}
                         >
-                          {t(`transactions.status.${transaction.status}`) || transaction.status}
+                          {tOr(`transactions.status.${transaction.status}`, transaction.status)}
                         </span>
                       </div>
                     </div>

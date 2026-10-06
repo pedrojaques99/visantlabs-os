@@ -96,13 +96,15 @@ export function IconReviewPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Filtrar…"
-            className="h-9 w-40 rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none focus:border-white/25"
+            className="h-9 w-40 rounded-md border border-border bg-muted px-3 text-sm outline-none focus:border-border-hover"
           />
-          <div className="flex items-center gap-1 rounded-md border border-white/10 p-0.5">
+          <div className="flex items-center gap-1 rounded-md border border-border p-0.5">
             <button
               onClick={() => setSort('usage')}
               className={`rounded px-2 py-1 text-xs transition-colors ${
-                sort === 'usage' ? 'bg-white/15 text-white' : 'text-white/50 hover:text-white/80'
+                sort === 'usage'
+                  ? 'bg-accent text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               uso
@@ -110,19 +112,23 @@ export function IconReviewPage() {
             <button
               onClick={() => setSort('alpha')}
               className={`rounded px-2 py-1 text-xs transition-colors ${
-                sort === 'alpha' ? 'bg-white/15 text-white' : 'text-white/50 hover:text-white/80'
+                sort === 'alpha'
+                  ? 'bg-accent text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               nome
             </button>
           </div>
-          <div className="flex items-center gap-1 rounded-md border border-white/10 p-0.5">
+          <div className="flex items-center gap-1 rounded-md border border-border p-0.5">
             {WEIGHTS.map((w) => (
               <button
                 key={w}
                 onClick={() => setWeight(w)}
                 className={`rounded px-2 py-1 text-xs font-mono capitalize transition-colors ${
-                  weight === w ? 'bg-white/15 text-white' : 'text-white/50 hover:text-white/80'
+                  weight === w
+                    ? 'bg-accent text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {w}
@@ -144,23 +150,25 @@ export function IconReviewPage() {
                 setPickerQuery('');
               }}
               title={`${count} usos em ${files} arquivo(s)`}
-              className="group relative flex flex-col items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-5 text-center transition-colors hover:border-white/25 hover:bg-white/[0.06]"
+              className="group relative flex flex-col items-center gap-3 rounded-xl border border-border bg-muted p-5 text-center transition-colors hover:border-border-hover hover:bg-accent"
             >
               <span
                 className={`absolute right-2 top-2 rounded-full px-1.5 py-0.5 font-mono text-2xs tabular-nums ${
-                  count === 0 ? 'bg-white/5 text-white/30' : 'bg-white/10 text-white/60'
+                  count === 0
+                    ? 'bg-background text-muted-foreground/60'
+                    : 'bg-background text-muted-foreground'
                 }`}
               >
                 {count}
               </span>
               {Cmp ? (
-                <Cmp size={32} weight={weight} className="text-white/90" />
+                <Cmp size={32} weight={weight} className="text-foreground" />
               ) : (
                 <span className="text-xs text-destructive">?</span>
               )}
-              <div className="font-mono text-xs text-white/80">{name}</div>
+              <div className="font-mono text-xs text-foreground">{name}</div>
               {overridden && (
-                <div className="flex items-center gap-1 font-mono text-2xs text-neutral-400">
+                <div className="flex items-center gap-1 font-mono text-2xs text-muted-foreground">
                   <Icons.ArrowRight size={10} /> {overridden}
                 </div>
               )}
@@ -169,38 +177,40 @@ export function IconReviewPage() {
         })}
       </div>
       {rows.length === 0 && (
-        <p className="py-16 text-center text-sm text-white/40">Nenhum ícone bate com "{query}".</p>
+        <p className="py-16 text-center text-sm text-muted-foreground">
+          Nenhum ícone bate com "{query}".
+        </p>
       )}
 
       {/* Picker de troca */}
       {editing && (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 p-4 pt-[8vh] backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-start justify-center bg-background/80 p-4 pt-[8vh] backdrop-blur-sm"
           onClick={() => setEditing(null)}
         >
           <div
-            className="flex max-h-[80vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-950 shadow-2xl"
+            className="flex max-h-[80vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-border bg-popover shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between gap-4 border-b border-white/10 p-4">
+            <div className="flex items-center justify-between gap-4 border-b border-border p-4">
               <div className="flex items-center gap-3">
                 {(() => {
                   const Cur = overrides[editing] ? phosphor[overrides[editing]] : registry[editing];
-                  return Cur ? <Cur size={26} className="text-white/90" /> : null;
+                  return Cur ? <Cur size={26} className="text-foreground" /> : null;
                 })()}
                 <div>
-                  <div className="font-mono text-sm text-white">{editing}</div>
-                  <div className="text-2xs text-white/40">escolha o glifo Phosphor</div>
+                  <div className="font-mono text-sm text-foreground">{editing}</div>
+                  <div className="text-2xs text-muted-foreground">escolha o glifo Phosphor</div>
                 </div>
               </div>
               <button
                 onClick={() => setEditing(null)}
-                className="rounded-md px-2 py-1 text-sm text-white/50 hover:text-white"
+                className="rounded-md px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
               >
                 esc
               </button>
             </div>
-            <div className="border-b border-white/10 p-3">
+            <div className="border-b border-border p-3">
               {/* autoFocus é intencional (busca de painel interno). O plugin
                   eslint-plugin-jsx-a11y não está instalado, então referenciar
                   a regra num disable quebrava o `eslint .` do CI. */}
@@ -209,7 +219,7 @@ export function IconReviewPage() {
                 value={pickerQuery}
                 onChange={(e) => setPickerQuery(e.target.value)}
                 placeholder={`Buscar em ${PHOSPHOR_NAMES.length} ícones Phosphor…`}
-                className="h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none focus:border-white/25"
+                className="h-10 w-full rounded-md border border-border bg-muted px-3 text-sm outline-none focus:border-border-hover"
               />
             </div>
             <div className="grid grid-cols-3 gap-2 overflow-y-auto p-3 sm:grid-cols-5 md:grid-cols-6">
@@ -221,15 +231,17 @@ export function IconReviewPage() {
                     disabled={saving}
                     onClick={() => swap(editing, pn)}
                     title={pn}
-                    className="flex flex-col items-center gap-2 rounded-lg border border-transparent p-3 text-center transition-colors hover:border-white/20 hover:bg-white/[0.06] disabled:opacity-40"
+                    className="flex flex-col items-center gap-2 rounded-xl border border-transparent p-3 text-center transition-colors hover:border-border-hover hover:bg-accent disabled:opacity-40"
                   >
-                    {P ? <P size={24} weight={weight} className="text-white/85" /> : null}
-                    <span className="w-full truncate font-mono text-3xs text-white/50">{pn}</span>
+                    {P ? <P size={24} weight={weight} className="text-foreground" /> : null}
+                    <span className="w-full truncate font-mono text-3xs text-muted-foreground">
+                      {pn}
+                    </span>
                   </button>
                 );
               })}
               {pickerResults.length === 0 && (
-                <p className="col-span-full py-8 text-center text-sm text-white/40">
+                <p className="col-span-full py-8 text-center text-sm text-muted-foreground">
                   Nenhum Phosphor bate com "{pickerQuery}".
                 </p>
               )}

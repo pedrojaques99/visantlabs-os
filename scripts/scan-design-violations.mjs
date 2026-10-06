@@ -12,6 +12,21 @@
  *   node scripts/scan-design-violations.mjs --report     # write JSON to dist/
  *   node scripts/scan-design-violations.mjs --summary    # counts only
  *   node scripts/scan-design-violations.mjs --no-fail    # always exit 0
+ *   node scripts/scan-design-violations.mjs --all        # list every location (default: 5 per rule)
+ *   node scripts/scan-design-violations.mjs --self-test  # lock the written-exception contract
+ *
+ * Written exception (same contract as the visant-killer ruido-scan):
+ *
+ *   // EXCEÇÃO ao audit:design/<rule>: <why this line is legitimate>
+ *
+ * anywhere in the 8 lines above the finding (or on the same line) frees that
+ * finding, and --fix leaves that line alone. No reason after the colon = not
+ * an exception. For a whole file (a token table that feeds canvas 2D, say):
+ *
+ *   // audit:design-ignore-file: <rule> — <why>
+ *
+ * A mute allowlist entry hides the next case; a written reason is read by the
+ * next person exactly where the doubt shows up.
  */
 
 import { readdirSync, readFileSync, writeFileSync, statSync, mkdirSync, existsSync } from 'fs';
@@ -25,6 +40,8 @@ const FIX_ALL = ARGS.has('--fix-all');
 const REPORT_MODE = ARGS.has('--report');
 const SUMMARY_MODE = ARGS.has('--summary');
 const NO_FAIL = ARGS.has('--no-fail');
+const LIST_ALL = ARGS.has('--all');
+const SELF_TEST = ARGS.has('--self-test');
 
 const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'build', '.next', '__tests__', 'test']);
 const SCAN_EXTENSIONS = new Set(['.tsx', '.ts', '.jsx', '.js']);
@@ -73,6 +90,37 @@ function isAllowlisted(relPath, ruleId) {
 
 const ERROR = 'error';
 const WARN = 'warn';
+
+// ─── Written exceptions ───────────────────────────────────────────────────────
+// Window of 8 lines above the finding: a block comment explaining a decision
+// usually runs 4-5 lines and sits right above the code it excuses.
+const EXCEPTION_WINDOW = 8;
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** "EXCEÇÃO ao audit:design/<rule>: <reason>" in the window. Reason is mandatory. */
+function hasWrittenException(lines, index, ruleId) {
+  const re = new RegExp(`EXCE(?:Ç|C)(?:Ã|A)O\\s+ao\\s+audit:design/${escapeRe(ruleId)}\\s*:\\s*(.*)`, 'i');
+  const from = Math.max(0, index - EXCEPTION_WINDOW);
+  for (let i = index; i >= from; i--) {
+    const m = lines[i].match(re);
+    if (!m) continue;
+    // The reason may wrap to the next comment line; count letters on both.
+    const tail = `${m[1]} ${(lines[i + 1] ?? '').replace(/^\s*(\/\/|\*|\/\*)/, '')}`;
+    if ((tail.match(/\p{L}/gu) ?? []).length >= 8 && /\p{L}{3,}/u.test(m[1])) return true;
+  }
+  return false;
+}
+
+/** "audit:design-ignore-file: <rule> — <reason>". Reason is mandatory. */
+function hasFileException(src, ruleId) {
+  for (const m of src.matchAll(/audit:design-ignore-file:(.*)/g)) {
+    const i = m[1].indexOf(ruleId);
+    if (i === -1) continue;
+    const reason = m[1].slice(i + ruleId.length).replace(/^[\s—–:-]+/, '');
+    if ((reason.match(/\p{L}/gu) ?? []).length >= 8) return true;
+  }
+  return false;
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // AUTO-FIX MAPS
@@ -516,19 +564,25 @@ function matchesScope(relPath, scope) {
 }
 
 // ─── Scanner ──────────────────────────────────────────────────────────────────
-function scanFile(filePath, rules) {
-  const relPath = relative(ROOT, filePath);
-  let src;
-  try { src = readFileSync(filePath, 'utf8'); } catch { return { violations: [], fixed: false }; }
+function scanFile(filePath, rules, opts = {}) {
+  const relPath = opts.relPath ?? relative(ROOT, filePath);
+  let src = opts.src;
+  if (src == null) {
+    try { src = readFileSync(filePath, 'utf8'); } catch { return { violations: [], excepted: [], fixed: false }; }
+  }
 
   const lines = src.split('\n');
   const violations = [];
-  let modified = src;
+  const excepted = [];
+  // The fix runs line by line so a line with a written exception is never touched.
+  const fixedLines = lines.slice();
   let didFix = false;
 
   for (const rule of rules) {
     if (!matchesScope(relPath, rule.scope)) continue;
     if (isAllowlisted(relPath, rule.id)) continue;
+    const wholeFile = hasFileException(src, rule.id);
+    const skipLine = new Set();
 
     // Detect violations
     lines.forEach((line, i) => {
@@ -538,41 +592,81 @@ function scanFile(filePath, rules) {
 
       if (rule.pattern.test(line)) {
         if (rule.exclude && rule.exclude.test(line)) return;
-        violations.push({
+        const v = {
           file: norm(relPath),
           line: i + 1,
           rule: rule.id,
           severity: rule.severity,
           description: rule.description,
           code: line.trim().slice(0, 140),
-        });
+        };
+        if (wholeFile || hasWrittenException(lines, i, rule.id)) {
+          excepted.push(v);
+          skipLine.add(i);
+          return;
+        }
+        violations.push(v);
       }
     });
 
     // Apply auto-fixes
-    const shouldFix = FIX_MODE && rule.autofix && (rule.severity === ERROR || FIX_ALL);
-    if (shouldFix) {
-      for (const { from, to } of rule.autofix) {
-        const next = modified.replace(from, to);
-        if (next !== modified) { modified = next; didFix = true; }
+    const shouldFix = FIX_MODE && !opts.dryRun && rule.autofix && (rule.severity === ERROR || FIX_ALL);
+    if (shouldFix && !wholeFile) {
+      for (let i = 0; i < fixedLines.length; i++) {
+        if (skipLine.has(i) || hasWrittenException(lines, i, rule.id)) continue;
+        for (const { from, to } of rule.autofix) {
+          const next = fixedLines[i].replace(from, to);
+          if (next !== fixedLines[i]) { fixedLines[i] = next; didFix = true; }
+        }
       }
     }
   }
 
-  if (didFix) writeFileSync(filePath, modified, 'utf8');
-  return { violations, fixed: didFix };
+  if (didFix) writeFileSync(filePath, fixedLines.join('\n'), 'utf8');
+  return { violations, excepted, fixed: didFix };
 }
+
+// ─── Self-test: the written-exception contract ────────────────────────────────
+function runSelfTest() {
+  const rel = 'src/components/__selftest__.tsx';
+  const rgba = "const c = 'rgba(82, 221, 235, 0.3)';";
+  const cases = [
+    { name: 'no exception', src: [rgba], expect: 1 },
+    { name: 'exception with reason, 1 line above', src: ['// EXCEÇÃO ao audit:design/hardcoded-cyan-rgba: vai pro ctx.fillStyle do canvas', rgba], expect: 0 },
+    { name: 'exception with reason, 8 lines above', src: ['// EXCEÇÃO ao audit:design/hardcoded-cyan-rgba: vai pro ctx.fillStyle do canvas', ...Array(7).fill('const x = 1;'), rgba], expect: 0 },
+    { name: 'exception 9 lines above (out of window)', src: ['// EXCEÇÃO ao audit:design/hardcoded-cyan-rgba: vai pro ctx.fillStyle do canvas', ...Array(8).fill('const x = 1;'), rgba], expect: 1 },
+    { name: 'exception without reason', src: ['// EXCEÇÃO ao audit:design/hardcoded-cyan-rgba:', rgba], expect: 1 },
+    { name: 'exception naming another rule', src: ['// EXCEÇÃO ao audit:design/arbitrary-z-index: motivo escrito aqui', rgba], expect: 1 },
+    { name: 'ASCII spelling (EXCECAO) with reason', src: ['/* EXCECAO ao audit:design/hardcoded-cyan-rgba: canvas 2D nao le var() */', rgba], expect: 0 },
+    { name: 'file exception with reason', src: ['// audit:design-ignore-file: hardcoded-cyan-rgba — tokens do canvas 2D, que não resolve var()', 'const a = 1;', ...Array(20).fill('const x = 1;'), rgba], expect: 0 },
+    { name: 'file exception without reason', src: ['// audit:design-ignore-file: hardcoded-cyan-rgba', ...Array(20).fill('const x = 1;'), rgba], expect: 1 },
+  ];
+  let failed = 0;
+  for (const c of cases) {
+    const { violations } = scanFile(rel, RULES, { src: c.src.join('\n'), relPath: rel, dryRun: true });
+    const got = violations.filter((v) => v.rule === 'hardcoded-cyan-rgba').length;
+    const ok = got === c.expect;
+    if (!ok) failed++;
+    console.log(`  ${ok ? 'ok  ' : 'FAIL'}  ${c.name.padEnd(44)} expected ${c.expect}, got ${got}`);
+  }
+  console.log(failed ? `\nself-test: ${failed} case(s) off contract.` : `\nself-test: all ${cases.length} exception cases match.`);
+  process.exit(failed ? 1 : 0);
+}
+if (SELF_TEST) runSelfTest();
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 const files = walkDir(SRC_DIR);
 const allViolations = [];
+const allExcepted = [];
 let filesFixed = 0;
 
 for (const f of files) {
-  const { violations, fixed } = scanFile(f, RULES);
+  const { violations, excepted, fixed } = scanFile(f, RULES);
   allViolations.push(...violations);
+  allExcepted.push(...excepted);
   if (fixed) filesFixed++;
 }
+const exceptedNote = allExcepted.length ? ` (${allExcepted.length} freed by a written exception)` : '';
 
 const errors = allViolations.filter(v => v.severity === ERROR);
 const warns  = allViolations.filter(v => v.severity === WARN);
@@ -588,10 +682,10 @@ const sortedRules = Object.entries(byRule).sort((a, b) => {
 
 // ─── Output ───────────────────────────────────────────────────────────────────
 if (allViolations.length === 0) {
-  console.log('✓ No design system violations found.');
+  console.log(`✓ No design system violations found.${exceptedNote}`);
 } else if (SUMMARY_MODE) {
   const fixableCount = allViolations.filter(v => RULES.find(r => r.id === v.rule)?.autofix).length;
-  console.log(`\n  Design System Audit: ${errors.length} errors, ${warns.length} warnings (${fixableCount} auto-fixable)\n`);
+  console.log(`\n  Design System Audit: ${errors.length} errors, ${warns.length} warnings (${fixableCount} auto-fixable)${exceptedNote}\n`);
   for (const [ruleId, items] of sortedRules) {
     const sev = items[0].severity === ERROR ? '\x1b[31mERR\x1b[0m' : '\x1b[33mWRN\x1b[0m';
     const fixable = RULES.find(r => r.id === ruleId)?.autofix ? ' \x1b[36m[fixable]\x1b[0m' : '';
@@ -599,16 +693,16 @@ if (allViolations.length === 0) {
   }
   console.log('');
 } else {
-  console.log(`\n╔══ Design System Violations: ${errors.length} errors, ${warns.length} warnings ══╗\n`);
+  console.log(`\n╔══ Design System Violations: ${errors.length} errors, ${warns.length} warnings${exceptedNote} ══╗\n`);
   for (const [ruleId, items] of sortedRules) {
     const sev = items[0].severity === ERROR ? '\x1b[31mERR\x1b[0m' : '\x1b[33mWRN\x1b[0m';
     const fixable = RULES.find(r => r.id === ruleId)?.autofix ? ' \x1b[36m[auto-fixable]\x1b[0m' : '';
     console.log(`${sev} [${ruleId}] ${items[0].description}${fixable}`);
-    for (const v of items.slice(0, 5)) {
+    for (const v of LIST_ALL ? items : items.slice(0, 5)) {
       console.log(`  ${v.file}:${v.line}`);
       console.log(`    ${v.code}`);
     }
-    if (items.length > 5) console.log(`  ... and ${items.length - 5} more`);
+    if (!LIST_ALL && items.length > 5) console.log(`  ... and ${items.length - 5} more`);
     console.log('');
   }
 }
@@ -624,7 +718,7 @@ if (REPORT_MODE) {
   const fixableCount = allViolations.filter(v => RULES.find(r => r.id === v.rule)?.autofix).length;
   writeFileSync(reportPath, JSON.stringify({
     generatedAt: new Date().toISOString(),
-    summary: { errors: errors.length, warnings: warns.length, fixable: fixableCount, filesScanned: files.length, filesFixed },
+    summary: { errors: errors.length, warnings: warns.length, excepted: allExcepted.length, fixable: fixableCount, filesScanned: files.length, filesFixed },
     byRule: Object.fromEntries(sortedRules.map(([k, v]) => [k, {
       count: v.length, severity: v[0].severity, fixable: !!RULES.find(r => r.id === k)?.autofix,
       files: [...new Set(v.map(i => i.file))],

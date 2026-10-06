@@ -120,10 +120,8 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                   <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-foreground/5 to-transparent animate-scanline h-20 w-full" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="px-4 py-2 bg-black/60 rounded-full border border-border">
-                        <span className="text-2xs text-muted-foreground">
-                          {t('mockup.analyzing')}
-                        </span>
+                      <div className="px-4 py-2 bg-popover rounded-full border border-border">
+                        <span className="text-2xs text-foreground">{t('mockup.analyzing')}</span>
                       </div>
                     </div>
                   </div>
@@ -141,7 +139,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                     <Button
                       variant="ghost"
                       onClick={() => fileInputRef.current?.click()}
-                      className="absolute top-2 right-2 p-2 bg-neutral-950/70 hover:bg-neutral-950/90 border border-white/10 rounded-md transition-[color,background-color,border-color,opacity,filter] duration-200 hover:border-neutral-700 group/btn z-20 opacity-60 group-hover:opacity-100"
+                      className="absolute top-2 right-2 p-2 bg-neutral-950/70 hover:bg-neutral-950/90 border border-border rounded-md transition-[color,background-color,border-color,opacity,filter] duration-200 hover:border-neutral-700 group/btn z-20 opacity-60 group-hover:opacity-100"
                       title={t('mockup.replaceImage')}
                       aria-label={t('mockup.replaceImage')}
                     >
@@ -164,7 +162,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
             {/* Detected Language Badge */}
             {detectedLanguage && !isAnalyzing && (
               <div className="absolute top-2 left-2 z-20 pointer-events-none">
-                <div className="flex items-center gap-1.5 px-2 py-1 bg-neutral-950/80 rounded border border-white/10 shadow-lg animate-fade-in">
+                <div className="flex items-center gap-1.5 px-2 py-1 bg-neutral-950/80 rounded border border-border shadow-lg animate-fade-in">
                   <div className="w-1.5 h-1.5 rounded-full bg-neutral-400 animate-pulse" />
                   <span className="text-2xs text-neutral-400 ">{detectedLanguage}</span>
                 </div>
@@ -177,7 +175,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                 {referenceImages.map((img, i) => (
                   <div
                     key={i}
-                    className="relative w-12 h-12 rounded-md overflow-hidden border border-white/20 bg-neutral-800 shadow-lg group/ref"
+                    className="relative w-12 h-12 rounded-md overflow-hidden border border-border bg-muted shadow-lg group/ref"
                   >
                     <Thumb
                       src={
@@ -190,6 +188,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                       alt={t('mockup.referenceImageAlt')}
                     />
                     {onReferenceImagesChange && (
+                      // EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia
                       <Button
                         variant="ghost"
                         onClick={() => handleRemoveReference(i)}
@@ -212,13 +211,17 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                       onChange={handleReferenceSelect}
                       className="hidden"
                     />
+                    {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
                     <Button
                       variant="ghost"
                       onClick={() => referenceInputRef.current?.click()}
-                      className="w-12 h-12 rounded-md border border-dashed border-white/20 bg-black/30 hover:bg-black/50 hover:border-neutral-700 flex items-center justify-center transition-[color,background-color,border-color,opacity,filter] duration-200 group/add opacity-70 hover:opacity-100"
+                      className="w-12 h-12 rounded-md border border-dashed border-border bg-black/30 hover:bg-black/50 hover:border-neutral-700 flex items-center justify-center transition-[color,background-color,border-color,opacity,filter] duration-200 group/add opacity-70 hover:opacity-100"
                       title={t('mockup.addReferenceImage')}
                     >
-                      <Plus size={14} className="text-white/60 group-hover/add:text-foreground" />
+                      <Plus
+                        size={14}
+                        className="text-muted-foreground group-hover/add:text-foreground"
+                      />
                     </Button>
                   </>
                 )}

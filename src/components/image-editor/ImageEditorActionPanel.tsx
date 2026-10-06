@@ -4,6 +4,7 @@ import { useImageEditorStore, type InpaintMode } from '@/stores/imageEditorStore
 import { useImageEditorActions } from '@/hooks/image-editor/useImageEditorActions';
 import { IMAGE_EDITOR } from '@/constants/imageEditorTokens';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
 // label/desc em imageEditor.modes.<id>.*
 const MODES: InpaintMode[] = ['replace', 'remove', 'retouch'];
@@ -44,7 +45,7 @@ export const ImageEditorActionPanel: React.FC<Props> = ({ imageUrl, imageWidth, 
   return (
     <div
       className={cn(
-        'flex items-center gap-3 px-4 py-3 border-t border-white/10',
+        'flex items-center gap-3 px-4 py-3 border-t border-border',
         IMAGE_EDITOR.toolbar.bg
       )}
     >
@@ -58,7 +59,7 @@ export const ImageEditorActionPanel: React.FC<Props> = ({ imageUrl, imageWidth, 
                 onClick={() => setActiveMode(mode)}
                 disabled={isGenerating}
                 className={cn(
-                  'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
+                  'px-2.5 py-1 rounded-xl text-xs font-medium transition-colors',
                   activeMode === mode
                     ? IMAGE_EDITOR.toolbar.activeTool
                     : IMAGE_EDITOR.toolbar.inactiveTool
@@ -68,7 +69,7 @@ export const ImageEditorActionPanel: React.FC<Props> = ({ imageUrl, imageWidth, 
               </button>
             ))}
           </div>
-          <span className="text-2xs text-neutral-500 pl-0.5">
+          <span className="text-2xs text-muted-foreground pl-0.5">
             {t(`imageEditor.modes.${activeMode}.desc`)}
           </span>
         </div>
@@ -94,9 +95,9 @@ export const ImageEditorActionPanel: React.FC<Props> = ({ imageUrl, imageWidth, 
           }
           disabled={isGenerating}
           className={cn(
-            'flex-1 px-3 py-2 rounded-lg text-sm bg-neutral-800/50 border border-white/10',
-            'text-white placeholder-neutral-500 outline-none',
-            'focus:border-neutral-600 transition-colors',
+            'flex-1 px-3 py-2 rounded-xl text-sm bg-muted border border-border',
+            'text-foreground placeholder:text-muted-foreground outline-none',
+            'focus:border-ring transition-colors',
             'disabled:opacity-50'
           )}
         />
@@ -104,24 +105,22 @@ export const ImageEditorActionPanel: React.FC<Props> = ({ imageUrl, imageWidth, 
 
       {/* Remove BG info */}
       {activeAction === 'remove-bg' && (
-        <span className="flex-1 text-xs text-neutral-400">{t('imageEditor.removeBgInfo')}</span>
+        <span className="flex-1 text-xs text-muted-foreground">
+          {t('imageEditor.removeBgInfo')}
+        </span>
       )}
 
       {/* Generate button */}
-      <button
+      <Button
+        type="button"
+        variant="primary"
         onClick={handleGenerate}
         disabled={!canGenerate || isGenerating}
-        className={cn(
-          'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-[color,background-color,border-color,opacity]',
-          'bg-brand-cyan text-black border border-brand-cyan',
-          'hover:bg-brand-cyan/90',
-          'disabled:opacity-30 disabled:cursor-not-allowed',
-          isGenerating && 'animate-pulse'
-        )}
+        className={cn(isGenerating && 'animate-pulse')}
       >
         <Zap size={14} />
         {isGenerating ? t('imageEditor.generating') : t('imageEditor.generate')}
-      </button>
+      </Button>
     </div>
   );
 };

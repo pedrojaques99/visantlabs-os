@@ -107,7 +107,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
           src={uploadedImage?.url || uploadedImage?.base64 || undefined}
           alt={t('mockup.uploadedDesignAlt')}
           fallbackIcon={Pickaxe}
-          className="w-11 h-11 rounded-2xl object-cover border border-border"
+          className="w-11 h-11 rounded-xl object-cover border border-border"
         />
 
         <div className="flex-1 flex flex-col items-center gap-7">
@@ -116,7 +116,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
             onClick={() => onSurpriseMe(true)}
             disabled={isGeneratingPrompt || isOutputsLoading}
             className={cn(
-              'w-11 h-11 rounded-2xl flex items-center justify-center border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'w-11 h-11 rounded-xl flex items-center justify-center border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               isSurpriseMeMode
                 ? 'bg-brand-cyan/10 border-brand-cyan/40 text-foreground'
                 : 'text-neutral-500 hover:text-foreground border-transparent hover:bg-muted'
@@ -132,7 +132,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
             onClick={onGenerateClick}
             disabled={isOutputsLoading}
             className={cn(
-              'w-12 h-12 rounded-2xl flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'w-12 h-12 rounded-xl flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               isOutputsLoading
                 ? 'bg-neutral-800 text-neutral-600 border border-neutral-800'
                 : isPromptReady

@@ -9,7 +9,7 @@ import { Thumb } from '@/components/ui/Thumb';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const STATUS_ICON: Record<BatchResult['status'], React.ReactNode> = {
-  pending: <Clock size={9} className="text-white/30" />,
+  pending: <Clock size={9} className="text-muted-foreground" />,
   running: <GlitchLoader size={9} />,
   done: <CheckCircle2 size={9} className="text-success" />,
   error: <XCircle size={9} className="text-destructive" />,
@@ -73,18 +73,18 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
       />
 
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-white/10">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
         <Play size={12} className="text-muted-foreground shrink-0" />
-        <span className="text-xs font-semibold text-white/70">
+        <span className="text-xs font-medium text-muted-foreground">
           {t('canvasNodes.batchRunnerNode.title')}
         </span>
         <span
           className={cn(
             'ml-auto text-2xs px-1.5 py-0.5 rounded font-medium',
-            status === 'idle' && 'text-white/30 bg-white/5',
-            status === 'running' && 'text-foreground bg-white/10',
+            status === 'idle' && 'text-muted-foreground bg-muted',
+            status === 'running' && 'text-foreground bg-accent',
             status === 'done' && 'text-success bg-success/10',
-            status === 'cancelled' && 'text-orange-400 bg-orange-400/10'
+            status === 'cancelled' && 'text-warning bg-warning/10'
           )}
         >
           {t(`canvasNodes.batchRunnerNode.status.${status}`)}
@@ -94,15 +94,19 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
       {/* Connection hints */}
       {status === 'idle' && total === 0 && (
         <div className="px-3 py-2 space-y-1">
-          <p className="text-2xs text-white/40">{t('canvasNodes.batchRunnerNode.connectData')}</p>
-          <p className="text-2xs text-white/40">{t('canvasNodes.batchRunnerNode.connectPrompt')}</p>
+          <p className="text-2xs text-muted-foreground">
+            {t('canvasNodes.batchRunnerNode.connectData')}
+          </p>
+          <p className="text-2xs text-muted-foreground">
+            {t('canvasNodes.batchRunnerNode.connectPrompt')}
+          </p>
         </div>
       )}
 
       {/* Progress */}
       {total > 0 && (
         <div className="px-3 pt-2 pb-1">
-          <div className="flex justify-between text-2xs text-white/40 mb-1">
+          <div className="flex justify-between text-2xs text-muted-foreground mb-1">
             <span>
               {t('canvasNodes.batchRunnerNode.progress', {
                 done,
@@ -112,9 +116,9 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
             </span>
             <span>{progress}%</span>
           </div>
-          <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+          <div className="h-1 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-white/40 transition-[width] duration-300 rounded-full"
+              className="h-full bg-muted-foreground transition-[width] duration-300 rounded-full"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -127,10 +131,10 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
           {results.map((r) => (
             <div key={r.rowIndex} className="flex items-center gap-2">
               {STATUS_ICON[r.status]}
-              <span className="text-2xs text-white/40 flex-1 truncate">
+              <span className="text-2xs text-muted-foreground flex-1 truncate">
                 {t('canvasNodes.batchRunnerNode.row', { n: r.rowIndex + 1 })}
                 {r.rowData && Object.values(r.rowData)[0] ? (
-                  <span className="ml-1.5 text-white/25">
+                  <span className="ml-1.5 text-muted-foreground">
                     {String(Object.values(r.rowData)[0]).slice(0, 24)}
                   </span>
                 ) : null}
@@ -140,7 +144,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
                   src={r.outputImageUrl}
                   alt=""
                   aspectRatio={1}
-                  className="w-6 h-6 rounded border-node border-white/10"
+                  className="w-6 h-6 rounded border-node border-border"
                   fallbackClassName="[&>svg]:w-3 [&>svg]:h-3"
                 />
               )}
@@ -181,7 +185,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
           <>
             <button
               onClick={handleReset}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded py-1.5 bg-white/5 hover:bg-white/10 text-white/50 text-2xs transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 rounded py-1.5 bg-muted hover:bg-accent text-muted-foreground text-2xs transition-colors"
             >
               <RotateCcw size={10} />
               {t('common.reset')}

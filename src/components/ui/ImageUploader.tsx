@@ -169,10 +169,10 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         data-tutorial-target="upload-image"
-        className={`relative block w-full p-4 bg-neutral-950/95 border rounded-md cursor-pointer transition-colors duration-300 group ${
+        className={`relative block w-full p-4 bg-background/95 border rounded-md cursor-pointer transition-colors duration-300 group ${
           isDragging
-            ? 'border-dashed border-2 border-neutral-600 bg-neutral-800/30 shadow-2xl shadow-black/10'
-            : 'border-neutral-800 hover:border-neutral-800/20 hover:text-neutral-300'
+            ? 'border-dashed border-2 border-ring bg-muted/30 shadow-2xl shadow-black/10'
+            : 'border-border hover:border-border-hover hover:text-foreground'
         } ${isProcessing ? 'cursor-wait' : ''}`}
       >
         <input
@@ -189,21 +189,22 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             <>
               <GlitchLoader size={24} color="currentColor" />
               <div className="text-left min-w-0">
-                <p className="text-md font-semibold text-neutral-400">
+                <p className="text-md font-medium text-muted-foreground">
                   {t('upload.processingImage')}
                 </p>
-                <p className="text-xs text-neutral-500">{t('upload.pleaseWait')}</p>
+                <p className="text-xs text-muted-foreground">{t('upload.pleaseWait')}</p>
               </div>
             </>
           )}
           {!isProcessing && !isCheckingAuth && !isVerifyingAuth && isDragging && (
             <>
-              <UploadCloud size={32} className="text-neutral-400 transition-colors flex-shrink-0" />
+              <UploadCloud
+                size={32}
+                className="text-muted-foreground transition-colors flex-shrink-0"
+              />
               <div className="text-left min-w-0">
-                <p className="text-md font-semibold text-neutral-300">
-                  {t('upload.dropImageHere')}
-                </p>
-                <p className="text-xs text-neutral-500">{t('upload.releaseToUpload')}</p>
+                <p className="text-md font-medium text-foreground">{t('upload.dropImageHere')}</p>
+                <p className="text-xs text-muted-foreground">{t('upload.releaseToUpload')}</p>
               </div>
             </>
           )}
@@ -211,13 +212,13 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             <>
               <UploadCloud
                 size={32}
-                className="text-neutral-600 group-hover:text-neutral-400 transition-colors flex-shrink-0"
+                className="text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0"
               />
               <div className="text-left min-w-0">
-                <p className="text-md font-semibold text-neutral-400">
+                <p className="text-md font-medium text-muted-foreground">
                   {t('upload.clickToUpload')}
                 </p>
-                <p className="text-xs text-neutral-500">{t('upload.supportedFormats')}</p>
+                <p className="text-xs text-muted-foreground">{t('upload.supportedFormats')}</p>
               </div>
             </>
           )}

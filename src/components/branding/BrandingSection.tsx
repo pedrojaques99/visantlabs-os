@@ -133,9 +133,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
         </h2>
       )}
       {!isComplete && !hasAnalyzed && (
-        <p className={`text-xs mb-3 ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
-          {t('mockup.brandingComment')}
-        </p>
+        <p className="text-xs mb-3 text-muted-foreground">{t('mockup.brandingComment')}</p>
       )}
       <div>
         <div
@@ -159,8 +157,8 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
                   !hasAnalyzed && 'cursor-pointer',
                   isSelected
                     ? theme === 'dark'
-                      ? 'bg-brand-cyan/20 text-brand-cyan border-neutral-600/30 shadow-sm shadow-neutral-600/10'
-                      : 'bg-brand-cyan/20 text-neutral-800 border-neutral-600/30 shadow-sm shadow-neutral-600/10'
+                      ? 'bg-neutral-700 text-foreground border-neutral-500'
+                      : 'bg-neutral-200 text-neutral-900 border-neutral-400'
                     : theme === 'dark'
                       ? isSuggested
                         ? 'bg-neutral-800/80 text-neutral-300 border-neutral-600 hover:border-neutral-500 hover:text-white'

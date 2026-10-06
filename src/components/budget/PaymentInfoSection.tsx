@@ -74,7 +74,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-neutral-200">{t('budget.paymentInfo')}</h3>
+      <h3 className="text-lg font-medium text-foreground">{t('budget.paymentInfo')}</h3>
 
       <div className="space-y-4 p-4 bg-neutral-900 border border-neutral-800 rounded-xl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -171,7 +171,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
       </div>
 
       <div className="space-y-4">
-        <h4 className="text-md font-semibold text-neutral-200">{t('budget.paymentMethods')}</h4>
+        <h4 className="text-md font-medium text-foreground">{t('budget.paymentMethods')}</h4>
 
         {paymentInfo.paymentMethods.length === 0 ? (
           <div className="text-center py-4 text-neutral-500 text-sm">

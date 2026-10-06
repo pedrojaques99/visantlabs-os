@@ -254,7 +254,7 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
               className={cn(
                 'px-2 py-0.5 rounded text-2xs border-node transition-colors',
                 maskMode
-                  ? 'bg-white/10 text-white border-white/20'
+                  ? 'bg-accent text-foreground border-border-hover'
                   : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
               )}
             >
@@ -268,7 +268,7 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
                   className={cn(
                     'px-2 py-0.5 rounded text-2xs border-node transition-colors',
                     blendMode === m.id
-                      ? 'bg-white/10 text-white border-white/20'
+                      ? 'bg-accent text-foreground border-border-hover'
                       : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
                   )}
                 >
@@ -309,7 +309,7 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
             className={cn(
               'w-full px-2 py-1 rounded text-2xs border-node transition-colors text-center',
               tileMode
-                ? 'bg-white/10 text-white border-white/20'
+                ? 'bg-accent text-foreground border-border-hover'
                 : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
             )}
           >

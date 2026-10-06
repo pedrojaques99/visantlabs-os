@@ -62,7 +62,7 @@ export const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
 
       {/* Bullet indicator */}
       <div className="absolute top-1 left-1 w-5 h-5 bg-foreground rounded-md flex items-center justify-center z-10">
-        <span className="text-2xs font-bold tabular-nums text-background">{index + 1}</span>
+        <span className="text-2xs font-medium tabular-nums text-background">{index + 1}</span>
       </div>
 
       {/* Remove button (if provided) */}

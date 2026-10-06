@@ -60,7 +60,7 @@ export const ImageEditorToolbar: React.FC = () => {
           key={action.id}
           onClick={() => setActiveAction(action.id)}
           className={cn(
-            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors',
+            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors',
             activeAction === action.id
               ? IMAGE_EDITOR.toolbar.activeTool
               : IMAGE_EDITOR.toolbar.inactiveTool
@@ -82,7 +82,7 @@ export const ImageEditorToolbar: React.FC = () => {
               key={tool.id}
               onClick={() => setActiveTool(tool.id)}
               className={cn(
-                'p-1.5 rounded-lg transition-colors',
+                'p-1.5 rounded-xl transition-colors',
                 activeTool === tool.id
                   ? IMAGE_EDITOR.toolbar.activeTool
                   : IMAGE_EDITOR.toolbar.inactiveTool
@@ -121,7 +121,7 @@ export const ImageEditorToolbar: React.FC = () => {
             onClick={undoMask}
             disabled={maskOperations.length === 0}
             className={cn(
-              'px-2 py-1 rounded-lg text-xs transition-colors',
+              'px-2 py-1 rounded-xl text-xs transition-colors',
               IMAGE_EDITOR.toolbar.inactiveTool,
               'disabled:opacity-30'
             )}
@@ -132,7 +132,7 @@ export const ImageEditorToolbar: React.FC = () => {
             onClick={clearMask}
             disabled={maskOperations.length === 0}
             className={cn(
-              'px-2 py-1 rounded-lg text-xs transition-colors',
+              'px-2 py-1 rounded-xl text-xs transition-colors',
               IMAGE_EDITOR.toolbar.inactiveTool,
               'disabled:opacity-30'
             )}

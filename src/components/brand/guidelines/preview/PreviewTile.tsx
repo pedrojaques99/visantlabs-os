@@ -40,7 +40,7 @@ export interface TileItem {
 
 const SWATCH_KEYS = ['bg', 'primary', 'accent', 'text'] as const;
 const ICON_BTN =
-  'flex items-center justify-center w-7 h-7 rounded-lg bg-[var(--brand-surface)] border border-[var(--brand-text)]/10 text-[var(--brand-text)]/60 hover:text-[var(--brand-text)] hover:bg-[var(--brand-surface)] transition-colors';
+  'flex items-center justify-center w-7 h-7 rounded-xl bg-[var(--brand-surface)] border border-[var(--brand-text)]/10 text-[var(--brand-text)]/60 hover:text-[var(--brand-text)] hover:bg-[var(--brand-surface)] transition-colors';
 
 export const PreviewTile: React.FC<{ item: TileItem; tokens: MockTokens; brandName: string }> = ({
   item,
@@ -82,7 +82,7 @@ export const PreviewTile: React.FC<{ item: TileItem; tokens: MockTokens; brandNa
 
   const label = 'text-xs text-[var(--brand-text)]/60';
   const input =
-    'w-full rounded-lg border border-[var(--brand-text)]/12 bg-transparent px-3 py-2 text-sm text-[var(--brand-text)] placeholder:text-[var(--brand-text)]/30 focus:border-[var(--accent)]/50 focus:outline-none transition-colors';
+    'w-full rounded-xl border border-[var(--brand-text)]/12 bg-transparent px-3 py-2 text-sm text-[var(--brand-text)] placeholder:text-[var(--brand-text)]/30 focus:border-[var(--accent)]/50 focus:outline-none transition-colors';
 
   const swatches = (
     <span className="flex items-center gap-0.5">
@@ -120,7 +120,7 @@ export const PreviewTile: React.FC<{ item: TileItem; tokens: MockTokens; brandNa
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-40px' }}
         transition={{ duration: 0.4 }}
-        className="group relative rounded-2xl border border-[var(--brand-text)]/8 bg-[var(--brand-surface)]/10 p-3 cursor-zoom-in transition-colors hover:border-[var(--brand-text)]/20"
+        className="group relative rounded-xl border border-[var(--brand-text)]/8 bg-[var(--brand-surface)]/10 p-3 cursor-zoom-in transition-colors hover:border-[var(--brand-text)]/20"
         onClick={() => setFocused(true)}
       >
         <div className="overflow-hidden rounded-xl">
@@ -216,7 +216,7 @@ export const PreviewTile: React.FC<{ item: TileItem; tokens: MockTokens; brandNa
                       <button
                         type="button"
                         onClick={() => setVariant((v) => v + 1)}
-                        className="flex items-center gap-1.5 rounded-lg border border-[var(--brand-text)]/15 px-2.5 py-1 text-xs tabular-nums text-[var(--brand-text)]/60 transition-colors hover:bg-[var(--brand-text)]/5 hover:text-[var(--brand-text)]"
+                        className="flex items-center gap-1.5 rounded-xl border border-[var(--brand-text)]/15 px-2.5 py-1 text-xs tabular-nums text-[var(--brand-text)]/60 transition-colors hover:bg-[var(--brand-text)]/5 hover:text-[var(--brand-text)]"
                       >
                         {swatches}
                         <Shuffle size={11} /> {idx + 1}/{combos.length}
@@ -260,7 +260,7 @@ export const PreviewTile: React.FC<{ item: TileItem; tokens: MockTokens; brandNa
                       <button
                         type="button"
                         onClick={() => setOverrides({})}
-                        className="flex items-center gap-1.5 self-start rounded-lg px-2.5 py-1 text-xs text-[var(--brand-text)]/60 transition-colors hover:text-[var(--brand-text)]"
+                        className="flex items-center gap-1.5 self-start rounded-xl px-2.5 py-1 text-xs text-[var(--brand-text)]/60 transition-colors hover:text-[var(--brand-text)]"
                       >
                         <RotateCcw size={11} /> Resetar textos
                       </button>

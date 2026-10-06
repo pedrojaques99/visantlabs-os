@@ -84,7 +84,7 @@ const CreativeProjectCard: React.FC<{
       <Thumb
         src={project.imageUrl}
         alt={project.prompt}
-        className="rounded-lg max-h-[500px] w-full object-contain bg-black/20 cursor-pointer hover:opacity-90 transition-opacity"
+        className="rounded-xl max-h-[500px] w-full object-contain bg-muted cursor-pointer hover:opacity-90 transition-opacity"
         onClick={() => onViewImage(project.imageUrl)}
       />
       <div className="flex items-start justify-between gap-2 text-xs">
@@ -186,7 +186,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
 
       <div
         className={cn(
-          'max-w-[85%] md:max-w-[80%] rounded-2xl p-5 text-sm leading-relaxed relative group transition-colors border',
+          'max-w-[85%] md:max-w-[80%] rounded-xl p-5 text-sm leading-relaxed relative group transition-colors border',
           !isAssistant
             ? 'bg-accent border-border text-foreground'
             : 'bg-muted border-border text-muted-foreground'
@@ -216,11 +216,11 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                     <img
                       src={attachment.dataUrl}
                       alt={attachment.name}
-                      className="rounded-lg max-h-[500px] w-full object-contain bg-black/20 cursor-pointer hover:opacity-90 transition-opacity"
+                      className="rounded-xl max-h-[500px] w-full object-contain bg-muted cursor-pointer hover:opacity-90 transition-opacity"
                       onClick={() => setViewerImage(attachment.dataUrl)}
                     />
                   ) : (
-                    <div className="bg-muted rounded-lg p-3 flex items-center gap-2 text-xs hover:bg-accent transition-colors">
+                    <div className="bg-muted rounded-xl p-3 flex items-center gap-2 text-xs hover:bg-accent transition-colors">
                       <FileText size={14} className="text-warning" />
                       <span className="truncate">{attachment.name}</span>
                     </div>
@@ -260,7 +260,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                     type="button"
                     onClick={() => hasDetail && setExpandedToolId(isExpanded ? null : call.id)}
                     className={cn(
-                      'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg border text-2xs font-mono transition-colors',
+                      'w-full flex items-center gap-2.5 px-3 py-2 rounded-xl border text-2xs font-mono transition-colors',
                       isError
                         ? 'bg-destructive/5 border-destructive/20 text-destructive'
                         : isRunning
@@ -301,7 +301,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                   </button>
 
                   {isExpanded && call.args && (
-                    <div className="mt-1 ml-3 px-3 py-2.5 rounded-lg bg-muted border border-border text-2xs space-y-2">
+                    <div className="mt-1 ml-3 px-3 py-2.5 rounded-xl bg-muted border border-border text-2xs space-y-2">
                       {call.name === 'propose_creative_plan' && (
                         <>
                           {call.args.summary && (
@@ -309,7 +309,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                           )}
                           {call.args.proposals?.length > 0 && (
                             <div className="space-y-1">
-                              <p className="text-2xs font-semibold text-muted-foreground">
+                              <p className="text-2xs font-medium text-muted-foreground">
                                 Variações
                               </p>
                               {call.args.proposals.map((p: any, i: number) => (
@@ -331,7 +331,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                           )}
                           {call.args.questions?.length > 0 && (
                             <div className="space-y-0.5">
-                              <p className="text-2xs font-semibold text-muted-foreground">
+                              <p className="text-2xs font-medium text-muted-foreground">
                                 Perguntas feitas
                               </p>
                               <ul className="list-disc pl-4 text-muted-foreground">

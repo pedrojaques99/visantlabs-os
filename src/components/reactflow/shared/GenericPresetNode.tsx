@@ -219,7 +219,7 @@ export function createGenericPresetNode<
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-mono truncate text-foreground font-semibold">
+              <div className="text-xs font-mono truncate text-foreground font-medium">
                 {selectedPreset?.name || t(config.translationKeys.selectPreset)}
               </div>
               {selectedPreset?.description && (
@@ -276,10 +276,10 @@ export function createGenericPresetNode<
             ) : (
               <div className="flex items-center justify-center gap-2">
                 <Icon size={14} className="group-hover/gen:rotate-12 transition-transform" />
-                <span className="font-semibold tracking-tight">
+                <span className="font-medium tracking-tight">
                   {t(config.translationKeys.generateButton)}
                 </span>
-                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-2xs text-foreground/80">
+                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-background/50 text-2xs text-foreground">
                   <Diamond size={10} className="opacity-50 fill-current" />
                   {getCreditsRequired('mockup')}
                 </div>

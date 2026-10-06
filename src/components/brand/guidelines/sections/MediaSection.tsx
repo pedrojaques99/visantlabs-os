@@ -185,10 +185,11 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
                 {hits.map((h) => (
                   <div
                     key={h.id}
-                    className="relative aspect-square rounded-md overflow-hidden border border-neutral-800 group"
+                    className="relative aspect-square rounded-md overflow-hidden border border-border group"
                     title={h.label || undefined}
                   >
                     <Thumb src={h.url} alt={h.label || ''} className="w-full h-full object-cover" />
+                    {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
                     <span className="absolute bottom-1 right-1 px-1 rounded bg-black/70 text-2xs font-mono text-white/80">
                       {Math.round(h.score * 100)}%
                     </span>

@@ -824,11 +824,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
             role="group"
             aria-label={t('branding.layout.newColumn')}
           >
-            <div
-              className={`flex-1 flex items-center justify-center text-sm ${
-                theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
-              }`}
-            >
+            <div className="flex-1 flex items-center justify-center text-sm text-foreground">
               <div className="flex flex-col items-center gap-2 text-sm font-medium text-foreground">
                 <Plus size={20} />
                 {t('branding.layout.newColumn')}

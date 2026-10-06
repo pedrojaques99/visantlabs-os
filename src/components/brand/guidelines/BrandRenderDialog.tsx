@@ -154,7 +154,7 @@ export const BrandRenderDialog: React.FC<Props> = ({
                         key={p.id}
                         onClick={() => setTemplate(p.id)}
                         className={cn(
-                          'px-2.5 py-1 rounded-lg text-xs border transition-colors',
+                          'px-2.5 py-1 rounded-xl text-xs border transition-colors',
                           template === p.id
                             ? 'border-ring bg-muted text-foreground'
                             : 'border-border text-muted-foreground hover:bg-muted/50'
@@ -219,7 +219,7 @@ export const BrandRenderDialog: React.FC<Props> = ({
 
           {view === 'result' && result && (
             <div className="space-y-4">
-              <div className="rounded-lg border border-border overflow-hidden bg-muted/40">
+              <div className="rounded-xl border border-border overflow-hidden bg-muted/40">
                 <Thumb src={result.url} alt={h1} className="w-full" />
               </div>
               <div className="flex items-center justify-between">

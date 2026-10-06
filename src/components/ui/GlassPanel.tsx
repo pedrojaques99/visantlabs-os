@@ -33,7 +33,7 @@ export const GlassPanel = React.forwardRef<HTMLDivElement, GlassPanelProps>(
         className={cn(
           // 300ms é o TETO pra UI. Num painel grande a borda demora a assentar e o
           // hover parece um flash. --dur-base (200ms) é o default do craft.
-          'border rounded-lg flex flex-col relative transition-colors [transition-duration:var(--dur-base)]',
+          'border rounded-xl flex flex-col relative transition-colors [transition-duration:var(--dur-base)]',
           intensityStyles[intensity],
           {
             'p-0': padding === 'none',
