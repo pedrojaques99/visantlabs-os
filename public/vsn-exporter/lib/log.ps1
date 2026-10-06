@@ -59,6 +59,9 @@ function Show-Resumo {
             Write-Host "    $($k.PadRight(14)) $($c[$k])" -ForegroundColor White
         }
     }
+    Write-Host "    --------------------------------" -ForegroundColor Gray
+    Write-Host "    Total operacoes:  $total" -ForegroundColor Cyan
+    if ($DryRun) { Write-Host "    (modo simulacao - nada foi alterado)" -ForegroundColor DarkYellow }
     Write-Host "    ================================" -ForegroundColor Cyan
 
     if ($script:LogFile -and (Test-Path $script:LogFile)) {

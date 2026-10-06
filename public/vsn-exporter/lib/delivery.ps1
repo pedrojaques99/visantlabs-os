@@ -51,23 +51,3 @@ function Export-Package {
         Write-Host "    [DRY-RUN] Criaria ZIP em $zipPath" -ForegroundColor DarkYellow
     }
 }
-
-function Show-Resumo {
-    $total = ($script:Counters.Values | Measure-Object -Sum).Sum
-    Write-Host ""
-    Write-Host "    ============ RESUMO ============" -ForegroundColor Cyan
-    if ($script:Counters.Avatar -gt 0)       { Write-Host "    Avatares/Icons:   $($script:Counters.Avatar)" -ForegroundColor White }
-    if ($script:Counters.Transparente -gt 0) { Write-Host "    Transparentes:    $($script:Counters.Transparente)" -ForegroundColor White }
-    if ($script:Counters.Vetor -gt 0)        { Write-Host "    Vetores:          $($script:Counters.Vetor)" -ForegroundColor White }
-    if ($script:Counters.Extensao -gt 0)     { Write-Host "    Por extensao:     $($script:Counters.Extensao)" -ForegroundColor White }
-    if ($script:Counters.Separado -gt 0)     { Write-Host "    PDFs decompostos: $($script:Counters.Separado)" -ForegroundColor White }
-    if ($script:Counters.PNG -gt 0)          { Write-Host "    PNGs:             $($script:Counters.PNG)" -ForegroundColor White }
-    if ($script:Counters.JPG -gt 0)          { Write-Host "    JPGs:             $($script:Counters.JPG)" -ForegroundColor White }
-    if ($script:Counters.Webp -gt 0)         { Write-Host "    WebPs:            $($script:Counters.Webp)" -ForegroundColor White }
-    if ($script:Counters.OCR -gt 0)          { Write-Host "    OCRs:             $($script:Counters.OCR)" -ForegroundColor White }
-    if ($script:Counters.PDFImg -gt 0)       { Write-Host "    PDF Imagens:      $($script:Counters.PDFImg)" -ForegroundColor White }
-    Write-Host "    --------------------------------" -ForegroundColor Gray
-    Write-Host "    Total operacoes:  $total" -ForegroundColor Cyan
-    if ($DryRun) { Write-Host "    (modo simulacao - nada foi alterado)" -ForegroundColor DarkYellow }
-    Write-Host "    ================================" -ForegroundColor Cyan
-}

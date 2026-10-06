@@ -25,13 +25,14 @@ $script:RepoRoot = try { (Resolve-Path (Join-Path $PSScriptRoot "..\..") -ErrorA
 $script:ScriptsDir = Join-Path $script:RepoRoot "scripts"
 
 # --- MODULES ---
-# Dot-source via escaped path to handle special chars (® in Copilot®)
+# Dot-source direto: $modPath como variavel ja lida com espaco e acento no caminho.
 $script:LibDir = Join-Path $PSScriptRoot "lib"
 foreach ($mod in @('log','tools','organize','pdf','image','delivery')) {
     $modPath = Join-Path $script:LibDir "$mod.ps1"
     if (Test-Path -LiteralPath $modPath) {
-        $escaped = $modPath -replace "'", "''"
-        Invoke-Expression ". '$escaped'"
+        . $modPath
+    } else {
+        Write-Host "    [!] Modulo ausente: lib\$mod.ps1 - itens desse grupo vao falhar" -ForegroundColor DarkYellow
     }
 }
 
@@ -148,38 +149,34 @@ if ($ToJPG) {
 
 function Get-MenuItems {
     @(
-        @{ Label = "1. Avatares/Icons/Square";   Group = "ORGANIZACAO"; Action = { Invoke-Glitch "Organizing" { Group-Avatar } } },
-        @{ Label = "2. Extrair Transparentes";   Group = "ORGANIZACAO"; Action = { Invoke-Glitch "Extracting" { Export-Transparentes } } },
-        @{ Label = "3. Separar por Extensao";    Group = "ORGANIZACAO"; Action = {
+        @{ Label = "Avatares/Icons/Square";   Group = "ORGANIZACAO"; Action = { Invoke-Glitch "Organizing" { Group-Avatar } } },
+        @{ Label = "Extrair Transparentes";   Group = "ORGANIZACAO"; Action = { Invoke-Glitch "Extracting" { Export-Transparentes } } },
+        @{ Label = "Separar por Extensao";    Group = "ORGANIZACAO"; Action = {
             $r = Read-Host "    Recursivo? Processa subpastas (s/N)"
             $rec = $r -match '^[sSyY]'
             Invoke-Glitch "Sorting" { Group-PorExtensao -Recurse:$rec }
         } },
-        @{ Label = "4. Agrupar Pasta /Vetor";    Group = "ORGANIZACAO"; Action = { Invoke-Glitch "Grouping" { Group-Vetor } } },
-        @{ Label = "5. Extrair PNGs para Raiz";  Group = "ORGANIZACAO"; Action = { Invoke-Glitch "Cleaning" { Export-PNGsParaRaiz } } },
-        @{ Label = "6. ORGANIZAR TUDO";          Group = "ORGANIZACAO"; Action = {
+        @{ Label = "Agrupar Pasta /Vetor";    Group = "ORGANIZACAO"; Action = { Invoke-Glitch "Grouping" { Group-Vetor } } },
+        @{ Label = "Extrair PNGs para Raiz";  Group = "ORGANIZACAO"; Action = { Invoke-Glitch "Cleaning" { Export-PNGsParaRaiz } } },
+        @{ Label = "ORGANIZAR TUDO";          Group = "ORGANIZACAO"; Action = {
             Invoke-Glitch "Full_Sync" { Group-Avatar; Export-Transparentes; Group-Vetor -Recurse; Export-PNGsParaRaiz }
         } },
 
-        @{ Label = "7. Unificar PDFs (Merge)";   Group = "PDF & VETOR"; Action = { Invoke-Glitch "Merging" { Merge-PDFs } } },
-        @{ Label = "8. Decompor Paginas PDF";    Group = "PDF & VETOR"; Action = { Invoke-Glitch "Splitting" { Split-PDFs } } },
-        @{ Label = "9. PDF para PNG (300dpi)";   Group = "PDF & VETOR"; Action = { Invoke-Glitch "Rasterizing" { Convert-PDFParaPNG } } },
-        @{ Label = "10. AI/EPS para SVG";        Group = "PDF & VETOR"; Action = { Invoke-Glitch "Vetorizing" { Convert-ParaSVG } } },
-        @{ Label = "11. PDF p/ Figma (Raster+SVG)"; Group = "PDF & VETOR"; Action = { Invoke-Glitch "Figma_Prep" { Initialize-ParaFigma } } },
-        @{ Label = "12. PNGs para PDF unico";    Group = "PDF & VETOR"; Action = { Invoke-Glitch "Binding" { Merge-PNGsToPDF } } },
-        @{ Label = "13. Reorganizar Paginas PDF";        Group = "PDF & VETOR"; NoPause = $true; Action = { Reorganize-PDFPages } },
-        @{ Label = "14. Substituir Pagina PDF";          Group = "PDF & VETOR"; NoPause = $true; Action = { Replace-PDFPage } },
-        @{ Label = "15. Extrair Paginas (Range Picker)"; Group = "PDF & VETOR"; NoPause = $true; Action = { Extract-PageRange } },
-        @{ Label = "16. OCR Batch (PDF Pesquisavel + JSON custo LLM)"; Group = "PDF & VETOR"; NoPause = $true; Action = { Invoke-OCRBatch } },
-        @{ Label = "17. Relatorio de Metadados (JSON)"; Group = "PDF & VETOR"; NoPause = $true; Action = { Show-PDFMetadata } },
-        @{ Label = "18. Comprimir PDFs (GS+qpdf)"; Group = "PDF & VETOR"; Action = {
+        @{ Label = "Unificar PDFs (Merge)";   Group = "PDF: PAGINAS"; Action = { Invoke-Glitch "Merging" { Merge-PDFs } } },
+        @{ Label = "Decompor Paginas PDF";    Group = "PDF: PAGINAS"; Action = { Invoke-Glitch "Splitting" { Split-PDFs } } },
+        @{ Label = "PNGs para PDF unico";    Group = "PDF: PAGINAS"; Action = { Invoke-Glitch "Binding" { Merge-PNGsToPDF } } },
+        @{ Label = "Reorganizar Paginas PDF";        Group = "PDF: PAGINAS"; NoPause = $true; Action = { Reorganize-PDFPages } },
+        @{ Label = "Substituir Pagina PDF";          Group = "PDF: PAGINAS"; NoPause = $true; Action = { Replace-PDFPage } },
+        @{ Label = "Extrair Paginas (Range Picker)"; Group = "PDF: PAGINAS"; NoPause = $true; Action = { Extract-PageRange } },
+
+        @{ Label = "Comprimir PDFs (GS+qpdf)"; Group = "PDF: PESO & IMPRESSAO"; Action = {
             $ext = Join-Path $script:ScriptsDir "compress-pdf.ps1"
             if (-not (Test-Path $ext)) { Write-Host "    [X] Script nao encontrado: $ext" -ForegroundColor Red; return }
             $target = if (Test-Path $Path -PathType Container) { $Path } else { Split-Path $Path -Parent }
             Write-Host ""
             & $ext -Input $target -Recurse
         } },
-        @{ Label = "18. Comprimir PDFs AGRESSIVO (JPEG re-encode)"; Group = "PDF & VETOR"; Action = {
+        @{ Label = "Comprimir PDFs AGRESSIVO (JPEG re-encode)"; Group = "PDF: PESO & IMPRESSAO"; Action = {
             $ext = Join-Path $script:ScriptsDir "compress-pdf.ps1"
             if (-not (Test-Path $ext)) { Write-Host "    [X] Script nao encontrado: $ext" -ForegroundColor Red; return }
             $target = if (Test-Path $Path -PathType Container) { $Path } else { Split-Path $Path -Parent }
@@ -192,8 +189,7 @@ function Get-MenuItems {
             Write-Host ""
             & $ext -Input $target -Recurse -Aggressive -Dpi $dpi -JpegQuality $q
         } },
-
-        @{ Label = "18c. Comprimir PDF p/ CELULAR (WhatsApp)"; Group = "PDF & VETOR"; NoPause = $true; Action = {
+        @{ Label = "Comprimir PDF p/ CELULAR (WhatsApp)"; Group = "PDF: PESO & IMPRESSAO"; NoPause = $true; Action = {
             $ext = Join-Path $script:ScriptsDir "compress-pdf.ps1"
             if (-not (Test-Path $ext)) { Write-Host "    [X] Script nao encontrado: $ext" -ForegroundColor Red; return }
             $target = if (Test-Path $Path -PathType Container) { $Path } else { Split-Path $Path -Parent }
@@ -224,8 +220,28 @@ function Get-MenuItems {
             & $ext -Input $target -Recurse -Mobile -Dpi $dpi -JpegQuality $q
             Read-Host "    [Enter para continuar]" | Out-Null
         } },
-
-        @{ Label = "19. Arte Final CMYK (PDF/X-1a)"; Group = "PDF & VETOR"; NoPause = $true; Action = {
+        @{ Label = "Figma -> Deck iOS/celular (texto selecionavel)"; Group = "PDF: PESO & IMPRESSAO"; NoPause = $true; Action = {
+            $ext = Join-Path $script:ScriptsDir "figma2deck.ps1"
+            if (-not (Test-Path $ext)) { Write-Host "    [X] Script nao encontrado: $ext" -ForegroundColor Red; return }
+            $target = if (Test-Path $Path -PathType Container) { $Path } else { $Path }
+            Write-Host ""
+            Write-Host "    PDF do Figma abre BRANCO ou trava no iOS/Mac (Preview, Safari, Quick Look)." -ForegroundColor DarkGray
+            Write-Host "    Nao e tamanho: o Figma nao embarca fonte - vira contorno Type 3 + soft mask" -ForegroundColor DarkGray
+            Write-Host "    + transparency group, e o PDFKit da Apple desiste. Em Acrobat/Chrome abre." -ForegroundColor DarkGray
+            Write-Host ""
+            Write-Host "    Este modo achata tudo e recoloca o texto como camada invisivel pesquisavel." -ForegroundColor DarkGray
+            Write-Host "    Saida em '<nome> (iOS).pdf'. O original fica intacto." -ForegroundColor DarkGray
+            Write-Host ""
+            Write-Host "    Ref: 110 dpi = 1,5x da tela num slide 1920x1080 | desce sozinho se estourar o teto" -ForegroundColor DarkGray
+            $dpiIn = Read-Host "    DPI (Enter = 110)"
+            $dpi   = if ($dpiIn -match '^\d+$') { [int]$dpiIn } else { 110 }
+            $tIn   = Read-Host "    Teto em MB (Enter = 10)"
+            $teto  = if ($tIn -match '^\d+(\.\d+)?$') { [double]$tIn } else { 10 }
+            $rec   = (Read-Host "    Recursivo? Processa subpastas (s/N)") -match '^[sSyY]'
+            & $ext -Path $target -Dpi $dpi -TetoMB $teto -Recurse:$rec
+            Read-Host "    [Enter para continuar]" | Out-Null
+        } },
+        @{ Label = "Arte Final CMYK (PDF/X-1a)"; Group = "PDF: PESO & IMPRESSAO"; NoPause = $true; Action = {
             $pyScript = Join-Path $script:ScriptsDir "arte_final.py"
             if (-not (Test-Path $pyScript)) { Write-Host "    [X] Script nao encontrado: $pyScript" -ForegroundColor Red; return }
             $py = Get-Command python -ErrorAction SilentlyContinue
@@ -252,8 +268,7 @@ function Get-MenuItems {
             }
             Read-Host "    [Enter para continuar]" | Out-Null
         } },
-
-        @{ Label = "20. Otimizar Arte Final (grande formato)"; Group = "PDF & VETOR"; NoPause = $true; Action = {
+        @{ Label = "Otimizar Arte Final (grande formato)"; Group = "PDF: PESO & IMPRESSAO"; NoPause = $true; Action = {
             $ext = Join-Path $script:ScriptsDir "optimize-print-pdf.ps1"
             if (-not (Test-Path $ext)) { Write-Host "    [X] Script nao encontrado: $ext" -ForegroundColor Red; return }
             Write-Host ""
@@ -280,10 +295,15 @@ function Get-MenuItems {
             Read-Host "    [Enter para continuar]" | Out-Null
         } },
 
-        @{ Label = "20. Extrair Imagens de PDFs"; Group = "PDF & VETOR"; NoPause = $true; Action = { Extract-PDFImages } },
+        @{ Label = "PDF para PNG (300dpi)";   Group = "PDF: EXTRAIR & VETOR"; Action = { Invoke-Glitch "Rasterizing" { Convert-PDFParaPNG } } },
+        @{ Label = "AI/EPS para SVG";        Group = "PDF: EXTRAIR & VETOR"; Action = { Invoke-Glitch "Vetorizing" { Convert-ParaSVG } } },
+        @{ Label = "PDF p/ Figma (Raster+SVG)"; Group = "PDF: EXTRAIR & VETOR"; Action = { Invoke-Glitch "Figma_Prep" { Initialize-ParaFigma } } },
+        @{ Label = "OCR Batch (PDF Pesquisavel + JSON custo LLM)"; Group = "PDF: EXTRAIR & VETOR"; NoPause = $true; Action = { Invoke-OCRBatch } },
+        @{ Label = "Relatorio de Metadados (JSON)"; Group = "PDF: EXTRAIR & VETOR"; NoPause = $true; Action = { Show-PDFMetadata } },
+        @{ Label = "Extrair Imagens de PDFs"; Group = "PDF: EXTRAIR & VETOR"; NoPause = $true; Action = { Extract-PDFImages } },
 
-        @{ Label = "21. Converter PNG p/ JPG (Q$JPGQuality)"; Group = "IMAGEM & JPG"; Action = { Invoke-Glitch "JPG_Convert" { Convert-PNGParaJPG } } },
-        @{ Label = "21b. Comprimir JPG SEM PERDA (lossless)"; Group = "IMAGEM & JPG"; NoPause = $true; Action = {
+        @{ Label = "Converter PNG p/ JPG (Q$JPGQuality)"; Group = "IMAGEM & JPG"; Action = { Invoke-Glitch "JPG_Convert" { Convert-PNGParaJPG } } },
+        @{ Label = "Comprimir JPG SEM PERDA (lossless)"; Group = "IMAGEM & JPG"; NoPause = $true; Action = {
             $ext = Join-Path $script:ScriptsDir "compress-jpg.ps1"
             if (-not (Test-Path $ext)) { Write-Host "    [X] Script nao encontrado: $ext" -ForegroundColor Red; return }
             $target = if (Test-Path $Path -PathType Container) { $Path } else { Split-Path $Path -Parent }
@@ -314,10 +334,9 @@ function Get-MenuItems {
             }
             Read-Host "    [Enter para continuar]" | Out-Null
         } },
-
-        @{ Label = "22. Converter p/ WebP (Social/Web)"; Group = "IMAGEM & JPG"; Action = { Invoke-Glitch "WebP_Convert" { Convert-ToWebP } } },
-        @{ Label = "23. Limpar Metadados/Exif"; Group = "IMAGEM & JPG"; Action = { Invoke-Glitch "Optimizing" { Optimize-ImagesMetadata } } },
-        @{ Label = "24. Alterar Qualidade JPG"; Group = "IMAGEM & JPG"; NoPause = $true; Action = {
+        @{ Label = "Converter p/ WebP (Social/Web)"; Group = "IMAGEM & JPG"; Action = { Invoke-Glitch "WebP_Convert" { Convert-ToWebP } } },
+        @{ Label = "Limpar Metadados/Exif"; Group = "IMAGEM & JPG"; Action = { Invoke-Glitch "Optimizing" { Optimize-ImagesMetadata } } },
+        @{ Label = "Alterar Qualidade JPG"; Group = "IMAGEM & JPG"; NoPause = $true; Action = {
             $q = Read-Host "    Nova Qualidade (1-100)"
             if ($q -match '^\d+$' -and [int]$q -ge 1 -and [int]$q -le 100) {
                 $script:JPGQuality = [int]$q
@@ -328,12 +347,11 @@ function Get-MenuItems {
             Start-Sleep -Milliseconds 800
         } },
 
-        @{ Label = "25. Gerar INDEX (README)"; Group = "ENTREGA"; Action = { Export-Inde } },
-        @{ Label = "26. Empacotar Entrega (.ZIP)"; Group = "ENTREGA"; Action = { Export-Package } },
+        @{ Label = "Gerar INDEX (README)"; Group = "ENTREGA"; Action = { Export-Inde } },
+        @{ Label = "Empacotar Entrega (.ZIP)"; Group = "ENTREGA"; Action = { Export-Package } },
 
-        @{ Label = "27. Gerar ICO (visant.ico)"; Group = "SISTEMA"; Action = { Convert-ToICO } },
-
-        @{ Label = "28. Abrir Log";              Group = "SISTEMA"; NoPause = $true; Action = {
+        @{ Label = "Gerar ICO (visant.ico)"; Group = "SISTEMA"; Action = { Convert-ToICO } },
+        @{ Label = "Abrir Log";              Group = "SISTEMA"; NoPause = $true; Action = {
             $lp = Get-LogPath
             if ($lp -and (Test-Path $lp)) {
                 Write-Host "    Log: $lp" -ForegroundColor Cyan
@@ -343,7 +361,7 @@ function Get-MenuItems {
             }
             Start-Sleep -Milliseconds 600
         } },
-        @{ Label = "29. Alterar Caminho";        Group = "SISTEMA"; NoPause = $true; Action = {
+        @{ Label = "Alterar Caminho";        Group = "SISTEMA"; NoPause = $true; Action = {
             $newPath = Read-Host "    Digite o novo caminho"
             if (Test-Path $newPath -PathType Container) {
                 $script:Path = $newPath
@@ -355,13 +373,11 @@ function Get-MenuItems {
             }
             Start-Sleep -Seconds 1
         } },
-        @{ Label = "30. Sair";                   Group = "SISTEMA"; NoPause = $true; Action = { exit } }
+        @{ Label = "Sair";                   Group = "SISTEMA"; NoPause = $true; Action = { exit } }
     )
 }
 
 # --- TUI ENGINE: TWO-LEVEL MENU ---
-
-$selectedIndex = 0
 
 function Invoke-MenuItem {
     param($item)
