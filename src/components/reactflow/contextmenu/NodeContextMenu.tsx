@@ -51,8 +51,8 @@ export const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
           onWheel={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
         >
-          <div className="px-3 py-2.5 border-b border-neutral-800/30 flex items-center justify-between sticky top-0 bg-neutral-950/70 backdrop-blur-xl z-10 rounded-t-2xl">
-            <span className="text-xs font-semibold text-neutral-300 uppercase">
+          <div className="px-3 py-2.5 border-b border-neutral-800/30 flex items-center justify-between sticky top-0 bg-neutral-950/70 backdrop-blur-xl z-10 rounded-t-xl">
+            <span className="text-xs font-medium text-neutral-300">
               {t('canvasNodes.nodeContextMenu.title')}
             </span>
             <Button
@@ -73,7 +73,7 @@ export const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
               className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md outline-none"
             >
               <CopyIcon size={16} className="text-neutral-400 flex-shrink-0" />
-              <span className="font-medium text-2xs tracking-wide flex-1 text-left">
+              <span className="font-medium text-2xs flex-1 text-left">
                 {t('canvasNodes.nodeContextMenu.duplicate')}
               </span>
             </DropdownMenu.Item>
@@ -86,9 +86,7 @@ export const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
               className="w-full px-2 py-1.5 text-left text-sm text-destructive hover:bg-destructive/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md outline-none"
             >
               <Trash2 size={16} className="text-destructive flex-shrink-0" />
-              <span className="font-medium text-2xs tracking-wide flex-1 text-left">
-                {t('common.delete')}
-              </span>
+              <span className="font-medium text-2xs flex-1 text-left">{t('common.delete')}</span>
             </DropdownMenu.Item>
           </div>
         </DropdownMenu.Content>

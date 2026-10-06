@@ -1,44 +1,31 @@
 import React, { useRef, useState } from 'react';
-import { Menu, ChevronUp, Search } from '@/lib/ui/icons';
-import { BackButton } from '@/components/ui/BackButton';
-import { SearchBar } from '@/components/ui/SearchBar';
+import { Menu, ChevronUp } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface CollapsibleSidebarProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   title: string;
-  count: number;
-  countLabel: string;
+  /** Already-translated count, e.g. "12 mockups". */
+  countText: string;
   allTags: string[];
   filterTag: string | null;
   onFilterTagChange: (tag: string | null) => void;
   translateTag?: (tag: string) => string;
-  // Search props
-  showSearch?: boolean;
-  searchQuery?: string;
-  onSearchChange?: (query: string) => void;
-  onToggleSearch?: () => void;
-  // Back button prop
-  showBackButton?: boolean;
 }
 
 export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
   isCollapsed,
   onToggleCollapse,
   title,
-  count,
-  countLabel,
+  countText,
   allTags,
   filterTag,
   onFilterTagChange,
   translateTag = (tag) => tag,
-  showSearch = false,
-  searchQuery = '',
-  onSearchChange,
-  onToggleSearch,
-  showBackButton = false,
 }) => {
+  const { t } = useTranslation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -78,13 +65,22 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
     }
     onFilterTagChange(filterTag === tag ? null : tag);
   };
+
+  const chipClass = (active: boolean) =>
+    `px-2.5 py-1 rounded-md text-xs border whitespace-nowrap flex-shrink-0 transition-colors ${
+      active
+        ? 'text-sidebar-accent-foreground border-sidebar-border bg-sidebar-accent'
+        : 'text-sidebar-foreground/60 border-sidebar-border hover:bg-sidebar-accent'
+    }`;
+
   if (isCollapsed) {
     return (
       <Button
         variant="ghost"
         onClick={onToggleCollapse}
-        className="w-full bg-sidebar/60 backdrop-blur-sm border border-sidebar-border rounded-md px-3 py-2 opacity-70 hover:opacity-100 transition-opacity flex items-center gap-2 justify-center"
-        title="Show filters"
+        className="w-full bg-sidebar border border-sidebar-border rounded-md px-3 py-2 flex items-center gap-2 justify-center"
+        title={t('mockupsPage.showFilters')}
+        aria-expanded={false}
       >
         <Menu size={16} className="text-sidebar-foreground/50 flex-shrink-0" />
         <span className="text-xs text-sidebar-foreground/60 truncate">{title}</span>
@@ -93,59 +89,32 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
   }
 
   return (
-    <div className="relative bg-sidebar/60 backdrop-blur-sm border border-sidebar-border rounded-md px-3 md:px-4 py-2.5 md:py-3 opacity-70 hover:opacity-90 transition-opacity w-full">
+    <div className="relative bg-sidebar border border-sidebar-border rounded-md px-3 md:px-4 py-2.5 md:py-3 w-full">
       {/* Header with title, count and collapse button */}
       <div className="flex items-center justify-between gap-2 md:gap-3 mb-2">
         <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 min-w-0">
-          {showBackButton && <BackButton className="mb-0" />}
-          <h1 className="text-sm font-semibold text-sidebar-foreground whitespace-nowrap">
+          <h2 className="text-sm font-semibold text-sidebar-foreground whitespace-nowrap">
             {title}
-          </h1>
-          <span className="text-xs text-sidebar-foreground/50 whitespace-nowrap">
-            {count} {countLabel}
-          </span>
+          </h2>
+          <span className="text-xs text-sidebar-foreground/50 whitespace-nowrap">{countText}</span>
         </div>
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          {onToggleSearch && (
-            <>
-              {showSearch ? (
-                <SearchBar
-                  value={searchQuery || ''}
-                  onChange={(value) => onSearchChange?.(value)}
-                  placeholder="Search..."
-                  iconSize={12}
-                  className="bg-sidebar backdrop-blur-sm border-sidebar-border w-40 text-xs"
-                  containerClassName="w-40"
-                  autoFocus
-                />
-              ) : (
-                <Button
-                  variant="ghost"
-                  onClick={onToggleSearch}
-                  className="p-1.5 text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors"
-                  title="Search"
-                >
-                  <Search size={14} />
-                </Button>
-              )}
-            </>
-          )}
-          <Button
-            variant="ghost"
-            onClick={onToggleCollapse}
-            className="p-1 text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors flex-shrink-0"
-            title="Collapse"
-          >
-            <ChevronUp size={14} />
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          onClick={onToggleCollapse}
+          className="p-1 text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors flex-shrink-0"
+          title={t('mockupsPage.hideFilters')}
+          aria-label={t('mockupsPage.hideFilters')}
+          aria-expanded
+        >
+          <ChevronUp size={14} />
+        </Button>
       </div>
 
       {/* Tags List - Horizontal Scroll */}
       {allTags.length > 0 && (
         <div
           ref={scrollContainerRef}
-          className={`flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent pb-0.5 -mx-1 px-1 cursor-pointer select-none`}
+          className="flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent pb-0.5 -mx-1 px-1 select-none"
           onMouseDown={handleMouseDown}
           onMouseLeave={handleMouseUp}
           onMouseUp={handleMouseUp}
@@ -154,24 +123,18 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           <Button
             variant="ghost"
             onClick={(e) => handleTagClick(null, e)}
-            className={`px-2.5 py-1 rounded-md text-xs border whitespace-nowrap flex-shrink-0 transition-colors ${
-              filterTag === null
-                ? 'text-sidebar-accent-foreground border-sidebar-border bg-sidebar-accent'
-                : 'text-sidebar-foreground/60 border-sidebar-border hover:bg-sidebar-accent'
-            }`}
+            className={chipClass(filterTag === null)}
+            aria-pressed={filterTag === null}
           >
-            All
+            {t('mockupsPage.allTags')}
           </Button>
           {allTags.map((tag) => (
             <Button
               variant="ghost"
               key={tag}
               onClick={(e) => handleTagClick(tag, e)}
-              className={`px-2.5 py-1 rounded-md text-xs border whitespace-nowrap flex-shrink-0 transition-colors ${
-                filterTag === tag
-                  ? 'text-sidebar-accent-foreground border-sidebar-border bg-sidebar-accent'
-                  : 'text-sidebar-foreground/60 border-sidebar-border hover:bg-sidebar-accent'
-              }`}
+              className={chipClass(filterTag === tag)}
+              aria-pressed={filterTag === tag}
             >
               {translateTag(tag)}
             </Button>

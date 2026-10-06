@@ -3,6 +3,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Card, CardContent } from '@/components/ui/card';
 import { getArchetypeImage } from '@/constants/archetypeImages';
+import { Thumb } from '@/components/ui/Thumb';
 import type {
   CentralMessage,
   BrandPillar,
@@ -18,9 +19,7 @@ import type {
 } from '@/types/branding';
 
 const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return (
-    <span className="text-2xs uppercase tracking-wider text-muted-foreground">{children}</span>
-  );
+  return <span className="text-xs text-muted-foreground">{children}</span>;
 };
 
 const SectionCard: React.FC<{ children: React.ReactNode; className?: string }> = ({
@@ -60,32 +59,18 @@ export const CentralMessageSection: React.FC<{ data: CentralMessage; pillars: Br
             ].map((item, i) => (
               <div
                 key={i}
-                className={`p-3 rounded-lg ${
+                className={`p-3 rounded-xl ${
                   theme === 'dark' ? 'bg-neutral-900/60' : 'bg-neutral-50'
                 }`}
               >
                 <Label>{item.label}</Label>
-                <p
-                  className={`text-sm font-manrope mt-1 ${
-                    theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
-                  }`}
-                >
-                  {item.value}
-                </p>
+                <p className="text-sm font-manrope mt-1 text-foreground">{item.value}</p>
               </div>
             ))}
           </div>
-          <div
-            className={`p-4 rounded-lg border ${
-              theme === 'dark' ? 'bg-white/[0.04] border-ring' : 'bg-neutral-50 border-ring'
-            }`}
-          >
+          <div className={`p-4 rounded-xl border bg-muted border-ring`}>
             <Label>{t('branding.visant.centralStatement')}</Label>
-            <p
-              className={`text-base font-manrope font-medium mt-1 italic ${
-                theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-              }`}
-            >
+            <p className="text-base font-manrope font-medium mt-1 italic text-foreground">
               "{data.statement}"
             </p>
           </div>
@@ -95,27 +80,11 @@ export const CentralMessageSection: React.FC<{ data: CentralMessage; pillars: Br
       <div className="grid grid-cols-3 gap-3">
         {pillars.map((pillar, i) => (
           <SectionCard key={i}>
-            <div
-              className={`text-xs font-mono uppercase mb-1 ${
-                theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
-              }`}
-            >
+            <div className="text-xs mb-1 text-muted-foreground">
               Pilar {String(i + 1).padStart(2, '0')}
             </div>
-            <h4
-              className={`text-lg font-semibold font-manrope ${
-                theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-              }`}
-            >
-              {pillar.name}
-            </h4>
-            <p
-              className={`text-sm font-manrope mt-1 ${
-                theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-              }`}
-            >
-              {pillar.description}
-            </p>
+            <h4 className="text-lg font-medium font-manrope text-foreground">{pillar.name}</h4>
+            <p className="text-sm font-manrope mt-1 text-muted-foreground">{pillar.description}</p>
           </SectionCard>
         ))}
       </div>
@@ -149,8 +118,8 @@ export const MarketResearchV2Section: React.FC<{ data: MarketResearchV2 }> = ({ 
       light: 'border-warning/40 bg-warning/50',
     },
     cyan: {
-      dark: 'border-brand-cyan/40 bg-brand-cyan/20',
-      light: 'border-brand-cyan/40 bg-brand-cyan/50',
+      dark: 'border-neutral-500 bg-neutral-800/60',
+      light: 'border-neutral-400 bg-neutral-100',
     },
   };
 
@@ -167,12 +136,7 @@ export const MarketResearchV2Section: React.FC<{ data: MarketResearchV2 }> = ({ 
             <Label>{layer.label}</Label>
             <ul className="mt-2 space-y-1.5">
               {layer.items.map((item, j) => (
-                <li
-                  key={j}
-                  className={`text-sm font-manrope ${
-                    theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
-                  }`}
-                >
+                <li key={j} className="text-sm font-manrope text-foreground">
                   • {item}
                 </li>
               ))}
@@ -184,11 +148,7 @@ export const MarketResearchV2Section: React.FC<{ data: MarketResearchV2 }> = ({ 
       {data.summary && (
         <SectionCard>
           <Label>Síntese</Label>
-          <p
-            className={`text-sm font-manrope mt-1 leading-relaxed ${
-              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-            }`}
-          >
+          <p className="text-sm font-manrope mt-1 leading-relaxed text-muted-foreground">
             {data.summary}
           </p>
         </SectionCard>
@@ -201,24 +161,14 @@ export const MarketResearchV2Section: React.FC<{ data: MarketResearchV2 }> = ({ 
             {data.competitors.map((comp, i) => (
               <div
                 key={i}
-                className={`flex items-start gap-3 p-3 rounded-lg ${
+                className={`flex items-start gap-3 p-3 rounded-xl ${
                   theme === 'dark' ? 'bg-neutral-900/40' : 'bg-neutral-50'
                 }`}
               >
-                <span
-                  className={`text-sm font-semibold font-manrope min-w-[120px] ${
-                    theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-                  }`}
-                >
+                <span className="text-sm font-medium font-manrope min-w-[120px] text-foreground">
                   {comp.name}
                 </span>
-                <span
-                  className={`text-sm font-manrope ${
-                    theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                  }`}
-                >
-                  {comp.analysis}
-                </span>
+                <span className="text-sm font-manrope text-muted-foreground">{comp.analysis}</span>
               </div>
             ))}
           </div>
@@ -239,7 +189,7 @@ export const PersonaV2Section: React.FC<{ data: PersonaV2 }> = ({ data }) => {
       <SectionCard>
         <div className="flex items-center gap-4">
           <div
-            className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold font-manrope ${
+            className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-medium font-manrope ${
               theme === 'dark'
                 ? 'bg-neutral-800 text-neutral-200'
                 : 'bg-neutral-200 text-neutral-800'
@@ -248,20 +198,10 @@ export const PersonaV2Section: React.FC<{ data: PersonaV2 }> = ({ data }) => {
             {data.name?.charAt(0) || '?'}
           </div>
           <div>
-            <h4
-              className={`text-lg font-semibold font-manrope ${
-                theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-              }`}
-            >
+            <h4 className="text-lg font-medium font-manrope text-foreground">
               {data.name}, {data.age}
             </h4>
-            <p
-              className={`text-sm font-manrope ${
-                theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-              }`}
-            >
-              {data.context}
-            </p>
+            <p className="text-sm font-manrope text-muted-foreground">{data.context}</p>
           </div>
         </div>
       </SectionCard>
@@ -272,24 +212,14 @@ export const PersonaV2Section: React.FC<{ data: PersonaV2 }> = ({ data }) => {
           {data.painPoints.map((pain, i) => (
             <SectionCard key={i} className="!p-3">
               <div
-                className={`text-2xs font-mono uppercase ${
+                className={`text-xs ${
                   theme === 'dark' ? 'text-destructive/70' : 'text-destructive'
                 }`}
               >
                 {pain.id}
               </div>
-              <h5
-                className={`text-sm font-semibold font-manrope ${
-                  theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-                }`}
-              >
-                {pain.title}
-              </h5>
-              <p
-                className={`text-xs font-manrope mt-0.5 ${
-                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                }`}
-              >
+              <h5 className="text-sm font-medium font-manrope text-foreground">{pain.title}</h5>
+              <p className="text-xs font-manrope mt-0.5 text-muted-foreground">
                 {pain.description}
               </p>
             </SectionCard>
@@ -299,25 +229,11 @@ export const PersonaV2Section: React.FC<{ data: PersonaV2 }> = ({ data }) => {
           <Label>{t('branding.visant.desires')}</Label>
           {data.desires.map((desire, i) => (
             <SectionCard key={i} className="!p-3">
-              <div
-                className={`text-2xs font-mono uppercase ${
-                  theme === 'dark' ? 'text-success/70' : 'text-success'
-                }`}
-              >
+              <div className={`text-xs ${theme === 'dark' ? 'text-success/70' : 'text-success'}`}>
                 {desire.id}
               </div>
-              <h5
-                className={`text-sm font-semibold font-manrope ${
-                  theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-                }`}
-              >
-                {desire.title}
-              </h5>
-              <p
-                className={`text-xs font-manrope mt-0.5 ${
-                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                }`}
-              >
+              <h5 className="text-sm font-medium font-manrope text-foreground">{desire.title}</h5>
+              <p className="text-xs font-manrope mt-0.5 text-muted-foreground">
                 {desire.description}
               </p>
             </SectionCard>
@@ -349,7 +265,7 @@ export const ArchetypesV2Section: React.FC<{
             <SectionCard key={i}>
               <div className="flex gap-4">
                 {imagePath && (
-                  <img
+                  <Thumb
                     src={imagePath}
                     alt={item.arch.title}
                     className="w-20 h-28 object-contain rounded-md"
@@ -357,18 +273,10 @@ export const ArchetypesV2Section: React.FC<{
                 )}
                 <div className="flex-1">
                   <Label>{item.label}</Label>
-                  <h4
-                    className={`text-lg font-semibold font-manrope mt-0.5 ${
-                      theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-                    }`}
-                  >
+                  <h4 className="text-lg font-medium font-manrope mt-0.5 text-foreground">
                     {item.arch.title}
                   </h4>
-                  <p
-                    className={`text-xs font-manrope mt-1 ${
-                      theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                    }`}
-                  >
+                  <p className="text-xs font-manrope mt-1 text-muted-foreground">
                     {item.arch.description}
                   </p>
                   <div className="flex flex-wrap gap-1.5 mt-2">
@@ -395,11 +303,7 @@ export const ArchetypesV2Section: React.FC<{
       {archetypes.barBehavior && (
         <SectionCard>
           <Label>{t('branding.visant.barBehavior')}</Label>
-          <p
-            className={`text-sm font-manrope mt-1 italic ${
-              theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
-            }`}
-          >
+          <p className="text-sm font-manrope mt-1 italic text-foreground">
             {archetypes.barBehavior}
           </p>
         </SectionCard>
@@ -411,18 +315,8 @@ export const ArchetypesV2Section: React.FC<{
           <div className="grid grid-cols-3 gap-3 mt-2">
             {toneOfVoice.map((tone, i) => (
               <SectionCard key={i} className="!p-4">
-                <h5
-                  className={`text-sm font-semibold font-manrope ${
-                    theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-                  }`}
-                >
-                  {tone.pillar}
-                </h5>
-                <p
-                  className={`text-xs font-manrope mt-1 ${
-                    theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                  }`}
-                >
+                <h5 className="text-sm font-medium font-manrope text-foreground">{tone.pillar}</h5>
+                <p className="text-xs font-manrope mt-1 text-muted-foreground">
                   {tone.description}
                 </p>
                 <p
@@ -460,20 +354,10 @@ export const ManifestoSection: React.FC<{ data: Manifesto }> = ({ data }) => {
       {movements.map((mov, i) => (
         <SectionCard key={i}>
           <div className="flex items-start gap-3">
-            <span
-              className={`text-2xl font-mono font-bold ${
-                theme === 'dark' ? 'text-neutral-700' : 'text-neutral-300'
-              }`}
-            >
-              {mov.num}
-            </span>
+            <span className="text-2xl font-semibold text-muted-foreground">{mov.num}</span>
             <div>
               <Label>{mov.label}</Label>
-              <p
-                className={`text-sm font-manrope mt-1 leading-relaxed ${
-                  theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
-                }`}
-              >
+              <p className="text-sm font-manrope mt-1 leading-relaxed text-foreground">
                 {mov.text}
               </p>
             </div>
@@ -482,19 +366,9 @@ export const ManifestoSection: React.FC<{ data: Manifesto }> = ({ data }) => {
       ))}
 
       {data.sloganSuggestion && (
-        <div
-          className={`p-5 rounded-xl text-center ${
-            theme === 'dark'
-              ? 'bg-white/[0.04] border border-ring'
-              : 'bg-neutral-50 border border-ring'
-          }`}
-        >
+        <div className={`p-5 rounded-xl text-center bg-muted border border-ring`}>
           <Label>{t('branding.visant.sloganSuggestion')}</Label>
-          <p
-            className={`text-xl font-manrope font-semibold mt-2 ${
-              theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'
-            }`}
-          >
+          <p className="text-xl font-manrope font-medium mt-2 text-foreground">
             "{data.sloganSuggestion}"
           </p>
         </div>
@@ -514,7 +388,7 @@ export const ColorPaletteV2Section: React.FC<{ colors: NamedColor[] }> = ({ colo
         <SectionCard key={i} className="!p-4">
           <div className="flex items-start gap-4">
             <div
-              className="w-16 h-16 rounded-lg border flex-shrink-0"
+              className="w-16 h-16 rounded-xl border flex-shrink-0"
               style={{
                 backgroundColor: color.hex,
                 borderColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
@@ -522,29 +396,11 @@ export const ColorPaletteV2Section: React.FC<{ colors: NamedColor[] }> = ({ colo
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <h5
-                  className={`text-sm font-semibold font-manrope ${
-                    theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-                  }`}
-                >
-                  {color.name}
-                </h5>
-                <span className={`text-2xs font-mono uppercase text-neutral-500`}>{color.hex}</span>
+                <h5 className="text-sm font-medium font-manrope text-foreground">{color.name}</h5>
+                <span className="text-2xs font-mono uppercase text-neutral-500">{color.hex}</span>
               </div>
-              <p
-                className={`text-xs font-manrope mt-0.5 ${
-                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                }`}
-              >
-                {color.role}
-              </p>
-              <p
-                className={`text-xs font-manrope mt-1 ${
-                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                }`}
-              >
-                {color.psychology}
-              </p>
+              <p className="text-xs font-manrope mt-0.5 text-muted-foreground">{color.role}</p>
+              <p className="text-xs font-manrope mt-1 text-muted-foreground">{color.psychology}</p>
             </div>
           </div>
         </SectionCard>
@@ -567,20 +423,10 @@ export const TypographySection: React.FC<{ data: TypographyPair }> = ({ data }) 
       ].map((item, i) => (
         <SectionCard key={i}>
           <Label>{item.label}</Label>
-          <h4
-            className={`${item.size} font-semibold font-manrope mt-2 ${
-              theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-            }`}
-          >
+          <h4 className={`${item.size} font-medium font-manrope mt-2 text-foreground`}>
             {item.font.family}
           </h4>
-          <p
-            className={`text-sm font-manrope mt-2 ${
-              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-            }`}
-          >
-            {item.font.rationale}
-          </p>
+          <p className="text-sm font-manrope mt-2 text-muted-foreground">{item.font.rationale}</p>
         </SectionCard>
       ))}
     </div>
@@ -607,12 +453,7 @@ export const GraphicSystemSection: React.FC<{ data: GraphicSystem }> = ({ data }
             <Label>{section.label}</Label>
             <ul className="mt-2 space-y-1.5">
               {section.items.map((item, j) => (
-                <li
-                  key={j}
-                  className={`text-sm font-manrope ${
-                    theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
-                  }`}
-                >
+                <li key={j} className="text-sm font-manrope text-foreground">
                   • {item}
                 </li>
               ))}
@@ -624,13 +465,7 @@ export const GraphicSystemSection: React.FC<{ data: GraphicSystem }> = ({ data }
       {data.editorialGrid && (
         <SectionCard>
           <Label>{t('branding.visant.editorialGrid')}</Label>
-          <p
-            className={`text-sm font-manrope mt-1 ${
-              theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
-            }`}
-          >
-            {data.editorialGrid}
-          </p>
+          <p className="text-sm font-manrope mt-1 text-foreground">{data.editorialGrid}</p>
         </SectionCard>
       )}
     </div>
@@ -651,7 +486,7 @@ export const LogoConceptSection: React.FC<{ data: LogoConcept }> = ({ data }) =>
           {data.whatItMustCommunicate.map((item, i) => (
             <span
               key={i}
-              className={`px-3 py-1 rounded-lg text-xs font-manrope ${
+              className={`px-3 py-1 rounded-xl text-xs font-manrope ${
                 theme === 'dark'
                   ? 'bg-neutral-800/60 text-neutral-200 border border-ring'
                   : 'bg-neutral-100 text-neutral-800 border border-ring'
@@ -666,30 +501,12 @@ export const LogoConceptSection: React.FC<{ data: LogoConcept }> = ({ data }) =>
       <Label>{t('branding.visant.conceptIdeas')}</Label>
       {data.conceptIdeas.map((idea, i) => (
         <SectionCard key={i}>
-          <h5
-            className={`text-sm font-semibold font-manrope ${
-              theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-            }`}
-          >
-            {idea.concept}
-          </h5>
+          <h5 className="text-sm font-medium font-manrope text-foreground">{idea.concept}</h5>
           <div className="mt-2 space-y-1">
             {idea.meanings.map((meaning, j) => (
               <div key={j} className="flex items-start gap-2">
-                <span
-                  className={`text-xs font-mono ${
-                    theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
-                  }`}
-                >
-                  {j + 1}
-                </span>
-                <span
-                  className={`text-xs font-manrope ${
-                    theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                  }`}
-                >
-                  {meaning}
-                </span>
+                <span className="text-xs text-muted-foreground">{j + 1}</span>
+                <span className="text-xs font-manrope text-muted-foreground">{meaning}</span>
               </div>
             ))}
           </div>
@@ -699,13 +516,7 @@ export const LogoConceptSection: React.FC<{ data: LogoConcept }> = ({ data }) =>
       {data.geometryNotes && (
         <SectionCard>
           <Label>{t('branding.visant.geometryNotes')}</Label>
-          <p
-            className={`text-sm font-manrope mt-1 ${
-              theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
-            }`}
-          >
-            {data.geometryNotes}
-          </p>
+          <p className="text-sm font-manrope mt-1 text-foreground">{data.geometryNotes}</p>
         </SectionCard>
       )}
     </div>

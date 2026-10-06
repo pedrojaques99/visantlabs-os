@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { X, Image as ImageIcon } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { isSafeUrl } from '@/utils/imageUtils';
 
 interface ImageThumbnailProps {
@@ -60,8 +61,8 @@ export const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
       )}
 
       {/* Bullet indicator */}
-      <div className="absolute top-1 left-1 w-5 h-5 bg-brand-cyan border border-black rounded-md flex items-center justify-center z-10">
-        <span className="text-2xs font-mono font-bold text-black">{index + 1}</span>
+      <div className="absolute top-1 left-1 w-5 h-5 bg-foreground rounded-md flex items-center justify-center z-10">
+        <span className="text-2xs font-medium tabular-nums text-background">{index + 1}</span>
       </div>
 
       {/* Remove button (if provided) */}
@@ -71,7 +72,10 @@ export const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
             e.stopPropagation();
             onRemove();
           }}
-          className="absolute top-1 right-1 w-5 h-5 bg-destructive/80 hover:bg-destructive border border-black rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+          className={cn(
+            hoverReveal,
+            'absolute top-1 right-1 w-5 h-5 bg-destructive/80 hover:bg-destructive border border-black rounded-md flex items-center justify-center z-10'
+          )}
           title="Remove"
         >
           <X size={10} className="text-white" strokeWidth={3} />
@@ -122,7 +126,7 @@ export const ImageThumbnailList: React.FC<ImageThumbnailListProps> = ({
       })}
       {images.length > maxThumbnails && (
         <div className="w-16 h-16 flex items-center justify-center bg-neutral-900/50 border border-neutral-700/30 rounded">
-          <span className="text-xs font-mono text-neutral-500">
+          <span className="text-xs tabular-nums text-neutral-500">
             +{images.length - maxThumbnails}
           </span>
         </div>

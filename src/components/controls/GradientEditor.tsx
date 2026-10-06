@@ -152,7 +152,7 @@ export const GradientEditor: React.FC<GradientEditorProps> = ({
       {activeStop && (
         <div className="space-y-2 rounded-md border border-neutral-800/60 p-2">
           <div className="flex items-center justify-between">
-            <span className="text-2xs uppercase tracking-widest text-neutral-500">
+            <span className="text-2xs text-neutral-500">
               Stop {sorted.indexOf(activeStop) + 1} / {stops.length}
             </span>
             <div className="flex items-center gap-1">

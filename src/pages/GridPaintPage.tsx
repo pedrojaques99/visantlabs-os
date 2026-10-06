@@ -352,6 +352,8 @@ function renderCanvas(
     fh = config.frameH * zoom;
 
   // Viewport bg
+  // EXCEÇÃO ao audit:design/hardcoded-hex-color: fundo do viewport em canvas 2D, que não lê
+  // classe Tailwind.
   ctx.fillStyle = '#0e0e0e';
   ctx.fillRect(0, 0, w, h);
 
@@ -633,7 +635,7 @@ export const GridPaintPage: React.FC = () => {
   const [activeCount, setActiveCount] = useState(0);
 
   useEffect(() => {
-    document.title = 'Grid Paint — Visant';
+    document.title = 'Grid Paint';
   }, []);
 
   const [config, setConfig] = useState<VisualConfig>(DEFAULT_CONFIG);
@@ -1026,8 +1028,9 @@ export const GridPaintPage: React.FC = () => {
     return () => window.removeEventListener('wheel', handler);
   }, []);
 
+  // Editor sempre escuro: `dark` escopa os tokens escuros (ver ToolEditorShell).
   return (
-    <AppShell>
+    <AppShell className="dark text-foreground">
       {/* Full-screen canvas */}
       <CanvasErrorBoundary>
         <canvas
@@ -1065,11 +1068,11 @@ export const GridPaintPage: React.FC = () => {
                 <ChevronLeft size={14} />
               </Button>
             </Tooltip>
-            <div className="w-px h-4 bg-white/5 mx-1" />
-            <MicroTitle className="text-neutral-400">Grid Paint</MicroTitle>
-            <MicroTitle className="text-neutral-600 ml-2">{activeCount} dots</MicroTitle>
+            <div className="w-px h-4 bg-border mx-1" />
+            <MicroTitle className="text-muted-foreground">Grid Paint</MicroTitle>
+            <MicroTitle className="text-muted-foreground ml-2">{activeCount} dots</MicroTitle>
             {isMobile && (
-              <MicroTitle className="text-neutral-700 ml-1.5">
+              <MicroTitle className="text-muted-foreground ml-1.5">
                 {config.frameW}x{config.frameH}
               </MicroTitle>
             )}
@@ -1106,14 +1109,11 @@ export const GridPaintPage: React.FC = () => {
       {/* Bottom toolbar */}
       <div
         className={cn(
-          'fixed left-1/2 -translate-x-1/2 z-30 transition-all duration-300',
+          'fixed left-1/2 -translate-x-1/2 z-30 transition-[bottom] duration-300',
           isMobile ? (mobileSheetOpen ? 'bottom-[calc(45%+8px)]' : 'bottom-[56px]') : 'bottom-4'
         )}
       >
-        <div
-          className="flex items-center gap-0.5 backdrop-blur-xl border border-white/10 rounded-xl px-1.5 py-1 shadow-lg"
-          style={{ backgroundColor: '#0a0a0add' }}
-        >
+        <div className="flex items-center gap-0.5 bg-popover/85 backdrop-blur-xl border border-border rounded-xl px-1.5 py-1 shadow-lg">
           <Tooltip content="Zoom Out" position="top">
             <Button
               variant="ghost"
@@ -1126,7 +1126,7 @@ export const GridPaintPage: React.FC = () => {
               <ZoomOut size={16} strokeWidth={2} />
             </Button>
           </Tooltip>
-          <span className="text-2xs font-mono text-neutral-400 w-[34px] text-center tabular-nums select-none">
+          <span className="text-2xs font-mono text-muted-foreground w-[34px] text-center tabular-nums select-none">
             {(zoom * 100).toFixed(0)}%
           </span>
           <Tooltip content="Zoom In" position="top">
@@ -1154,7 +1154,7 @@ export const GridPaintPage: React.FC = () => {
             </Button>
           </Tooltip>
 
-          <div className="w-px h-5 bg-neutral-800/50 mx-0.5" />
+          <div className="w-px h-5 bg-border mx-0.5" />
 
           <Tooltip content="Eraser" position="top">
             <Button
@@ -1162,7 +1162,7 @@ export const GridPaintPage: React.FC = () => {
               className={cn(
                 'flex items-center justify-center rounded-md',
                 isMobile ? 'w-10 h-10' : 'w-9 h-9',
-                eraseMode && 'bg-white/10 text-white ring-1 ring-white/30'
+                eraseMode && 'bg-accent text-foreground ring-1 ring-ring'
               )}
               onClick={() => setEraseMode((m) => !m)}
             >
@@ -1207,10 +1207,10 @@ export const GridPaintPage: React.FC = () => {
       {/* Right panel – desktop */}
       {!isMobile && (
         <AppShellPanel visible={showPanel} width={300}>
-          <GlassPanel className="h-full overflow-y-auto backdrop-blur-xl bg-neutral-950/80 scrollbar-none rounded-xl">
+          <GlassPanel className="h-full overflow-y-auto bg-card scrollbar-none rounded-xl">
             {/* Presets */}
-            <div className="p-3 space-y-2 border-b border-neutral-800">
-              <MicroTitle className="text-neutral-600 text-2xs">Presets</MicroTitle>
+            <div className="p-3 space-y-2 border-b border-border">
+              <MicroTitle className="text-muted-foreground text-2xs">Presets</MicroTitle>
               <div className="grid grid-cols-3 gap-1">
                 {Object.entries(PRESETS).map(([name, preset]) => (
                   <Button
@@ -1218,7 +1218,7 @@ export const GridPaintPage: React.FC = () => {
                     variant="ghost"
                     size="xs"
                     onClick={() => updateConfig(preset)}
-                    className="text-2xs text-neutral-500 hover:text-white font-medium"
+                    className="text-2xs text-muted-foreground hover:text-foreground font-medium"
                   >
                     {name}
                   </Button>
@@ -1227,8 +1227,10 @@ export const GridPaintPage: React.FC = () => {
             </div>
 
             {/* Seeds */}
-            <div className="p-3 space-y-2 border-b border-neutral-800">
-              <MicroTitle className="text-neutral-600 text-2xs">{t('grid.paint.seeds')}</MicroTitle>
+            <div className="p-3 space-y-2 border-b border-border">
+              <MicroTitle className="text-muted-foreground text-2xs">
+                {t('grid.paint.seeds')}
+              </MicroTitle>
               <div className="grid grid-cols-3 gap-1">
                 {Object.keys(SEEDS).map((name) => (
                   <Button
@@ -1236,7 +1238,7 @@ export const GridPaintPage: React.FC = () => {
                     variant="ghost"
                     size="xs"
                     onClick={() => applySeed(name)}
-                    className="text-2xs text-neutral-500 hover:text-white font-medium"
+                    className="text-2xs text-muted-foreground hover:text-foreground font-medium"
                   >
                     {name === 'Random' ? (
                       <>
@@ -1251,11 +1253,11 @@ export const GridPaintPage: React.FC = () => {
             </div>
 
             {/* Colors */}
-            <div className="p-3 space-y-2.5 border-b border-neutral-800">
-              <MicroTitle className="text-neutral-600 text-2xs">Color</MicroTitle>
+            <div className="p-3 space-y-2.5 border-b border-border">
+              <MicroTitle className="text-muted-foreground text-2xs">Color</MicroTitle>
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-2 cursor-pointer group">
-                  <div className="relative w-9 h-9 rounded-lg border border-white/10 overflow-hidden shadow-inner">
+                  <div className="relative w-9 h-9 rounded-xl border border-border overflow-hidden shadow-inner">
                     <input
                       type="color"
                       value={config.dotColor}
@@ -1263,16 +1265,16 @@ export const GridPaintPage: React.FC = () => {
                       className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
                     />
                     <div
-                      className="w-full h-full rounded-lg"
+                      className="w-full h-full rounded-xl"
                       style={{ background: config.dotColor }}
                     />
                   </div>
-                  <MicroTitle className="text-neutral-500 group-hover:text-neutral-300 text-2xs">
+                  <MicroTitle className="text-muted-foreground group-hover:text-foreground text-2xs">
                     {t('grid.paint.dot')}
                   </MicroTitle>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer group">
-                  <div className="relative w-9 h-9 rounded-lg border border-white/10 overflow-hidden shadow-inner">
+                  <div className="relative w-9 h-9 rounded-xl border border-border overflow-hidden shadow-inner">
                     <input
                       type="color"
                       value={config.bgColor}
@@ -1280,11 +1282,11 @@ export const GridPaintPage: React.FC = () => {
                       className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
                     />
                     <div
-                      className="w-full h-full rounded-lg"
+                      className="w-full h-full rounded-xl"
                       style={{ background: config.bgColor }}
                     />
                   </div>
-                  <MicroTitle className="text-neutral-500 group-hover:text-neutral-300 text-2xs">
+                  <MicroTitle className="text-muted-foreground group-hover:text-foreground text-2xs">
                     BG
                   </MicroTitle>
                 </label>
@@ -1292,12 +1294,12 @@ export const GridPaintPage: React.FC = () => {
             </div>
 
             {/* Frame */}
-            <div className="p-3 space-y-2 border-b border-neutral-800">
+            <div className="p-3 space-y-2 border-b border-border">
               <div className="flex items-center justify-between">
-                <MicroTitle className="text-neutral-600 text-2xs">
+                <MicroTitle className="text-muted-foreground text-2xs">
                   {t('grid.paint.frame')}
                 </MicroTitle>
-                <MicroTitle className="text-neutral-700 text-2xs">
+                <MicroTitle className="text-muted-foreground text-2xs">
                   {grid.cols}×{grid.rows} dots
                 </MicroTitle>
               </div>
@@ -1311,8 +1313,8 @@ export const GridPaintPage: React.FC = () => {
                     className={cn(
                       'text-2xs font-medium',
                       config.frameW === w && config.frameH === h
-                        ? 'text-white bg-white/10'
-                        : 'text-neutral-600'
+                        ? 'text-foreground bg-accent'
+                        : 'text-muted-foreground'
                     )}
                   >
                     {label}
@@ -1349,8 +1351,9 @@ export const GridPaintPage: React.FC = () => {
             </div>
 
             {/* Shape */}
-            <div className="p-3 space-y-1 border-b border-neutral-800">
-              <MicroTitle className="text-neutral-600 text-2xs">Shape</MicroTitle>
+            <div className="p-3 space-y-1 border-b border-border">
+              {/* EXCEÇÃO ao ruido-scan/mesma-info-dois-tamanhos: painel desktop e sheet mobile renderizam a mesma seção, nunca juntos */}
+              <MicroTitle className="text-muted-foreground text-2xs">Shape</MicroTitle>
               <NodeSlider
                 label={t('grid.paint.dot_radius')}
                 value={config.dotRadius}
@@ -1388,12 +1391,12 @@ export const GridPaintPage: React.FC = () => {
             </div>
 
             {/* Stroke */}
-            <div className="p-3 space-y-2.5 border-b border-neutral-800">
-              <MicroTitle className="text-neutral-600 text-2xs">
+            <div className="p-3 space-y-2.5 border-b border-border">
+              <MicroTitle className="text-muted-foreground text-2xs">
                 {t('grid.paint.stroke')}
               </MicroTitle>
               <div className="flex items-center justify-between">
-                <MicroTitle className="text-neutral-500 text-2xs">
+                <MicroTitle className="text-muted-foreground text-2xs">
                   {t('grid.paint.outline_mode')}
                 </MicroTitle>
                 <Switch
@@ -1416,9 +1419,9 @@ export const GridPaintPage: React.FC = () => {
 
             {/* Connections */}
             <div className="p-3 space-y-2.5">
-              <MicroTitle className="text-neutral-600 text-2xs">Connections</MicroTitle>
+              <MicroTitle className="text-muted-foreground text-2xs">Connections</MicroTitle>
               <div className="flex items-center justify-between">
-                <MicroTitle className="text-neutral-500 text-2xs">
+                <MicroTitle className="text-muted-foreground text-2xs">
                   {t('grid.paint.diagonals')}
                 </MicroTitle>
                 <Switch
@@ -1437,10 +1440,10 @@ export const GridPaintPage: React.FC = () => {
           open={mobileSheetOpen}
           onToggle={() => setMobileSheetOpen(!mobileSheetOpen)}
         >
-          <GlassPanel className="backdrop-blur-xl bg-transparent scrollbar-none">
+          <GlassPanel className="bg-transparent scrollbar-none">
             {/* Presets */}
-            <div className="p-3 space-y-2 border-b border-neutral-800">
-              <MicroTitle className="text-neutral-600 text-2xs">Presets</MicroTitle>
+            <div className="p-3 space-y-2 border-b border-border">
+              <MicroTitle className="text-muted-foreground text-2xs">Presets</MicroTitle>
               <div className="grid grid-cols-3 gap-1">
                 {Object.entries(PRESETS).map(([name, preset]) => (
                   <Button
@@ -1448,7 +1451,7 @@ export const GridPaintPage: React.FC = () => {
                     variant="ghost"
                     size="xs"
                     onClick={() => updateConfig(preset)}
-                    className="text-2xs text-neutral-500 hover:text-white font-medium"
+                    className="text-2xs text-muted-foreground hover:text-foreground font-medium"
                   >
                     {name}
                   </Button>
@@ -1456,8 +1459,8 @@ export const GridPaintPage: React.FC = () => {
               </div>
             </div>
             {/* Seeds */}
-            <div className="p-3 space-y-2 border-b border-neutral-800">
-              <MicroTitle className="text-neutral-600 text-2xs">
+            <div className="p-3 space-y-2 border-b border-border">
+              <MicroTitle className="text-muted-foreground text-2xs">
                 {t('grid.paint.seeds_2')}
               </MicroTitle>
               <div className="grid grid-cols-3 gap-1">
@@ -1467,7 +1470,7 @@ export const GridPaintPage: React.FC = () => {
                     variant="ghost"
                     size="xs"
                     onClick={() => applySeed(name)}
-                    className="text-2xs text-neutral-500 hover:text-white font-medium"
+                    className="text-2xs text-muted-foreground hover:text-foreground font-medium"
                   >
                     {name === 'Random' ? (
                       <>
@@ -1481,11 +1484,11 @@ export const GridPaintPage: React.FC = () => {
               </div>
             </div>
             {/* Colors */}
-            <div className="p-3 space-y-2.5 border-b border-neutral-800">
-              <MicroTitle className="text-neutral-600 text-2xs">Color</MicroTitle>
+            <div className="p-3 space-y-2.5 border-b border-border">
+              <MicroTitle className="text-muted-foreground text-2xs">Color</MicroTitle>
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-2 cursor-pointer group">
-                  <div className="relative w-9 h-9 rounded-lg border border-white/10 overflow-hidden shadow-inner">
+                  <div className="relative w-9 h-9 rounded-xl border border-border overflow-hidden shadow-inner">
                     <input
                       type="color"
                       value={config.dotColor}
@@ -1493,16 +1496,16 @@ export const GridPaintPage: React.FC = () => {
                       className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
                     />
                     <div
-                      className="w-full h-full rounded-lg"
+                      className="w-full h-full rounded-xl"
                       style={{ background: config.dotColor }}
                     />
                   </div>
-                  <MicroTitle className="text-neutral-500 group-hover:text-neutral-300 text-2xs">
+                  <MicroTitle className="text-muted-foreground group-hover:text-foreground text-2xs">
                     {t('grid.paint.dot')}
                   </MicroTitle>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer group">
-                  <div className="relative w-9 h-9 rounded-lg border border-white/10 overflow-hidden shadow-inner">
+                  <div className="relative w-9 h-9 rounded-xl border border-border overflow-hidden shadow-inner">
                     <input
                       type="color"
                       value={config.bgColor}
@@ -1510,23 +1513,23 @@ export const GridPaintPage: React.FC = () => {
                       className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
                     />
                     <div
-                      className="w-full h-full rounded-lg"
+                      className="w-full h-full rounded-xl"
                       style={{ background: config.bgColor }}
                     />
                   </div>
-                  <MicroTitle className="text-neutral-500 group-hover:text-neutral-300 text-2xs">
+                  <MicroTitle className="text-muted-foreground group-hover:text-foreground text-2xs">
                     BG
                   </MicroTitle>
                 </label>
               </div>
             </div>
             {/* Frame */}
-            <div className="p-3 space-y-2 border-b border-neutral-800">
+            <div className="p-3 space-y-2 border-b border-border">
               <div className="flex items-center justify-between">
-                <MicroTitle className="text-neutral-600 text-2xs">
+                <MicroTitle className="text-muted-foreground text-2xs">
                   {t('grid.paint.frame')}
                 </MicroTitle>
-                <MicroTitle className="text-neutral-700 text-2xs">
+                <MicroTitle className="text-muted-foreground text-2xs">
                   {grid.cols}x{grid.rows} dots
                 </MicroTitle>
               </div>
@@ -1540,8 +1543,8 @@ export const GridPaintPage: React.FC = () => {
                     className={cn(
                       'text-2xs font-medium',
                       config.frameW === w && config.frameH === h
-                        ? 'text-white bg-white/10'
-                        : 'text-neutral-600'
+                        ? 'text-foreground bg-accent'
+                        : 'text-muted-foreground'
                     )}
                   >
                     {label}
@@ -1577,8 +1580,8 @@ export const GridPaintPage: React.FC = () => {
               />
             </div>
             {/* Shape */}
-            <div className="p-3 space-y-1 border-b border-neutral-800">
-              <MicroTitle className="text-neutral-600 text-2xs">Shape</MicroTitle>
+            <div className="p-3 space-y-1 border-b border-border">
+              <MicroTitle className="text-muted-foreground text-2xs">Shape</MicroTitle>
               <NodeSlider
                 label={t('grid.paint.dot_radius_2')}
                 value={config.dotRadius}
@@ -1615,12 +1618,12 @@ export const GridPaintPage: React.FC = () => {
               />
             </div>
             {/* Stroke */}
-            <div className="p-3 space-y-2.5 border-b border-neutral-800">
-              <MicroTitle className="text-neutral-600 text-2xs">
+            <div className="p-3 space-y-2.5 border-b border-border">
+              <MicroTitle className="text-muted-foreground text-2xs">
                 {t('grid.paint.stroke_2')}
               </MicroTitle>
               <div className="flex items-center justify-between">
-                <MicroTitle className="text-neutral-500 text-2xs">
+                <MicroTitle className="text-muted-foreground text-2xs">
                   {t('grid.paint.outline_mode_2')}
                 </MicroTitle>
                 <Switch
@@ -1642,9 +1645,9 @@ export const GridPaintPage: React.FC = () => {
             </div>
             {/* Connections */}
             <div className="p-3 space-y-2.5">
-              <MicroTitle className="text-neutral-600 text-2xs">Connections</MicroTitle>
+              <MicroTitle className="text-muted-foreground text-2xs">Connections</MicroTitle>
               <div className="flex items-center justify-between">
-                <MicroTitle className="text-neutral-500 text-2xs">
+                <MicroTitle className="text-muted-foreground text-2xs">
                   {t('grid.paint.diagonals_2')}
                 </MicroTitle>
                 <Switch
@@ -1660,22 +1663,13 @@ export const GridPaintPage: React.FC = () => {
       {!isMobile && (
         <AppShellStatusBar>
           <span>{Math.round(zoom * 100)}%</span>
-          <span>•</span>
           <span>{activeCount} dots</span>
-          <span>•</span>
           <span>
             {config.frameW}×{config.frameH}
           </span>
-          <span>•</span>
           <span>spacing {config.spacing}px</span>
-          <span>•</span>
           <span>r {config.dotRadius}px</span>
-          {config.strokeOnly && (
-            <>
-              <span>•</span>
-              <span className="text-brand-cyan">stroke</span>
-            </>
-          )}
+          {config.strokeOnly && <span className="text-foreground">stroke</span>}
         </AppShellStatusBar>
       )}
     </AppShell>

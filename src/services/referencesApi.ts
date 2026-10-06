@@ -187,8 +187,9 @@ export const referencesApi = {
     return resp.json();
   },
 
-  async facets(): Promise<ReferenceFacets> {
-    const resp = await fetch(`${BASE}/facets`, { headers: authHeaders() });
+  async facets(kind?: 'all' | 'branding' | 'mockup'): Promise<ReferenceFacets> {
+    const qs = kind && kind !== 'all' ? `?kind=${kind}` : '';
+    const resp = await fetch(`${BASE}/facets${qs}`, { headers: authHeaders() });
     if (!resp.ok) throw new Error('Failed to load facets');
     return resp.json();
   },

@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Input } from '@/components/ui/input';
 import { copyToClipboard } from '@/utils/clipboard';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -26,12 +28,11 @@ function getInitials(value: string): string {
 
 function getAvatarColor(value: string): string {
   const colors = [
-    'bg-violet-500/20 text-violet-300',
-    'bg-blue-500/20 text-blue-300',
-    'bg-success/20 text-success',
-    'bg-warning/20 text-warning',
-    'bg-destructive/20 text-destructive',
-    'bg-sky-500/20 text-sky-300',
+    'bg-chart-1/20 text-chart-1',
+    'bg-chart-2/20 text-chart-2',
+    'bg-chart-3/20 text-chart-3',
+    'bg-chart-4/20 text-chart-4',
+    'bg-chart-5/20 text-chart-5',
   ];
   return colors[value.charCodeAt(0) % colors.length];
 }
@@ -178,7 +179,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
         </div>
         <button
           onClick={onClose}
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800 transition-colors"
+          className="w-7 h-7 rounded-xl flex items-center justify-center text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800 transition-colors"
         >
           <X size={15} />
         </button>
@@ -189,30 +190,30 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
         <div className="space-y-2">
           <div className="flex items-center gap-1.5">
             <Link2 size={12} className="text-neutral-500" />
-            <span className="text-2xs font-semibold text-neutral-500 uppercase tracking-[0.12em]">
-              Link público
-            </span>
+            <span className="text-2xs font-medium text-neutral-500">Link público</span>
           </div>
           {shareUrl ? (
             <div className="flex items-center gap-2 p-1.5 pl-3 bg-neutral-800/60 border border-neutral-700/40 rounded-xl">
               <span className="flex-1 text-xs text-neutral-400 truncate">{shareUrl}</span>
-              <button
+              <Button
+                variant="surface"
+                size="xs"
                 onClick={handleCopyLink}
-                className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  copied
-                    ? 'bg-success/15 text-success border border-success/20'
-                    : 'bg-brand-cyan/15 hover:bg-brand-cyan/25 text-foreground border border-brand-cyan/25'
-                }`}
+                className={cn(
+                  'shrink-0 gap-1.5 px-3 text-xs',
+                  copied && 'border-success/20 bg-success/10 text-success hover:bg-success/10'
+                )}
               >
                 {copied ? <Check size={12} /> : <Copy size={12} />}
                 {copied ? 'Copiado!' : 'Copiar'}
-              </button>
+              </Button>
             </div>
           ) : (
-            <button
+            <Button
+              variant="primary"
               onClick={handleGenerateShare}
               disabled={isGenerating}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-cyan/15 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/25 rounded-xl text-sm font-medium transition-[color,background-color,border-color,opacity] disabled:opacity-50"
+              className="w-full gap-2 text-sm"
             >
               {isGenerating ? (
                 <>
@@ -223,7 +224,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
                   <Share2 size={14} /> {t('shareModal.generateShareLink')}
                 </>
               )}
-            </button>
+            </Button>
           )}
         </div>
 
@@ -234,7 +235,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
             <UserSection
               icon={<Edit3 size={13} />}
               label="Pode editar"
-              roleColor="text-violet-400"
+              roleColor="text-chart-1"
               users={editUsers}
               newUser={newEditUser}
               onNewUserChange={setNewEditUser}
@@ -245,7 +246,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
             <UserSection
               icon={<Eye size={13} />}
               label="Pode visualizar"
-              roleColor="text-sky-400"
+              roleColor="text-chart-2"
               users={viewUsers}
               newUser={newViewUser}
               onNewUserChange={setNewViewUser}
@@ -270,15 +271,17 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="px-3.5 py-1.5 text-xs text-neutral-400 hover:text-neutral-200 border border-neutral-700/60 hover:border-neutral-600 rounded-lg transition-colors"
+              className="px-3.5 py-1.5 text-xs text-neutral-400 hover:text-neutral-200 border border-neutral-700/60 hover:border-neutral-600 rounded-xl transition-colors"
             >
               Fechar
             </button>
             {isCollaborative && hasChanges && (
-              <button
+              <Button
+                variant="primary"
+                size="sm"
                 onClick={handleUpdatePermissions}
                 disabled={isLoading}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium bg-brand-cyan/15 hover:bg-brand-cyan/25 text-foreground border border-brand-cyan/25 rounded-lg transition-[color,background-color,border-color,opacity] disabled:opacity-50"
+                className="gap-1.5 px-3.5 text-xs"
               >
                 {isLoading ? (
                   <>
@@ -289,7 +292,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
                     <Check size={12} /> Salvar
                   </>
                 )}
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -340,7 +343,7 @@ const UserSection: React.FC<UserSectionProps> = ({
             className="flex items-center gap-2.5 px-3 py-2 bg-neutral-800/50 border border-neutral-700/40 rounded-xl group"
           >
             <div
-              className={`w-7 h-7 rounded-lg flex items-center justify-center text-2xs font-semibold shrink-0 ${getAvatarColor(
+              className={`w-7 h-7 rounded-xl flex items-center justify-center text-2xs font-medium shrink-0 ${getAvatarColor(
                 userId
               )}`}
             >
@@ -367,11 +370,11 @@ const UserSection: React.FC<UserSectionProps> = ({
         onChange={(e) => onNewUserChange(e.target.value)}
         onKeyPress={(e) => e.key === 'Enter' && onAdd()}
         placeholder={placeholder}
-        className="flex-1 h-8 text-xs bg-neutral-800/40 border-neutral-700/40 placeholder:text-neutral-600 focus:border-neutral-600 rounded-lg"
+        className="flex-1 h-8 text-xs bg-neutral-800/40 border-neutral-700/40 placeholder:text-neutral-600 focus:border-neutral-600 rounded-xl"
       />
       <button
         onClick={onAdd}
-        className="flex items-center gap-1 px-2.5 h-8 text-xs text-neutral-400 hover:text-neutral-200 bg-neutral-800/60 hover:bg-neutral-700/60 border border-neutral-700/40 rounded-lg transition-colors shrink-0 whitespace-nowrap"
+        className="flex items-center gap-1 px-2.5 h-8 text-xs text-neutral-400 hover:text-neutral-200 bg-neutral-800/60 hover:bg-neutral-700/60 border border-neutral-700/40 rounded-xl transition-colors shrink-0 whitespace-nowrap"
       >
         <UserPlus size={11} />
         Adicionar

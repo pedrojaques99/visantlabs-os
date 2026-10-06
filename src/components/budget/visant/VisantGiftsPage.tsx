@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
+import { DEFAULT_DOCUMENT_ACCENT } from './documentColors';
 interface VisantGiftsPageProps {
   data: BudgetData;
   editable?: boolean;
@@ -43,7 +44,7 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
 }) => {
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const accentColor = data.brandAccentColor || data.brandColors[0] || 'brand-cyan';
+  const accentColor = data.brandAccentColor || data.brandColors[0] || DEFAULT_DOCUMENT_ACCENT;
   const bgColor = '#fdfdfd';
   const textColor = '#000000';
 

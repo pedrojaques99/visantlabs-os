@@ -14,11 +14,17 @@ import { cn } from '@/lib/utils';
 export interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Fires after the profile (fields or picture) was persisted. */
+  onSuccess?: (user: UserType) => void;
 }
 
 const MAX_PICTURE_BYTES = 5 * 1024 * 1024;
 
-export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) => {
+export const EditProfileModal: React.FC<EditProfileModalProps> = ({
+  isOpen,
+  onClose,
+  onSuccess,
+}) => {
   const { t } = useTranslation();
   const { isAuthenticated, isCheckingAuth } = useLayout();
 
@@ -112,10 +118,11 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
 
       const updatedUser = await authService.updateProfile(updateData);
       setUser(updatedUser);
-      setSuccess(t('common.profileUpdatedSuccess') || 'Profile updated successfully');
+      setSuccess(t('common.profileUpdatedSuccess'));
+      onSuccess?.(updatedUser);
     } catch (err: any) {
       console.error('Failed to update profile:', err);
-      setError(err.message || t('profile.updateError') || 'Failed to update profile');
+      setError(err.message || t('profile.updateError'));
     } finally {
       setIsSaving(false);
     }
@@ -154,6 +161,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
       setPictureUrl(updatedUser.picture || '');
       setUser(updatedUser);
       setSuccess(t('profile.pictureUploaded'));
+      onSuccess?.(updatedUser);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
       console.error('Upload error:', err);
@@ -168,7 +176,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
   const modalProps = {
     isOpen,
     onClose: requestClose,
-    title: t('profile.editTitle') || 'Edit profile',
+    title: t('profile.editTitle'),
     size: 'lg' as const,
     id: 'edit-profile',
   };
@@ -200,9 +208,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
     return (
       <Modal {...modalProps}>
         <div className="text-center py-6 space-y-4">
-          <p className="text-destructive">
-            {t('common.notAuthenticated') || 'Please sign in to edit your profile'}
-          </p>
+          <p className="text-destructive">{t('common.notAuthenticated')}</p>
           <Button variant="surface" onClick={onClose}>
             {t('common.close')}
           </Button>
@@ -234,13 +240,13 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
         {(error || success) && (
           <div className="space-y-3 mb-8">
             {error && (
-              <div className="rounded-lg p-4 text-sm flex items-center gap-2 bg-destructive/10 border border-destructive/30 text-destructive">
+              <div className="rounded-xl p-4 text-sm flex items-center gap-2 bg-destructive/10 border border-destructive/30 text-destructive">
                 <X size={16} />
                 {error}
               </div>
             )}
             {success && (
-              <div className="rounded-lg p-4 text-sm flex items-center gap-2 bg-success/10 border border-success/30 text-success">
+              <div className="rounded-xl p-4 text-sm flex items-center gap-2 bg-success/10 border border-success/30 text-success">
                 <Check size={16} />
                 {success}
               </div>
@@ -262,8 +268,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             type="button"
             onClick={handlePictureClick}
             disabled={isUploadingPicture}
-            aria-label={t('profile.uploadPicture') || 'Click to upload picture'}
-            className="relative w-28 h-28 rounded-lg overflow-hidden flex items-center justify-center bg-muted border border-border transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label={t('profile.changePicture')}
+            className="relative w-28 h-28 rounded-xl overflow-hidden flex items-center justify-center bg-muted border border-border transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isUploadingPicture ? (
               <GlitchLoader size={32} />
@@ -281,7 +287,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 "Salvar". Dois acentos na mesma superfície é accent-overuse. */}
             <span
               className={cn(
-                'absolute bottom-2 right-2 rounded-lg p-2 shadow-lg border border-border',
+                'absolute bottom-2 right-2 rounded-xl p-2 shadow-lg border border-border',
                 isUploadingPicture
                   ? 'bg-muted text-muted-foreground'
                   : 'bg-background text-foreground'
@@ -291,14 +297,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             </span>
           </button>
           <div className="flex-1 space-y-3 min-w-0">
-            <p className="text-sm text-muted-foreground">
-              {t('profile.currentEmail') || 'Signed in as'}
-            </p>
+            <p className="text-sm text-muted-foreground">{t('profile.currentEmail')}</p>
             <p className="text-xl font-semibold font-manrope text-foreground truncate">
               {user.email}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {t('profile.editHint') || 'Changes will reflect instantly across the platform.'}
             </p>
           </div>
         </div>
@@ -311,7 +312,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
               className="flex items-center gap-2 text-sm text-muted-foreground"
             >
               <User size={14} />
-              {t('profile.name') || 'Name'}
+              {t('profile.name')}
             </label>
             <Input
               id="edit-profile-name"
@@ -327,7 +328,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
               className="flex items-center gap-2 text-sm text-muted-foreground"
             >
               <Mail size={14} />
-              {t('profile.email') || 'Email'}
+              {t('profile.email')}
             </label>
             <Input
               id="edit-profile-email"

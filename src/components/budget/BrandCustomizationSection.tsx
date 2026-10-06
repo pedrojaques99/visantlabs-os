@@ -10,6 +10,7 @@ import { budgetApi } from '@/services/budgetApi';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 
+import { DEFAULT_DOCUMENT_ACCENT } from './visant/documentColors';
 interface BrandCustomizationSectionProps {
   brandName: string;
   brandColors: string[];
@@ -68,17 +69,14 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
 
     // Validate file type
     if (!SUPPORTED_MIME_TYPES.includes(file.type)) {
-      toast.error(t('upload.unsupportedFileType') || 'Unsupported file type');
+      toast.error(t('upload.unsupportedFileType'));
       return;
     }
 
     // Validate file size
     if (file.size > MAX_IMAGE_SIZE_BYTES) {
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      toast.error(
-        t('upload.imageTooLarge', { size: fileSizeMB, max: MAX_IMAGE_SIZE_MB }) ||
-          `Image size must be less than ${MAX_IMAGE_SIZE_MB}MB`
-      );
+      toast.error(t('upload.imageTooLarge', { size: fileSizeMB, max: MAX_IMAGE_SIZE_MB }));
       return;
     }
 
@@ -88,7 +86,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
       await handleImageUpload(imageData);
     } catch (error: any) {
       console.error('Error processing file:', error);
-      toast.error(t('upload.couldNotProcess') || 'Failed to process image');
+      toast.error(t('upload.couldNotProcess'));
     } finally {
       setIsUploadingLogo(false);
       // Reset input value to allow selecting the same file again
@@ -109,10 +107,10 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
     try {
       const imageUrl = await budgetApi.uploadLogo(budgetId, image.base64);
       onBrandLogoChange(imageUrl);
-      toast.success(t('budget.logoUploaded') || 'Logo uploaded successfully');
+      toast.success(t('budget.logoUploaded'));
     } catch (error: any) {
       console.error('Error uploading logo:', error);
-      toast.error(error.message || t('budget.logoUploadError') || 'Failed to upload logo');
+      toast.error(error.message || t('budget.logoUploadError'));
       // Fallback para base64 se upload falhar
       onBrandLogoChange(image.base64);
     }
@@ -136,14 +134,13 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
         backgroundColor: brandBackgroundColor || undefined,
       }}
     >
-      <h3 className={`text-lg font-semibold font-mono ${textColor}`}>
-        {t('budget.brandCustomization')}
-      </h3>
+      <h3 className={`text-lg font-medium ${textColor}`}>{t('budget.brandCustomization')}</h3>
 
       <div>
-        <label className={`block text-xs mb-2 font-mono ${textColor} opacity-80`}>
+        <label className={`block text-xs mb-2 ${textColor} opacity-80`}>
           {t('budget.brandName')}
         </label>
+        {/* EXCEÇÃO ao ui-scale/opacidade-cru: campo pintado sobre a cor de fundo da marca */}
         <FormInput
           value={brandName}
           onChange={(e) => onBrandNameChange(e.target.value)}
@@ -153,15 +150,13 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
       </div>
 
       <div>
-        <label className={`block text-xs mb-2 font-mono ${textColor} opacity-80`}>
+        <label className={`block text-xs mb-2 ${textColor} opacity-80`}>
           {t('budget.brandLogo')}
         </label>
         {isUploadingLogo ? (
           <div className="flex items-center gap-2 p-4 border border-neutral-800 rounded-xl bg-neutral-950/20">
-            <GlitchLoader size={16} color="brand-cyan" />
-            <span className="text-sm text-neutral-400 font-mono">
-              {t('budget.uploadingLogo') || 'Uploading logo...'}
-            </span>
+            <GlitchLoader size={16} />
+            <span className="text-sm text-neutral-400">{t('budget.uploadingLogo')}</span>
           </div>
         ) : brandLogo ? (
           <div className="relative inline-block">
@@ -194,10 +189,10 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploadingLogo}
-              className="border border-neutral-800 bg-neutral-950/20 hover:bg-neutral-950/30 text-neutral-200 hover:text-brand-cyan"
+              className="border border-neutral-800 bg-neutral-950/20 hover:bg-neutral-950/30 text-neutral-200 hover:text-foreground"
             >
               <Upload className="h-4 w-4" />
-              {t('budget.uploadLogo') || 'Upload Logo'}
+              {t('budget.uploadLogo')}
             </Button>
           </div>
         )}
@@ -205,7 +200,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
 
       {/* Cor de Fundo */}
       <div>
-        <label className={`block text-xs mb-2 font-mono ${textColor} opacity-80`}>
+        <label className={`block text-xs mb-2 ${textColor} opacity-80`}>
           {t('budget.brandBackgroundColor')}
         </label>
         <div className="flex gap-2">
@@ -227,7 +222,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
               variant="ghost"
               type="button"
               onClick={() => onBrandBackgroundColorChange(undefined)}
-              className="px-3 py-2 bg-destructive/20 hover:bg-destructive/30 border border-destructive/50 rounded-xl text-destructive font-mono text-sm transition-colors"
+              className="px-3 py-2 bg-destructive/20 hover:bg-destructive/30 border border-destructive/50 rounded-xl text-destructive text-sm transition-colors"
             >
               <X size={16} />
             </Button>
@@ -237,13 +232,13 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
 
       {/* Cor de Destaque */}
       <div>
-        <label className={`block text-xs mb-2 font-mono ${textColor} opacity-80`}>
+        <label className={`block text-xs mb-2 ${textColor} opacity-80`}>
           {t('budget.brandAccentColor')}
         </label>
         <div className="flex gap-2">
           <FormInput
             type="color"
-            value={brandAccentColor || 'brand-cyan'}
+            value={brandAccentColor || DEFAULT_DOCUMENT_ACCENT}
             onChange={(e) => onBrandAccentColorChange(e.target.value || undefined)}
             className="w-20 h-10 cursor-pointer"
           />
@@ -259,7 +254,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
               variant="ghost"
               type="button"
               onClick={() => onBrandAccentColorChange(undefined)}
-              className="px-3 py-2 bg-destructive/20 hover:bg-destructive/30 border border-destructive/50 rounded-xl text-destructive font-mono text-sm transition-colors"
+              className="px-3 py-2 bg-destructive/20 hover:bg-destructive/30 border border-destructive/50 rounded-xl text-destructive text-sm transition-colors"
             >
               <X size={16} />
             </Button>

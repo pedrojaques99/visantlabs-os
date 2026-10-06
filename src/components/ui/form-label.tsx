@@ -11,10 +11,7 @@ const FormLabel = React.forwardRef<HTMLLabelElement, FormLabelProps>(
     return (
       <label
         ref={ref}
-        className={cn(
-          'flex items-center gap-2 text-xs text-neutral-400 font-mono uppercase',
-          className
-        )}
+        className={cn('flex items-center gap-2 text-xs text-muted-foreground', className)}
         {...props}
       >
         {Icon && <Icon size={14} />}

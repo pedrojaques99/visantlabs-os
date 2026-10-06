@@ -16,6 +16,8 @@ import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
+import { Dropzone } from '@/components/ui/Dropzone';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Input } from '@/components/ui/input';
 import JSZip from 'jszip';
 import { QuickActions } from '@/components/shared/QuickActions';
@@ -24,23 +26,19 @@ import { useToolInput } from '@/hooks/useToolInput';
 import { useBrandDefaults } from '@/hooks/useBrandDefaults';
 import { glassSurface } from '@/lib/ui/glass';
 import { useTranslation } from '@/hooks/useTranslation';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { Thumb } from '@/components/ui/Thumb';
+import { fade, transitions } from '@/lib/ui/motion';
 
 /* ------------------------------------------------------------------ */
 /*  Animation presets                                                  */
 /* ------------------------------------------------------------------ */
 
-const ease = [0.4, 0, 0.2, 1] as const;
-const fadeUp = {
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8 },
-  transition: { duration: 0.35, ease },
-};
 const fadeScale = {
   initial: { opacity: 0, scale: 0.96 },
   animate: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 0.96 },
-  transition: { duration: 0.3, ease },
+  transition: transitions.base,
 };
 
 /* ------------------------------------------------------------------ */
@@ -187,7 +185,6 @@ async function applyWatermark(item: WatermarkItem, settings: WmSettings): Promis
 
 export const WatermarkPage: React.FC = () => {
   const { t } = useTranslation();
-  const inputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
@@ -246,7 +243,7 @@ export const WatermarkPage: React.FC = () => {
   /* --- File handling --- */
 
   const handleFiles = useCallback(
-    (fileList: FileList) => {
+    (fileList: FileList | File[]) => {
       const valid: { url: string; name: string }[] = [];
       Array.from(fileList).forEach((file) => {
         const error = validateFile(file, 'image');
@@ -259,14 +256,6 @@ export const WatermarkPage: React.FC = () => {
       if (valid.length) addFiles(valid);
     },
     [addFiles]
-  );
-
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files) handleFiles(e.target.files);
-      if (e.target) e.target.value = '';
-    },
-    [handleFiles]
   );
 
   const handleDrop = useCallback(
@@ -305,7 +294,7 @@ export const WatermarkPage: React.FC = () => {
     if (isProcessing) return;
     const toProcess = items.filter((i) => i.status === 'queued' || i.status === 'error');
     if (!toProcess.length) {
-      toast.info('Nothing to process');
+      toast.info(t('miniTools.nothingToProcess'));
       return;
     }
 
@@ -321,7 +310,7 @@ export const WatermarkPage: React.FC = () => {
     };
 
     if (settings.watermarkType === 'logo' && !settings.logoUrl) {
-      toast.error('Upload a logo image first');
+      toast.error(t('miniTools.watermark.uploadLogoFirst'));
       return;
     }
 
@@ -343,8 +332,9 @@ export const WatermarkPage: React.FC = () => {
       setConvertProgress(Math.round((done / total) * 100));
     }
     setIsProcessing(false);
-    if (done > 0) toast.success(`${done} image${done > 1 ? 's' : ''} watermarked`);
+    if (done > 0) toast.success(t('miniTools.watermark.done', { count: done }));
   }, [
+    t,
     items,
     watermarkType,
     text,
@@ -380,16 +370,16 @@ export const WatermarkPage: React.FC = () => {
     }
     const blob = await zip.generateAsync({ type: 'blob' });
     downloadBlob(blob, `watermark-batch-${Date.now()}.zip`);
-    toast.success('ZIP downloaded');
-  }, [items]);
+    toast.success(t('miniTools.zipDownloaded'));
+  }, [items, t]);
 
   const handleCopyPreview = useCallback(async () => {
     const src = previewItem?.resultBase64 || previewItem?.sourceUrl;
     if (!src) return;
     const result = await copyImageAsPng(src);
-    if (result.success) toast.success('Copied to clipboard');
-    else toast.error(result.error || 'Copy failed');
-  }, [previewItem]);
+    if (result.success) toast.success(t('miniTools.copied'));
+    else toast.error(result.error || t('miniTools.copyFailed'));
+  }, [previewItem, t]);
 
   /* ------------------------------------------------------------------ */
   /*  Panel content                                                      */
@@ -398,50 +388,48 @@ export const WatermarkPage: React.FC = () => {
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Add more */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-2xs font-mono uppercase tracking-wider cursor-pointer transition-colors duration-200">
-        <Upload size={12} />
-        Add images
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          multiple
-          className="hidden"
-          onChange={handleInputChange}
-        />
-      </label>
+      <Dropzone
+        onFiles={handleFiles}
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        label={t('miniTools.addImages')}
+        size="sm"
+        dropTarget={false}
+      />
 
       {/* Thumbnail queue */}
       <div className="max-h-[32vh] overflow-y-auto space-y-1.5 pr-1">
-        {items.map((item, i) => (
+        {items.map((item) => (
           <motion.div
             key={item.id}
             onClick={() => setPreviewId(item.id)}
-            initial={{ opacity: 0, x: 8 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.25, delay: i * 0.03 }}
+            {...fade}
             layout
             className={cn(
-              'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors duration-200 group',
-              previewItem?.id === item.id
-                ? 'bg-neutral-800/60 ring-1 ring-brand-cyan/30'
-                : 'hover:bg-neutral-900/60'
+              'group flex items-center gap-2 p-1.5 rounded-xl cursor-pointer transition-colors duration-200',
+              previewItem?.id === item.id ? 'bg-muted ring-1 ring-border' : 'hover:bg-muted/60'
             )}
           >
-            <img
+            <Thumb
               src={item.resultBase64 || item.sourceUrl}
               alt=""
-              className="w-10 h-10 rounded object-cover bg-neutral-900 flex-shrink-0"
+              className="w-10 h-10 rounded object-cover bg-muted flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-2xs font-mono text-neutral-300 truncate">{item.fileName}</p>
+              <p className="text-2xs font-mono text-foreground truncate">{item.fileName}</p>
               <StatusBadge status={item.status} />
             </div>
             <button
+              type="button"
+              aria-label={t('miniTools.remove')}
               onClick={(e) => {
                 e.stopPropagation();
                 removeItem(item.id);
               }}
-              className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-neutral-300 transition-[color,background-color,border-color,opacity] duration-200 flex-shrink-0"
+              className={cn(
+                hoverReveal,
+                'text-muted-foreground hover:text-foreground flex-shrink-0'
+              )}
             >
               <X size={12} />
             </button>
@@ -449,7 +437,7 @@ export const WatermarkPage: React.FC = () => {
         ))}
       </div>
 
-      <div className="h-px bg-neutral-800" />
+      <div className="h-px bg-border" />
 
       {/* Controls */}
       <div className="space-y-4">
@@ -457,40 +445,35 @@ export const WatermarkPage: React.FC = () => {
 
         {/* Type toggle */}
         <div className="space-y-1.5">
-          <span className="text-xs font-medium text-neutral-500">Type</span>
-          <div className="flex gap-1">
-            {(['text', 'logo'] as const).map((wmType) => (
-              <motion.button
-                key={wmType}
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setWatermarkType(wmType)}
-                disabled={isProcessing}
-                className={cn(
-                  'flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-mono transition-colors duration-200',
-                  watermarkType === wmType
-                    ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40'
-                    : 'bg-neutral-900 text-neutral-500 border border-neutral-800 hover:border-neutral-600'
-                )}
-              >
-                {wmType === 'text' ? <Type size={10} /> : <Image size={10} />}
-                {wmType === 'text' ? 'Text' : 'Logo'}
-              </motion.button>
-            ))}
-          </div>
+          <span className="text-xs font-medium text-muted-foreground">
+            {t('miniTools.watermark.type')}
+          </span>
+          <SegmentedControl
+            aria-label={t('miniTools.watermark.type')}
+            size="sm"
+            value={watermarkType}
+            onChange={setWatermarkType}
+            disabled={isProcessing}
+            options={[
+              { value: 'text', label: t('miniTools.watermark.text'), icon: Type },
+              { value: 'logo', label: t('miniTools.watermark.logo'), icon: Image },
+            ]}
+          />
         </div>
 
         {/* Text input + color OR logo upload */}
         {watermarkType === 'text' ? (
           <div className="space-y-1.5">
-            <span className="text-xs font-medium text-neutral-500">Text</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              {t('miniTools.watermark.text')}
+            </span>
             <div className="flex items-center gap-2">
               <Input
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 disabled={isProcessing}
-                placeholder="Watermark text"
-                className="h-7 text-xs font-mono bg-neutral-900 border-neutral-800 flex-1"
+                placeholder={t('miniTools.watermark.textPlaceholder')}
+                className="h-7 text-xs flex-1"
               />
               <label className="relative flex-shrink-0">
                 <input
@@ -501,7 +484,7 @@ export const WatermarkPage: React.FC = () => {
                   className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                 />
                 <div
-                  className="w-7 h-7 rounded border border-neutral-700 cursor-pointer"
+                  className="w-7 h-7 rounded border border-border cursor-pointer"
                   style={{ backgroundColor: color }}
                 />
               </label>
@@ -509,26 +492,31 @@ export const WatermarkPage: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-1.5">
-            <span className="text-xs font-medium text-neutral-500">Logo</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              {t('miniTools.watermark.logo')}
+            </span>
             <div className="flex items-center gap-2">
               <button
+                type="button"
                 onClick={() => logoInputRef.current?.click()}
                 disabled={isProcessing}
                 className={cn(
-                  'flex items-center gap-1 px-2.5 py-1 rounded text-2xs font-mono uppercase tracking-wider transition-colors duration-200',
+                  'flex items-center gap-1 px-2.5 py-1 rounded border text-xs transition-colors duration-200',
                   logoUrl
-                    ? 'bg-neutral-800 text-neutral-300 border border-neutral-700'
-                    : 'bg-neutral-900 text-neutral-500 border border-dashed border-neutral-700 hover:border-neutral-500'
+                    ? 'border-border bg-muted text-foreground'
+                    : 'border-dashed border-border bg-muted/40 text-muted-foreground hover:border-ring hover:text-foreground'
                 )}
               >
                 <Upload size={10} />
-                {logoUrl ? 'Change logo' : 'Upload logo'}
+                {logoUrl
+                  ? t('miniTools.watermark.changeLogo')
+                  : t('miniTools.watermark.uploadLogo')}
               </button>
               {logoUrl && (
-                <img
+                <Thumb
                   src={logoUrl}
-                  alt="logo"
-                  className="w-7 h-7 rounded object-contain bg-neutral-900 border border-neutral-800"
+                  alt={t('miniTools.watermark.logo')}
+                  className="w-7 h-7 rounded object-contain bg-muted border border-border"
                 />
               )}
               <input
@@ -544,46 +532,51 @@ export const WatermarkPage: React.FC = () => {
 
         {/* Position grid */}
         <div className="space-y-1.5">
-          <span className="text-xs font-medium text-neutral-500">Position</span>
+          <span className="text-xs font-medium text-muted-foreground">
+            {t('miniTools.watermark.position')}
+          </span>
           <div className="space-y-1">
             <div className="grid grid-cols-3 gap-1 w-fit">
               {POSITION_GRID.flat().map((pos) => (
-                <motion.button
+                <button
                   key={pos}
-                  whileHover={{ scale: 1.15 }}
-                  whileTap={{ scale: 0.9 }}
+                  type="button"
+                  aria-label={pos}
+                  aria-pressed={position === pos}
                   onClick={() => setPosition(pos)}
                   disabled={isProcessing}
                   className={cn(
-                    'w-5 h-5 rounded-sm transition-colors duration-200 flex items-center justify-center',
+                    'w-5 h-5 rounded-md border transition-colors duration-200 flex items-center justify-center',
                     position === pos
-                      ? 'bg-brand-cyan border border-brand-cyan'
-                      : 'bg-neutral-900 border border-neutral-800 hover:border-neutral-600'
+                      ? 'bg-foreground border-foreground'
+                      : 'bg-muted/40 border-border hover:border-ring'
                   )}
                 >
                   <span
                     className={cn(
                       'w-1.5 h-1.5 rounded-full',
-                      position === pos ? 'bg-neutral-950' : 'bg-neutral-600'
+                      position === pos ? 'bg-background' : 'bg-muted-foreground'
                     )}
                   />
-                </motion.button>
+                </button>
               ))}
             </div>
             <button
+              type="button"
               onClick={() => {
                 setPosition('tile');
                 if (rotation === 0) setRotation(-45);
               }}
               disabled={isProcessing}
+              aria-pressed={position === 'tile'}
               className={cn(
-                'w-full px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider transition-colors duration-200',
+                'w-full rounded border px-2 py-0.5 text-xs transition-colors duration-200',
                 position === 'tile'
-                  ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40'
-                  : 'bg-neutral-900 text-neutral-500 border border-neutral-800 hover:border-neutral-600'
+                  ? 'border-ring bg-muted text-foreground'
+                  : 'border-border bg-muted/40 text-muted-foreground hover:border-ring hover:text-foreground'
               )}
             >
-              Tile
+              {t('miniTools.watermark.tile')}
             </button>
           </div>
         </div>
@@ -591,8 +584,10 @@ export const WatermarkPage: React.FC = () => {
         {/* Opacity slider */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-neutral-500">Opacity</span>
-            <span className="text-2xs font-mono text-neutral-500 tabular-nums">
+            <span className="text-xs font-medium text-muted-foreground">
+              {t('miniTools.watermark.opacity')}
+            </span>
+            <span className="text-2xs font-mono text-muted-foreground tabular-nums">
               {Math.round(opacity * 100)}%
             </span>
           </div>
@@ -604,15 +599,17 @@ export const WatermarkPage: React.FC = () => {
             value={opacity}
             onChange={(e) => setOpacity(parseFloat(e.target.value))}
             disabled={isProcessing}
-            className="w-full h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
+            className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
           />
         </div>
 
         {/* Size slider */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-neutral-500">Size</span>
-            <span className="text-2xs font-mono text-neutral-500 tabular-nums">{scale}%</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              {t('miniTools.watermark.size')}
+            </span>
+            <span className="text-2xs font-mono text-muted-foreground tabular-nums">{scale}%</span>
           </div>
           <input
             type="range"
@@ -622,15 +619,19 @@ export const WatermarkPage: React.FC = () => {
             value={scale}
             onChange={(e) => setScale(parseInt(e.target.value))}
             disabled={isProcessing}
-            className="w-full h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
+            className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
           />
         </div>
 
         {/* Rotation slider */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-neutral-500">Rotation</span>
-            <span className="text-2xs font-mono text-neutral-500 tabular-nums">{rotation}deg</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              {t('miniTools.watermark.rotation')}
+            </span>
+            <span className="text-2xs font-mono text-muted-foreground tabular-nums">
+              {rotation}°
+            </span>
           </div>
           <input
             type="range"
@@ -640,12 +641,12 @@ export const WatermarkPage: React.FC = () => {
             value={rotation}
             onChange={(e) => setRotation(parseInt(e.target.value))}
             disabled={isProcessing}
-            className="w-full h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
+            className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
           />
         </div>
       </div>
 
-      <div className="h-px bg-neutral-800" />
+      <div className="h-px bg-border" />
 
       {/* Actions */}
       <div className="space-y-2">
@@ -655,7 +656,9 @@ export const WatermarkPage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
+                variant="primary"
+                size="sm"
+                className="w-full text-xs"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -664,8 +667,10 @@ export const WatermarkPage: React.FC = () => {
                 )}
                 <span className="ml-2">
                   {isProcessing
-                    ? 'Processing...'
-                    : `Apply${queuedOrErrorCount > 1 ? ` ${queuedOrErrorCount} images` : ' All'}`}
+                    ? t('common.processing')
+                    : queuedOrErrorCount > 1
+                      ? t('miniTools.watermark.runCount', { count: queuedOrErrorCount })
+                      : t('miniTools.watermark.run')}
                 </span>
               </Button>
             </motion.div>
@@ -677,7 +682,7 @@ export const WatermarkPage: React.FC = () => {
               <QuickActions
                 toolId="watermark"
                 outputMime="image/png"
-                summary={`${doneCount} image${doneCount > 1 ? 's' : ''} watermarked`}
+                summary={t('miniTools.watermark.done', { count: doneCount })}
                 onDownloadAll={handleDownloadAll}
                 onCopy={handleCopyPreview}
                 assetData={
@@ -698,8 +703,8 @@ export const WatermarkPage: React.FC = () => {
   ) : undefined;
 
   const statusBarContent = hasItems ? (
-    <div className="flex items-center gap-3 text-2xs font-mono uppercase tracking-widest tabular-nums">
-      <span className="text-neutral-400">
+    <div className="flex items-center gap-3 text-2xs tabular-nums text-muted-foreground">
+      <span>
         {doneCount}/{items.length}
       </span>
     </div>
@@ -717,7 +722,7 @@ export const WatermarkPage: React.FC = () => {
       documentTitle={t('apps.watermark.name')}
       onReset={hasItems ? reset : undefined}
       panel={panelContent}
-      panelLabel="Queue & settings"
+      panelLabel={t('miniTools.panelLabel')}
       statusBar={statusBarContent}
       dragDrop={{
         onDrop: handleDrop,
@@ -727,59 +732,16 @@ export const WatermarkPage: React.FC = () => {
       }}
     >
       <AnimatePresence mode="wait">
-        {/* Upload zone — centered Apple-style landing */}
         {!hasItems ? (
-          <motion.div key="upload" {...fadeUp} className="flex flex-col items-center gap-6 py-8">
-            <motion.div
-              className={cn(
-                'w-16 h-16 rounded-2xl flex items-center justify-center',
-                glassSurface.panel
-              )}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.1, duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
-            >
-              <Stamp size={28} className="text-neutral-500" />
-            </motion.div>
-
-            <motion.div
-              className="text-center space-y-2"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.35 }}
-            >
-              <p className="text-sm text-neutral-300 font-medium">Add watermarks to images</p>
-              <p className="text-xs text-neutral-600 font-mono">
-                Text or logo watermark with position control — batch supported
-              </p>
-            </motion.div>
-
-            <motion.label
-              className={cn(
-                'flex flex-col items-center justify-center gap-3 w-full max-w-md h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-colors duration-200',
-                isDragOver
-                  ? 'border-brand-cyan bg-brand-cyan/5'
-                  : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40'
-              )}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-            >
-              <Upload size={24} className="text-neutral-500" />
-              <span className="text-xs font-medium text-neutral-500">
-                Drop images or click — batch supported
-              </span>
-              <input
-                ref={inputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                multiple
-                className="hidden"
-                onChange={handleInputChange}
-              />
-            </motion.label>
+          <motion.div key="upload" {...fade} className="flex w-full justify-center py-8">
+            <Dropzone
+              onFiles={handleFiles}
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              label={t('miniTools.dropImages')}
+              dropTarget={false}
+              className="max-w-md"
+            />
           </motion.div>
         ) : (
           /* Working state — preview centered in canvas */
@@ -787,8 +749,8 @@ export const WatermarkPage: React.FC = () => {
             key="workspace"
             {...fadeScale}
             className={cn(
-              'relative w-full max-w-3xl rounded-2xl overflow-hidden min-h-[300px] flex items-center justify-center',
-              glassSurface.panel
+              'relative w-full max-w-3xl rounded-xl overflow-hidden min-h-[300px] flex items-center justify-center',
+              glassSurface.surface
             )}
           >
             {previewItem ? (
@@ -801,27 +763,14 @@ export const WatermarkPage: React.FC = () => {
                 <AnimatePresence>
                   {isProcessing && (
                     <motion.div
-                      className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 flex items-center justify-center bg-background/80"
+                      {...fade}
                     >
                       <FlyingPaperLoader
                         progress={convertProgress}
-                        label={`${convertProgress}% — ${doneCount}/${items.length}`}
+                        label={`${convertProgress}% · ${doneCount}/${items.length}`}
                       />
                     </motion.div>
-                  )}
-                </AnimatePresence>
-                <AnimatePresence>
-                  {previewItem.status === 'done' && (
-                    <motion.span
-                      key="done-badge"
-                      {...fadeScale}
-                      className="absolute top-2 right-2 text-2xs font-mono uppercase tracking-wider bg-neutral-900/80 text-neutral-400 px-2 py-0.5 rounded"
-                    >
-                      WM
-                    </motion.span>
                   )}
                 </AnimatePresence>
               </>

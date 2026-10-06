@@ -17,7 +17,10 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { MicroTitle } from '@/components/ui/MicroTitle';
-import { SegmentedControl } from '@/components/shared/ToolPanel';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { MediaTile } from '@/components/ui/MediaTile';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 import { useBrandKitSafe } from '@/contexts/BrandKitContext';
@@ -45,7 +48,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
   onAddToBoard: propOnAddToBoard,
   guidelineId: propGuidelineId,
 }) => {
-  const { t } = useTranslation();
+  const { t, tOr } = useTranslation();
   const canvasHeader = useCanvasHeader();
   const brandKit = useBrandKitSafe();
   const mockupContext = useContext(MockupContext);
@@ -92,20 +95,20 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
   const handleAssetSelect = (url: string, type: 'image' | 'logo') => {
     if (onSelectAsset) {
       onSelectAsset(url, type);
-      toast.success('Asset referenced');
+      toast.success(t('canvas.mediaLibrary.assetReferenced'));
     } else if (onAddToBoard) {
       onAddToBoard(url, type);
-      toast.success('Asset added to board');
+      toast.success(t('canvas.mediaLibrary.assetAdded'));
     }
   };
 
   const handleApplyToTheme = (hex: string, mode: 'background' | 'primary') => {
     if (mode === 'background') {
       canvasHeader.setBackgroundColor(hex);
-      toast.success('Canvas Background updated');
+      toast.success(t('canvas.mediaLibrary.backgroundUpdated'));
     } else {
       canvasHeader.setBrandCyan(hex);
-      toast.success('Brand Primary Color updated');
+      toast.success(t('canvas.mediaLibrary.primaryUpdated'));
     }
   };
 
@@ -128,13 +131,13 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
   const handleSanitize = useCallback(
     async (ref: ReferenceResult) => {
       setSanitizingIds((prev) => new Set(prev).add(ref.id));
-      const toastId = toast.loading('Sanitizando referência...');
+      const toastId = toast.loading(t('canvas.mediaLibrary.sanitizing'));
       try {
         const newUrl = await referenceApi.sanitize(ref);
         refSearch.updateResult(ref.id, { referenceImageUrl: newUrl, sanitized: true });
-        toast.success('Referência sanitizada com sucesso', { id: toastId });
+        toast.success(t('canvas.mediaLibrary.sanitized'), { id: toastId });
       } catch {
-        toast.error('Erro ao sanitizar referência', { id: toastId });
+        toast.error(t('canvas.mediaLibrary.sanitizeFailed'), { id: toastId });
       } finally {
         setSanitizingIds((prev) => {
           const next = new Set(prev);
@@ -146,28 +149,36 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
     [refSearch]
   );
 
+  const tabOptions = (['all', 'logos', 'media', 'colors', 'refs'] as TabType[]).map((tab) => ({
+    value: tab,
+    label: tab === 'refs' ? 'Refs' : tOr(`common.tabs.${tab}`, tab),
+  }));
+
   if (!selectedBrandGuidelineId && activeTab !== 'refs') {
     return (
       <div className="flex flex-col h-full">
         {/* Show tabs even without brand — so refs tab is accessible */}
-        <div className="flex flex-col gap-2 p-2 border-b border-white/[0.06]">
-          <SegmentedControl
-            variant="brand"
-            size="sm"
+        <div className="flex flex-col gap-2 p-2 border-b border-border">
+          <SegmentedControl<TabType>
+            size="xs"
+            fullWidth
+            scrollable
+            aria-label={t('canvas.mediaLibrary.tabsLabel')}
             value={activeTab}
-            onChange={(v) => setActiveTab(v as TabType)}
-            options={(['all', 'logos', 'media', 'colors', 'refs'] as TabType[]).map((tab) => ({
-              value: tab,
-              label: tab === 'refs' ? 'Refs' : t(`common.tabs.${tab}`) || tab,
-            }))}
+            onChange={setActiveTab}
+            options={tabOptions}
           />
         </div>
         <div className="flex flex-col items-center justify-center flex-1 py-16 text-center px-4">
           <div className="w-12 h-12 rounded-full bg-neutral-900 flex items-center justify-center mb-3 border border-dashed border-neutral-800">
             <LayoutGrid className="text-neutral-600" size={20} />
           </div>
-          <p className="text-xs font-medium text-neutral-500">No Brand Selected</p>
-          <p className="text-2xs text-neutral-700 mt-1">Select a brand or browse References.</p>
+          <p className="text-xs font-medium text-muted-foreground">
+            {t('canvas.mediaLibrary.noBrandTitle')}
+          </p>
+          <p className="mt-1 text-2xs text-muted-foreground">
+            {t('canvas.mediaLibrary.noBrandBody')}
+          </p>
         </div>
       </div>
     );
@@ -176,16 +187,15 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
   return (
     <div className="flex flex-col h-full">
       {/* Tab + search bar */}
-      <div className="flex flex-col gap-2 p-2 border-b border-white/[0.06]">
-        <SegmentedControl
-          variant="brand"
-          size="sm"
+      <div className="flex flex-col gap-2 p-2 border-b border-border">
+        <SegmentedControl<TabType>
+          size="xs"
+          fullWidth
+          scrollable
+          aria-label={t('canvas.mediaLibrary.tabsLabel')}
           value={activeTab}
-          onChange={(v) => setActiveTab(v as TabType)}
-          options={(['all', 'logos', 'media', 'colors', 'refs'] as TabType[]).map((tab) => ({
-            value: tab,
-            label: tab === 'refs' ? 'Refs' : t(`common.tabs.${tab}`) || tab,
-          }))}
+          onChange={setActiveTab}
+          options={tabOptions}
         />
         <div className="flex items-center gap-1.5">
           <div className="relative flex-1">
@@ -195,36 +205,40 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
             />
             <input
               type="text"
-              placeholder={activeTab === 'refs' ? 'Search references...' : 'Search assets...'}
+              placeholder={
+                activeTab === 'refs'
+                  ? t('canvas.mediaLibrary.searchReferences')
+                  : t('canvas.mediaLibrary.searchAssets')
+              }
               value={activeTab === 'refs' ? refSearch.query : searchQuery}
               onChange={(e) =>
                 activeTab === 'refs'
                   ? refSearch.setQuery(e.target.value)
                   : setSearchQuery(e.target.value)
               }
-              className="w-full bg-neutral-900/50 border border-white/5 rounded-md pl-7 pr-2 py-1 text-2xs text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 font-mono"
+              className="w-full bg-neutral-900/50 border border-border rounded-md pl-7 pr-2 py-1 text-2xs text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 font-mono"
             />
           </div>
-          <div className="flex items-center border border-white/5 rounded-md bg-neutral-900/30">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={cn(
-                'p-1.5 rounded-l transition-colors',
-                viewMode === 'grid' ? 'text-brand-cyan' : 'text-neutral-600 hover:text-neutral-400'
-              )}
-            >
-              <LayoutGrid size={12} />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={cn(
-                'p-1.5 rounded-r transition-colors',
-                viewMode === 'list' ? 'text-brand-cyan' : 'text-neutral-600 hover:text-neutral-400'
-              )}
-            >
-              <List size={12} />
-            </button>
-          </div>
+          <SegmentedControl
+            size="sm"
+            aria-label={t('canvas.mediaLibrary.viewModeLabel')}
+            value={viewMode}
+            onChange={setViewMode}
+            options={[
+              {
+                value: 'grid',
+                label: null,
+                icon: LayoutGrid,
+                'aria-label': t('canvas.mediaLibrary.viewGrid'),
+              },
+              {
+                value: 'list',
+                label: null,
+                icon: List,
+                'aria-label': t('canvas.mediaLibrary.viewList'),
+              },
+            ]}
+          />
         </div>
       </div>
 
@@ -233,7 +247,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
         {isLoading ? (
           <div className="grid grid-cols-2 gap-2">
             {[...Array(6)].map((_, i) => (
-              <SkeletonLoader key={i} height="80px" width="100%" className="rounded-lg" />
+              <SkeletonLoader key={i} height="80px" width="100%" className="rounded-xl" />
             ))}
           </div>
         ) : isError && activeTab !== 'refs' ? (
@@ -242,7 +256,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
           <div className="space-y-5 pb-6">
             {(activeTab === 'all' || activeTab === 'logos') && filteredLogos.length > 0 && (
               <div className="space-y-2">
-                <MicroTitle className="text-neutral-600">Logotypes</MicroTitle>
+                <MicroTitle>{t('canvas.mediaLibrary.sectionLogos')}</MicroTitle>
                 <div
                   className={cn(
                     viewMode === 'grid' ? 'grid grid-cols-2 gap-2' : 'flex flex-col gap-1'
@@ -264,7 +278,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
             )}
             {(activeTab === 'all' || activeTab === 'media') && filteredMedia.length > 0 && (
               <div className="space-y-2">
-                <MicroTitle className="text-neutral-600">Brand Assets</MicroTitle>
+                <MicroTitle>{t('canvas.mediaLibrary.sectionMedia')}</MicroTitle>
                 <div
                   className={cn(
                     viewMode === 'grid' ? 'grid grid-cols-2 gap-2' : 'flex flex-col gap-1'
@@ -286,7 +300,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
             )}
             {(activeTab === 'all' || activeTab === 'colors') && colors.length > 0 && (
               <div className="space-y-2">
-                <MicroTitle className="text-neutral-600">Palette</MicroTitle>
+                <MicroTitle>{t('canvas.mediaLibrary.sectionPalette')}</MicroTitle>
                 <div className="flex flex-wrap gap-2">
                   {colors.map((color, i) => (
                     <div
@@ -294,16 +308,17 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                       className="group relative flex flex-col items-center gap-1 cursor-pointer"
                       onClick={() => {
                         copyToClipboard(color.hex || '');
-                        toast.success(`Copied ${color.hex}`);
+                        toast.success(t('canvas.mediaLibrary.copiedHex', { hex: color.hex }));
                       }}
                     >
                       <div
-                        className="w-10 h-10 rounded-lg border border-white/10 group-hover:scale-110 transition-transform shadow"
+                        className="w-10 h-10 rounded-xl border border-border shadow"
                         style={{ backgroundColor: color.hex }}
                       />
                       <span className="text-3xs font-mono text-neutral-600">{color.hex}</span>
                       <div
                         className={cn(
+                          // EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia
                           'absolute top-0.5 right-0.5 flex flex-col gap-0.5',
                           hoverReveal
                         )}
@@ -313,8 +328,9 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                             e.stopPropagation();
                             handleApplyToTheme(color.hex!, 'background');
                           }}
-                          className="p-0.5 rounded bg-black/60 text-white hover:text-brand-cyan"
-                          title="Apply as BG"
+                          className="p-0.5 rounded bg-black/60 text-white hover:text-white/70"
+                          title={t('canvas.mediaLibrary.applyAsBackground')}
+                          aria-label={t('canvas.mediaLibrary.applyAsBackground')}
                         >
                           <Paintbrush size={8} />
                         </button>
@@ -323,8 +339,9 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                             e.stopPropagation();
                             handleApplyToTheme(color.hex!, 'primary');
                           }}
-                          className="p-0.5 rounded bg-black/60 text-white hover:text-brand-cyan"
-                          title="Set as Primary"
+                          className="p-0.5 rounded bg-black/60 text-white hover:text-white/70"
+                          title={t('canvas.mediaLibrary.setAsPrimary')}
+                          aria-label={t('canvas.mediaLibrary.setAsPrimary')}
                         >
                           <Zap size={8} />
                         </button>
@@ -338,15 +355,17 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
             {activeTab === 'refs' && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <MicroTitle className="text-neutral-600">
-                    {selectedBrandGuidelineId ? 'Smart References' : 'Curated References'}
+                  <MicroTitle>
+                    {selectedBrandGuidelineId
+                      ? t('canvas.mediaLibrary.smartReferences')
+                      : t('canvas.mediaLibrary.curatedReferences')}
                   </MicroTitle>
                   {refSearch.activeFilterCount > 0 && (
                     <button
                       onClick={refSearch.clearFilters}
-                      className="text-3xs text-brand-cyan/60 hover:text-brand-cyan flex items-center gap-0.5"
+                      className="text-3xs text-muted-foreground hover:text-foreground flex items-center gap-0.5"
                     >
-                      <X size={8} /> Clear
+                      <X size={8} /> {t('canvas.mediaLibrary.clearFilters')}
                     </button>
                   )}
                 </div>
@@ -361,16 +380,16 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                         <button
                           onClick={() => setExpandedDim(isExp ? null : key)}
                           className={cn(
-                            'px-2 py-0.5 rounded-full text-3xs font-mono uppercase tracking-wider border transition-[color,background-color,border-color,box-shadow]',
+                            'px-2 py-0.5 rounded-full text-3xs border transition-[color,background-color,border-color,box-shadow]',
                             activeValue
-                              ? 'bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan'
-                              : 'bg-neutral-900/60 border-neutral-800 text-neutral-500 hover:text-white'
+                              ? 'border-ring bg-muted text-foreground'
+                              : 'border-border text-muted-foreground hover:text-foreground'
                           )}
                         >
                           {activeValue || label}
                         </button>
                         {isExp && (
-                          <div className="absolute top-full left-0 mt-1 z-50 bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl p-1.5 min-w-[130px] max-h-[180px] overflow-y-auto">
+                          <div className="absolute top-full left-0 z-50 mt-1 max-h-[180px] min-w-[130px] overflow-y-auto rounded-xl border border-border bg-popover p-1.5 shadow-xl">
                             {REFERENCE_DIMENSIONS[key].map((v) => (
                               <button
                                 key={v}
@@ -381,8 +400,8 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                                 className={cn(
                                   'block w-full text-left px-2 py-1 text-2xs rounded transition-colors',
                                   refSearch.dimFilters[key] === v
-                                    ? 'bg-brand-cyan/10 text-brand-cyan'
-                                    : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
+                                    ? 'bg-muted text-foreground'
+                                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                                 )}
                               >
                                 {v}
@@ -412,7 +431,9 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                     <GlitchLoader size={16} />
                   </div>
                 ) : refSearch.results.length === 0 ? (
-                  <p className="text-xs text-neutral-700 text-center py-10">No references found</p>
+                  <p className="py-10 text-center text-xs text-muted-foreground">
+                    {t('canvas.mediaLibrary.noReferences')}
+                  </p>
                 ) : (
                   <div
                     className={cn(
@@ -437,16 +458,11 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                             }}
                             onClick={() => {
                               if (onAddToBoard) onAddToBoard(ref.referenceImageUrl, 'image');
-                              toast.success('Reference added');
+                              toast.success(t('canvas.mediaLibrary.referenceAdded'));
                             }}
-                            className={cn(
-                              'flex items-center gap-3 p-2 rounded-md bg-neutral-900/30 border transition-colors group cursor-pointer',
-                              isRecommended
-                                ? 'border-brand-cyan/20'
-                                : 'border-white/5 hover:border-neutral-700'
-                            )}
+                            className="group flex cursor-pointer items-center gap-3 rounded-md border border-border p-2 transition-colors hover:border-border-hover"
                           >
-                            <div className="w-8 h-8 rounded overflow-hidden flex-shrink-0 bg-neutral-950">
+                            <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded bg-muted">
                               <Thumb
                                 src={getProxiedUrl(ref.referenceImageUrl)}
                                 alt={ref.name}
@@ -455,7 +471,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-2xs font-mono font-bold text-neutral-400 truncate">
+                              <p className="truncate text-xs font-medium text-foreground">
                                 {ref.name}
                               </p>
                               <div className="flex gap-0.5 mt-0.5">
@@ -465,7 +481,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                                 ].map((tag) => (
                                   <span
                                     key={tag}
-                                    className="text-3xs px-1 py-0.5 rounded bg-white/10 text-white/60"
+                                    className="rounded bg-muted px-1 py-0.5 text-3xs text-muted-foreground"
                                   >
                                     {tag}
                                   </span>
@@ -473,12 +489,10 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                               </div>
                             </div>
                             {isRecommended && (
-                              <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-neutral-800 text-neutral-200">
-                                <Zap size={7} />
-                                <span className="text-3xs font-bold uppercase tracking-wider">
-                                  Match
-                                </span>
-                              </div>
+                              <Badge variant="neutral" className="gap-0.5">
+                                <Zap size={8} aria-hidden="true" />
+                                {t('canvas.mediaLibrary.match')}
+                              </Badge>
                             )}
                             {!ref.sanitized && (
                               <button
@@ -491,7 +505,8 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                                   'p-1 rounded bg-warning/10 text-warning hover:bg-warning/20 disabled:opacity-50',
                                   hoverReveal
                                 )}
-                                title="Sanitizar — remover branding do studio"
+                                title={t('canvas.mediaLibrary.sanitize')}
+                                aria-label={t('canvas.mediaLibrary.sanitize')}
                               >
                                 {sanitizingIds.has(ref.id) ? (
                                   <GlitchLoader size={10} />
@@ -504,8 +519,12 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                         );
                       }
 
+                      const tags = [
+                        ...(ref.dimensions.mockup_type || []).slice(0, 1),
+                        ...(ref.dimensions.aesthetic || []).slice(0, 1),
+                      ];
                       return (
-                        <div
+                        <MediaTile
                           key={ref.id}
                           draggable
                           onDragStart={(e) => {
@@ -516,80 +535,46 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                             e.dataTransfer.setData('application/vsn-asset-type', 'image');
                             e.dataTransfer.effectAllowed = 'copy';
                           }}
+                          src={getProxiedUrl(ref.referenceImageUrl)}
+                          alt={ref.name}
+                          title={ref.name}
+                          subtitle={tags.length > 0 ? tags.join(' · ') : undefined}
+                          actionLabel={t('canvas.mediaLibrary.addReference', { name: ref.name })}
                           onClick={() => {
                             if (onAddToBoard) onAddToBoard(ref.referenceImageUrl, 'image');
-                            toast.success('Reference added');
+                            toast.success(t('canvas.mediaLibrary.referenceAdded'));
                           }}
-                          className={cn(
-                            'group relative aspect-square rounded-lg overflow-hidden bg-neutral-900 border transition-all cursor-pointer',
-                            isRecommended
-                              ? 'border-brand-cyan/20 shadow-[0_0_8px_rgba(var(--brand-cyan-rgb),0.08)]'
-                              : 'border-white/5 hover:border-neutral-700'
-                          )}
-                        >
-                          <Thumb
-                            src={getProxiedUrl(ref.referenceImageUrl)}
-                            alt={ref.name}
-                            loading="lazy"
-                            className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
-                          />
-                          {isRecommended && (
-                            <div className="absolute top-1 left-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-neutral-800 text-neutral-200">
-                              <Zap size={7} />
-                              <span className="text-3xs font-bold uppercase tracking-wider">
-                                Match
-                              </span>
-                            </div>
-                          )}
-                          <div
-                            className={cn(
-                              'absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 pt-5',
-                              hoverReveal
-                            )}
-                          >
-                            <p className="text-3xs font-medium text-white truncate">{ref.name}</p>
-                            <div className="flex gap-0.5 mt-0.5">
-                              {[
-                                ...(ref.dimensions.mockup_type || []).slice(0, 1),
-                                ...(ref.dimensions.aesthetic || []).slice(0, 1),
-                              ].map((tag) => (
-                                <span
-                                  key={tag}
-                                  className="text-3xs px-1 py-0.5 rounded bg-white/10 text-white/60"
-                                >
-                                  {tag}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                          <div
-                            className={cn(
-                              'absolute top-1 right-1 flex flex-col gap-1',
-                              hoverReveal
-                            )}
-                          >
-                            <div className="w-4 h-4 rounded-full bg-brand-cyan/80 flex items-center justify-center">
-                              <Plus size={8} className="text-black" />
-                            </div>
-                            {!ref.sanitized && (
-                              <button
+                          badge={
+                            isRecommended ? (
+                              <Badge variant="neutral" className="gap-0.5">
+                                <Zap size={8} aria-hidden="true" />
+                                {t('canvas.mediaLibrary.match')}
+                              </Badge>
+                            ) : undefined
+                          }
+                          actions={
+                            !ref.sanitized ? (
+                              <Button
+                                variant="surface"
+                                size="icon-sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleSanitize(ref);
                                 }}
                                 disabled={sanitizingIds.has(ref.id)}
-                                className="w-4 h-4 rounded-full bg-warning/80 flex items-center justify-center hover:bg-warning transition-colors disabled:opacity-50"
-                                title="Sanitizar — remover branding do studio"
+                                className="bg-card text-warning hover:text-warning"
+                                aria-label={t('canvas.mediaLibrary.sanitize')}
+                                title={t('canvas.mediaLibrary.sanitize')}
                               >
                                 {sanitizingIds.has(ref.id) ? (
-                                  <GlitchLoader size={6} />
+                                  <GlitchLoader size={10} />
                                 ) : (
-                                  <Eraser size={8} className="text-black" />
+                                  <Eraser size={12} />
                                 )}
-                              </button>
-                            )}
-                          </div>
-                        </div>
+                              </Button>
+                            ) : undefined
+                          }
+                        />
                       );
                     })}
                   </div>
@@ -598,12 +583,12 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                   <button
                     onClick={() => refSearch.loadMore()}
                     disabled={refSearch.isLoading}
-                    className="w-full mt-2 py-2 rounded-md border border-neutral-700/30 bg-neutral-900/40 text-2xs text-neutral-400 hover:text-brand-cyan hover:border-brand-cyan/30 transition-[color,background-color,border-color,opacity] disabled:opacity-50"
+                    className="mt-2 w-full rounded-md border border-border py-2 text-xs text-muted-foreground transition-colors hover:border-border-hover hover:text-foreground disabled:opacity-50"
                   >
                     {refSearch.isLoading ? (
                       <GlitchLoader size={10} className="mx-auto" />
                     ) : (
-                      'Ver mais'
+                      t('community.seeMore')
                     )}
                   </button>
                 )}
@@ -614,7 +599,9 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
               !filteredLogos.length &&
               !filteredMedia.length &&
               !colors.length && (
-                <p className="text-xs text-neutral-700 text-center py-10">No assets found</p>
+                <p className="py-10 text-center text-xs text-muted-foreground">
+                  {t('canvas.mediaLibrary.noAssets')}
+                </p>
               )}
           </div>
         )}
@@ -634,7 +621,9 @@ interface AssetCardProps {
 }
 
 const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onClick, onAdd }) => {
+  const { t } = useTranslation();
   const needsLightBg = useNeedsLightBg(url);
+  const addLabel = t('canvas.mediaLibrary.addToBoard');
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('application/vsn-asset-url', url);
     e.dataTransfer.setData('application/vsn-asset-type', type);
@@ -646,7 +635,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
       <div
         draggable
         onDragStart={handleDragStart}
-        className="flex items-center gap-3 p-2 rounded-md bg-neutral-900/30 border border-white/5 hover:border-neutral-700 transition-colors group cursor-pointer"
+        className="group flex cursor-pointer items-center gap-3 rounded-md border border-border p-2 transition-colors hover:border-border-hover"
         onClick={onClick}
       >
         <div
@@ -658,9 +647,11 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
           <Thumb src={url} alt={label} className="w-full h-full object-contain" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-2xs font-mono font-bold text-neutral-400 truncate">{label}</p>
-          <p className="text-3xs font-mono text-neutral-600">
-            {type === 'logo' ? 'Logo' : 'Image'}
+          <p className="truncate text-xs font-medium text-foreground">{label}</p>
+          <p className="text-2xs text-muted-foreground">
+            {type === 'logo'
+              ? t('canvas.mediaLibrary.typeLogo')
+              : t('canvas.mediaLibrary.typeImage')}
           </p>
         </div>
         {onAdd && (
@@ -669,10 +660,9 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
               e.stopPropagation();
               onAdd();
             }}
-            className={cn(
-              'p-1 rounded bg-brand-cyan/10 text-foreground hover:bg-brand-cyan/20',
-              hoverReveal
-            )}
+            className={cn('p-1 rounded bg-muted/60 text-foreground hover:bg-muted', hoverReveal)}
+            aria-label={addLabel}
+            title={addLabel}
           >
             <Plus size={10} />
           </button>
@@ -682,39 +672,32 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
   }
 
   return (
-    <div
+    <MediaTile
       draggable
       onDragStart={handleDragStart}
-      className="flex flex-col gap-1.5 p-2 rounded-lg bg-neutral-900/30 border border-white/5 hover:border-neutral-700 transition-colors group cursor-pointer"
+      src={url}
+      alt={label}
+      title={label}
       onClick={onClick}
-    >
-      <div
-        className={cn(
-          'relative aspect-square w-full rounded-md overflow-hidden flex items-center justify-center p-2',
-          needsLightBg ? 'bg-white' : 'bg-neutral-950'
-        )}
-      >
-        <Thumb
-          src={url}
-          alt={label}
-          className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-300"
-        />
-        {onAdd && (
-          <button
+      fallbackIcon={ImageIcon}
+      imageClassName={cn('object-contain p-2', needsLightBg ? 'bg-white' : 'bg-neutral-950')}
+      actions={
+        onAdd ? (
+          <Button
+            variant="surface"
+            size="icon-sm"
             onClick={(e) => {
               e.stopPropagation();
               onAdd();
             }}
-            className={cn(
-              'absolute top-1 right-1 p-1 rounded bg-brand-cyan/90 text-black',
-              hoverReveal
-            )}
+            className="bg-card"
+            aria-label={addLabel}
+            title={addLabel}
           >
-            <Plus size={10} />
-          </button>
-        )}
-      </div>
-      <p className="text-3xs font-mono text-neutral-500 truncate text-center">{label}</p>
-    </div>
+            <Plus size={12} />
+          </Button>
+        ) : undefined
+      }
+    />
   );
 };

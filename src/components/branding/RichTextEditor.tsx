@@ -20,8 +20,9 @@ interface RichTextEditorProps {
   minHeight?: string;
 }
 
+// EXCEÇÃO ao audit:design/hex: cores gravadas no HTML do conteúdo do usuário, precisam ser concretas.
 const COLOR_PRESETS = [
-  'brand-cyan', // Primary cyan
+  '#52ddeb', // Visant cyan
   '#ffffff', // White
   '#fbbf24', // Yellow
   '#f87171', // Red
@@ -151,7 +152,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           variant="ghost"
           type="button"
           onClick={handleBold}
-          className={`p-2 rounded transition-colors hover:text-brand-cyan ${
+          className={`p-2 rounded transition-colors hover:text-foreground ${
             theme === 'dark'
               ? 'hover:bg-neutral-950/70 text-neutral-300'
               : 'hover:bg-neutral-200 text-neutral-700'
@@ -164,7 +165,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           variant="ghost"
           type="button"
           onClick={handle}
-          className={`p-2 rounded transition-colors hover:text-brand-cyan ${
+          className={`p-2 rounded transition-colors hover:text-foreground ${
             theme === 'dark'
               ? 'hover:bg-neutral-950/70 text-neutral-300'
               : 'hover:bg-neutral-200 text-neutral-700'
@@ -177,7 +178,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           variant="ghost"
           type="button"
           onClick={handleBullet}
-          className={`p-2 rounded transition-colors hover:text-brand-cyan ${
+          className={`p-2 rounded transition-colors hover:text-foreground ${
             theme === 'dark'
               ? 'hover:bg-neutral-950/70 text-neutral-300'
               : 'hover:bg-neutral-200 text-neutral-700'
@@ -191,7 +192,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             variant="ghost"
             type="button"
             onClick={() => setShowColorPicker(!showColorPicker)}
-            className={`p-2 rounded transition-colors hover:text-brand-cyan ${
+            className={`p-2 rounded transition-colors hover:text-foreground ${
               theme === 'dark'
                 ? 'hover:bg-neutral-950/70 text-neutral-300'
                 : 'hover:bg-neutral-200 text-neutral-700'
@@ -295,21 +296,11 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           }}
         >
           {value ? (
-            <div
-              className={`text-sm font-manrope leading-relaxed ${
-                theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
-              }`}
-            >
+            <div className="text-sm font-manrope leading-relaxed text-foreground">
               {renderMarkdownWithLines(value)}
             </div>
           ) : (
-            <span
-              className={`font-manrope ${
-                theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
-              }`}
-            >
-              {placeholder}
-            </span>
+            <span className="font-manrope text-muted-foreground">{placeholder}</span>
           )}
         </div>
       </div>

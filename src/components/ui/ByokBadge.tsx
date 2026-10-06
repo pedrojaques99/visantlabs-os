@@ -20,10 +20,10 @@ export function ByokBadge({ active, showTooltip = true, className }: ByokBadgePr
   const badge = (
     <Badge
       className={cn(
-        'text-xs gap-1 font-mono',
+        'text-xs gap-1',
         active
           ? 'bg-success/20 text-success border-success/30 hover:bg-success/30'
-          : 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30 hover:bg-neutral-500/30',
+          : 'bg-muted text-muted-foreground border-border hover:bg-accent',
         className
       )}
     >
@@ -52,12 +52,12 @@ export function ByokBadge({ active, showTooltip = true, className }: ByokBadgePr
         active ? (
           <div className="space-y-1">
             <p className="font-medium text-success">{t('brandQuota.byok.activeTitle')}</p>
-            <p className="text-xs text-neutral-400">{t('brandQuota.byok.activeDesc')}</p>
+            <p className="text-xs text-muted-foreground">{t('brandQuota.byok.activeDesc')}</p>
           </div>
         ) : (
           <div className="space-y-1">
             <p className="font-medium">{t('brandQuota.byok.inactiveTitle')}</p>
-            <p className="text-xs text-neutral-400">{t('brandQuota.byok.inactiveDesc')}</p>
+            <p className="text-xs text-muted-foreground">{t('brandQuota.byok.inactiveDesc')}</p>
           </div>
         )
       }
@@ -84,17 +84,18 @@ export function ByokCostIndicator({
   estimatedCostUSD,
   className,
 }: ByokCostIndicatorProps) {
+  const { t } = useTranslation();
   if (isByok) {
     return (
       <div className={cn('flex items-center gap-1.5 text-xs text-success', className)}>
         <Key size={12} />
-        <span>BYOK Active - Charges go to your Google account</span>
+        <span>{t('byok.activeCharges')}</span>
       </div>
     );
   }
 
   return (
-    <div className={cn('flex items-center gap-1.5 text-xs text-neutral-400', className)}>
+    <div className={cn('flex items-center gap-1.5 text-xs text-muted-foreground', className)}>
       <CreditCard size={12} />
       <span>
         Cost: {creditsRequired} credit{creditsRequired !== 1 ? 's' : ''}

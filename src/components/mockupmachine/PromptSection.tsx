@@ -84,10 +84,10 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
   // injected is a lie. Text/human rules flip with the flags; "no humans" is
   // never an injected rule (absence of the withHuman instruction), so it's dropped.
   const injectedRules = useMemo(() => {
-    const rules: string[] = ['📸 Focus Original Design'];
-    if (generateText) rules.push('📝 Placeholder Text');
-    else if (removeText) rules.push('🚫 No External Text');
-    if (withHuman) rules.push('🧍 Human In Scene');
+    const rules: string[] = ['mockup.rules.focusOriginal'];
+    if (generateText) rules.push('mockup.rules.placeholderText');
+    else if (removeText) rules.push('mockup.rules.noExternalText');
+    if (withHuman) rules.push('mockup.rules.humanInScene');
     return rules;
   }, [generateText, removeText, withHuman]);
 
@@ -153,9 +153,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
       );
 
       if (isBuilderSnippet) {
-        const removeLabel =
-          t('mockup.removeInstructionHint') ||
-          'Clique para remover esta instrução padrão do prompt.';
+        const removeLabel = t('mockup.removeInstructionHint');
 
         const handleRemove = (e: React.MouseEvent) => {
           e.preventDefault();
@@ -183,7 +181,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
           key={i}
           className={cn(
             'underline decoration-brand-cyan/30 underline-offset-4 transition-colors duration-300',
-            'hover:text-brand-cyan hover:decoration-brand-cyan hover:bg-brand-cyan/10 px-0.5 rounded-sm'
+            'hover:text-foreground hover:decoration-foreground hover:bg-muted px-0.5 rounded-md'
           )}
         >
           {part}
@@ -267,9 +265,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         <SkeletonText loading={isSidebarGenerating}>
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className={`flex items-center gap-2 text-xs font-mono hover:text-brand-cyan transition-colors focus:outline-none ${
-              theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-            }`}
+            className={`flex items-center gap-2 text-xs hover:text-foreground transition-colors focus:outline-none ${'text-muted-foreground'}`}
           >
             <Info size={14} /> {t('mockup.prompt')}
             {isCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
@@ -279,25 +275,21 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         {!isCollapsed && promptPreview.trim() && (
           <div className="flex items-center gap-2 animate-fade-in">
             {isPromptReady ? (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-success/10 border border-success/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]">
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-success/10 border border-success/20">
                 <div className="w-1 h-1 rounded-full bg-success" />
-                <span className="text-2xs text-success uppercase tracking-wider">
-                  {t('mockup.promptSynced')}
-                </span>
+                <span className="text-2xs text-success">{t('mockup.promptSynced')}</span>
               </div>
             ) : (
               <Tooltip content={t('mockup.outOfSyncTooltip')} position="top">
                 <button
                   onClick={onGenerateSmartPrompt}
-                  className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-warning/10 border border-warning/30 hover:bg-warning/20 transition-all cursor-pointer group/sync"
+                  className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-warning/10 border border-warning/30 hover:bg-warning/20 transition-[color,background-color,border-color,opacity,transform,filter] cursor-pointer group/sync"
                 >
                   <ArrowLeftRight
                     size={8}
                     className="text-warning group-hover/sync:rotate-180 transition-transform duration-500"
                   />
-                  <span className="text-2xs text-warning uppercase tracking-wider">
-                    {t('mockup.promptOutOfSync')}
-                  </span>
+                  <span className="text-2xs text-warning ">{t('mockup.promptOutOfSync')}</span>
                 </button>
               </Tooltip>
             )}
@@ -312,7 +304,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                 variant="ghost"
                 onClick={onSuggestPrompts}
                 disabled={isSuggestingPrompts || !promptPreview.trim() || isGeneratingPrompt}
-                className={`text-xs font-mono hover:text-brand-cyan transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${
+                className={`text-xs hover:text-foreground transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${
                   theme === 'dark'
                     ? 'text-neutral-500 disabled:text-neutral-600'
                     : 'text-neutral-600 disabled:text-neutral-400'
@@ -330,7 +322,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         <div
           onClick={() => setIsCollapsed(false)}
           className={cn(
-            'flex items-center gap-2 p-2.5 rounded-md border text-xs font-mono cursor-pointer transition-colors mt-1',
+            'flex items-center gap-2 p-2.5 rounded-md border text-xs cursor-pointer transition-colors mt-1',
             theme === 'dark'
               ? 'bg-neutral-900/30 border-neutral-800/50 hover:border-neutral-700 text-neutral-400'
               : 'bg-white border-neutral-200 hover:border-neutral-700 text-neutral-600'
@@ -345,12 +337,12 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             <>
               <div className="w-1.5 h-1.5 rounded-full bg-success/80 shrink-0"></div>
               <span className="truncate flex-1">
-                Prompt {isSmartPromptActive ? 'configurado pela IA' : 'personalizado pronto'}
+                {isSmartPromptActive ? t('mockup.promptStatusAi') : t('mockup.promptStatusCustom')}
               </span>
-              <span className="text-2xs uppercase opacity-50 shrink-0 ml-2">Editar</span>
+              <span className="text-2xs opacity-50 shrink-0 ml-2">{t('common.edit')}</span>
             </>
           ) : (
-            <span className="opacity-50">Aguardando contexto...</span>
+            <span className="opacity-50">{t('mockup.waitingForContext')}</span>
           )}
         </div>
       ) : (
@@ -413,17 +405,17 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
       {/* System Directives Badge — derived from the actual injected flags */}
       {!isCollapsed && promptPreview && injectedRules.length > 0 && (
         <div className="mt-2 pl-1">
-          <div className="flex flex-wrap items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
-            <span className="text-2xs mr-1 text-neutral-500">⚙️ Regras Injetadas:</span>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-2xs mr-1 text-neutral-500">{t('mockup.rules.label')}</span>
             {injectedRules.map((rule) => (
               <span
                 key={rule}
                 className={cn(
-                  'text-2xs px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20',
+                  'text-2xs px-1.5 py-0.5 rounded-md bg-neutral-500/10 border border-neutral-500/20',
                   theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
                 )}
               >
-                {rule}
+                {t(rule)}
               </span>
             ))}
           </div>
@@ -433,13 +425,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
       {promptSuggestions.length > 0 && (
         <div className="mt-3 space-y-2 animate-fade-in">
           <SkeletonText loading={isSidebarGenerating}>
-            <p
-              className={`text-xs font-mono ${
-                theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-              }`}
-            >
-              {t('mockup.aiSuggestions')}
-            </p>
+            <p className={`text-xs ${'text-muted-foreground'}`}>{t('mockup.aiSuggestions')}</p>
           </SkeletonText>
           {promptSuggestions.map((suggestion, index) => (
             <div
@@ -453,7 +439,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
               <Button
                 variant="ghost"
                 onClick={() => onSuggestionClick(suggestion)}
-                className={`w-full text-left text-xs font-mono transition-colors cursor-pointer ${
+                className={`w-full text-left text-xs transition-colors cursor-pointer ${
                   theme === 'dark'
                     ? 'text-neutral-200 hover:text-neutral-200'
                     : 'text-neutral-700 hover:text-neutral-900'
@@ -470,13 +456,13 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                   <Tooltip
                     content={
                       isGenerateDisabled
-                        ? t('mockup.insufficientCredits') || 'Insufficient credits to generate'
+                        ? t('mockup.insufficientCredits')
                         : creditsPerGeneration && creditsPerGeneration > 0
-                          ? `${t('mockup.generateOutputs')} — ${creditsPerGeneration} ${
+                          ? `${t('mockup.generateOutputs')} (${creditsPerGeneration} ${
                               creditsPerGeneration === 1
                                 ? t('mockup.creditUnitSingular')
                                 : t('mockup.creditUnitPlural')
-                            }`
+                            })`
                           : t('mockup.generateOutputs')
                     }
                     position="top"
@@ -488,7 +474,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                         onGenerateSuggestion(suggestion);
                       }}
                       disabled={isGenerating || !suggestion.trim() || isGenerateDisabled}
-                      className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-neutral-600/50 min-h-[44px]"
+                      className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-medium py-2 px-3 rounded-md transition-[color,background-color,border-color,opacity,transform,filter] duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-neutral-600/50 min-h-[44px]"
                       aria-label={
                         isGenerating ? t('mockup.generatingOutputs') : t('mockup.generateOutputs')
                       }
@@ -510,7 +496,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                     <ByokCostIndicator
                       isByok={isByokActive}
                       creditsRequired={creditsPerGeneration}
-                      className={theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}
+                      className={'text-muted-foreground'}
                     />
                   )}
                 </div>

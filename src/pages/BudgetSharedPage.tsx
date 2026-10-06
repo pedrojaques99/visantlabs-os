@@ -3,9 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { budgetApi, type BudgetProject } from '../services/budgetApi';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
-import { FormButton } from '../components/ui/form-button';
+import { Button } from '../components/ui/button';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -33,6 +32,7 @@ import { ResponsivePageWrapper } from '../components/budget/visant/ResponsivePag
 import { SEO } from '../components/SEO';
 import { copyToClipboard } from '@/utils/clipboard';
 
+import { DEFAULT_DOCUMENT_ACCENT } from '../components/budget/visant/documentColors';
 export const BudgetSharedPage: React.FC = () => {
   const { shareId } = useParams<{ shareId: string }>();
   const navigate = useNavigate();
@@ -77,7 +77,7 @@ export const BudgetSharedPage: React.FC = () => {
         observations: budget.observations || '',
         links: budget.links || {},
         faq: Array.isArray(budget.faq) ? budget.faq : [],
-        brandColors: budget.brandColors || ['brand-cyan'],
+        brandColors: budget.brandColors || [DEFAULT_DOCUMENT_ACCENT],
         brandName: budget.brandName,
         brandLogo: budget.brandLogo || undefined,
         customPdfUrl:
@@ -115,7 +115,7 @@ export const BudgetSharedPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative">
+      <div className="min-h-screen bg-background text-foreground pt-14 relative">
         <div className="fixed inset-0 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="flex items-center justify-center min-h-[60vh]">
@@ -128,17 +128,19 @@ export const BudgetSharedPage: React.FC = () => {
 
   if (error || !budget) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative">
+      <div className="min-h-screen bg-background text-foreground pt-14 relative">
         <div className="fixed inset-0 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-            <h2 className="text-2xl font-bold text-neutral-200 mb-4">
+            <h2 className="text-2xl font-medium text-foreground mb-4">
               {t('budget.shared.budgetNotFound')}
             </h2>
-            <p className="text-neutral-400 mb-6">
+            <p className="text-muted-foreground mb-6">
               {error || t('budget.shared.budgetNotFoundDescription')}
             </p>
-            <FormButton onClick={() => navigate('/')}>{t('notFound.goHome')}</FormButton>
+            <Button variant="brand" onClick={() => navigate('/')}>
+              {t('notFound.goHome')}
+            </Button>
           </div>
         </div>
       </div>
@@ -156,7 +158,7 @@ export const BudgetSharedPage: React.FC = () => {
     observations: budget.observations || '',
     links: budget.links || {},
     faq: Array.isArray(budget.faq) ? budget.faq : [],
-    brandColors: budget.brandColors || ['brand-cyan'],
+    brandColors: budget.brandColors || [DEFAULT_DOCUMENT_ACCENT],
     brandName: budget.brandName,
     brandLogo: budget.brandLogo || undefined,
     contentWidth: (budget as any).data?.contentWidth || undefined,
@@ -343,6 +345,7 @@ const BudgetSharedContent: React.FC<{
                   --accent: #f5f5f5 !important;
                   --accent-foreground: #1a1a1a !important;
                   --destructive: #dc2626 !important;
+                  /* EXCEÇÃO ao audit:design/hardcoded-hex-color: tema claro fixo do orçamento compartilhado/impresso, independente do tema do app */
                   --border: #e5e7eb !important;
                   --input: #e5e7eb !important;
                   --ring: #6b7280 !important;
@@ -476,24 +479,21 @@ const BudgetSharedContent: React.FC<{
             </div>
             <div className="flex items-center justify-between">
               <h1
-                className={`text-xl font-bold font-mono truncate flex-1 mr-4 ${
+                className={`text-xl font-medium truncate flex-1 mr-4 ${
                   theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'
                 }`}
               >
                 {budgetName}
               </h1>
               <div className="flex items-center gap-2">
-                <FormButton onClick={handleShare} className="flex items-center gap-2">
+                <Button variant="outline" onClick={handleShare}>
                   <Share2 size={16} />
                   {t('budget.share')}
-                </FormButton>
-                <FormButton
-                  onClick={handleDownloadPDFFromComponents}
-                  className="flex items-center gap-2"
-                >
+                </Button>
+                <Button variant="brand" onClick={handleDownloadPDFFromComponents}>
                   <Download size={16} />
                   {t('budget.downloadPDF')}
-                </FormButton>
+                </Button>
               </div>
             </div>
           </div>
@@ -537,18 +537,18 @@ const BudgetSharedContent: React.FC<{
                 </Breadcrumb>
               </div>
               <div className="flex items-center justify-between">
-                <h1 className="text-xl font-bold text-neutral-900 font-mono truncate flex-1 mr-4">
+                <h1 className="text-xl font-medium text-neutral-900 truncate flex-1 mr-4">
                   {budgetName}
                 </h1>
                 <div className="flex items-center gap-2">
-                  <FormButton onClick={handleShare} className="flex items-center gap-2">
+                  <Button variant="outline" onClick={handleShare}>
                     <Share2 size={16} />
                     {t('budget.share')}
-                  </FormButton>
-                  <FormButton onClick={onDownloadPDF} className="flex items-center gap-2">
+                  </Button>
+                  <Button variant="brand" onClick={onDownloadPDF}>
                     <Download size={16} />
                     {t('budget.downloadPDF')}
-                  </FormButton>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -670,24 +670,21 @@ const BudgetSharedContent: React.FC<{
             </div>
             <div className="flex items-center justify-between">
               <h1
-                className={`text-xl font-bold font-mono truncate flex-1 mr-4 ${
+                className={`text-xl font-medium truncate flex-1 mr-4 ${
                   theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'
                 }`}
               >
                 {budgetName}
               </h1>
               <div className="flex items-center gap-2">
-                <FormButton onClick={handleShare} className="flex items-center gap-2">
+                <Button variant="outline" onClick={handleShare}>
                   <Share2 size={16} />
                   {t('budget.share')}
-                </FormButton>
-                <FormButton
-                  onClick={handleDownloadPDFFromComponents}
-                  className="flex items-center gap-2"
-                >
+                </Button>
+                <Button variant="brand" onClick={handleDownloadPDFFromComponents}>
                   <Download size={16} />
                   {t('budget.downloadPDF')}
-                </FormButton>
+                </Button>
               </div>
             </div>
           </div>
@@ -785,21 +782,21 @@ const BudgetSharedContent: React.FC<{
             </div>
             <div className="flex items-center justify-between">
               <h1
-                className={`text-xl font-bold font-mono truncate flex-1 mr-4 ${
+                className={`text-xl font-medium truncate flex-1 mr-4 ${
                   theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'
                 }`}
               >
                 {budgetName}
               </h1>
               <div className="flex items-center gap-2">
-                <FormButton onClick={handleShare} className="flex items-center gap-2">
+                <Button variant="outline" onClick={handleShare}>
                   <Share2 size={16} />
                   {t('budget.share')}
-                </FormButton>
-                <FormButton onClick={onDownloadPDF} className="flex items-center gap-2">
+                </Button>
+                <Button variant="brand" onClick={onDownloadPDF}>
                   <Download size={16} />
                   {t('budget.downloadPDF')}
-                </FormButton>
+                </Button>
               </div>
             </div>
           </div>

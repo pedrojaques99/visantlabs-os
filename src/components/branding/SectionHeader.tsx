@@ -1,7 +1,6 @@
 import React from 'react';
 import { Coins, Link2 } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useTheme } from '@/hooks/useTheme';
 import { getStepDependencies, getDependencyStepTitle } from '@/utils/brandingHelpers';
 import { getBrandingStepCredits } from '@/utils/creditCalculator';
 
@@ -25,7 +24,6 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   hasData,
 }) => {
   const { t } = useTranslation();
-  const { theme } = useTheme();
   const dependencies = getStepDependencies(stepNumber);
   const creditsRequired = getBrandingStepCredits(stepNumber);
   const missingDeps = dependencies.filter((dep) => !hasContent(dep));
@@ -34,21 +32,11 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
     <div className="flex-1">
       <div className="flex items-center gap-2 mb-2">
         <div className="text-xl mr-2">{emoji}</div>
-        <h3
-          className={`font-semibold font-manrope text-lg ${
-            theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-          }`}
-        >
-          {stepTitle}
-        </h3>
+        <h3 className="font-medium font-manrope text-lg text-foreground">{stepTitle}</h3>
       </div>
       {!isCollapsed && !hasData && (
-        <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
-          <div
-            className={`flex items-center gap-1.5 ${
-              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-            }`}
-          >
+        <div className="flex flex-wrap items-center gap-3 text-xs">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
             <Coins className="h-3.5 w-3.5 text-foreground" />
             <span>
               {creditsRequired} {creditsRequired === 1 ? 'credit' : 'credits'}
@@ -56,22 +44,10 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
           </div>
           {dependencies.length > 0 && (
             <div className="flex items-center gap-1.5">
-              <Link2
-                className={`h-3.5 w-3.5 ${
-                  theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
-                }`}
-              />
-              <span className={theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}>
-                {t('branding.requires') || 'Requires'}:{' '}
-                <span
-                  className={
-                    missingDeps.length > 0
-                      ? 'text-orange-400'
-                      : theme === 'dark'
-                        ? 'text-neutral-400'
-                        : 'text-neutral-500'
-                  }
-                >
+              <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-muted-foreground">
+                {t('branding.requires')}:{' '}
+                <span className={missingDeps.length > 0 ? 'text-warning' : 'text-muted-foreground'}>
                   {dependencies.map((dep) => getDependencyStepTitle(dep, steps)).join(', ')}
                 </span>
               </span>

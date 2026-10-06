@@ -144,7 +144,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                 src={`https://img.logo.dev/${config.providerDomain}?size=48${
                   token ? `&token=${token}` : ''
                 }`}
-                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
+                className="w-3.5 h-3.5 rounded-md filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
                 onError={(e) => (e.currentTarget.style.display = 'none')}
                 alt=""
               />
@@ -186,7 +186,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                 src={`https://img.logo.dev/${config.providerDomain}?size=48${
                   token ? `&token=${token}` : ''
                 }`}
-                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
+                className="w-3.5 h-3.5 rounded-md filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
                 onError={(e) => (e.currentTarget.style.display = 'none')}
                 alt=""
               />
@@ -224,7 +224,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                 src={`https://img.logo.dev/${config.providerDomain}?size=48${
                   token ? `&token=${token}` : ''
                 }`}
-                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
+                className="w-3.5 h-3.5 rounded-md filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
                 onError={(e) => (e.currentTarget.style.display = 'none')}
                 alt=""
               />
@@ -262,7 +262,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                 src={`https://img.logo.dev/${config.providerDomain}?size=48${
                   token ? `&token=${token}` : ''
                 }`}
-                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
+                className="w-3.5 h-3.5 rounded-md filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
                 onError={(e) => (e.currentTarget.style.display = 'none')}
                 alt=""
               />
@@ -300,7 +300,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                 src={`https://img.logo.dev/${config.providerDomain}?size=48${
                   token ? `&token=${token}` : ''
                 }`}
-                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
+                className="w-3.5 h-3.5 rounded-md filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
                 onError={(e) => (e.currentTarget.style.display = 'none')}
                 alt=""
               />
@@ -338,7 +338,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                 src={`https://img.logo.dev/${config.providerDomain}?size=48${
                   token ? `&token=${token}` : ''
                 }`}
-                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
+                className="w-3.5 h-3.5 rounded-md filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
                 onError={(e) => (e.currentTarget.style.display = 'none')}
                 alt=""
               />
@@ -393,15 +393,15 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           value: modelId,
           label: config?.label || modelId,
           badge: config?.badge,
-          // Mostra o provider — com a cascata, saber de quem é o modelo importa.
+          // Mostra o provider: com a cascata, saber de quem é o modelo importa.
           description:
             cooling > 0
-              ? `${TEXT_PROVIDER_LABELS[provider]} · instável agora`
+              ? t('modelSelector.unstable', { provider: TEXT_PROVIDER_LABELS[provider] })
               : TEXT_PROVIDER_LABELS[provider],
           icon: config?.providerDomain ? (
             <img
               src={`https://img.logo.dev/${config.providerDomain}?token=${token}`}
-              className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
+              className="w-3.5 h-3.5 rounded-md filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
               onError={(e) => (e.currentTarget.style.display = 'none')}
               alt=""
             />
@@ -418,6 +418,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     variant,
     showAllModels,
     availableProviders,
+    t,
   ]);
 
   // Normalization logic for image models
@@ -478,8 +479,8 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   return (
     <div className={cn('flex flex-col gap-1.5', variant === 'node' && 'min-w-[140px]', className)}>
       {variant === 'node' && (
-        <label className="text-2xs text-neutral-400 font-mono mb-1.5 block tracking-tight">
-          {t('canvasNodes.promptNode.model') || 'MODEL'}
+        <label className="text-2xs text-neutral-400 mb-1.5 block">
+          {t('canvasNodes.promptNode.model')}
         </label>
       )}
       <Select
@@ -488,7 +489,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         value={effectiveModel}
         onChange={handleValueChange}
         disabled={disabled}
-        placeholder={t('canvasNodes.promptNode.selectModel') || 'Select Model'}
+        placeholder={t('canvasNodes.promptNode.selectModel')}
         footer={
           <button
             type="button"

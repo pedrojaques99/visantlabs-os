@@ -72,11 +72,12 @@ export const ImageCompareSlider: React.FC<ImageCompareSliderProps> = React.memo(
         </div>
 
         {/* Divider line */}
+        {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia (handle branco sobre a foto comparada) */}
         <div
           className="absolute top-0 bottom-0 w-0.5 bg-white/60 z-10 pointer-events-none"
           style={{ left: `${position}%` }}
         >
-          <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-neutral-900/80 border-2 border-white/70 flex items-center justify-center backdrop-blur-sm">
+          <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-neutral-900/80 border-2 border-white/70 flex items-center justify-center">
             <div className="flex gap-0.5">
               <div className="w-0.5 h-3 bg-white/80 rounded-full" />
               <div className="w-0.5 h-3 bg-white/80 rounded-full" />

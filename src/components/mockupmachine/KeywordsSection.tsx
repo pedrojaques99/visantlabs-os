@@ -34,23 +34,14 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
     <div
       className={cn(
         'rounded-xl border p-3 transition-colors duration-200 cursor-pointer space-y-2',
-        theme === 'dark'
-          ? 'bg-neutral-900/30 border-neutral-800/50 hover:bg-neutral-900/50'
-          : 'bg-white/50 border-neutral-200 hover:bg-white/70'
+        'bg-card border-border hover:bg-accent'
       )}
       onClick={() => setIsSearchVisible(true)}
     >
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
-          <Grid3x3
-            size={12}
-            className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-          />
-          <span
-            className={cn('text-2xs', theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600')}
-          >
-            {t('mockup.tags') || 'PALAVRAS-CHAVE'}
-          </span>
+          <Grid3x3 size={12} className="text-muted-foreground" />
+          <span className={cn('text-2xs', 'text-muted-foreground')}>{t('mockup.tags')}</span>
         </div>
         <Button
           variant="ghost"
@@ -62,8 +53,8 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
           className={cn(
             'p-1 rounded-md transition-colors',
             theme === 'dark'
-              ? 'hover:bg-white/10 text-neutral-500 hover:text-brand-cyan'
-              : 'hover:bg-neutral-100 text-neutral-500 hover:text-brand-cyan'
+              ? 'hover:bg-accent text-neutral-500 hover:text-foreground'
+              : 'hover:bg-neutral-100 text-neutral-500 hover:text-foreground'
           )}
         >
           {isSearchVisible ? <X size={12} /> : <Plus size={12} />}
@@ -73,7 +64,7 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
         <div className="flex flex-col gap-2 pb-2" onClick={(e) => e.stopPropagation()}>
           <Input
             type="text"
-            placeholder="Digite para buscar ou adicionar tags..."
+            placeholder={t('mockup.tagSearchPlaceholder')}
             value={customInput}
             onChange={(e) => onCustomInputChange(e.target.value)}
             onKeyDown={(e) => {
@@ -84,21 +75,14 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
               }
             }}
             className={cn(
-              'h-9 text-sm font-mono rounded-md border transition-[color,background-color,border-color,box-shadow] duration-200 focus:ring-1',
-              theme === 'dark'
-                ? 'bg-black/20 border-white/10 text-neutral-200 placeholder:text-neutral-600 focus:border-neutral-600 focus:ring-brand-cyan/20 shadow-inner'
-                : 'bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-600 focus:ring-brand-cyan/20 shadow-inner'
+              'h-9 text-sm rounded-md border transition-[color,background-color,border-color,box-shadow] duration-200 focus:ring-1',
+              'bg-background border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-brand-cyan/20 shadow-inner'
             )}
           />
           {/* Smart Suggestions as Badges */}
           {displaySuggestedTags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-1">
-              <span
-                className={cn(
-                  'text-2xs self-center mr-1',
-                  theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-                )}
-              >
+              <span className={cn('text-2xs self-center mr-1', 'text-muted-foreground')}>
                 Sugestões:
               </span>
               {displaySuggestedTags.slice(0, 5).map((tag) => (
@@ -108,12 +92,12 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
                   onClick={() => !selectedTags.includes(tag) && onTagToggle(tag)}
                   disabled={selectedTags.includes(tag)}
                   className={cn(
-                    'px-2 py-0.5 text-2xs font-mono rounded-full border transition-colors duration-200',
+                    'px-2 py-0.5 text-2xs rounded-full border transition-colors duration-200',
                     selectedTags.includes(tag)
-                      ? 'bg-brand-cyan/20 border-brand-cyan/30 text-brand-cyan cursor-default'
+                      ? 'bg-brand-cyan/10 border-brand-cyan/30 text-foreground cursor-default'
                       : theme === 'dark'
-                        ? 'bg-neutral-800/80 border-neutral-700/50 text-neutral-300 hover:bg-brand-cyan/10 hover:border-neutral-700 hover:text-brand-cyan cursor-pointer'
-                        : 'bg-neutral-100 border-neutral-300 text-neutral-700 hover:bg-brand-cyan/10 hover:border-neutral-700 hover:text-brand-cyan cursor-pointer'
+                        ? 'bg-neutral-800/80 border-neutral-700/50 text-neutral-300 hover:bg-muted hover:border-neutral-700 hover:text-foreground cursor-pointer'
+                        : 'bg-neutral-100 border-neutral-300 text-neutral-700 hover:bg-muted hover:border-neutral-700 hover:text-foreground cursor-pointer'
                   )}
                 >
                   {translateTag(tag)}

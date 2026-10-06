@@ -82,7 +82,7 @@ export const DataTableEditableCell = <TData,>({
             className
           )}
         >
-          <option value="">{t('adminPresets.select', { defaultValue: 'Selecionar...' })}</option>
+          <option value="">{t('adminPresets.select')}</option>
           {options?.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
@@ -130,23 +130,19 @@ export const DataTableEditableCell = <TData,>({
         'cursor-text hover:bg-neutral-800/50 p-1 rounded transition-colors border border-transparent hover:border-neutral-700 min-h-[24px]',
         className
       )}
-      title={t('adminPresets.clickToEdit', { defaultValue: 'Clique para editar' })}
+      title={t('adminPresets.clickToEdit')}
     >
       {type === 'boolean'
         ? value
-          ? t('common.yes', { defaultValue: 'Sim' })
-          : t('common.no', { defaultValue: 'Não' })
+          ? t('common.yes')
+          : t('common.no')
         : type === 'select'
           ? options?.find((opt) => opt.value === value)?.label ||
             value || (
-              <span className="text-neutral-600 ">
-                {placeholder || t('adminPresets.empty', { defaultValue: 'Vazio' })}
-              </span>
+              <span className="text-neutral-600">{placeholder || t('adminPresets.empty')}</span>
             )
           : value || (
-              <span className="text-neutral-600 ">
-                {placeholder || t('adminPresets.empty', { defaultValue: 'Vazio' })}
-              </span>
+              <span className="text-neutral-600">{placeholder || t('adminPresets.empty')}</span>
             )}
     </div>
   );

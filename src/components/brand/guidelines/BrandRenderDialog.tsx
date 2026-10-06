@@ -16,6 +16,8 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { downloadImage } from '@/utils/imageUtils';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Thumb } from '@/components/ui/Thumb';
 
 interface Props {
   open: boolean;
@@ -38,6 +40,7 @@ export const BrandRenderDialog: React.FC<Props> = ({
   guidelineId,
   initial,
 }) => {
+  const { t } = useTranslation();
   const [presets, setPresets] = useState<WebPreset[]>([]);
   const [template, setTemplate] = useState(initial?.template || '');
   const [h1, setH1] = useState(initial?.h1 || '');
@@ -56,7 +59,7 @@ export const BrandRenderDialog: React.FC<Props> = ({
       .getWebPresets(guidelineId)
       .then((r) => {
         setPresets(r.presets || []);
-        setTemplate((t) => t || r.presets?.[0]?.id || '');
+        setTemplate((cur) => cur || r.presets?.[0]?.id || '');
       })
       .catch(() => {});
   }, [open, guidelineId]);
@@ -71,7 +74,7 @@ export const BrandRenderDialog: React.FC<Props> = ({
 
   const render = useCallback(async () => {
     if (!h1.trim() || !template) {
-      toast.error('Escolha um template e escreva a manchete');
+      toast.error(t('brandRender.needTemplate'));
       return;
     }
     setView('rendering');
@@ -97,10 +100,10 @@ export const BrandRenderDialog: React.FC<Props> = ({
       setResult({ url: res.url, width: res.width, height: res.height });
       setView('result');
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Falha ao renderizar');
+      toast.error(e instanceof Error ? e.message : t('brandRender.failed'));
       setView('form');
     }
-  }, [guidelineId, template, h1, h2, infos, brief, halftone]);
+  }, [guidelineId, template, h1, h2, infos, brief, halftone, t]);
 
   const saveToMedia = useCallback(async () => {
     if (!result) return;
@@ -109,16 +112,16 @@ export const BrandRenderDialog: React.FC<Props> = ({
       await brandGuidelineApi.uploadMediaFromUrl(
         guidelineId,
         result.url,
-        `Post — ${h1.slice(0, 40)}`
+        `Post: ${h1.slice(0, 40)}`
       );
       setSaved(true);
-      toast.success('Salvo no Media Kit');
+      toast.success(t('brandRender.saved'));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Erro ao salvar');
+      toast.error(e instanceof Error ? e.message : t('brandRender.saveFailed'));
     } finally {
       setSaving(false);
     }
-  }, [result, guidelineId, h1]);
+  }, [result, guidelineId, h1, t]);
 
   const reset = useCallback(() => {
     setView('form');
@@ -131,14 +134,10 @@ export const BrandRenderDialog: React.FC<Props> = ({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <div className="flex items-center gap-2.5">
-            <Layout size={14} className="text-violet-400" />
-            <DialogTitle className="text-sm font-bold uppercase tracking-[0.15em]">
-              Render on-brand
-            </DialogTitle>
+            <Layout size={14} className="text-muted-foreground" />
+            <DialogTitle>{t('brandRender.title')}</DialogTitle>
           </div>
-          <DialogDescription className="text-2xs text-neutral-500">
-            Cores, fontes, logo e foto da marca — renderizado full-web, sem Figma.
-          </DialogDescription>
+          <DialogDescription>{t('brandRender.description')}</DialogDescription>
         </DialogHeader>
 
         <DialogBody>
@@ -146,17 +145,19 @@ export const BrandRenderDialog: React.FC<Props> = ({
             <div className="space-y-4">
               {presets.length > 1 && (
                 <div className="space-y-1.5">
-                  <p className="text-2xs uppercase tracking-widest text-neutral-500">Template</p>
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {t('brandRender.template')}
+                  </p>
                   <div className="flex flex-wrap gap-1.5">
                     {presets.map((p) => (
                       <button
                         key={p.id}
                         onClick={() => setTemplate(p.id)}
                         className={cn(
-                          'px-2.5 py-1 rounded-lg text-2xs border transition-colors',
+                          'px-2.5 py-1 rounded-xl text-xs border transition-colors',
                           template === p.id
-                            ? 'border-violet-500/40 bg-violet-500/10 text-violet-200'
-                            : 'border-neutral-800 text-neutral-400 hover:bg-white/5'
+                            ? 'border-ring bg-muted text-foreground'
+                            : 'border-border text-muted-foreground hover:bg-muted/50'
                         )}
                       >
                         {p.id}
@@ -168,42 +169,42 @@ export const BrandRenderDialog: React.FC<Props> = ({
               <Input
                 value={h1}
                 onChange={(e) => setH1(e.target.value)}
-                placeholder="Manchete (h1)"
+                placeholder={t('brandRender.headline')}
                 className="text-sm"
               />
               <Input
                 value={h2}
                 onChange={(e) => setH2(e.target.value)}
-                placeholder="Subtítulo (opcional)"
+                placeholder={t('brandRender.subtitle')}
                 className="text-sm"
               />
               <Textarea
                 value={infos}
                 onChange={(e) => setInfos(e.target.value)}
-                placeholder="Infos — uma por linha (data, preço, @perfil)…"
-                className="border-neutral-800 bg-transparent text-sm min-h-[64px] resize-none"
+                placeholder={t('brandRender.infos')}
+                className="text-sm min-h-[64px] resize-none"
               />
               <Input
                 value={brief}
                 onChange={(e) => setBrief(e.target.value)}
-                placeholder="Brief da foto (vibe — opcional)"
+                placeholder={t('brandRender.brief')}
                 className="text-sm"
               />
-              <label className="flex items-center gap-2 text-xs text-neutral-400 cursor-pointer">
+              <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
                 <input
                   type="checkbox"
                   checked={halftone}
                   onChange={(e) => setHalftone(e.target.checked)}
                 />
-                <Zap size={12} className="text-violet-400" /> Efeito halftone na foto
+                <Zap size={12} /> {t('brandRender.halftone')}
               </label>
               <div className="flex justify-end pt-1">
                 <Button
                   onClick={render}
                   disabled={!h1.trim() || !template}
-                  className="h-8 px-4 gap-2 text-xs bg-violet-500/20 border border-violet-500/30 text-violet-200 hover:bg-violet-500/30"
+                  className="h-8 px-4 gap-2 text-xs"
                 >
-                  <Pencil size={12} /> Renderizar
+                  <Pencil size={12} /> {t('brandRender.render')}
                 </Button>
               </div>
             </div>
@@ -212,37 +213,42 @@ export const BrandRenderDialog: React.FC<Props> = ({
           {view === 'rendering' && (
             <div className="flex flex-col items-center justify-center gap-3 py-16">
               <GlitchLoader size={20} />
-              <p className="text-2xs text-neutral-500 uppercase tracking-widest">Renderizando…</p>
+              <p className="text-xs text-muted-foreground">{t('brandRender.rendering')}</p>
             </div>
           )}
 
           {view === 'result' && result && (
             <div className="space-y-4">
-              <div className="rounded-lg border border-neutral-800 overflow-hidden bg-neutral-950">
-                <img src={result.url} alt="Render" className="w-full" />
+              <div className="rounded-xl border border-border overflow-hidden bg-muted/40">
+                <Thumb src={result.url} alt={h1} className="w-full" />
               </div>
               <div className="flex items-center justify-between">
                 <button
                   onClick={reset}
-                  className="flex items-center gap-1.5 text-2xs uppercase tracking-widest text-neutral-500 hover:text-neutral-300"
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
                 >
-                  <RotateCcw size={10} /> Outro
+                  <RotateCcw size={12} /> {t('brandRender.another')}
                 </button>
                 <div className="flex gap-2">
                   <Button
                     variant="ghost"
                     onClick={() => downloadImage(result.url, h1 || 'post')}
-                    className="h-8 px-3 gap-1.5 text-xs text-neutral-400"
+                    className="h-8 px-3 gap-1.5 text-xs"
                   >
-                    <Download size={12} /> Download
+                    <Download size={12} /> {t('common.download')}
                   </Button>
                   <Button
                     variant="ghost"
                     onClick={saveToMedia}
                     disabled={saving || saved}
-                    className="h-8 px-3 gap-1.5 text-xs text-neutral-400"
+                    className="h-8 px-3 gap-1.5 text-xs"
                   >
-                    <Save size={12} /> {saved ? 'Salvo' : saving ? 'Salvando…' : 'Salvar na marca'}
+                    <Save size={12} />{' '}
+                    {saved
+                      ? t('brandRender.savedShort')
+                      : saving
+                        ? t('common.saving')
+                        : t('brandRender.saveToBrand')}
                   </Button>
                 </div>
               </div>

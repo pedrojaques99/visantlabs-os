@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Thumb } from '@/components/ui/Thumb';
+import { Dropzone } from '@/components/ui/Dropzone';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
@@ -147,10 +149,8 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
                 <div
                   key={logo.id || i}
                   className={cn(
-                    'relative group/logo flex flex-col items-center gap-1.5 p-3 rounded-md border bg-white/[0.03] transition-colors',
-                    isPrimary
-                      ? 'border-brand-cyan/40 ring-1 ring-brand-cyan/20'
-                      : 'border-neutral-800 hover:border-white/10'
+                    'relative group/logo flex flex-col items-center gap-1.5 p-3 rounded-md border bg-muted transition-colors',
+                    isPrimary ? 'border-ring' : 'border-border hover:border-border-hover'
                   )}
                 >
                   {/* Set-as-logo / primary indicator (top-left) */}
@@ -163,18 +163,18 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
                     className={cn(
                       'absolute top-1 left-1 z-10 h-5 w-5 flex items-center justify-center rounded transition-[color,background-color,border-color,opacity]',
                       isPrimary
-                        ? 'text-brand-cyan cursor-default'
-                        : 'text-neutral-600 hover:text-brand-cyan opacity-0 group-hover/logo:opacity-100'
+                        ? 'text-foreground cursor-default'
+                        : 'text-muted-foreground hover:text-foreground opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/logo:opacity-100 group-focus-within/logo:opacity-100'
                     )}
                   >
-                    <Gem size={11} className={isPrimary ? 'fill-brand-cyan' : ''} />
+                    <Gem size={11} weight={isPrimary ? 'fill' : 'regular'} />
                   </button>
 
                   {/* Delete (top-right) */}
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute top-1 right-1 z-10 h-5 w-5 text-neutral-700 hover:text-destructive opacity-0 group-hover/logo:opacity-100 transition-[color,background-color,border-color,opacity]"
+                    className="absolute top-1 right-1 z-10 h-5 w-5 text-muted-foreground hover:text-destructive opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/logo:opacity-100 group-focus-within/logo:opacity-100 transition-[color,opacity]"
                     onClick={() => handleDelete(i)}
                     aria-label="Remove logo"
                   >
@@ -182,29 +182,29 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
                   </Button>
 
                   <div className="w-full h-16 flex items-center justify-center">
-                    <img
+                    <Thumb
                       src={logo.url}
                       alt={logo.label || `Logo ${i + 1}`}
                       className="max-h-full max-w-full object-contain"
                     />
                   </div>
-                  <span className="text-2xs font-mono text-neutral-500 truncate w-full text-center">
-                    {isPrimary && <span className="text-foreground">● </span>}
-                    {logo.label || `Logo ${i + 1}`}
-                    {fmt && <span className="text-neutral-700"> · {fmt}</span>}
+                  <span className="flex items-center justify-center gap-1.5 text-2xs text-muted-foreground truncate w-full">
+                    <span className="truncate">{logo.label || `Logo ${i + 1}`}</span>
+                    {fmt && <span className="font-mono">{fmt}</span>}
                   </span>
                 </div>
               );
             })}
           </div>
         ) : (
-          <button
-            className="w-full h-20 flex flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-white/10 text-neutral-700 hover:border-white/20 hover:text-neutral-500 transition-colors cursor-pointer"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <ImageIcon size={18} strokeWidth={1} />
-            <span className="text-2xs font-mono">Drop or click to upload</span>
-          </button>
+          <Dropzone
+            accept="image/*"
+            multiple
+            icon={ImageIcon}
+            onFiles={handleUpload}
+            label="Upload logo"
+            className="h-20 text-xs"
+          />
         )}
       </div>
 

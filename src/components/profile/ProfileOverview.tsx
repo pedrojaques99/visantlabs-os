@@ -5,14 +5,9 @@ import {
   Camera,
   CreditCard,
   ExternalLink,
-  Share2,
   Copy,
-  Users,
-  HardDrive,
   Plus,
-  ArrowRight,
   UserCog,
-  BarChart2,
   type LucideIcon,
 } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -22,6 +17,8 @@ import { referralService, type ReferralStats } from '@/services/referralService'
 import { toast } from 'sonner';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { Thumb } from '@/components/ui/Thumb';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatDate } from '@/utils/localeUtils';
@@ -33,8 +30,14 @@ import { UsageDashboard } from './UsageDashboard';
 interface ProfileOverviewProps {
   user: UserType;
   subscriptionStatus: SubscriptionStatus | null;
+  /** A leitura da assinatura falhou: mostra erro com retry, não "sem dados". */
+  subscriptionError?: boolean;
+  onRetrySubscription?: () => void;
   referralStats: ReferralStats | null;
   isLoadingReferral: boolean;
+  /** A leitura do referral falhou: erro com retry, nunca spinner eterno. */
+  referralError?: boolean;
+  onRetryReferral?: () => void;
   onRefreshUserData: () => void;
   onManageSubscription: () => void;
   onBuyCredits: () => void;
@@ -46,7 +49,7 @@ interface ProfileOverviewProps {
 }
 
 // Shared surface for a card section.
-const cardClass = cn('rounded-2xl p-5 sm:p-6 flex flex-col gap-5', glassSurface.panel);
+const cardClass = cn('rounded-xl p-5 sm:p-6 flex flex-col gap-5', glassSurface.panel);
 const tileClass = cn('rounded-xl', glassSurface.surface);
 const controlClass = cn('rounded-xl', glassSurface.control);
 
@@ -58,19 +61,13 @@ const NavRow: React.FC<{
   onClick?: () => void;
 }> = ({ icon: Icon, label, to, onClick }) => {
   const inner = (
-    <>
-      <span className="flex items-center gap-3">
-        <Icon size={16} strokeWidth={2} className="text-neutral-500" />
-        <span>{label}</span>
-      </span>
-      <ArrowRight
-        size={14}
-        className="text-neutral-600 opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0"
-      />
-    </>
+    <span className="flex items-center gap-3">
+      <Icon size={16} strokeWidth={2} className="text-muted-foreground" />
+      <span>{label}</span>
+    </span>
   );
   const cls = cn(
-    'group flex w-full items-center justify-between px-4 py-2.5 text-sm font-mono font-medium text-neutral-300',
+    'flex w-full items-center px-4 py-2.5 text-sm font-medium text-foreground',
     controlClass
   );
   return to ? (
@@ -84,13 +81,10 @@ const NavRow: React.FC<{
   );
 };
 
-// Section header with an icon chip + title.
-const SectionHeader: React.FC<{ icon: LucideIcon; title: string }> = ({ icon: Icon, title }) => (
-  <div className="flex items-center gap-3 border-b border-neutral-800 pb-4">
-    <div className="p-2 rounded-lg bg-white/5 border border-white/10">
-      <Icon size={16} className="text-neutral-400" />
-    </div>
-    <MicroTitle as="h3" className="text-sm font-semibold text-neutral-100">
+// Section header: just the title.
+const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
+  <div className="border-b border-border pb-4">
+    <MicroTitle as="h3" className="text-sm font-medium text-foreground">
       {title}
     </MicroTitle>
   </div>
@@ -108,8 +102,12 @@ const StatTile: React.FC<{ label: string; children: React.ReactNode }> = ({ labe
 export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
   user,
   subscriptionStatus,
+  subscriptionError = false,
+  onRetrySubscription,
   referralStats,
   isLoadingReferral,
+  referralError = false,
+  onRetryReferral,
   onManageSubscription,
   onBuyCredits,
   onViewTransactions,
@@ -190,34 +188,33 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
             disabled={isUploadingPicture}
             className="hidden"
           />
-          <div
-            className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-neutral-950 border border-white/10 overflow-hidden flex items-center justify-center cursor-pointer transition-opacity hover:opacity-80 group"
+          <button
+            type="button"
+            className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-muted border border-border overflow-hidden flex items-center justify-center cursor-pointer transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait"
             onClick={() => fileInputRef.current?.click()}
+            disabled={isUploadingPicture}
             title={t('profile.uploadPicture')}
+            aria-label={t('profile.uploadPicture')}
           >
             {isUploadingPicture ? (
               <GlitchLoader size={32} />
-            ) : avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt={user.name || t('common.profile')}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
             ) : (
-              <User size={44} className="text-neutral-700" />
+              <Thumb
+                src={avatarUrl || undefined}
+                alt={user.name || t('common.profile')}
+                fallbackIcon={User}
+                className="w-full h-full object-cover"
+              />
             )}
-            <span className="absolute bottom-2 right-2 bg-brand-cyan text-black rounded-lg p-1.5 shadow-lg transition-transform group-hover:scale-110">
+            <span className="absolute bottom-2 right-2 bg-background/90 text-foreground border border-border rounded-xl p-1.5">
               <Camera size={14} />
             </span>
-          </div>
+          </button>
           <div className="text-center space-y-1 min-w-0 max-w-full">
-            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight truncate">
+            <h2 className="text-xl sm:text-2xl font-semibold text-foreground tracking-tight truncate">
               {user.name || t('profile.name')}
             </h2>
-            <p className="text-sm text-neutral-500 font-mono truncate">{user.email}</p>
+            <p className="text-sm text-muted-foreground truncate">{user.email}</p>
           </div>
         </div>
 
@@ -237,7 +234,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
 
       {/* ── Credits ─────────────────────────────────────────────── */}
       <section className={cardClass}>
-        <SectionHeader icon={CreditCard} title={t('credits.title')} />
+        <SectionHeader title={t('credits.title')} />
 
         {subscriptionStatus ? (
           <>
@@ -247,7 +244,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                   variant="brand"
                   size="icon-sm"
                   onClick={onBuyCredits}
-                  className="absolute top-4 right-4 rounded-lg"
+                  className="absolute top-4 right-4 rounded-xl"
                   title={t('credits.buyCredits')}
                   aria-label={t('credits.buyCredits')}
                 >
@@ -256,19 +253,14 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                 <MicroTitle as="p" className="mb-1">
                   {t('credits.available')}
                 </MicroTitle>
-                <div className="flex items-baseline gap-2">
-                  <p className="text-4xl font-bold text-white font-mono tracking-tight">
-                    {totalCreditsAvailable}
-                  </p>
-                  <span className="text-2xs font-mono uppercase tracking-widest text-neutral-400 bg-white/[0.03] px-2 py-0.5 rounded-full border border-white/10">
-                    {t('credits.active')}
-                  </span>
-                </div>
+                <p className="text-4xl font-semibold text-foreground font-mono tracking-tight">
+                  {totalCreditsAvailable}
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <StatTile label={t('profile.totalCreditsUsed')}>
-                  <p className="text-lg font-bold text-neutral-200 font-mono">
+                  <p className="text-lg font-medium text-foreground font-mono">
                     {subscriptionStatus.creditsUsed ?? 0}
                   </p>
                 </StatTile>
@@ -279,33 +271,30 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                 ) : storageUsage ? (
                   <div className={cn(tileClass, 'p-3')}>
                     <div className="flex items-center justify-between gap-1 mb-1.5">
-                      <span className="flex items-center gap-1.5">
-                        <HardDrive size={10} className="text-neutral-500" />
-                        <MicroTitle as="p">{t('credits.storage')}</MicroTitle>
-                      </span>
-                      <p className="text-2xs text-neutral-400 font-mono">
+                      <MicroTitle as="p">{t('credits.storage')}</MicroTitle>
+                      <p className="text-2xs text-muted-foreground font-mono">
                         {storageUsage.percentage.toFixed(0)}%
                       </p>
                     </div>
-                    <div className="w-full bg-neutral-800 rounded-full h-1.5 mb-1.5">
+                    <div className="w-full bg-muted rounded-full h-1.5 mb-1.5">
                       <div
-                        className="bg-brand-cyan h-1.5 rounded-full transition-colors"
+                        className="bg-muted-foreground h-1.5 rounded-full"
                         style={{ width: `${Math.min(storageUsage.percentage, 100)}%` }}
                       />
                     </div>
-                    <p className="text-2xs text-neutral-500 font-mono">
+                    <p className="text-2xs text-muted-foreground font-mono">
                       {storageUsage.formatted.used} / {storageUsage.formatted.limit}
                     </p>
                   </div>
                 ) : (
                   <StatTile label={t('credits.storage')}>
-                    <p className="text-sm text-neutral-600 font-mono">—</p>
+                    <p className="text-sm text-muted-foreground">{t('common.unavailable')}</p>
                   </StatTile>
                 )}
               </div>
 
               {subscriptionStatus.creditsResetDate && (
-                <MicroTitle as="p" className="text-neutral-600 text-center pt-1">
+                <MicroTitle as="p" className="text-center pt-1">
                   {subscriptionStatus.hasActiveSubscription
                     ? t('credits.renews', { date: formatDate(subscriptionStatus.creditsResetDate) })
                     : t('credits.resets', {
@@ -316,18 +305,14 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <Button
-                variant="surface"
-                onClick={onViewTransactions}
-                className="w-full font-mono text-sm"
-              >
+              <Button variant="surface" onClick={onViewTransactions} className="w-full text-sm">
                 {t('profile.viewAllTransactions')}
               </Button>
               {hasActiveSubscription && subscriptionStatus?.subscriptionStatus !== 'free' && (
                 <Button
                   variant="surface"
                   onClick={onManageSubscription}
-                  className="w-full font-mono text-sm gap-2"
+                  className="w-full text-sm gap-2"
                   title={t('profile.manageSubscription')}
                 >
                   <CreditCard size={14} />
@@ -336,27 +321,27 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
               )}
             </div>
           </>
+        ) : subscriptionError ? (
+          <ErrorState onRetry={onRetrySubscription} className="py-8 flex-1" />
         ) : (
           <div className="flex items-center justify-center py-12 flex-1">
-            <p className="text-sm text-neutral-500 font-mono text-center max-w-[200px]">
-              {t('profile.noSubscriptionData')}
-            </p>
+            <GlitchLoader size={20} />
           </div>
         )}
       </section>
 
       {/* ── Referral ────────────────────────────────────────────── */}
       <section className={cardClass}>
-        <SectionHeader icon={Share2} title={t('referral.title')} />
+        <SectionHeader title={t('referral.title')} />
 
         {referralStats ? (
           <div className="flex flex-col gap-5 flex-1">
-            <p className="text-sm text-neutral-400 font-mono leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {t('referral.description')}
             </p>
 
             <div className="space-y-2">
-              <MicroTitle as="label" className="block text-neutral-600">
+              <MicroTitle as="label" className="block">
                 {t('referral.yourLink')}
               </MicroTitle>
               <div className="relative group">
@@ -364,7 +349,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                   type="text"
                   value={referralLink}
                   readOnly
-                  className="w-full pr-11 bg-white/[0.03] border-white/10 text-neutral-400 group-hover:text-neutral-200 font-mono text-xs transition-colors"
+                  className="w-full pr-11 text-muted-foreground font-mono text-xs"
                 />
                 <Button
                   variant="surface"
@@ -372,7 +357,8 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                   onClick={handleCopyReferralLink}
                   disabled={!referralStats.referralCode}
                   className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md"
-                  aria-label={t('referral.linkCopied')}
+                  aria-label={t('referral.copy')}
+                  title={t('referral.copy')}
                 >
                   {isLoadingReferral ? <GlitchLoader size={12} /> : <Copy size={12} />}
                 </Button>
@@ -386,13 +372,10 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                   'p-4 flex flex-col items-center justify-center text-center'
                 )}
               >
-                <Users className="text-neutral-500 mb-2" size={20} />
-                <p className="text-xl font-bold text-neutral-200 font-mono mb-1">
+                <p className="text-xl font-medium text-foreground font-mono mb-1">
                   {referralStats.referredUsersCount || 0}
                 </p>
-                <MicroTitle as="p" className="text-neutral-600">
-                  {t('referral.friendsReferred')}
-                </MicroTitle>
+                <MicroTitle as="p">{t('referral.friendsReferred')}</MicroTitle>
               </div>
               <div
                 className={cn(
@@ -400,20 +383,19 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                   'p-4 flex flex-col items-center justify-center text-center'
                 )}
               >
-                <CreditCard className="text-neutral-500 mb-2" size={20} />
-                <p className="text-xl font-bold text-neutral-200 font-mono mb-1">
+                <p className="text-xl font-medium text-foreground font-mono mb-1">
                   {referralStats.totalCreditsEarned || 0}
                 </p>
-                <MicroTitle as="p" className="text-neutral-600">
-                  {t('referral.totalEarned')}
-                </MicroTitle>
+                <MicroTitle as="p">{t('referral.totalEarned')}</MicroTitle>
               </div>
             </div>
           </div>
+        ) : referralError ? (
+          <ErrorState onRetry={onRetryReferral} className="py-8 flex-1" />
         ) : (
           <div className="flex flex-col items-center justify-center gap-3 py-12 flex-1">
             <GlitchLoader size={20} />
-            <p className="text-sm text-neutral-500 font-mono text-center">
+            <p className="text-sm text-muted-foreground text-center">
               {isLoadingReferral ? t('common.loading') : t('referral.generating')}
             </p>
           </div>
@@ -422,7 +404,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
 
       {/* ── Usage Analytics — full width ─────────────────────────── */}
       <section className={cn(cardClass, 'lg:col-span-2')}>
-        <SectionHeader icon={BarChart2} title={t('profile.usageAnalytics')} />
+        <SectionHeader title={t('profile.usageAnalytics')} />
         <UsageDashboard />
       </section>
     </div>

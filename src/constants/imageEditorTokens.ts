@@ -1,3 +1,4 @@
+// audit:design-ignore-file: hardcoded-cyan-rgba — vai pro ctx.fillStyle do canvas 2D, que não resolve var()
 export const IMAGE_EDITOR = {
   mask: {
     fill: 'rgba(255, 255, 255, 1)',

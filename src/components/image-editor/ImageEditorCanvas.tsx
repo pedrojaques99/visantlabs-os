@@ -6,6 +6,7 @@ import { ExpandHandles } from './ExpandHandles';
 import { getStroke } from 'perfect-freehand';
 import { getSvgPathFromStroke } from '@/utils/drawingUtils';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Props {
   imageUrl: string;
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export const ImageEditorCanvas: React.FC<Props> = ({ imageUrl, imageWidth, imageHeight }) => {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
@@ -92,6 +94,8 @@ export const ImageEditorCanvas: React.FC<Props> = ({ imageUrl, imageWidth, image
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     // Clear
+    // EXCEÇÃO ao audit:design/hardcoded-hex-color: canvas 2D não lê classe Tailwind; é o
+    // fundo do palco de edição (dark-first), pintado em pixel.
     ctx.fillStyle = '#0a0a0a';
     ctx.fillRect(0, 0, container.clientWidth, container.clientHeight);
 
@@ -307,7 +311,7 @@ export const ImageEditorCanvas: React.FC<Props> = ({ imageUrl, imageWidth, image
           h: drawPreview.h / imageHeight,
         });
       } else {
-        toast.info('Selection too small — try a larger area', { duration: 2000 });
+        toast.info(t('imageEditor.selectionTooSmall'), { duration: 2000 });
       }
     } else if (activeTool === 'circle' && drawPreview) {
       if (
@@ -322,7 +326,7 @@ export const ImageEditorCanvas: React.FC<Props> = ({ imageUrl, imageWidth, image
           ry: drawPreview.h / 2 / imageHeight,
         });
       } else {
-        toast.info('Selection too small — try a larger area', { duration: 2000 });
+        toast.info(t('imageEditor.selectionTooSmall'), { duration: 2000 });
       }
     } else if (activeTool === 'brush' || activeTool === 'eraser') {
       const pts = brushPointsRef.current;

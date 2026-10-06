@@ -46,7 +46,7 @@ export const IMAGE_MODEL_REGISTRY: ImageModelEntry[] = [
       id,
       provider: 'gemini',
       label: c.label,
-      description: `${c.label} — up to ${c.maxRefImages} ref images`,
+      description: `${c.label}: up to ${c.maxRefImages} ref images`,
       envVar: 'GEMINI_API_KEY',
       supportsLogoRef: true,
     };

@@ -11,7 +11,6 @@ import { BudgetPreview } from '../components/budget/BudgetPreview';
 import { PdfUploadRequired } from '../components/budget/PdfUploadRequired';
 import { BrandCustomizationPanel } from '../components/budget/BrandCustomizationPanel';
 import { FieldPropertiesPanel } from '../components/budget/FieldPropertiesPanel';
-import { FormButton } from '../components/ui/form-button';
 import { Tooltip } from '../components/ui/Tooltip';
 import type { PdfFieldMapping } from '../types/types';
 import { toast } from 'sonner';
@@ -34,6 +33,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { copyToClipboard } from '@/utils/clipboard';
 
+import { DEFAULT_DOCUMENT_ACCENT } from '../components/budget/visant/documentColors';
 export const BudgetMachinePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -81,7 +81,7 @@ export const BudgetMachinePage: React.FC = () => {
       observations: '',
       links: {},
       faq: [],
-      brandColors: ['var(--brand-cyan)'],
+      brandColors: [DEFAULT_DOCUMENT_ACCENT],
       brandName: 'Your Brand',
       brandLogo: undefined,
     };
@@ -166,7 +166,7 @@ export const BudgetMachinePage: React.FC = () => {
 
       setSelectedTemplate('custom');
       setCurrentProjectId(null);
-      setBudgetName(preset.name || t('budget.title') || 'Budget Machine');
+      setBudgetName(preset.name || t('budget.title'));
 
       // Initialize budget data with preset PDF
       const data: BudgetData = {
@@ -176,15 +176,13 @@ export const BudgetMachinePage: React.FC = () => {
       };
 
       setBudgetData(data);
-      toast.success(t('budget.presetLoaded') || 'Preset loaded successfully');
+      toast.success(t('budget.presetLoaded'));
 
       // Remove presetId from URL after loading
       navigate('/budget-machine', { replace: true });
     } catch (error: any) {
       console.error('Error loading preset:', error);
-      toast.error(
-        error.message || t('budget.errors.failedToLoadPreset') || 'Failed to load preset'
-      );
+      toast.error(error.message || t('budget.errors.failedToLoadPreset'));
       navigate('/budget-machine', { replace: true });
     } finally {
       setIsLoadingProject(false);
@@ -204,7 +202,7 @@ export const BudgetMachinePage: React.FC = () => {
       const id = project._id || (project as any).id;
       setCurrentProjectId(id);
       setSelectedTemplate(project.template);
-      setBudgetName(project.name || t('budget.title') || 'Budget Machine');
+      setBudgetName(project.name || t('budget.title'));
 
       // Convert project data to BudgetData
       const data: BudgetData = {
@@ -218,7 +216,7 @@ export const BudgetMachinePage: React.FC = () => {
         observations: project.observations || '',
         links: project.links || {},
         faq: Array.isArray(project.faq) ? project.faq : [],
-        brandColors: project.brandColors || ['var(--brand-cyan)'],
+        brandColors: project.brandColors || [DEFAULT_DOCUMENT_ACCENT],
         brandName: project.brandName,
         brandLogo: project.brandLogo || undefined,
         brandBackgroundColor: project.brandBackgroundColor || undefined,
@@ -245,10 +243,10 @@ export const BudgetMachinePage: React.FC = () => {
       };
 
       setBudgetData(data);
-      toast.success(t('budget.saved') || 'Budget loaded successfully');
+      toast.success(t('budget.saved'));
     } catch (error: any) {
       console.error('Error loading budget:', error);
-      toast.error(error.message || t('budget.errors.failedToLoad') || 'Failed to load budget');
+      toast.error(error.message || t('budget.errors.failedToLoad'));
       navigate('/budget-machine', { replace: true });
       loadedProjectIdRef.current = null;
     } finally {
@@ -259,7 +257,7 @@ export const BudgetMachinePage: React.FC = () => {
   const handleTemplateSelect = (templateId: string) => {
     setSelectedTemplate(templateId);
     setBudgetData(initializeBudgetData(templateId));
-    setBudgetName(t('budget.title') || 'Budget Machine');
+    setBudgetName(t('budget.title'));
     setCurrentProjectId(null);
   };
 
@@ -298,24 +296,24 @@ export const BudgetMachinePage: React.FC = () => {
     // Skip field validation for custom templates
     if (budgetData.template !== 'custom') {
       if (!budgetData.clientName.trim()) {
-        toast.error(t('budget.errors.requiredFields') || 'Please fill in all required fields');
+        toast.error(t('budget.errors.requiredFields'));
         return false;
       }
 
       if (!budgetData.projectName.trim()) {
-        toast.error(t('budget.errors.requiredFields') || 'Please fill in all required fields');
+        toast.error(t('budget.errors.requiredFields'));
         return false;
       }
 
       if (!budgetData.projectDescription.trim()) {
-        toast.error(t('budget.errors.requiredFields') || 'Please fill in all required fields');
+        toast.error(t('budget.errors.requiredFields'));
         return false;
       }
     }
 
     // Always validate dates
     if (new Date(budgetData.endDate) < new Date(budgetData.startDate)) {
-      toast.error(t('budget.errors.invalidDates') || 'End date must be after start date');
+      toast.error(t('budget.errors.invalidDates'));
       return false;
     }
 
@@ -341,10 +339,10 @@ export const BudgetMachinePage: React.FC = () => {
       const id = saved._id || (saved as any).id;
       setCurrentProjectId(id);
       navigate(`/budget-machine?projectId=${id}`, { replace: true });
-      toast.success(t('budget.saved') || 'Budget saved successfully');
+      toast.success(t('budget.saved'));
     } catch (error: any) {
       console.error('Error saving budget:', error);
-      toast.error(error.message || t('budget.errors.failedToSave') || 'Failed to save budget');
+      toast.error(error.message || t('budget.errors.failedToSave'));
     } finally {
       setIsSaving(false);
     }
@@ -376,14 +374,12 @@ export const BudgetMachinePage: React.FC = () => {
       // Copy to clipboard
       await copyToClipboard(fullUrl);
       setLinkCopied(true);
-      toast.success(t('budget.linkCopied') || 'Link copied to clipboard!');
+      toast.success(t('budget.linkCopied'));
 
       setTimeout(() => setLinkCopied(false), 2000);
     } catch (error: any) {
       console.error('Error sharing budget:', error);
-      toast.error(
-        error.message || t('budget.errors.failedToShare') || 'Failed to generate share link'
-      );
+      toast.error(error.message || t('budget.errors.failedToShare'));
     }
   };
 
@@ -405,7 +401,7 @@ export const BudgetMachinePage: React.FC = () => {
       // Load the duplicated budget
       await loadProject(id);
 
-      toast.success(t('budget.duplicated') || 'Budget duplicated successfully');
+      toast.success(t('budget.duplicated'));
     } catch (error: any) {
       console.error('Error duplicating budget:', error);
       toast.error(error.message || 'Failed to duplicate budget');
@@ -517,9 +513,9 @@ export const BudgetMachinePage: React.FC = () => {
   // Show loading state while checking authentication or access
   if (isCheckingAuth || isLoadingAccess) {
     return (
-      <div className="min-h-full w-full flex items-center justify-center bg-neutral-950 text-neutral-300">
+      <div className="min-h-full w-full flex items-center justify-center bg-background">
         <div className="text-center">
-          <p className="text-sm font-mono text-neutral-400">Loading...</p>
+          <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -532,9 +528,9 @@ export const BudgetMachinePage: React.FC = () => {
 
   if (isLoadingProject) {
     return (
-      <div className="min-h-full w-full flex items-center justify-center bg-neutral-950 text-neutral-300">
+      <div className="min-h-full w-full flex items-center justify-center bg-background">
         <div className="text-center">
-          <p className="text-sm font-mono text-neutral-400">{t('budget.machine.loading_budget')}</p>
+          <p className="text-sm text-muted-foreground">{t('budget.machine.loading_budget')}</p>
         </div>
       </div>
     );
@@ -542,7 +538,7 @@ export const BudgetMachinePage: React.FC = () => {
 
   if (!selectedTemplate) {
     return (
-      <div className="min-h-full w-full bg-neutral-950 text-neutral-300">
+      <div className="min-h-full w-full bg-background text-muted-foreground">
         <BudgetTemplateSelector
           selectedTemplate={selectedTemplate}
           onSelectTemplate={handleTemplateSelect}
@@ -572,23 +568,19 @@ export const BudgetMachinePage: React.FC = () => {
   const budgetActions = budgetData && (
     <div className="flex items-center gap-2">
       {currentProjectId && (
-        <Tooltip content={t('budget.duplicate') || 'Duplicar'} position="top">
+        <Tooltip content={t('budget.duplicate')} position="top">
           <Button
             onClick={handleDuplicate}
             variant="ghost"
-            className="p-2 h-9 w-9 text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5 transition-colors"
+            size="icon-md"
+            className="text-muted-foreground hover:text-foreground"
             aria-label={t('budget.machine.duplicate_budget')}
           >
             <Copy size={16} />
           </Button>
         </Tooltip>
       )}
-      <Button
-        onClick={handleSave}
-        disabled={isSaving}
-        variant="ghost"
-        className="h-9 px-4 gap-2 text-2xs font-bold uppercase tracking-widest text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5"
-      >
+      <Button onClick={handleSave} disabled={isSaving} variant="brand" size="sm">
         <Save size={14} />
         {isSaving ? t('budget.saving') : t('budget.save')}
       </Button>
@@ -597,7 +589,8 @@ export const BudgetMachinePage: React.FC = () => {
           <Button
             onClick={handleGeneratePDF}
             variant="ghost"
-            className="h-9 px-4 gap-2 text-2xs font-bold uppercase tracking-widest text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground"
           >
             <Download size={14} />
             {t('budget.generatePDF')}
@@ -605,10 +598,11 @@ export const BudgetMachinePage: React.FC = () => {
           <Button
             onClick={handleShare}
             variant="ghost"
-            className="h-9 px-4 gap-2 text-2xs font-bold uppercase tracking-widest text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground"
           >
             {linkCopied ? <Check size={14} /> : <Share2 size={14} />}
-            {linkCopied ? 'Copied!' : t('budget.share')}
+            {linkCopied ? t('budget.copied') : t('budget.share')}
           </Button>
         </>
       )}
@@ -618,16 +612,14 @@ export const BudgetMachinePage: React.FC = () => {
   return (
     <PageShell
       pageId="budget-machine"
-      seoTitle="Budget Machine"
-      seoDescription="Crie e gerencie orçamentos profissionais para seus projetos de design."
-      title={budgetName || t('budget.title') || 'Budget Machine'}
-      microTitle="Systems // Budget"
-      description={
-        selectedTemplate
-          ? getTemplateById(selectedTemplate)?.name || selectedTemplate
-          : 'Gerencie seus orçamentos.'
-      }
-      breadcrumb={[{ label: 'Systems', to: '/apps' }, { label: 'Budget Machine' }]}
+      seoTitle={t('apps.budgetMachine.name')}
+      seoDescription={t('apps.budgetMachine.description')}
+      title={budgetName || t('budget.title')}
+      description={getTemplateById(selectedTemplate)?.name || selectedTemplate}
+      breadcrumb={[
+        { label: t('apps.title'), to: '/apps' },
+        { label: t('apps.budgetMachine.name') },
+      ]}
       actions={budgetActions}
       width="full"
       noBackground
@@ -725,6 +717,7 @@ export const BudgetMachinePage: React.FC = () => {
                             label: field.label,
                             x: pendingFieldPosition.x,
                             y: pendingFieldPosition.y,
+                            // EXCEÇÃO ao audit:design/inline-font-size: tamanho em pontos do campo no PDF (dado do mapeamento), não estilo de UI
                             fontSize: 12,
                             color: '#000000',
                             align: 'left',
@@ -769,6 +762,7 @@ export const BudgetMachinePage: React.FC = () => {
                         label: field.label,
                         x: pendingFieldPosition.x,
                         y: pendingFieldPosition.y,
+                        // EXCEÇÃO ao audit:design/inline-font-size: tamanho em pontos do campo no PDF (dado do mapeamento), não estilo de UI
                         fontSize: 12,
                         color: '#000000',
                         align: 'left',
@@ -792,27 +786,23 @@ export const BudgetMachinePage: React.FC = () => {
 
             {/* Share Link Section */}
             {shareLink && (
-              <div className="flex-shrink-0 border-t border-neutral-800 p-4 sm:p-6 bg-neutral-900">
+              <div className="flex-shrink-0 border-t border-border p-4 sm:p-6 bg-card">
                 <div className="max-w-2xl mx-auto">
-                  <div className="p-4 bg-neutral-900 border border-neutral-800 rounded-xl">
-                    <p className="text-sm text-neutral-400 mb-2 font-mono">
+                  <div className="p-4 bg-card border border-border rounded-xl">
+                    <p className="text-sm text-muted-foreground mb-2">
                       {t('budget.machine.share_link')}
                     </p>
                     <div className="flex flex-col sm:flex-row gap-2">
-                      <Input
-                        type="text"
-                        value={shareLink}
-                        readOnly
-                        className="flex-1 px-3 py-2 bg-neutral-950/70 border border-neutral-800 rounded-md text-neutral-200 text-sm font-mono"
-                      />
+                      <Input type="text" value={shareLink} readOnly className="flex-1 text-sm" />
                       <Button
-                        variant="ghost"
+                        variant="surface"
                         onClick={() => {
                           copyToClipboard(shareLink);
                           setLinkCopied(true);
                           setTimeout(() => setLinkCopied(false), 2000);
                         }}
-                        className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-brand-cyan/50 rounded-md text-foreground font-mono text-sm transition-colors flex items-center justify-center gap-2"
+                        aria-label={t('budget.machine.copiar')}
+                        title={t('budget.machine.copiar')}
                       >
                         <Copy size={16} />
                         <span className="sm:hidden">{t('budget.machine.copiar')}</span>
@@ -831,7 +821,7 @@ export const BudgetMachinePage: React.FC = () => {
               className="fixed top-10 md:top-14 h-[calc(100vh-2.5rem)] md:h-[calc(100vh-3.5rem)] z-50 w-2 cursor-col-resize group"
               style={formWidth ? { left: `${formWidth}px` } : { left: '400px' }}
             >
-              <div className="w-px h-full mx-auto bg-neutral-800 group-hover:bg-brand-cyan/50 transition-colors duration-200"></div>
+              <div className="w-px h-full mx-auto bg-border group-hover:bg-ring transition-colors duration-200"></div>
             </div>
           )}
         </div>

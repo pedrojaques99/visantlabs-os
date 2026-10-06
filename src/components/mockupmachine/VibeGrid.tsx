@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Check,
   Cpu,
   Cloud,
   BarChart,
@@ -61,10 +60,7 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
       {/* 1. SEGMENT SELECTION */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2 px-1">
-          <div className="w-1.5 h-1.5 rounded-full bg-neutral-600" />
-          <span className="text-2xs font-medium text-neutral-400">
-            {t('mockup.segmentTitle') || '01. SEGMENTO'}
-          </span>
+          <span className="text-2xs font-medium text-neutral-400">{t('mockup.segmentTitle')}</span>
         </div>
         <div className="grid grid-cols-3 gap-2.5">
           {VIBE_SEGMENTS.map((seg) => {
@@ -75,19 +71,20 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
               <button
                 key={seg.id}
                 onClick={() => onSelectSegment(seg.id as VibeSegment)}
+                aria-pressed={isSelected}
                 className={cn(
                   'relative flex flex-col items-center gap-2.5 p-3.5 rounded-xl transition-[color,background-color,border-color,box-shadow] duration-300 group overflow-hidden border',
                   isSelected
-                    ? 'bg-brand-cyan/10 border-brand-cyan/50 shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.1)]'
-                    : 'bg-neutral-900/60 border-neutral-800 hover:border-white/20 hover:bg-neutral-900/80'
+                    ? 'bg-brand-cyan/10 border-brand-cyan/50'
+                    : 'bg-neutral-900/60 border-neutral-800 hover:border-border-hover hover:bg-neutral-900/80'
                 )}
               >
                 {/* Icon Container */}
                 <div
                   className={cn(
-                    'w-8 h-8 rounded-lg flex items-center justify-center transition-[color,background-color,border-color,box-shadow] duration-300',
+                    'w-8 h-8 rounded-xl flex items-center justify-center transition-[color,background-color,border-color,box-shadow] duration-300',
                     isSelected
-                      ? 'bg-brand-cyan text-black shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.3)]'
+                      ? 'bg-neutral-800 text-foreground'
                       : 'bg-neutral-800/50 text-neutral-500 group-hover:text-neutral-300 group-hover:bg-neutral-800'
                   )}
                 >
@@ -96,18 +93,12 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
 
                 <span
                   className={cn(
-                    'text-2xs font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight',
-                    isSelected ? 'text-brand-cyan' : 'text-neutral-500 group-hover:text-neutral-300'
+                    'text-xs font-medium transition-colors duration-300 text-center leading-tight',
+                    isSelected ? 'text-foreground' : 'text-neutral-500 group-hover:text-neutral-300'
                   )}
                 >
                   {seg.name}
                 </span>
-
-                {isSelected && (
-                  <div className="absolute top-1.5 right-1.5 w-3 h-3 bg-brand-cyan rounded-full flex items-center justify-center shadow-lg animate-in zoom-in duration-300">
-                    <Check size={8} className="text-black" strokeWidth={4} />
-                  </div>
-                )}
               </button>
             );
           })}
@@ -117,10 +108,7 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
       {/* 2. STYLE SELECTION */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2 px-1">
-          <div className="w-1.5 h-1.5 rounded-full bg-neutral-600" />
-          <span className="text-2xs font-medium text-neutral-400">
-            {t('mockup.vibeTitle') || '02. VIBE / DIREÇÃO'}
-          </span>
+          <span className="text-2xs font-medium text-neutral-400">{t('mockup.vibeTitle')}</span>
         </div>
         <div className="grid grid-cols-3 gap-2.5">
           {VIBE_STYLES.map((style) => {
@@ -131,21 +119,22 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
               <button
                 key={style.id}
                 onClick={() => onSelectStyle(style.id as VibeStyle)}
+                aria-pressed={isSelected}
                 disabled={!selectedSegment}
                 className={cn(
                   'relative flex flex-col items-center gap-2.5 p-3.5 rounded-xl transition-[color,background-color,border-color,box-shadow,opacity] duration-300 group overflow-hidden border',
                   !selectedSegment && 'opacity-20 cursor-not-allowed grayscale',
                   isSelected
-                    ? 'bg-brand-cyan/10 border-brand-cyan/50 shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.1)]'
-                    : 'bg-neutral-900/60 border-neutral-800 hover:border-white/20 hover:bg-neutral-900/80'
+                    ? 'bg-brand-cyan/10 border-brand-cyan/50'
+                    : 'bg-neutral-900/60 border-neutral-800 hover:border-border-hover hover:bg-neutral-900/80'
                 )}
               >
                 {/* Icon Container */}
                 <div
                   className={cn(
-                    'w-8 h-8 rounded-lg flex items-center justify-center transition-[color,background-color,border-color,box-shadow,opacity] duration-300',
+                    'w-8 h-8 rounded-xl flex items-center justify-center transition-[color,background-color,border-color,box-shadow,opacity] duration-300',
                     isSelected
-                      ? 'bg-brand-cyan text-black shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.3)]'
+                      ? 'bg-neutral-800 text-foreground'
                       : 'bg-neutral-800/50 text-neutral-500 group-hover:text-neutral-300 group-hover:bg-neutral-800'
                   )}
                 >
@@ -154,18 +143,12 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
 
                 <span
                   className={cn(
-                    'text-2xs font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight',
-                    isSelected ? 'text-brand-cyan' : 'text-neutral-500 group-hover:text-neutral-300'
+                    'text-xs font-medium transition-colors duration-300 text-center leading-tight',
+                    isSelected ? 'text-foreground' : 'text-neutral-500 group-hover:text-neutral-300'
                   )}
                 >
                   {style.name}
                 </span>
-
-                {isSelected && (
-                  <div className="absolute top-1.5 right-1.5 w-3 h-3 bg-brand-cyan rounded-full flex items-center justify-center shadow-lg animate-in zoom-in duration-300">
-                    <Check size={8} className="text-black" strokeWidth={4} />
-                  </div>
-                )}
               </button>
             );
           })}

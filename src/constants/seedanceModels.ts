@@ -73,7 +73,7 @@ export const SEEDANCE_VIDEO_MODEL_CONFIG: Record<SeedanceVideoModelId, SeedanceV
   [SEEDANCE_VIDEO_MODELS.V2_0_FAST]: {
     label: 'Seedance 2.0 Fast',
     badge: 'fast',
-    description: 'Multimodal fast variant — lower cost, quicker generation',
+    description: 'Multimodal fast variant: lower cost, quicker generation',
     providerDomain: 'bytedance.com',
     durations: ['5s', '10s'],
     defaultDuration: '5s',

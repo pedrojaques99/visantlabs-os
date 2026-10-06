@@ -32,7 +32,7 @@ export const EditNode: React.FC<NodeProps<Node<EditNodeData>>> = memo(
       >
         {selected && !dragging && (
           <NodeResizer
-            color="brand-cyan"
+            color="var(--brand-cyan)"
             isVisible={selected}
             minWidth={320}
             minHeight={200}
@@ -41,14 +41,10 @@ export const EditNode: React.FC<NodeProps<Node<EditNodeData>>> = memo(
             onResize={handleResize}
           />
         )}
-        <NodeHeader
-          icon={Wrench}
-          title={t('canvasNodes.editNode.title') || 'Edit Node'}
-          selected={selected}
-        />
+        <NodeHeader icon={Wrench} title={t('canvasNodes.editNode.title')} selected={selected} />
 
         <div className="text-xs text-neutral-500 font-mono mt-4">
-          {t('canvasNodes.editNode.comingSoon') || 'Edit Node functionality coming soon...'}
+          {t('canvasNodes.editNode.comingSoon')}
         </div>
       </NodeContainer>
     );

@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { FormLabel as Label } from '@/components/ui/form-label';
 import { AdminImageUploader } from './ui/AdminImageUploader';
+import { Thumb } from '@/components/ui/Thumb';
 import { Select } from '@/components/ui/select';
 import { appsService, AppConfig } from '@/services/appsService';
 import { authService } from '@/services/authService';
@@ -156,7 +157,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl bg-popover border-border text-foreground backdrop-blur-xl max-h-[90vh]">
         <DialogHeader className="px-10 pt-10">
-          <DialogTitle className="text-3xl font-black font-redhatmono tracking-tighter text-foreground">
+          <DialogTitle className="text-3xl font-semibold font-redhatmono tracking-tighter text-foreground">
             {app ? 'EDIT APP CONFIG //' : 'NEW APP CONFIG //'}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-xs">
@@ -314,16 +315,17 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
               <Label>App Image / Thumbnail</Label>
               {formData.thumbnail && (
                 <div className="relative aspect-video rounded-md overflow-hidden border border-border mb-2">
-                  <img
+                  <Thumb
                     src={formData.thumbnail}
                     alt="App thumbnail"
                     className="w-full h-full object-cover"
                   />
+                  {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
                   <button
                     onClick={() => setFormData({ ...formData, thumbnail: '' })}
                     className="absolute top-1 right-1 bg-black/60 px-2 py-0.5 rounded-full text-destructive hover:bg-black/80 transition-colors"
                   >
-                    <span className="text-2xs font-bold">REMOVE</span>
+                    <span className="text-2xs font-medium">REMOVE</span>
                   </button>
                 </div>
               )}
@@ -348,7 +350,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
           <Button
             onClick={handleSave}
             disabled={isSaving}
-            className="bg-brand-cyan hover:bg-brand-cyan/80 text-black font-bold px-8 font-mono text-xs"
+            className="bg-brand-cyan hover:bg-brand-cyan/80 text-black font-medium px-8 font-mono text-xs"
           >
             {isSaving ? 'SAVING...' : 'SAVE CHANGES //'}
           </Button>

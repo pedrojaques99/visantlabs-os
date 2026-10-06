@@ -67,7 +67,7 @@ export function useBrandArchiveActions() {
       title: t('brandQuota.archiveConfirmTitle'),
       message: t('brandQuota.archiveConfirmMessage'),
       confirmText: t('brandQuota.archive'),
-      cancelText: t('common.cancel') || 'Cancel',
+      cancelText: t('common.cancel'),
       variant: 'warning' as const,
     }),
     [pendingArchiveId, confirmArchive, t]

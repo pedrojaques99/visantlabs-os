@@ -1,15 +1,14 @@
 import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '../../lib/utils';
-import { Dices, Gem, RotateCcw, Scan, Pickaxe } from '@/lib/ui/icons';
+import { Dices, RotateCcw, Pickaxe, Loader2 } from '@/lib/ui/icons';
+import { Thumb } from '../ui/Thumb';
 import type { UploadedImage, DesignType } from '../../types/types';
 import { useMockup } from './MockupContext';
 import { useSidebarEffects } from '@/hooks/useSidebarEffects';
 import { SidebarSetupSection } from './SidebarSetupSection';
 import { SidebarGenerationConfig } from './SidebarGenerationConfig';
 import { EssentialSidebar } from './EssentialSidebar';
-import { BrandGuidelineSelector } from './BrandGuidelineSelector';
-import { MicroTitle } from '../ui/MicroTitle';
 
 interface SidebarOrchestratorProps {
   // Layout props
@@ -99,26 +98,17 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
       <aside
         id="sidebar-compact"
         className={cn(
-          'relative flex-shrink-0 bg-neutral-950/80 backdrop-blur-3xl border-r border-neutral-800',
-          'h-full w-16 hidden lg:flex flex-col items-center py-8 gap-8 animate-in slide-in-from-left duration-300',
-          isSurpriseMeMode && 'border-brand-cyan/20 ring-1 ring-brand-cyan/5'
+          'relative flex-shrink-0 bg-sidebar border-r border-sidebar-border',
+          'h-full w-16 hidden lg:flex flex-col items-center py-8 gap-8 animate-in slide-in-from-left duration-300'
         )}
       >
         {/* Thumb Reference */}
-        <div className="group relative w-11 h-11 rounded-2xl overflow-hidden border border-white/10 hover:border-neutral-700 transition-[color,background-color,border-color,box-shadow,opacity,filter] cursor-pointer shadow-lg shadow-black/20">
-          {uploadedImage?.url ? (
-            <img src={uploadedImage.url} alt="Ref" className="w-full h-full object-cover" />
-          ) : uploadedImage?.base64 ? (
-            <img src={uploadedImage.base64} alt="Ref" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full bg-white/5 flex items-center justify-center">
-              <Pickaxe size={14} className="text-neutral-700" />
-            </div>
-          )}
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-            <Scan size={14} className="text-white" />
-          </div>
-        </div>
+        <Thumb
+          src={uploadedImage?.url || uploadedImage?.base64 || undefined}
+          alt={t('mockup.uploadedDesignAlt')}
+          fallbackIcon={Pickaxe}
+          className="w-11 h-11 rounded-xl object-cover border border-border"
+        />
 
         <div className="flex-1 flex flex-col items-center gap-7">
           {/* Surprise Me Icon */}
@@ -126,17 +116,15 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
             onClick={() => onSurpriseMe(true)}
             disabled={isGeneratingPrompt || isOutputsLoading}
             className={cn(
-              'w-11 h-11 rounded-2xl flex items-center justify-center transition-all group relative',
+              'w-11 h-11 rounded-xl flex items-center justify-center border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               isSurpriseMeMode
-                ? 'bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]'
-                : 'text-neutral-500 hover:text-white border border-transparent hover:bg-white/5'
+                ? 'bg-brand-cyan/10 border-brand-cyan/40 text-foreground'
+                : 'text-neutral-500 hover:text-foreground border-transparent hover:bg-muted'
             )}
-            title="Surprise Me"
+            title={t('mockup.surpriseMe')}
+            aria-label={t('mockup.surpriseMe')}
           >
-            <Dices
-              size={20}
-              className={cn('transition-transform', isGeneratingPrompt && 'animate-spin')}
-            />
+            <Dices size={20} className={cn(isGeneratingPrompt && 'animate-spin')} />
           </button>
 
           {/* Generate Icon (Core Action) */}
@@ -144,32 +132,29 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
             onClick={onGenerateClick}
             disabled={isOutputsLoading}
             className={cn(
-              'w-12 h-12 rounded-2xl flex items-center justify-center transition-all relative group overflow-visible',
+              'w-12 h-12 rounded-xl flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               isOutputsLoading
                 ? 'bg-neutral-800 text-neutral-600 border border-neutral-800'
                 : isPromptReady
-                  ? 'bg-brand-cyan text-black hover:scale-110 active:scale-95 shadow-[0_0_30px_rgba(var(--brand-cyan-rgb),0.25)] ring-2 ring-brand-cyan/20 ring-offset-2 ring-offset-black'
-                  : 'bg-neutral-900 text-neutral-500 hover:text-white border border-neutral-800 hover:bg-neutral-800'
+                  ? 'bg-brand-cyan text-black hover:bg-brand-cyan/90'
+                  : 'bg-neutral-900 text-neutral-500 hover:text-foreground border border-neutral-800 hover:bg-neutral-800'
             )}
-            title="Generate Outputs"
+            title={t('mockup.generateOutputs')}
+            aria-label={t('mockup.generateOutputs')}
           >
             {isOutputsLoading ? (
-              <div className="w-2 h-2 rounded-full bg-brand-cyan animate-ping" />
+              <Loader2 size={18} className="animate-spin" />
             ) : (
-              <Pickaxe size={22} className={cn(isPromptReady ? 'fill-current' : '')} />
-            )}
-
-            {/* Visual state indicator */}
-            {isPromptReady && !isOutputsLoading && (
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-brand-cyan rounded-full border-2 border-black animate-pulse shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.5)]" />
+              <Pickaxe size={22} />
             )}
           </button>
 
           {/* Start Over Button */}
           <button
             onClick={onStartOver}
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-neutral-700 hover:text-destructive hover:bg-destructive/5 border border-transparent hover:border-destructive/20 transition-[color,background-color,border-color,box-shadow] outline-none"
-            title="Start Over"
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-neutral-500 hover:text-destructive hover:bg-destructive/5 border border-transparent hover:border-destructive/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            title={t('mockup.startOver')}
+            aria-label={t('mockup.startOver')}
           >
             <RotateCcw size={18} />
           </button>
@@ -191,18 +176,14 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
           !hasAnalyzed
             ? [
                 'rounded-md',
-                isSurpriseMeMode
-                  ? 'border border-brand-cyan/40 border-dashed shadow-[0_0_25px_rgba(0,210,255,0.08)] animate-pool-border-glow'
-                  : 'border-none shadow-none',
+                isSurpriseMeMode ? 'border border-dashed border-border' : 'border-none shadow-none',
                 'max-w-4xl mx-auto', // Full width for Step 1
                 'min-w-0',
               ]
             : [
                 'max-w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl', // Sidebar panel state for Step 2
                 'h-full px-4 lg:px-6 py-10',
-                isSurpriseMeMode
-                  ? 'border-l border-brand-cyan/70 border-dashed shadow-[-10px_0_30px_rgba(0,210,255,0.05)]'
-                  : '',
+                isSurpriseMeMode ? 'border-l border-dashed border-border' : '',
                 'lg:w-auto',
               ]
         )}
@@ -212,14 +193,6 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
           ...(hasAnalyzed && isLargeScreen ? { width: `${sidebarWidth}px` } : {}),
         }}
       >
-        {hasAnalyzed && (
-          <div className="sticky top-0 z-10 pb-6 bg-transparent flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-brand-cyan shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.5)] animate-pulse" />
-            </div>
-          </div>
-        )}
-
         <div className="space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8">
           {!hasAnalyzed ? (
             <div className="h-auto justify-center animate-fade-in">
@@ -267,7 +240,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
           id="sidebar-resizer"
           className="hidden lg:block w-2 cursor-col-resize group"
         >
-          <div className="w-px h-auto mx-auto bg-sidebar-border group-hover:bg-brand-cyan/50 dark:group-hover:bg-brand-cyan/50 transition-colors duration-200"></div>
+          <div className="w-px h-auto mx-auto bg-sidebar-border group-hover:bg-ring transition-colors duration-200"></div>
         </div>
       )}
     </>

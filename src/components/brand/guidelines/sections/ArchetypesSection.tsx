@@ -13,6 +13,7 @@ import {
 import { Diamond, Plus, Trash2 } from '@/lib/ui/icons';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { ARCHETYPE_PRESETS, type ArchetypePreset } from '@/constants/archetypeImages';
+import { Thumb } from '@/components/ui/Thumb';
 
 interface ArchetypesSectionProps {
   guideline: BrandGuideline;
@@ -88,7 +89,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
                   className="flex items-center gap-2.5 px-2 py-1.5 cursor-pointer"
                   onClick={() => addPreset(preset)}
                 >
-                  <img
+                  <Thumb
                     src={preset.image}
                     alt={preset.nome}
                     className="w-7 h-9 object-cover rounded shrink-0"
@@ -125,7 +126,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
               className="flex gap-3 items-start py-2 border-b border-neutral-800 last:border-0 group/item"
             >
               {img && (
-                <img
+                <Thumb
                   src={img}
                   alt={arch.name}
                   className="w-8 h-10 object-cover rounded shrink-0 opacity-80"
@@ -144,7 +145,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
                     onClick={() =>
                       set(i, { role: arch.role === 'primary' ? 'secondary' : 'primary' })
                     }
-                    className="text-2xs font-mono uppercase px-1.5 py-0.5 rounded border border-white/10 text-neutral-600 hover:text-neutral-400 hover:border-white/20 transition-colors shrink-0"
+                    className="text-2xs px-1.5 py-0.5 rounded border border-border text-muted-foreground hover:text-foreground hover:border-ring transition-colors shrink-0"
                   >
                     {arch.role || 'primary'}
                   </button>
@@ -156,9 +157,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
                   placeholder="Objetivo..."
                 />
                 {preset && (
-                  <p className="text-2xs text-neutral-700 font-mono">
-                    {preset.valores.join(' · ')}
-                  </p>
+                  <p className="text-2xs text-muted-foreground">{preset.valores.join(', ')}</p>
                 )}
               </div>
               <Button

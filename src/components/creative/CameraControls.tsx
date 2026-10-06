@@ -23,7 +23,7 @@ const Btn: React.FC<{
     className={`w-7 h-7 flex items-center justify-center rounded transition-colors ${
       active
         ? 'bg-brand-cyan/20 text-brand-cyan'
-        : 'text-neutral-400 hover:bg-white/5 hover:text-white'
+        : 'text-neutral-400 hover:bg-accent hover:text-white'
     }`}
   >
     {children}
@@ -43,7 +43,7 @@ export const CameraControls: React.FC<Props> = ({
   const pct = Math.round(scale * 100);
 
   return (
-    <div className="absolute bottom-4 right-4 z-30 flex items-center gap-1 px-1.5 py-1 rounded-lg bg-neutral-950/90 backdrop-blur-xl border border-white/10 shadow-2xl">
+    <div className="absolute bottom-4 right-4 z-30 flex items-center gap-1 px-1.5 py-1 rounded-xl bg-neutral-950/90 backdrop-blur-xl border border-border shadow-2xl">
       <Btn title="Zoom out (Cmd+−)" onClick={onZoomOut}>
         <ZoomOut size={13} />
       </Btn>
@@ -51,14 +51,14 @@ export const CameraControls: React.FC<Props> = ({
         type="button"
         onClick={onZoomReset}
         title="Reset 100% (Cmd+0)"
-        className="min-w-[48px] px-2 py-1 text-2xs font-mono text-neutral-300 hover:text-white rounded transition-colors hover:bg-white/5"
+        className="min-w-[48px] px-2 py-1 text-2xs font-mono text-neutral-300 hover:text-white rounded transition-colors hover:bg-accent"
       >
         {pct}%
       </button>
       <Btn title="Zoom in (Cmd++)" onClick={onZoomIn}>
         <ZoomIn size={13} />
       </Btn>
-      <div className="w-px h-4 bg-white/10 mx-1" />
+      <div className="w-px h-4 bg-accent mx-1" />
       <Btn title="Snap to grid" onClick={() => setGridEnabled(!gridEnabled)} active={gridEnabled}>
         <Grid3x3 size={13} />
       </Btn>

@@ -30,6 +30,7 @@ import type { PromptCategory, LegacyPresetType, CommunityPrompt } from '../types
 import { migrateLegacyPreset } from '../types/communityPrompts';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { Button } from '@/components/ui/button';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { glassSurface } from '@/lib/ui/glass';
 
@@ -206,7 +207,7 @@ const PresetDetailModal: React.FC<{
           <div className="flex flex-wrap gap-1.5">
             <span
               className={cn(
-                'text-2xs font-mono px-2 py-1 rounded-lg border bg-muted/40 border-border',
+                'text-2xs font-mono px-2 py-1 rounded-xl border bg-muted/40 border-border',
                 config.color
               )}
             >
@@ -215,7 +216,7 @@ const PresetDetailModal: React.FC<{
             {migrated.aspectRatio && (
               <span
                 className={cn(
-                  'text-2xs font-mono px-2 py-1 rounded-lg text-muted-foreground',
+                  'text-2xs font-mono px-2 py-1 rounded-xl text-muted-foreground',
                   glassSurface.control
                 )}
               >
@@ -225,7 +226,7 @@ const PresetDetailModal: React.FC<{
             {migrated.difficulty && (
               <span
                 className={cn(
-                  'text-2xs font-mono px-2 py-1 rounded-lg text-muted-foreground',
+                  'text-2xs font-mono px-2 py-1 rounded-xl text-muted-foreground',
                   glassSurface.control
                 )}
               >
@@ -261,7 +262,7 @@ const PresetDetailModal: React.FC<{
                 <span
                   key={tag}
                   className={cn(
-                    'text-2xs font-mono px-2 py-1 rounded-lg text-muted-foreground',
+                    'text-2xs font-mono px-2 py-1 rounded-xl text-muted-foreground',
                     glassSurface.control
                   )}
                 >
@@ -635,7 +636,7 @@ export const CommunityPresetsPage: React.FC = () => {
       });
       if (!res.ok) throw new Error((await res.json()).error);
       if (viewMode === 'my') await fetchMy();
-      toast.success(t('communityPresets.messages.presetDuplicated') || 'Duplicated');
+      toast.success(t('communityPresets.messages.presetDuplicated'));
       setDuplicateOpen(false);
       setPresetToDuplicate(null);
     } catch (e: any) {
@@ -716,29 +717,21 @@ export const CommunityPresetsPage: React.FC = () => {
   const headerActions = (
     <div className="flex items-center gap-2">
       {/* View toggle */}
-      <div className={cn('flex p-0.5 rounded-lg', glassSurface.control)}>
-        {(['all', 'my'] as const).map((mode) => (
-          <button
-            key={mode}
-            onClick={() => handleViewMode(mode)}
-            className={cn(
-              'px-3 py-1.5 rounded-md text-xs font-mono transition-colors',
-              viewMode === mode
-                ? 'bg-muted text-foreground'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            {mode === 'all'
-              ? t('communityPresets.tabs.all') || 'All'
-              : t('communityPresets.tabs.my') || 'My'}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl
+        aria-label={t('communityPresets.title')}
+        size="sm"
+        options={[
+          { value: 'all', label: t('communityPresets.tabs.all') },
+          { value: 'my', label: t('communityPresets.tabs.my') },
+        ]}
+        value={viewMode}
+        onChange={handleViewMode}
+      />
 
       {isAuthenticated && (
         <Button variant="brand" size="sm" onClick={handleCreate} className="gap-1.5">
           <Plus size={13} />
-          {t('communityPresets.buttons.create') || 'Create'}
+          {t('communityPresets.buttons.create')}
         </Button>
       )}
     </div>
@@ -752,9 +745,9 @@ export const CommunityPresetsPage: React.FC = () => {
       microTitle="Community // Library"
       description={t('communityPresets.subtitle')}
       breadcrumb={[
-        { label: t('common.home') || 'Home', to: '/' },
-        { label: t('common.community') || 'Community', to: '/community' },
-        { label: t('common.presets') || 'Presets' },
+        { label: t('common.home'), to: '/' },
+        { label: t('common.community'), to: '/community' },
+        { label: t('common.presets') },
       ]}
       actions={headerActions}
     >
@@ -777,14 +770,16 @@ export const CommunityPresetsPage: React.FC = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('community.presets.search_presets')}
               className={cn(
-                'w-full sm:w-48 sm:focus:w-64 pl-8 pr-8 py-2 rounded-lg text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-all duration-200',
+                'w-full sm:w-48 sm:focus:w-64 pl-8 pr-8 py-2 rounded-xl text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-all duration-200',
                 glassSurface.control
               )}
               aria-label={t('community.presets.search_presets_2')}
             />
             {searchQuery && (
               <button
+                type="button"
                 onClick={() => setSearchQuery('')}
+                aria-label={t('communityPresets.clearSearch')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X size={12} />
@@ -827,14 +822,14 @@ export const CommunityPresetsPage: React.FC = () => {
               {t('communityPresets.errors.mustBeAuthenticated')}
             </p>
             <Button variant="surface" size="sm" onClick={() => setShowAuthModal(true)}>
-              {t('header.register') || 'Sign in'}
+              {t('header.register')}
             </Button>
           </div>
         )}
 
         {/* ── Error ────────────────────────────────────────────────────────── */}
         {error && (
-          <div className="text-xs font-mono text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-3">
+          <div className="text-xs font-mono text-destructive bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3">
             {error}
           </div>
         )}
@@ -863,7 +858,7 @@ export const CommunityPresetsPage: React.FC = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="min-h-[280px] flex flex-col items-center justify-center gap-6 border border-border rounded-3xl bg-card"
+            className="min-h-[280px] flex flex-col items-center justify-center gap-6 border border-border rounded-xl bg-card"
           >
             <div className={cn('p-6 rounded-full', glassSurface.control)}>
               <Layers size={28} strokeWidth={1} className="text-muted-foreground" />
@@ -982,10 +977,8 @@ export const CommunityPresetsPage: React.FC = () => {
           setPresetToDelete(null);
         }}
         onConfirm={handleConfirmDelete}
-        title={t('communityPresets.actions.deleteConfirm') || 'Delete Preset'}
-        message={
-          t('communityPresets.messages.presetDeleteConfirm') || 'This action cannot be undone.'
-        }
+        title={t('communityPresets.actions.deleteConfirm')}
+        message={t('communityPresets.messages.presetDeleteConfirm')}
         confirmText={t('common.delete')}
         cancelText={t('common.cancel')}
         variant="danger"

@@ -519,14 +519,6 @@ export function sectionUsesRailSlot(section: SectionId | null): boolean {
   return section != null && RAIL_SLOT_SECTIONS.has(section);
 }
 
-/** Título (labelKey) do header de voltar de cada seção drill-in. */
-export const DRILL_TITLES: Partial<Record<SectionId, string>> = {
-  community: 'nav.library.community',
-  references: 'nav.library.references',
-  'my-outputs': 'nav.library.myOutputs',
-  apps: 'nav.apps.label',
-};
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Nível 1 — destinos globais do rail
 // ─────────────────────────────────────────────────────────────────────────────

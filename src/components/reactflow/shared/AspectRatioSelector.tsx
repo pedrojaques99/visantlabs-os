@@ -50,11 +50,11 @@ const RatioTile: React.FC<{
       // Nodes need mousedown-stop so the click doesn't drag the node.
       onMouseDown={compact ? (e) => e.stopPropagation() : undefined}
       className={cn(
-        'group flex flex-col items-center justify-center gap-1.5 rounded-xl border transition-colors',
+        'group flex flex-col items-center justify-center gap-1.5 rounded-xl border-node transition-colors',
         compact ? 'w-12 py-2' : 'flex-1 py-3',
         selected
           ? 'border-brand-cyan/40 bg-brand-cyan/[0.08]'
-          : 'border-neutral-800 bg-white/[0.02] hover:border-neutral-700',
+          : 'border-neutral-800 bg-muted hover:border-neutral-700',
         disabled && 'opacity-50 cursor-not-allowed'
       )}
     >
@@ -62,7 +62,7 @@ const RatioTile: React.FC<{
         <span
           style={{ width, height }}
           className={cn(
-            'rounded-[3px] border transition-colors',
+            'rounded-[3px] border-node transition-colors',
             selected
               ? 'border-brand-cyan bg-brand-cyan/25'
               : 'border-neutral-500 group-hover:border-neutral-400'
@@ -134,10 +134,10 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
           disabled={disabled}
           onMouseDown={(e) => e.stopPropagation()}
           className={cn(
-            'flex w-12 flex-col items-center justify-center rounded-xl border py-2 transition-colors',
+            'flex w-12 flex-col items-center justify-center rounded-xl border-node py-2 transition-colors',
             isOtherSelected
               ? 'border-brand-cyan/40 bg-brand-cyan/[0.08] text-brand-cyan'
-              : 'border-neutral-800 bg-white/[0.02] text-neutral-500 hover:border-neutral-700',
+              : 'border-neutral-800 bg-muted text-neutral-500 hover:border-neutral-700',
             disabled && 'opacity-50 cursor-not-allowed'
           )}
         >

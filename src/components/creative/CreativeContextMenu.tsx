@@ -50,7 +50,7 @@ const Item: React.FC<{
         ? 'text-neutral-600 cursor-not-allowed'
         : danger
           ? 'text-destructive hover:bg-destructive/10'
-          : 'text-neutral-300 hover:bg-white/5 hover:text-white'
+          : 'text-neutral-300 hover:bg-accent hover:text-white'
     }`}
   >
     <span className="w-3.5 flex justify-center opacity-70">{icon}</span>
@@ -59,7 +59,7 @@ const Item: React.FC<{
   </button>
 );
 
-const Separator: React.FC = () => <div className="my-1 h-px bg-white/5" />;
+const Separator: React.FC = () => <div className="my-1 h-px bg-muted" />;
 
 export const CreativeContextMenu: React.FC<Props> = ({ state, onClose }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -135,7 +135,7 @@ export const CreativeContextMenu: React.FC<Props> = ({ state, onClose }) => {
       ref={ref}
       onContextMenu={(e) => e.preventDefault()}
       style={{ left, top, width: W }}
-      className="fixed z-[10000] bg-neutral-950/95 backdrop-blur-xl border border-white/10 rounded-md shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-100"
+      className="fixed z-[10000] bg-neutral-950/95 backdrop-blur-xl border border-border rounded-md shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-100"
     >
       <Item
         icon={<Copy size={11} />}

@@ -4,11 +4,14 @@ import { X, AlertTriangle, Heart } from '@/lib/ui/icons';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
+import { glassSurface } from '@/lib/ui/glass';
+import { cn } from '@/lib/utils';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  /** May return a promise: the modal stays open (in a loading state) until it settles. */
+  onConfirm: () => void | Promise<void>;
   onSaveAll?: () => Promise<void>;
   title?: string;
   message: string;
@@ -17,6 +20,21 @@ interface ConfirmationModalProps {
   variant?: 'warning' | 'danger' | 'info';
   showSaveAll?: boolean;
 }
+
+const variantStyles = {
+  warning: {
+    icon: 'text-warning',
+    button: 'warning' as const,
+  },
+  danger: {
+    icon: 'text-destructive',
+    button: 'destructive' as const,
+  },
+  info: {
+    icon: 'text-foreground',
+    button: 'brand' as const,
+  },
+};
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   isOpen,
@@ -33,50 +51,58 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   useScrollLock(isOpen);
   const { t } = useTranslation();
   const [isSaving, setIsSaving] = useState(false);
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
+  const [isConfirming, setIsConfirming] = useState(false);
+  const busy = isSaving || isConfirming;
 
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      return () => {
-        document.removeEventListener('keydown', handleEscape);
-      };
-    }
-  }, [isOpen, onClose]);
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !busy) onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose, busy]);
 
   if (!isOpen) return null;
 
-  const variantStyles = {
-    warning: {
-      icon: 'text-warning',
-      button:
-        'bg-warning/20 hover:bg-warning/30 text-warning border-warning/30 hover:border-warning/50',
-    },
-    danger: {
-      icon: 'text-destructive',
-      button:
-        'bg-destructive/20 hover:bg-destructive/30 text-destructive border-destructive/30 hover:border-destructive/50',
-    },
-    info: {
-      icon: 'text-foreground',
-      button:
-        'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-foreground border-neutral-600/30 hover:border-neutral-600/50',
-    },
+  const styles = variantStyles[variant];
+
+  const handleConfirm = async () => {
+    setIsConfirming(true);
+    try {
+      await onConfirm();
+      onClose();
+    } catch (error) {
+      // Stay open so the user can retry; the caller owns the error message.
+      console.error('Confirmation action failed:', error);
+    } finally {
+      setIsConfirming(false);
+    }
   };
 
-  const styles = variantStyles[variant];
+  const handleSaveAll = async () => {
+    if (!onSaveAll) return;
+    setIsSaving(true);
+    try {
+      await onSaveAll();
+      onClose();
+    } catch (error) {
+      console.error('Failed to save all:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-neutral-950/50 backdrop-blur-sm overflow-y-auto"
-      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-background/60 backdrop-blur-sm overflow-y-auto"
+      onClick={busy ? undefined : onClose}
     >
       <div
-        className="bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-md p-6 w-full max-w-lg mx-4 shadow-xl"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="confirmation-modal-title"
+        className={cn(glassSurface.panelStrong, 'rounded-md p-6 w-full max-w-lg mx-4')}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-4 mb-4">
@@ -84,16 +110,20 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             <AlertTriangle size={24} />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase mb-2">
+            <h2
+              id="confirmation-modal-title"
+              className="text-lg font-semibold text-foreground mb-2"
+            >
               {title || t('confirmationModal.defaultTitle')}
             </h2>
-            <p className="text-sm text-neutral-400 font-mono leading-relaxed">{message}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{message}</p>
           </div>
           <Button
-            variant="ghost"
+            variant="action"
             onClick={onClose}
-            className="flex-shrink-0 text-neutral-500 hover:text-neutral-300 transition-colors"
-            aria-label="Close"
+            disabled={busy}
+            className="flex-shrink-0"
+            aria-label={t('common.close')}
           >
             <X size={20} />
           </Button>
@@ -101,52 +131,18 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
         <div className="flex items-center justify-between gap-3 mt-6">
           <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors border border-neutral-700/50 hover:border-neutral-600 rounded-md"
-            >
+            <Button variant="surface" size="sm" onClick={onClose} disabled={busy}>
               {cancelText || t('common.cancel')}
             </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onConfirm();
-                onClose();
-              }}
-              className={`px-4 py-2 text-xs font-mono transition-colors border rounded-md ${styles.button}`}
-            >
+            <Button variant={styles.button} size="sm" onClick={handleConfirm} disabled={busy}>
+              {isConfirming && <GlitchLoader size={14} />}
               {confirmText || t('confirmationModal.defaultConfirm')}
             </Button>
           </div>
           {showSaveAll && onSaveAll && (
-            <Button
-              variant="ghost"
-              onClick={async () => {
-                setIsSaving(true);
-                try {
-                  await onSaveAll();
-                  onClose();
-                } catch (error) {
-                  console.error('Failed to save all:', error);
-                } finally {
-                  setIsSaving(false);
-                }
-              }}
-              disabled={isSaving}
-              className="flex items-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-foreground border border-neutral-600/30 hover:border-neutral-600/50 rounded-md transition-[color,background-color,border-color,opacity] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSaving ? (
-                <>
-                  <GlitchLoader size={14} />
-                  <span>{t('common.save')}...</span>
-                </>
-              ) : (
-                <>
-                  <Heart size={14} />
-                  <span>{t('messages.saveAll')}</span>
-                </>
-              )}
+            <Button variant="surface" size="sm" onClick={handleSaveAll} disabled={busy}>
+              {isSaving ? <GlitchLoader size={14} /> : <Heart size={14} />}
+              <span>{isSaving ? t('common.saving') : t('messages.saveAll')}</span>
             </Button>
           )}
         </div>

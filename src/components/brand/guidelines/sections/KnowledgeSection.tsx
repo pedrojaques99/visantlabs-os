@@ -1,16 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Button } from '@/components/ui/button';
-import {
-  BookOpen,
-  FileText,
-  Image as ImageIcon,
-  Link2,
-  Type,
-  Trash2,
-  Upload,
-  Plus,
-} from '@/lib/ui/icons';
+import { Dropzone } from '@/components/ui/Dropzone';
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { BookOpen, FileText, Image as ImageIcon, Link2, Type, Trash2, Plus } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { brandGuidelineApi, type BrandKnowledgeFile } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -22,13 +15,13 @@ interface KnowledgeSectionProps {
 
 const SOURCE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   pdf: { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20' },
-  image: { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },
-  url: { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' },
+  image: { bg: 'bg-chart-3/10', text: 'text-chart-3', border: 'border-chart-3/20' },
+  url: { bg: 'bg-chart-2/10', text: 'text-chart-2', border: 'border-chart-2/20' },
   text: { bg: 'bg-success/10', text: 'text-success', border: 'border-success/20' },
 };
 
 const sourceIcon = (source: BrandKnowledgeFile['source'], size = 14) => {
-  const color = SOURCE_COLORS[source]?.text || 'text-neutral-400';
+  const color = SOURCE_COLORS[source]?.text || 'text-muted-foreground';
   switch (source) {
     case 'pdf':
       return <FileText size={size} className={color} />;
@@ -207,7 +200,7 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
 
       <div
         className={`min-h-[100px] rounded-xl transition-colors ${
-          dragging ? 'ring-2 ring-blue-500/40 bg-blue-500/5 border-blue-500/30' : ''
+          dragging ? 'ring-2 ring-ring bg-muted/40' : ''
         }`}
         onDragEnter={onDragEnter}
         onDragLeave={onDragLeave}
@@ -216,29 +209,19 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
       >
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <span className="animate-spin inline-block w-4 h-4 border-2 border-neutral-600 border-t-neutral-300 rounded-full" />
+            <GlitchLoader size={16} />
           </div>
         ) : files.length === 0 ? (
           /* Empty state */
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full flex flex-col items-center justify-center py-10 gap-3 rounded-xl border border-dashed border-white/10 hover:border-white/20 bg-neutral-950/30 transition-colors cursor-pointer"
-          >
-            <div className="w-10 h-10 rounded-full bg-white/5 border border-neutral-800 flex items-center justify-center">
-              <Upload size={18} className="text-neutral-500" />
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-neutral-300 font-medium">
-                Arraste arquivos ou clique para enviar
-              </p>
-              <p className="text-2xs text-neutral-500 font-mono mt-1">PDF, PNG, JPG, WEBP</p>
-            </div>
-            <p className="text-2xs text-neutral-600 max-w-[220px] text-center leading-relaxed">
-              Arquivos alimentam o motor de geração IA da marca — quanto mais contexto, melhor o
-              output.
-            </p>
-          </button>
+          // O wrapper acima já trata o arraste (com o mesmo destaque da grade cheia).
+          <Dropzone
+            accept=".pdf,.png,.jpg,.jpeg,.webp"
+            multiple
+            dropTarget={false}
+            onFiles={handleUpload}
+            label="PDF, PNG, JPG, WEBP"
+            hint="Arquivos alimentam a geração com IA da marca. Mais contexto, output mais no ponto."
+          />
         ) : (
           /* File cards grid */
           <div
@@ -252,16 +235,17 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
               return (
                 <div
                   key={file.id}
-                  className="group relative flex flex-col gap-2 p-3 rounded-xl border border-neutral-800 bg-neutral-950/50 hover:border-white/10 transition-colors"
+                  className="group relative flex flex-col gap-2 p-3 rounded-xl border border-border bg-card/50 hover:border-border-hover transition-colors"
                 >
                   {/* Header: icon + source badge */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <div
-                        className={`w-7 h-7 rounded-lg ${colors.bg} border ${colors.border} flex items-center justify-center shrink-0`}
+                        className={`w-7 h-7 rounded-xl ${colors.bg} border ${colors.border} flex items-center justify-center shrink-0`}
                       >
                         {sourceIcon(file.source, 13)}
                       </div>
+                      {/* EXCEÇÃO ao ruido-scan/mono-uppercase: tipo de arquivo (PDF/IMAGE) é valor técnico. */}
                       <span
                         className={`text-2xs font-mono uppercase px-1.5 py-0.5 rounded ${colors.bg} ${colors.text} ${colors.border} border`}
                       >
@@ -288,7 +272,7 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
 
                   {/* Vector bar */}
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 h-1 rounded-full bg-white/5 overflow-hidden">
+                    <div className="flex-1 h-1 rounded-full bg-muted overflow-hidden">
                       <div
                         className={`h-full rounded-full ${colors.bg.replace('/10', '/30')}`}
                         style={{ width: `${barWidth}%` }}

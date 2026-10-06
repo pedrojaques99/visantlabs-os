@@ -6,6 +6,7 @@ import { API_BASE } from '@/config/api';
 import { authService } from '@/services/authService';
 import { type ImageLabMode } from '@/stores/imageLabStore';
 import { applyImageLabPreset } from '@/lib/imagelab/applyPreset';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ImageLabPreset {
   _id: string;
@@ -42,12 +43,7 @@ const PresetSwatch: React.FC<{ preset: ImageLabPreset }> = ({ preset }) => {
     if (settings.blackInk) colors.push(settings.blackInk);
   }
 
-  const bg =
-    mode === 'halftone'
-      ? 'bg-brand-cyan/30'
-      : mode === 'riso'
-        ? 'bg-warning/30'
-        : 'bg-purple-950/30';
+  const bg = 'bg-muted';
 
   return (
     <div
@@ -59,11 +55,11 @@ const PresetSwatch: React.FC<{ preset: ImageLabPreset }> = ({ preset }) => {
       {colors.length > 0 ? (
         <div className="grid grid-cols-2 gap-0.5 p-1">
           {colors.slice(0, 4).map((c, i) => (
-            <div key={i} className="w-3.5 h-3.5 rounded-sm" style={{ backgroundColor: c }} />
+            <div key={i} className="w-3.5 h-3.5 rounded-md" style={{ backgroundColor: c }} />
           ))}
         </div>
       ) : (
-        <span className="text-2xs font-mono text-neutral-600 uppercase">{mode[0]}</span>
+        <span className="text-2xs font-mono text-muted-foreground">{mode[0]}</span>
       )}
     </div>
   );
@@ -94,7 +90,7 @@ const PresetDetails: React.FC<{ preset: ImageLabPreset }> = ({ preset }) => {
       {filtered.map((t, i) => (
         <span
           key={i}
-          className="text-2xs font-mono text-neutral-600 bg-neutral-800/40 px-1 py-0.5 rounded"
+          className="text-2xs font-mono text-muted-foreground bg-muted/50 px-1 py-0.5 rounded"
         >
           {t}
         </span>
@@ -107,6 +103,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
   isOpen,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const [presets, setPresets] = useState<ImageLabPreset[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<ImageLabMode | 'all'>('all');
@@ -140,10 +137,10 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
   const applyPreset = useCallback(
     (preset: ImageLabPreset) => {
       if (!applyImageLabPreset(preset)) return;
-      toast.success(`Applied "${preset.name}"`);
+      toast.success(t('toolEditor.presets.applied', { name: preset.name }));
       onClose();
     },
-    [onClose]
+    [onClose, t]
   );
 
   const handleLike = useCallback(async (id: string) => {
@@ -177,34 +174,32 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[480px] mx-4 max-h-[80vh] bg-neutral-950 border border-neutral-800/50 rounded-xl shadow-2xl flex flex-col"
+        className="w-full max-w-[480px] mx-4 max-h-[80vh] bg-popover border border-border rounded-xl shadow-2xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800/50 shrink-0">
-          <span className="text-2xs uppercase tracking-widest text-neutral-300">
-            Community Presets
-          </span>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+          <span className="text-2xs text-muted-foreground">{t('communityPresets.title')}</span>
           <button
             onClick={onClose}
-            className="text-neutral-600 hover:text-neutral-300 transition-colors p-1"
+            className="text-muted-foreground hover:text-foreground transition-colors p-1"
           >
             <X size={14} />
           </button>
         </div>
 
         {/* Filters */}
-        <div className="px-5 py-3 border-b border-neutral-800/50 space-y-3 shrink-0">
+        <div className="px-5 py-3 border-b border-border space-y-3 shrink-0">
           <div className="flex gap-1.5">
             {(['all', 'halftone', 'texture', 'riso'] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
                 className={cn(
-                  'px-2.5 py-1.5 rounded-md text-2xs font-mono uppercase tracking-wider transition-colors border',
+                  'px-2.5 py-1.5 rounded-md text-xs capitalize transition-colors border',
                   filter === f
-                    ? 'bg-white/10 text-white border-white/20'
-                    : 'text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'
+                    ? 'bg-accent text-foreground border-border-hover'
+                    : 'text-muted-foreground border-border hover:bg-accent'
                 )}
               >
                 {f}
@@ -214,48 +209,47 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
           <div className="relative">
             <Search
               size={12}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search presets..."
-              className="w-full bg-neutral-900/50 border border-neutral-800/50 rounded-md pl-8 pr-3 py-1.5 text-2xs text-neutral-300 placeholder:text-neutral-700 focus:outline-none focus:border-neutral-700"
+              placeholder={t('communityPresets.search.placeholder')}
+              className="w-full bg-muted/50 border border-border rounded-md pl-8 pr-3 py-1.5 text-2xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring"
             />
           </div>
         </div>
 
         {/* Preset List */}
-        <div className="flex-1 overflow-y-auto px-5 py-3 space-y-2 scrollbar-thin scrollbar-thumb-neutral-700">
+        <div className="flex-1 overflow-y-auto px-5 py-3 space-y-2 scrollbar-thin">
           {loading ? (
-            <div className="flex items-center justify-center py-8 text-neutral-500">
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
               <Loader2 size={16} className="animate-spin" />
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-2xs text-neutral-600">No presets found</p>
-              <p className="text-2xs text-neutral-700 mt-1">Be the first to share one!</p>
+              <p className="text-2xs text-muted-foreground">{t('toolEditor.presets.empty')}</p>
+              <p className="text-2xs text-muted-foreground mt-1">
+                {t('toolEditor.presets.emptyHint')}
+              </p>
             </div>
           ) : (
             filtered.map((preset) => (
               <button
                 key={preset._id}
                 onClick={() => applyPreset(preset)}
-                className="w-full text-left px-3 py-3 rounded-md bg-neutral-900/30 border border-neutral-800/30 hover:bg-neutral-800/40 hover:border-neutral-700/50 transition-colors group"
+                className="w-full text-left px-3 py-3 rounded-md bg-muted/50 border border-border hover:bg-accent hover:border-border-hover transition-colors group"
               >
                 <div className="flex items-center gap-3">
                   {/* Visual preview swatch */}
                   <PresetSwatch preset={preset} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-2xs text-neutral-300 truncate">{preset.name}</span>
+                      <span className="text-2xs text-foreground truncate">{preset.name}</span>
                       <span
                         className={cn(
-                          'text-2xs font-mono uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0',
-                          preset.data?.mode === 'halftone' && 'bg-brand-cyan/10 text-brand-cyan',
-                          preset.data?.mode === 'texture' && 'bg-purple-400/10 text-purple-400',
-                          preset.data?.mode === 'riso' && 'bg-warning/10 text-warning'
+                          'text-2xs font-mono px-1.5 py-0.5 rounded shrink-0 bg-muted text-muted-foreground'
                         )}
                       >
                         {preset.data?.mode}
@@ -263,8 +257,8 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
                     </div>
                     <PresetDetails preset={preset} />
                     {preset.author && (
-                      <span className="text-2xs text-neutral-600 font-mono">
-                        by {preset.author.name}
+                      <span className="text-2xs text-muted-foreground">
+                        {t('toolEditor.presets.by', { name: preset.author.name })}
                       </span>
                     )}
                   </div>
@@ -275,7 +269,9 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
                     }}
                     className={cn(
                       'flex items-center gap-1 text-2xs transition-colors p-1 shrink-0',
-                      preset.liked ? 'text-destructive' : 'text-neutral-600 hover:text-destructive'
+                      preset.liked
+                        ? 'text-destructive'
+                        : 'text-muted-foreground hover:text-destructive'
                     )}
                   >
                     <Heart size={12} fill={preset.liked ? 'currentColor' : 'none'} />
@@ -288,8 +284,10 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
         </div>
 
         {/* Hint: save via panel */}
-        <div className="px-5 py-2.5 border-t border-neutral-800/50 shrink-0">
-          <p className="text-2xs text-neutral-600 text-center">Save presets from the right panel</p>
+        <div className="px-5 py-2.5 border-t border-border shrink-0">
+          <p className="text-2xs text-muted-foreground text-center">
+            {t('toolEditor.presets.saveHint')}
+          </p>
         </div>
       </div>
     </div>

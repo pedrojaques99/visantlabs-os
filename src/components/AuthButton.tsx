@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { authService, type User } from '../services/authService';
 import { subscriptionService, type SubscriptionStatus } from '../services/subscriptionService';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -9,7 +9,6 @@ import {
   LogOut,
   User as UserIcon,
   Mail,
-  X,
   Pickaxe,
   ChevronDown,
   Globe,
@@ -18,11 +17,8 @@ import {
   BookOpen,
   Info,
 } from '@/lib/ui/icons';
-import { ForgotPasswordModal } from './ForgotPasswordModal';
-import HCaptcha from '@hcaptcha/react-hcaptcha';
-import { toast } from 'sonner';
+import { AuthModal } from './AuthModal';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 interface AuthButtonProps {
   subscriptionStatus?: SubscriptionStatus | null;
@@ -57,21 +53,8 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
   const [showEmailModal, setShowEmailModal] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const captchaRef = useRef<HCaptcha>(null);
-
-  const hcaptchaSiteKey =
-    typeof window !== 'undefined' ? (import.meta as any).env?.VITE_HCAPTCHA_SITE_KEY : undefined;
-  const captchaEnabled = !!hcaptchaSiteKey;
+  const [avatarFailed, setAvatarFailed] = useState(false);
 
   // Load user data when authenticated state changes (sincronizado com contexto)
   useEffect(() => {
@@ -114,140 +97,18 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
     loadUserData();
   }, [isAuthenticated, isCheckingAuth]);
 
-  const handleEmailAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError(null);
-
-    setIsAuthLoading(true);
-
+  // O formulário de login mora no AuthModal (era duplicado aqui inteiro). Depois
+  // do login, só relê usuário e créditos.
+  const handleAuthSuccess = async () => {
+    setShowEmailModal(false);
     try {
-      let result;
-      if (isSignUp) {
-        // Get referral code from localStorage if available
-        const referralCode =
-          typeof window !== 'undefined' ? localStorage.getItem('referral_code') : null;
-
-        result = await authService.signUp(
-          email,
-          password,
-          name || undefined,
-          referralCode || undefined,
-          captchaToken || undefined
-        );
-
-        // Reset CAPTCHA after successful signup
-        if (captchaRef.current) {
-          captchaRef.current.resetCaptcha();
-        }
-        setCaptchaToken(null);
-
-        // Clear referral code after successful signup
-        if (referralCode && typeof window !== 'undefined') {
-          localStorage.removeItem('referral_code');
-        }
-      } else {
-        result = await authService.signIn(email, password);
+      const currentUser = await authService.verifyToken();
+      setUser(currentUser);
+      if (currentUser) {
+        setSubscriptionStatus(await subscriptionService.getSubscriptionStatus());
       }
-
-      toast.success(isSignUp ? t('auth.accountCreatedSuccess') : t('auth.signedInSuccess'), {
-        duration: 2000,
-      });
-      setUser(result.user);
-      setShowEmailModal(false);
-      setEmail('');
-      setPassword('');
-      setName('');
-
-      // Refresh subscription status
-      try {
-        const status = await subscriptionService.getSubscriptionStatus();
-        setSubscriptionStatus(status);
-      } catch (error) {
-        console.error('Failed to load subscription status:', error);
-      }
-    } catch (error: any) {
-      // Handle Event objects (from script loading errors, etc.) vs Error objects
-      const isEventObject =
-        error && typeof error === 'object' && 'type' in error && 'target' in error;
-
-      // Check if this is a BotID script loading error (converted to "Network error during authentication")
-      // BotID errors typically have no status and the message "Network error during authentication"
-      const isBotIdError =
-        error?.message === 'Network error during authentication' &&
-        !error.status &&
-        !error.response;
-
-      if (isEventObject || isBotIdError) {
-        // This is likely a script loading error from BotID - don't log it, just show user-friendly message
-        // The error is not actionable and is just noise from BotID's script loading mechanism
-        setAuthError(t('auth.backendNotRunning'));
-        // Reset CAPTCHA on error
-        if (isSignUp && captchaRef.current) {
-          captchaRef.current.resetCaptcha();
-          setCaptchaToken(null);
-        }
-        setIsAuthLoading(false);
-        return;
-      }
-
-      // Enhanced error logging with full context
-      const isNetworkError =
-        error?.message?.includes('Failed to fetch') ||
-        error?.message?.includes('ERR_CONNECTION_REFUSED') ||
-        error?.message?.includes('NetworkError') ||
-        error?.name === 'TypeError' ||
-        !error.status;
-
-      console.error('[AuthButton] Email auth error:', {
-        message: error?.message || 'Unknown error',
-        name: error?.name || 'Error',
-        status: error?.status,
-        statusText: error?.statusText,
-        response: error?.response,
-        stack: isNetworkError ? error?.stack : undefined,
-        isSignUp,
-      });
-
-      // Check if it's a connection error
-      const errorMessage = error?.message || String(error || 'Unknown error');
-      if (isNetworkError) {
-        setAuthError(t('auth.backendNotRunning'));
-      } else {
-        // Parse error message from response if available
-        let userFriendlyMessage = error?.message || t('auth.authenticationFailed');
-
-        // Check response object for additional error details
-        if (error?.response?.error) {
-          userFriendlyMessage = error.response.error;
-        } else if (error?.response?.message) {
-          userFriendlyMessage = error.response.message;
-        }
-
-        // Handle rate limit errors
-        if (
-          userFriendlyMessage.includes('Rate limit') ||
-          userFriendlyMessage.includes('Too many') ||
-          error?.status === 429
-        ) {
-          setAuthError(t('auth.tooManyAttempts'));
-        } else if (error?.status === 401) {
-          // Authentication failed - use the error message from server or default
-          setAuthError(userFriendlyMessage || t('auth.authenticationFailed'));
-        } else if (error?.status === 400) {
-          // Bad request - usually validation errors
-          setAuthError(userFriendlyMessage || t('auth.authenticationFailed'));
-        } else {
-          setAuthError(userFriendlyMessage);
-        }
-      }
-
-      // Reset CAPTCHA on error
-      if (isSignUp && captchaRef.current) {
-        captchaRef.current.resetCaptcha();
-        setCaptchaToken(null);
-      }
-    } finally {
-      setIsAuthLoading(false);
+    } catch (error) {
+      console.error('Failed to refresh user after sign-in:', error);
     }
   };
 
@@ -264,31 +125,6 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
     setIsDropdownOpen(false);
     window.history.pushState({}, '', '/profile');
     window.dispatchEvent(new PopStateEvent('popstate'));
-  };
-
-  const handleGoogleAuth = async () => {
-    setIsGoogleLoading(true);
-    try {
-      const referralCode =
-        typeof window !== 'undefined' ? localStorage.getItem('referral_code') : null;
-
-      const authUrl = await authService.getAuthUrl(referralCode || undefined);
-      window.location.href = authUrl;
-    } catch (error: any) {
-      console.error('Google auth error:', error);
-      const errorMessage = error.message || String(error);
-      if (
-        errorMessage.includes('Failed to fetch') ||
-        errorMessage.includes('ERR_CONNECTION_REFUSED') ||
-        errorMessage.includes('NetworkError') ||
-        error.name === 'TypeError'
-      ) {
-        alert(t('auth.backendNotRunning'));
-      } else {
-        alert(error.message || t('auth.failedToConnectGoogle'));
-      }
-      setIsGoogleLoading(false);
-    }
   };
 
   // Close dropdown when clicking outside
@@ -308,8 +144,8 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
 
   if (isCheckingAuth || isLoading) {
     return (
-      <div className="px-3 py-2 flex items-center gap-2 text-xs text-muted-foreground font-mono">
-        <GlitchLoader size={12} color="brand-cyan" />
+      <div className="px-3 py-2 flex items-center gap-2 text-xs text-muted-foreground">
+        <GlitchLoader size={12} />
       </div>
     );
   }
@@ -338,13 +174,13 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
             <Button
               variant="ghost"
               onClick={onCreditsClick}
-              className={`flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-2xs md:text-2xs font-mono bg-card/60 border border-border hover:bg-accent hover:border-border-hover transition-[color,background-color,border-color,box-shadow] cursor-pointer shadow-sm ${
+              className={`flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-2xs md:text-2xs bg-card/60 border border-border hover:bg-accent hover:border-border-hover transition-[color,background-color,border-color,box-shadow] cursor-pointer shadow-sm ${
                 isLowCredits ? 'text-warning border-warning/30' : 'text-foreground border-ring'
               }`}
               aria-label={t('auth.availableCredits', { count: availableCredits })}
               title={
                 isLowCredits
-                  ? `Apenas ${availableCredits} creditos restantes`
+                  ? t('auth.lowCredits', { count: availableCredits })
                   : t('auth.creditsAvailable', { count: availableCredits })
               }
             >
@@ -361,14 +197,15 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
           <Button
             variant="ghost"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-2 h-9 px-2 md:px-3 rounded-[10px] text-2xs text-muted-foreground font-mono bg-card/60 border border-border hover:bg-accent hover:border-border-hover hover:text-foreground transition-[color,background-color,border-color,box-shadow] cursor-pointer shadow-sm"
+            className="flex items-center gap-2 h-9 px-2 md:px-3 rounded-[10px] text-2xs text-muted-foreground bg-card/60 border border-border hover:bg-accent hover:border-border-hover hover:text-foreground transition-[color,background-color,border-color,box-shadow] cursor-pointer shadow-sm"
             title={t('auth.userMenu')}
           >
-            {user.picture ? (
+            {user.picture && !avatarFailed ? (
               <img
                 src={user.picture}
                 alt={user.name}
                 className="w-4 h-4 md:w-5 md:h-5 rounded-[4px]"
+                onError={() => setAvatarFailed(true)}
               />
             ) : (
               <UserIcon size={14} className="md:w-4 md:h-4" />
@@ -402,15 +239,13 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                 <Button
                   variant="ghost"
                   onClick={handleProfileClick}
-                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent flex items-center gap-2 justify-between"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent flex items-center gap-2 justify-between"
                 >
                   <span className="flex items-center gap-2">
                     <UserIcon size={14} />
                     {t('common.profile')}
                   </span>
-                  <span className="text-2xs text-muted-foreground uppercase tracking-wider">
-                    {tierLabel}
-                  </span>
+                  <span className="text-2xs text-muted-foreground">{tierLabel}</span>
                 </Button>
                 <Button
                   variant="ghost"
@@ -419,10 +254,10 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                     window.history.pushState({}, '', '/community');
                     window.dispatchEvent(new PopStateEvent('popstate'));
                   }}
-                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent flex items-center justify-start gap-2"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent flex items-center justify-start gap-2"
                 >
                   <Globe size={14} />
-                  {t('common.community') || 'Community'}
+                  {t('common.community')}
                 </Button>
                 <Button
                   variant="ghost"
@@ -431,7 +266,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                     window.history.pushState({}, '', '/docs');
                     window.dispatchEvent(new PopStateEvent('popstate'));
                   }}
-                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent flex items-center justify-start gap-2"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent flex items-center justify-start gap-2"
                 >
                   <BookOpen size={14} />
                   Docs
@@ -443,10 +278,10 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                     window.history.pushState({}, '', '/about');
                     window.dispatchEvent(new PopStateEvent('popstate'));
                   }}
-                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent flex items-center justify-start gap-2"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent flex items-center justify-start gap-2"
                 >
                   <Info size={14} />
-                  {t('about.title') || 'About'}
+                  {t('header.about')}
                 </Button>
                 {user.isAdmin && (
                   <>
@@ -458,10 +293,10 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                         window.history.pushState({}, '', '/admin');
                         window.dispatchEvent(new PopStateEvent('popstate'));
                       }}
-                      className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-foreground hover:text-brand-cyan/80 hover:bg-brand-cyan/10 flex items-center justify-start gap-2"
+                      className="w-full text-left px-3 py-1.5 h-auto text-xs transition-colors cursor-pointer text-foreground hover:bg-accent flex items-center justify-start gap-2"
                     >
                       <ShieldCheck size={14} />
-                      {t('auth.adminPanel') || 'Admin'}
+                      {t('auth.adminPanel')}
                     </Button>
                   </>
                 )}
@@ -470,7 +305,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                 <Button
                   variant="ghost"
                   onClick={handleLogout}
-                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent flex items-center justify-start gap-2"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent flex items-center justify-start gap-2"
                 >
                   <LogOut size={14} />
                   {t('auth.logout')}
@@ -486,11 +321,10 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
   return (
     <>
       <div className="flex items-center gap-1 md:gap-2">
-        {/* Google OAuth button hidden */}
         <Button
           variant="ghost"
           onClick={() => setShowEmailModal(true)}
-          className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-secondary text-muted-foreground rounded-md border border-border hover:border-border-hover hover:text-foreground text-2xs md:text-xs font-mono transition-colors"
+          className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-secondary text-muted-foreground rounded-md border border-border hover:border-border-hover hover:text-foreground text-2xs md:text-xs transition-colors"
         >
           <Mail size={12} className="md:w-[14px] md:h-[14px]" />
           <span className="hidden sm:inline">{t('auth.signInWithEmail')}</span>
@@ -498,167 +332,10 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
         </Button>
       </div>
 
-      {showEmailModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-black/60 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-popover border border-border rounded-md p-6 w-full max-w-md mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-foreground">
-                {isSignUp ? t('auth.signUp') : t('auth.signIn')}
-              </h2>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setShowEmailModal(false);
-                  setAuthError(null);
-                  setEmail('');
-                  setPassword('');
-                  setName('');
-                  setCaptchaToken(null);
-                  if (captchaRef.current) {
-                    captchaRef.current.resetCaptcha();
-                  }
-                }}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <X size={20} />
-              </Button>
-            </div>
-
-            {/* Google OAuth button - temporarily hidden during verification */}
-
-            <form onSubmit={handleEmailAuth} className="space-y-4">
-              {isSignUp && (
-                <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-1">
-                    {t('auth.name')}
-                  </label>
-                  <Input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-input p-2 rounded-md border border-border focus:outline-none focus:border-ring focus:ring-0 text-sm text-foreground font-mono"
-                    placeholder={t('auth.namePlaceholder')}
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="block text-xs font-mono text-muted-foreground mb-1">
-                  {t('auth.email')}
-                </label>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full bg-input p-2 rounded-md border border-border focus:outline-none focus:border-ring focus:ring-0 text-sm text-foreground font-mono"
-                  placeholder={t('auth.emailPlaceholder')}
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-mono text-muted-foreground mb-1">
-                  {t('auth.password')}
-                </label>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="w-full bg-input p-2 rounded-md border border-border focus:outline-none focus:border-ring focus:ring-0 text-sm text-foreground font-mono"
-                  placeholder={t('auth.passwordPlaceholder')}
-                />
-                {isSignUp && (
-                  <p className="text-xs text-muted-foreground mt-1 font-mono">
-                    {t('auth.minimumCharacters')}
-                  </p>
-                )}
-                {!isSignUp && (
-                  <Button
-                    variant="ghost"
-                    type="button"
-                    onClick={() => {
-                      setShowEmailModal(false);
-                      setShowForgotPassword(true);
-                    }}
-                    className="text-xs text-foreground hover:text-brand-cyan/80 font-mono mt-1 text-right w-full"
-                  >
-                    {t('auth.forgotPassword')}
-                  </Button>
-                )}
-              </div>
-
-              {/* CAPTCHA for signup */}
-              {isSignUp && captchaEnabled && (
-                <div className="flex justify-center">
-                  <HCaptcha
-                    ref={captchaRef}
-                    sitekey={hcaptchaSiteKey!}
-                    onVerify={(token) => setCaptchaToken(token)}
-                    onExpire={() => setCaptchaToken(null)}
-                    onError={(error) => {
-                      console.error('CAPTCHA error:', error);
-                      setCaptchaToken(null);
-                    }}
-                  />
-                </div>
-              )}
-
-              {authError && (
-                <div className="p-2 bg-destructive/10 border border-destructive/20 rounded-md">
-                  <p className="text-xs text-destructive font-mono">{authError}</p>
-                </div>
-              )}
-
-              <Button
-                variant="brand"
-                type="submit"
-                disabled={
-                  isAuthLoading ||
-                  !email ||
-                  !password ||
-                  (isSignUp && captchaEnabled && !captchaToken)
-                }
-                className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-colors duration-200 text-sm font-mono"
-              >
-                {isAuthLoading ? (
-                  <>
-                    <GlitchLoader size={16} color="currentColor" />
-                    {isSignUp ? t('auth.creatingAccount') : t('auth.signingIn')}
-                  </>
-                ) : isSignUp ? (
-                  t('auth.signUp')
-                ) : (
-                  t('auth.signIn')
-                )}
-              </Button>
-            </form>
-
-            <div className="mt-4 pt-4 border-t border-border">
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setIsSignUp(!isSignUp);
-                  setAuthError(null);
-                }}
-                className="w-full text-xs text-muted-foreground hover:text-foreground font-mono transition-colors"
-              >
-                {isSignUp ? t('auth.alreadyHaveAccount') : t('auth.dontHaveAccount')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <ForgotPasswordModal
-        isOpen={showForgotPassword}
-        onClose={() => setShowForgotPassword(false)}
-        onBackToLogin={() => {
-          setShowForgotPassword(false);
-          setShowEmailModal(true);
-          setIsSignUp(false);
-        }}
+      <AuthModal
+        isOpen={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
+        onSuccess={handleAuthSuccess}
       />
     </>
   );

@@ -12,6 +12,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { BrandIngestDropZone } from './BrandIngestDropZone';
+import { useTranslation } from '@/hooks/useTranslation';
 // ─── Section order ────────────────────────────────────────────────────────────
 const SECTION_ORDER: Array<{ key: FigCategory; label: string }> = [
   { key: 'colors', label: 'Colors' },
@@ -68,14 +69,14 @@ const ItemCheck: React.FC<{
   dim?: boolean;
 }> = ({ checked, onToggle, children, dim }) => (
   <div
-    className={`flex items-center gap-2 cursor-pointer rounded px-1.5 py-1 hover:bg-white/[0.03] transition-[color,background-color,border-color,opacity] ${
+    className={`flex items-center gap-2 cursor-pointer rounded px-1.5 py-1 hover:bg-accent transition-[color,background-color,border-color,opacity] ${
       dim && !checked ? 'opacity-30' : ''
     }`}
     onClick={onToggle}
   >
     <div
       className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center transition-colors ${
-        checked ? 'bg-white/15 border-white/30' : 'border-white/15'
+        checked ? 'bg-accent border-border-hover' : 'border-border'
       }`}
     >
       {checked && <Check size={9} className="text-neutral-200" />}
@@ -95,7 +96,7 @@ const SectionShell: React.FC<{
 }> = ({ label, loading, allChecked, someChecked, onToggleAll, children }) => (
   <div
     className={`rounded-md border transition-colors ${
-      someChecked ? 'border-white/10 bg-white/[0.03]' : 'border-neutral-800'
+      someChecked ? 'border-border bg-muted' : 'border-border'
     }`}
   >
     <div
@@ -113,10 +114,10 @@ const SectionShell: React.FC<{
       <div
         className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${
           allChecked
-            ? 'bg-white/10 border-white/20'
+            ? 'bg-accent border-border-hover'
             : someChecked
-              ? 'bg-white/5 border-white/15'
-              : 'border-white/10'
+              ? 'bg-muted border-border'
+              : 'border-border'
         }`}
       >
         {allChecked ? (
@@ -125,7 +126,7 @@ const SectionShell: React.FC<{
           <div className="w-2 h-0.5 bg-neutral-400 rounded" />
         ) : null}
       </div>
-      <span className="text-2xs uppercase tracking-widest text-neutral-500 flex-1">{label}</span>
+      <span className="text-xs font-medium text-muted-foreground flex-1">{label}</span>
       {loading && <GlitchLoader size={11} className="flex-shrink-0" />}
     </div>
     {children && <div className="px-2 pb-2.5">{children}</div>}
@@ -134,7 +135,7 @@ const SectionShell: React.FC<{
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 const Skeleton = ({ className = '' }: { className?: string }) => (
-  <div className={`rounded bg-white/5 animate-pulse ${className}`} />
+  <div className={`rounded bg-muted animate-pulse ${className}`} />
 );
 
 // ─── Content renderers ────────────────────────────────────────────────────────
@@ -148,7 +149,7 @@ const ColorsSection: React.FC<{ data: any[]; sel: Set<number>; toggle: (i: numbe
     {data.map((c, i) => (
       <ItemCheck key={i} checked={sel.has(i)} onToggle={() => toggle(i)} dim>
         <div
-          className="w-5 h-5 rounded border border-white/10 flex-shrink-0"
+          className="w-5 h-5 rounded border border-border flex-shrink-0"
           style={{ backgroundColor: c.hex }}
         />
         <span className="text-xs text-neutral-300 truncate">{c.name || c.hex}</span>
@@ -173,7 +174,7 @@ const TypographySection: React.FC<{
           {f.family}
         </span>
         <span className="text-2xs font-mono text-neutral-600">
-          {f.style} · {f.size}px
+          {f.style}, {f.size}px
         </span>
       </ItemCheck>
     ))}
@@ -300,13 +301,13 @@ const AssetsSection: React.FC<{
       <div
         key={i}
         className={`relative aspect-square rounded border overflow-hidden cursor-pointer transition-[color,background-color,border-color,opacity] ${
-          sel.has(i) ? 'border-white/20' : 'border-neutral-800 opacity-30'
+          sel.has(i) ? 'border-border-hover' : 'border-border opacity-30'
         }`}
         onClick={() => toggle(i)}
       >
         <img src={src} alt="" className="w-full h-full object-contain bg-neutral-900/60 p-0.5" />
         {sel.has(i) && (
-          <div className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-white/20 border border-white/30 flex items-center justify-center">
+          <div className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-accent border border-border-hover flex items-center justify-center">
             <Check size={8} className="text-white" />
           </div>
         )}
@@ -336,12 +337,13 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
   guideline,
   onSuccess,
   onClose,
-  title = 'Review extraction',
+  title,
   source = 'manual',
   showDropZone = false,
   onDropFiles,
 }) => {
   const [itemSel, setItemSel] = useState<ItemSel>(new Map());
+  const { t } = useTranslation();
   const [applying, setApplying] = useState(false);
   const [mode, setMode] = useState<'merge' | 'replace'>('merge');
   const queryClient = useQueryClient();
@@ -553,13 +555,13 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
   };
 
   const modalDescription = showUploadPhase
-    ? 'Drag & drop or browse files to extract brand tokens'
+    ? undefined
     : showProcessingPhase
-      ? state.statusMessage || 'Extracting brand tokens…'
+      ? state.statusMessage || t('brandIngest.extracting')
       : isStreaming
-        ? `${state.statusMessage || 'Parsing…'} · ${totalLoaded} categories`
+        ? state.statusMessage || t('brandIngest.parsing')
         : isDone
-          ? `${totalLoaded} categories · ${totalSelected} items selected`
+          ? t('brandIngest.summary', { categories: totalLoaded, items: totalSelected })
           : state.error || '';
 
   const showFooter = !showUploadPhase && !showProcessingPhase;
@@ -568,48 +570,43 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
     <Modal
       isOpen
       onClose={onClose}
-      title={showUploadPhase ? 'Extract Brand' : title}
+      title={showUploadPhase ? t('brandIngest.title') : title || t('brandIngest.reviewTitle')}
       description={modalDescription}
       size="lg"
       footer={
         showFooter ? (
           <div className="flex items-center justify-between w-full gap-3">
-            <div className="flex items-center gap-1 rounded border border-white/10 p-0.5">
+            <div className="flex items-center gap-1 rounded border border-border p-0.5">
               {(['merge', 'replace'] as const).map((m) => (
                 <button
                   key={m}
                   type="button"
                   onClick={() => setMode(m)}
-                  title={
-                    m === 'merge'
-                      ? 'Add selected tokens, keep existing'
-                      : 'Replace tokens with selected data'
-                  }
-                  className={`px-2.5 h-6 rounded text-2xs font-mono uppercase transition-colors ${
+                  title={m === 'merge' ? t('brandIngest.mergeHint') : t('brandIngest.replaceHint')}
+                  aria-pressed={mode === m}
+                  className={`px-2.5 h-6 rounded text-xs transition-colors ${
                     mode === m
-                      ? 'bg-white/10 text-neutral-200'
-                      : 'text-neutral-600 hover:text-neutral-400'
+                      ? 'bg-muted text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  {m}
+                  {m === 'merge' ? t('brandIngest.merge') : t('brandIngest.replace')}
                 </button>
               ))}
             </div>
             <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                onClick={onClose}
-                className="h-8 px-4 gap-1.5 border border-white/10 text-xs"
-              >
-                <X size={12} /> Discard
+              <Button variant="ghost" onClick={onClose} className="h-8 px-4 gap-1.5 text-xs">
+                <X size={12} /> {t('brandIngest.discard')}
               </Button>
               <Button
                 onClick={apply}
                 disabled={applying || totalSelected === 0}
-                className="h-8 px-4 gap-1.5 bg-white/10 border border-white/15 text-neutral-200 hover:bg-white/10 text-xs"
+                className="h-8 px-4 gap-1.5 text-xs"
               >
                 {applying ? <GlitchLoader size={12} /> : <Check size={12} />}
-                {applying ? 'Applying…' : `Apply (${totalSelected})`}
+                {applying
+                  ? t('brandIngest.applying')
+                  : t('brandIngest.apply', { count: totalSelected })}
               </Button>
             </div>
           </div>
@@ -654,10 +651,10 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
             transition={{ duration: 0.3 }}
           >
             {state.error && (
-              <p className="text-sm text-destructive font-mono py-4 text-center">{state.error}</p>
+              <p className="text-sm text-destructive py-4 text-center">{state.error}</p>
             )}
 
-            {SECTION_ORDER.map(({ key, label }, sectionIdx) => {
+            {SECTION_ORDER.map(({ key, label }) => {
               const items = getItems(state, key);
               const content = renderContent(key);
               const isLoading = isStreaming && !items.length;
@@ -668,11 +665,7 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
                   key={key}
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.35,
-                    delay: sectionIdx * 0.06,
-                    ease: [0.25, 0.46, 0.45, 0.94],
-                  }}
+                  transition={{ duration: 0.25 }}
                 >
                   <SectionShell
                     label={label}

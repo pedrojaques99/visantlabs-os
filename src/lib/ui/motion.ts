@@ -100,24 +100,6 @@ export const stepSlide = {
 } as const;
 
 /**
- * Short, capped stagger for list/grid items. Spread onto each item with its
- * index. The cap keeps long lists from turning into a slow cascade — past the
- * cap everything lands together.
- *
- * @example <motion.li key={id} {...itemEnter(i)} />
- */
-export const itemEnter = (index: number, step = 0.04, cap = 0.4) =>
-  ({
-    initial: { opacity: 0, y: 6 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -6 },
-    transition: {
-      ...transitions.fast,
-      delay: Math.min(index * step, cap),
-    },
-  }) as const;
-
-/**
  * Press feedback for clickable cards/tiles. Carries its own (fast) transition
  * so it does not inherit the slower enter transition of the element.
  *

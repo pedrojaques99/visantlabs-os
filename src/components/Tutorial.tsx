@@ -1,8 +1,17 @@
 import React, { useEffect } from 'react';
 import { X } from '@/lib/ui/icons';
-import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
+
+// Lista de permissões do iframe do YouTube (atributo técnico, não copy).
+const YOUTUBE_IFRAME_ALLOW = [
+  'accelerometer',
+  'autoplay',
+  'clipboard-write',
+  'encrypted-media',
+  'gyroscope',
+  'picture-in-picture',
+].join('; ');
 
 interface TutorialProps {
   isOpen: boolean;
@@ -21,7 +30,6 @@ interface TutorialStep {
 const imgImage7 = 'http://localhost:3845/assets/272c169546a2549cd6cb2968161287d8b5d94e46.png';
 
 export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMockup }) => {
-  const { theme } = useTheme();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -71,27 +79,19 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
     },
   ];
 
-  const cardBg = theme === 'dark' ? '#1a1a1a' : '#fafafa';
-  const cardBorder = theme === 'dark' ? '#2a2a2a' : '#e5e5e5';
-  const textColor = theme === 'dark' ? 'text-neutral-200' : 'text-neutral-700';
-
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-neutral-950/60 backdrop-blur-md p-4 sm:p-6 py-6 sm:py-8 md:py-10 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-background/70 backdrop-blur-sm p-4 sm:p-6 py-6 sm:py-8 md:py-10 overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className={`relative w-full max-w-2xl lg:max-w-3xl ${textColor} mb-6 sm:mb-8 md:mb-10`}
+        className="relative w-full max-w-2xl lg:max-w-3xl text-foreground mb-6 sm:mb-8 md:mb-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <Button
           onClick={onClose}
-          className={`fixed top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-20 transition-[color,background-color,border-color,filter] duration-300 cursor-pointer rounded-md p-2 hover:bg-white/5 backdrop-blur-sm ${
-            theme === 'dark'
-              ? 'text-neutral-400 hover:text-neutral-200'
-              : 'text-neutral-500 hover:text-neutral-700'
-          }`}
+          className={`fixed top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-20 transition-[color,background-color,border-color,filter] duration-300 cursor-pointer rounded-md p-2 hover:bg-accent text-muted-foreground hover:text-foreground`}
           aria-label={t('common.close')}
         >
           <X className="size-4 sm:size-5" />
@@ -103,14 +103,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
             const isImageLeft = step.imagePosition === 'left';
 
             return (
-              <div
-                key={step.number}
-                className="tutorial-bento-box"
-                style={{
-                  backgroundColor: cardBg,
-                  borderColor: cardBorder,
-                }}
-              >
+              <div key={step.number} className="tutorial-bento-box bg-card border-border">
                 <div className="relative h-full flex flex-col p-6 sm:p-7 md:p-8">
                   {/* Video or Image */}
                   <div
@@ -119,14 +112,13 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                         ? 'aspect-video'
                         : 'h-[160px] sm:h-[200px] md:h-[240px] flex items-center justify-center'
                     }`}
-                    style={{ backgroundColor: cardBg }}
                   >
                     {step.isVideo && step.videoId ? (
                       <iframe
                         className="w-full h-full rounded-md"
                         src={`https://www.youtube.com/embed/${step.videoId}`}
                         title={t('tutorial.tutorialVideo')}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allow={YOUTUBE_IFRAME_ALLOW}
                         allowFullScreen
                       />
                     ) : (
@@ -138,14 +130,12 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                           const target = e.target as HTMLImageElement;
                           target.style.display = 'none';
                           if (target.parentElement) {
-                            target.parentElement.style.backgroundColor = cardBg;
                             target.parentElement.style.display = 'flex';
                             target.parentElement.style.alignItems = 'center';
                             target.parentElement.style.justifyContent = 'center';
                             if (!target.parentElement.querySelector('.placeholder')) {
                               const placeholder = document.createElement('div');
-                              placeholder.className =
-                                'placeholder text-neutral-500 text-sm font-mono';
+                              placeholder.className = 'placeholder text-neutral-500 text-sm';
                               placeholder.textContent = `${t('tutorial.step')} ${step.number}`;
                               target.parentElement.appendChild(placeholder);
                             }
@@ -158,25 +148,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                   {/* Description */}
                   <div className={`tutorial-bento-content flex-1 flex items-start gap-3 sm:gap-4`}>
                     {/* Step Number Circle */}
-                    <div
-                      className="tutorial-bento-step-number flex-shrink-0 rounded-md w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 flex items-center justify-center"
-                      style={{
-                        backgroundColor:
-                          theme === 'dark'
-                            ? 'oklch(from var(--brand-cyan) l c h / 15%)'
-                            : 'oklch(from var(--brand-cyan) l c h / 10%)',
-                        border: `1px solid ${
-                          theme === 'dark'
-                            ? 'oklch(from var(--brand-cyan) l c h / 30%)'
-                            : 'oklch(from var(--brand-cyan) l c h / 20%)'
-                        }`,
-                      }}
-                    >
-                      <p
-                        className={`font-mono font-medium leading-normal text-nowrap whitespace-pre text-xs sm:text-sm md:text-base ${
-                          theme === 'dark' ? 'text-brand-cyan' : 'text-brand-cyan'
-                        }`}
-                      >
+                    <div className="tutorial-bento-step-number flex-shrink-0 rounded-md w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 flex items-center justify-center bg-muted border border-border">
+                      <p className="font-medium tabular-nums text-xs sm:text-sm md:text-base text-foreground">
                         {step.number}
                       </p>
                     </div>
@@ -194,16 +167,13 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
         {onCreateMockup && (
           <div className="mt-6 sm:mt-8 md:mt-10 flex justify-center">
             <Button
-              variant="ghost"
+              variant="brand"
+              size="lg"
               onClick={() => {
                 onCreateMockup();
                 onClose();
               }}
-              className={`inline-flex items-center gap-3 px-6 py-3 sm:px-8 sm:py-4 rounded-md transition-[color,background-color,border-color,box-shadow] duration-300 font-mono text-sm sm:text-base font-semibold cursor-pointer ${
-                theme === 'dark'
-                  ? 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-neutral-600/30'
-                  : 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-neutral-600/30'
-              }`}
+              className="font-medium"
             >
               <span>{t('tutorial.createMockup')}</span>
             </Button>

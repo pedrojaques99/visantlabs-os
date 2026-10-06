@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, X } from '@/lib/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +24,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
   onContentChange,
 }) => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const [localPalettes, setLocalPalettes] = useState<ColorPalette[]>(palettes);
 
   useEffect(() => {
@@ -96,9 +98,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
               <Button
                 variant="ghost"
                 onClick={() => handleRemovePalette(index)}
-                className={`absolute top-2 right-2 p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive ${
-                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                }`}
+                className="absolute top-2 right-2 p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive text-muted-foreground"
                 title="Remover paleta"
               >
                 <X className="h-4 w-4" />
@@ -111,18 +111,14 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                 value={palette.name}
                 onChange={(e) => handleNameChange(index, e.target.value)}
                 placeholder="Nome da paleta"
-                className={`font-semibold mb-4 font-manrope text-lg bg-transparent border-b-2 focus:border-neutral-600 focus:outline-none pb-1 w-full ${
+                className={`font-medium mb-4 font-manrope text-lg bg-transparent border-b-2 focus:border-neutral-600 focus:outline-none pb-1 w-full ${
                   theme === 'dark'
                     ? 'text-neutral-200 border-neutral-700/50'
                     : 'text-neutral-800 border-neutral-400/50'
                 }`}
               />
             ) : (
-              <h4
-                className={`font-semibold mb-4 font-manrope text-lg ${
-                  theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-                }`}
-              >
+              <h4 className="font-medium mb-4 font-manrope text-lg text-foreground">
                 {palette.name}
               </h4>
             )}
@@ -154,9 +150,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                       <Button
                         variant="ghost"
                         onClick={() => handleRemoveColor(index, colorIndex)}
-                        className={`w-full p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive text-xs ${
-                          theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                        }`}
+                        className="w-full p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive text-xs text-muted-foreground"
                         title="Remover cor"
                       >
                         <X className="h-3 w-3 mx-auto" />
@@ -174,17 +168,13 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                             );
                           }
                         }}
-                        className={`w-full aspect-square rounded-md border transition-all duration-300 hover:scale-[1.05] hover:shadow-lg hover:shadow-neutral-600/20 mb-2 ${
+                        className={`w-full aspect-square rounded-md border mb-2 ${
                           theme === 'dark' ? 'border-neutral-800/60' : 'border-neutral-300'
                         }`}
                         style={{ backgroundColor: color }}
                         title={color}
                       />
-                      <span
-                        className={`text-xs font-mono font-medium ${
-                          theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-                        }`}
-                      >
+                      <span className="text-xs font-mono font-medium text-muted-foreground">
                         {color.toUpperCase()}
                       </span>
                     </>
@@ -195,7 +185,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                 <Button
                   variant="ghost"
                   onClick={() => handleAddColor(index)}
-                  className={`flex flex-col items-center justify-center aspect-square border-2 border-dashed rounded-md transition-colors hover:border-neutral-600/50 hover:text-brand-cyan ${
+                  className={`flex flex-col items-center justify-center aspect-square border-2 border-dashed rounded-md transition-colors hover:border-neutral-600/50 hover:text-foreground ${
                     theme === 'dark'
                       ? 'border-neutral-700/50 text-neutral-400'
                       : 'border-neutral-400/50 text-neutral-500'
@@ -225,11 +215,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                   }`}
                 />
               ) : (
-                <p
-                  className={`text-sm font-manrope leading-relaxed ${
-                    theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                  }`}
-                >
+                <p className="text-sm font-manrope leading-relaxed text-muted-foreground">
                   {palette.psychology}
                 </p>
               )}
@@ -247,21 +233,21 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
               window.dispatchEvent(new CustomEvent('mockup:openColorPicker'));
             }
           }}
-          className={`mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-full border text-2xs font-mono transition-colors ${
+          className={`mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-full border text-2xs transition-colors ${
             theme === 'dark'
-              ? 'border-neutral-700/60 text-neutral-500 hover:border-brand-cyan/50 hover:text-brand-cyan'
-              : 'border-neutral-400/60 text-neutral-600 hover:border-brand-cyan/60 hover:text-brand-cyan'
+              ? 'border-neutral-700/60 text-neutral-500 hover:border-neutral-600 hover:text-foreground'
+              : 'border-neutral-400/60 text-neutral-600 hover:border-neutral-600 hover:text-foreground'
           }`}
         >
-          <span className="w-2 h-2 rounded-full bg-brand-cyan/60" />
-          <span>Color Picker</span>
+          <span className="w-2 h-2 rounded-full bg-neutral-500" />
+          <span>{t('branding.colorPicker')}</span>
         </Button>
       )}
       {isEditing && onContentChange && (
         <Button
           variant="ghost"
           onClick={handleAddPalette}
-          className={`flex items-center gap-2 px-4 py-2 border hover:border-neutral-600/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-colors duration-300 ${
+          className={`flex items-center gap-2 px-4 py-2 border hover:border-neutral-600/50 hover:text-foreground rounded-xl text-sm transition-colors duration-300 ${
             theme === 'dark'
               ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
               : 'bg-neutral-100 border-neutral-300 text-neutral-800'

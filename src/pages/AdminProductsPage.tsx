@@ -20,7 +20,6 @@ import {
 } from '@/lib/ui/icons';
 import { AVAILABLE_IMAGE_MODELS, getModelDisplayName } from '../constants/geminiModels';
 import { SearchBar } from '../components/ui/SearchBar';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
@@ -756,7 +755,7 @@ export const AdminProductsPage: React.FC = () => {
                     </div>
 
                     {/* Unlimited Settings */}
-                    <div className="md:col-span-2 p-4 bg-neutral-900/50 border border-neutral-800 rounded-lg space-y-4">
+                    <div className="md:col-span-2 p-4 bg-neutral-900/50 border border-neutral-800 rounded-xl space-y-4">
                       <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
                         <span className="text-lg">∞</span> Configuração de Unlimited
                       </h4>
@@ -927,7 +926,7 @@ export const AdminProductsPage: React.FC = () => {
                     </div>
 
                     {/* Rate Limits */}
-                    <div className="md:col-span-2 p-4 bg-neutral-900/50 border border-neutral-800 rounded-lg space-y-4">
+                    <div className="md:col-span-2 p-4 bg-neutral-900/50 border border-neutral-800 rounded-xl space-y-4">
                       <h4 className="text-sm font-bold text-orange-400 flex items-center gap-2">
                         <span className="text-lg">⏱️</span> Limites de Uso
                       </h4>
@@ -1105,7 +1104,7 @@ export const AdminProductsPage: React.FC = () => {
                     </div>
 
                     {/* Feature Flags */}
-                    <div className="md:col-span-2 p-4 bg-neutral-900/50 border border-neutral-800 rounded-lg space-y-4">
+                    <div className="md:col-span-2 p-4 bg-neutral-900/50 border border-neutral-800 rounded-xl space-y-4">
                       <h4 className="text-sm font-bold text-purple-400 flex items-center gap-2">
                         <span className="text-lg">🎛️</span> Features do Plano
                       </h4>
@@ -1198,7 +1197,7 @@ export const AdminProductsPage: React.FC = () => {
                     </div>
 
                     {/* Commercial Settings */}
-                    <div className="md:col-span-2 p-4 bg-neutral-900/50 border border-neutral-800 rounded-lg space-y-4">
+                    <div className="md:col-span-2 p-4 bg-neutral-900/50 border border-neutral-800 rounded-xl space-y-4">
                       <h4 className="text-sm font-bold text-success flex items-center gap-2">
                         <span className="text-lg">💰</span> Configurações Comerciais
                       </h4>

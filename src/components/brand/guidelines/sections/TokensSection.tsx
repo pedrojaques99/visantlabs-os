@@ -79,7 +79,7 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
           }`}
           placeholder={'{"spacing": {"s": "4px"}, "radius": {"m": "10px"}}'}
         />
-        {!isValid && <p className="text-2xs text-destructive font-mono">Invalid JSON</p>}
+        {!isValid && <p className="text-2xs text-destructive">Invalid JSON</p>}
       </div>
     </SectionBlock>
   );

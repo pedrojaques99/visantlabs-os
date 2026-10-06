@@ -90,6 +90,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
   isGenerating = false,
   tagCategories = [],
 }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -185,18 +186,16 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
       type="button"
       onClick={() => handleSelect(tag)}
       className={cn(
-        'w-full flex items-center justify-between gap-2 px-2.5 py-1.5 text-2xs font-mono text-left transition-colors',
+        'w-full flex items-center justify-between gap-2 px-2.5 py-1.5 text-2xs text-left transition-colors',
         selectedTags.includes(tag)
-          ? theme === 'dark'
-            ? 'bg-brand-cyan/10 text-brand-cyan'
-            : 'bg-brand-cyan/10 text-foreground'
+          ? 'bg-brand-cyan/10 text-foreground'
           : theme === 'dark'
             ? 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-300'
             : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-800'
       )}
     >
       <span className="truncate">{translateTag(tag)}</span>
-      {selectedTags.includes(tag) && <Check size={10} className="shrink-0 text-brand-cyan" />}
+      {selectedTags.includes(tag) && <Check size={10} className="shrink-0 text-foreground" />}
     </Button>
   );
 
@@ -210,7 +209,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-2xs font-mono transition-colors duration-200 border',
+          'w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-2xs transition-colors duration-200 border',
           selectedTags.length > 0
             ? theme === 'dark'
               ? 'bg-neutral-800/60 text-neutral-400 border-neutral-700/50 hover:border-neutral-600'
@@ -242,7 +241,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
       {isOpen && (
         <div
           className={cn(
-            'absolute z-50 mt-1 w-full rounded-md border shadow-[0_10px_40px_rgba(0,0,0,0.7)] animate-fade-in overflow-hidden backdrop-blur-xl',
+            'absolute z-50 mt-1 w-full rounded-md border shadow-2xl animate-fade-in overflow-hidden backdrop-blur-xl',
             theme === 'dark'
               ? 'bg-neutral-950/98 border-neutral-700/50'
               : 'bg-white border-neutral-200'
@@ -261,9 +260,9 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={isGenerating ? '' : 'Pesquisar ou digitar...'}
+              placeholder={isGenerating ? '' : t('mockup.tagSearchPlaceholder')}
               className={cn(
-                'w-full px-2 py-1 text-2xs font-mono rounded border-none outline-none',
+                'w-full px-2 py-1 text-2xs rounded border-none outline-none',
                 theme === 'dark'
                   ? 'bg-neutral-800/60 text-neutral-300 placeholder:text-neutral-600'
                   : 'bg-neutral-100 text-neutral-700 placeholder:text-neutral-400'
@@ -280,14 +279,14 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
                 type="button"
                 onClick={() => handleSelect(searchQuery.trim())}
                 className={cn(
-                  'w-full flex items-center gap-2 px-2.5 py-1.5 text-2xs font-mono text-left transition-colors',
-                  theme === 'dark'
-                    ? 'text-brand-cyan hover:bg-neutral-800'
-                    : 'text-foreground hover:bg-neutral-100'
+                  'w-full flex items-center gap-2 px-2.5 py-1.5 text-2xs text-left text-foreground transition-colors',
+                  theme === 'dark' ? 'hover:bg-neutral-800' : 'hover:bg-neutral-100'
                 )}
               >
-                <Diamond size={12} className="text-muted-foreground" />
-                <span className="truncate">Adicionar "{searchQuery.trim()}"</span>
+                <Plus size={12} className="text-muted-foreground" />
+                <span className="truncate">
+                  {t('mockup.addTagNamed', { tag: searchQuery.trim() })}
+                </span>
               </Button>
             )}
 
@@ -297,10 +296,8 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
                   <div key={group.categoryName} className={cn(idx > 0 && 'mt-1')}>
                     <div
                       className={cn(
-                        'px-2.5 py-1 text-2xs font-bold font-mono uppercase tracking-widest',
-                        theme === 'dark'
-                          ? 'text-neutral-600 bg-black/20'
-                          : 'text-neutral-400 bg-neutral-50'
+                        'px-2.5 py-1 text-2xs font-medium',
+                        'text-muted-foreground bg-muted'
                       )}
                     >
                       {group.categoryName}
@@ -314,11 +311,11 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
             {filteredTags.length === 0 && !showCustomOption && (
               <div
                 className={cn(
-                  'px-2.5 py-2 text-2xs font-mono text-center',
-                  theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
+                  'px-2.5 py-2 text-2xs text-center',
+                  theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
                 )}
               >
-                Nenhuma tag encontrada
+                {t('mockup.noTagsFound')}
               </div>
             )}
           </div>
@@ -357,12 +354,7 @@ const ToggleCheckbox: React.FC<ToggleCheckboxProps> = ({ value, onChange, label,
     >
       {value && <Check size={10} className="text-black" strokeWidth={3} />}
     </div>
-    <label
-      className={cn(
-        'text-2xs font-mono select-none cursor-pointer',
-        theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-      )}
-    >
+    <label className={cn('text-2xs select-none cursor-pointer', 'text-muted-foreground')}>
       {label}
     </label>
   </div>
@@ -546,7 +538,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
   return (
     <div
       className={cn(
-        'animate-fade-in transition-all duration-300',
+        'animate-fade-in transition-[color,background-color,border-color,opacity,transform,filter] duration-300',
         isSurpriseMeMode
           ? 'py-2'
           : cn(
@@ -574,13 +566,14 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
           <Button
             variant="ghost"
             onClick={handleRerollAll}
-            className="ml-auto p-1.5 rounded-full hover:bg-neutral-800 transition-all duration-200 group/reroll active:scale-90"
-            title="Sortear tudo novamente (Shuffle All)"
+            className="ml-auto p-1.5 rounded-full hover:bg-neutral-800 transition-colors duration-200 group/reroll"
+            title={t('mockup.rerollAll')}
+            aria-label={t('mockup.rerollAll')}
           >
             <Shuffle
               size={14}
               className={cn(
-                'text-neutral-500 group-hover/reroll:text-brand-cyan transition-all duration-300',
+                'text-neutral-500 group-hover/reroll:text-foreground transition-[color,transform] duration-300',
                 isGenerating ? 'rotate-180' : 'group-hover/reroll:rotate-180'
               )}
             />
@@ -637,7 +630,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
                 isMulti={isSurpriseMeMode}
                 availableTags={availableTags}
                 onSelect={(tag) => handleTagSelect(key, tag)}
-                placeholder={t('mockup.selectOption') || 'Select...'}
+                placeholder={t('mockup.selectOption')}
                 theme={theme}
                 isGenerating={isGenerating}
                 tagCategories={key === 'categories' ? tagCategories : undefined}
@@ -655,13 +648,13 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
         >
           <span
             className={cn(
-              'text-2xs font-mono flex items-center gap-1.5 transition-colors',
+              'text-2xs flex items-center gap-1.5 transition-colors',
               theme === 'dark'
                 ? 'text-neutral-500 group-hover:text-neutral-300'
                 : 'text-neutral-500 group-hover:text-neutral-800'
             )}
           >
-            <Settings2 size={12} /> {t('mockup.advancedOptions') || 'Opções Avançadas'}
+            <Settings2 size={12} /> {t('mockup.advancedOptions')}
           </span>
           <ChevronDown
             size={12}
@@ -686,7 +679,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
             <ToggleCheckbox
               value={removeText}
               onChange={setRemoveText}
-              label={t('mockup.removeText') || 'Remover texto'}
+              label={t('mockup.removeText')}
               theme={theme}
             />
             <ToggleCheckbox

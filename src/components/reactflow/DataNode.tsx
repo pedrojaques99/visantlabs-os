@@ -6,10 +6,12 @@ import { NodeContainer } from './shared/NodeContainer';
 import { cn } from '@/lib/utils';
 import { parseDataFile } from '@/utils/canvas/parseDataFile';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const MAX_PREVIEW_COLS = 4;
 
 export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
+  const { t } = useTranslation();
   const nodeData = data as DataNodeData;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -30,11 +32,11 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
       if (!file) return;
       const result = await parseDataFile(file);
       if (result.error) {
-        toast.error(`Parse error: ${result.error}`);
+        toast.error(t('canvasNodes.dataNode.parseError', { error: result.error }));
         return;
       }
       if (!result.rows.length) {
-        toast.error('File has no data rows');
+        toast.error(t('canvasNodes.dataNode.noRows'));
         return;
       }
       update({
@@ -43,10 +45,15 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         columns: result.columns,
         selectedRowIndex: 0,
       });
-      toast.success(`Loaded ${result.rows.length} rows · ${result.columns.length} columns`);
+      toast.success(
+        t('canvasNodes.dataNode.loaded', {
+          rows: result.rows.length,
+          columns: result.columns.length,
+        })
+      );
       e.target.value = '';
     },
-    [update]
+    [update, t]
   );
 
   const handlePrev = useCallback(() => {
@@ -60,11 +67,15 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
   return (
     <NodeContainer selected={selected} dragging={dragging} className="min-w-[280px] max-w-[340px]">
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-white/10">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
         <Table2 size={13} className="text-foreground shrink-0" />
-        <span className="text-2xs font-semibold uppercase tracking-widest text-white/70">Data</span>
+        <span className="text-xs font-medium text-muted-foreground">
+          {t('canvasNodes.dataNode.title')}
+        </span>
         {fileName && (
-          <span className="ml-auto text-2xs text-white/35 truncate max-w-[120px]">{fileName}</span>
+          <span className="ml-auto text-2xs text-muted-foreground truncate max-w-[120px]">
+            {fileName}
+          </span>
         )}
       </div>
 
@@ -73,12 +84,12 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         <button
           onClick={() => fileInputRef.current?.click()}
           className={cn(
-            'mx-3 my-3 flex flex-col items-center gap-2 rounded border-node border-dashed border-white/15',
-            'p-4 text-white/30 hover:border-neutral-700 hover:text-white/50 transition-colors w-[calc(100%-24px)]'
+            'mx-3 my-3 flex flex-col items-center gap-2 rounded border-node border-dashed border-border',
+            'p-4 text-muted-foreground hover:border-neutral-700 hover:text-foreground transition-colors w-[calc(100%-24px)]'
           )}
         >
           <Upload size={18} />
-          <span className="text-2xs">Upload CSV or JSON</span>
+          <span className="text-2xs">{t('canvasNodes.dataNode.upload')}</span>
         </button>
       ) : (
         <>
@@ -90,24 +101,27 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                   {previewCols.map((col) => (
                     <th
                       key={col}
-                      className="text-left text-white/30 font-medium pb-1 pr-2 truncate max-w-[60px]"
+                      className="text-left text-muted-foreground font-medium pb-1 pr-2 truncate max-w-[60px]"
                     >
                       {col}
                     </th>
                   ))}
                   {hiddenCols > 0 && (
-                    <th className="text-left text-white/20 pb-1">+{hiddenCols}</th>
+                    <th className="text-left text-muted-foreground pb-1">+{hiddenCols}</th>
                   )}
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   {previewCols.map((col) => (
-                    <td key={col} className="text-white/70 pr-2 truncate max-w-[60px] pb-0.5">
-                      {currentRow[col] ?? '—'}
+                    <td
+                      key={col}
+                      className="text-muted-foreground pr-2 truncate max-w-[60px] pb-0.5"
+                    >
+                      {currentRow[col] ?? ''}
                     </td>
                   ))}
-                  {hiddenCols > 0 && <td className="text-white/20">…</td>}
+                  {hiddenCols > 0 && <td className="text-muted-foreground">…</td>}
                 </tr>
               </tbody>
             </table>
@@ -117,35 +131,37 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           <div className="flex items-center gap-2 px-3 pb-2">
             <button
               onClick={handlePrev}
+              aria-label={t('canvasNodes.dataNode.prevRow')}
               disabled={selectedRowIndex === 0}
-              className="text-white/30 hover:text-white/70 disabled:opacity-20 transition-colors"
+              className="text-muted-foreground hover:text-foreground disabled:opacity-20 transition-colors"
             >
               <ChevronLeft size={13} />
             </button>
-            <span className="text-2xs text-white/40 flex-1 text-center">
-              Row {selectedRowIndex + 1} / {totalRows}
+            <span className="text-2xs text-muted-foreground flex-1 text-center">
+              {t('canvasNodes.dataNode.rowOf', { n: selectedRowIndex + 1, total: totalRows })}
             </span>
             <button
               onClick={handleNext}
+              aria-label={t('canvasNodes.dataNode.nextRow')}
               disabled={selectedRowIndex >= totalRows - 1}
-              className="text-white/30 hover:text-white/70 disabled:opacity-20 transition-colors"
+              className="text-muted-foreground hover:text-foreground disabled:opacity-20 transition-colors"
             >
               <ChevronRight size={13} />
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="text-2xs text-white/25 hover:text-white/50 transition-colors ml-1"
+              className="text-2xs text-muted-foreground hover:text-foreground transition-colors ml-1"
             >
-              Replace
+              {t('canvasNodes.dataNode.replace')}
             </button>
           </div>
 
           {/* Hint */}
           <div className="px-3 pb-2 flex items-start gap-1">
-            <AlertCircle size={9} className="text-white/20 mt-0.5 shrink-0" />
-            <p className="text-2xs text-white/20 leading-tight">
-              Connect to a Prompt or Edit node — column names become{' '}
-              <span className="font-mono text-brand-cyan/40">{`{{variables}}`}</span>
+            <AlertCircle size={9} className="text-muted-foreground mt-0.5 shrink-0" />
+            <p className="text-2xs text-muted-foreground leading-tight">
+              {t('canvasNodes.dataNode.hint')}{' '}
+              <span className="font-mono text-muted-foreground">{`{{variables}}`}</span>
             </p>
           </div>
         </>
@@ -169,7 +185,7 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           right: -6,
           width: 10,
           height: 10,
-          background: 'var(--brand-cyan)',
+          background: 'var(--color-neutral-400)',
           border: '2px solid var(--color-neutral-950)',
         }}
       />

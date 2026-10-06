@@ -1,27 +1,29 @@
 import React, { useState, useRef } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, Film, Send, Image as ImageIcon, Volume2, VolumeX } from '@/lib/ui/icons';
+import { X, Upload, Film, Send, Volume2, VolumeX } from '@/lib/ui/icons';
 import { Button } from '../ui/button';
+import { cn } from '@/lib/utils';
+import { Thumb } from '@/components/ui/Thumb';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { useTranslation } from '@/hooks/useTranslation';
 
+// Prompts vão pro Veo: ficam em inglês de propósito (o modelo responde melhor).
 const PROMPT_PRESETS = [
   {
     id: 'subtle',
-    name: 'Subtle',
     prompt:
       'A subtle cinematic scene with professional lighting, slow camera movement, and high aesthetic quality.',
   },
   {
     id: 'dynamic',
-    name: 'Dynamic',
     prompt: 'A dynamic cinematic transition with energy, fluid motion, and vibrant atmosphere.',
   },
   {
     id: 'atmospheric',
-    name: 'Atmospheric',
     prompt: 'Deep atmospheric cinematic vision with moody lighting, particles, and ethereal feel.',
   },
-];
+] as const;
 
 interface FrameAnimateModalProps {
   isOpen: boolean;
@@ -41,6 +43,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
   onSoundToggle,
 }) => {
   useScrollLock(isOpen);
+  const { t } = useTranslation();
   const [startImage] = useState<string>(sourceImage);
   const [endImage, setEndImage] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
@@ -57,6 +60,8 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
 
   if (!isOpen) return null;
 
+  const frameLabel = 'text-xs font-medium text-muted-foreground';
+
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
@@ -64,140 +69,119 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/80 backdrop-blur-2xl"
+          className="absolute inset-0 bg-background/80 backdrop-blur-sm"
           onClick={onClose}
         />
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 40 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 40 }}
-          className="relative w-full max-w-4xl bg-neutral-950 rounded-[2rem] overflow-hidden flex flex-col max-h-[85vh] border border-border shadow-2xl"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="frame-animate-title"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 16 }}
+          className="relative w-full max-w-4xl bg-popover rounded-xl overflow-hidden flex flex-col max-h-[85vh] border border-border shadow-2xl"
         >
-          <div className="p-7 border-b border-border flex items-center justify-between bg-neutral-900/30">
-            <div className="flex items-center gap-4">
-              <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center shadow-lg">
-                <Film className="text-black" size={20} strokeWidth={1.5} />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold tracking-tight text-white">Frame Animation</h2>
-                <span className="text-2xs font-bold uppercase tracking-[0.3em] text-neutral-500">
-                  Veo 3 Pro Engine
-                </span>
-              </div>
-            </div>
+          <div className="px-6 py-5 border-b border-border flex items-center justify-between">
+            <h2 id="frame-animate-title" className="text-lg font-semibold text-foreground">
+              {t('moodboard.frame.title')}
+            </h2>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-neutral-800 rounded-full transition-colors text-neutral-400 hover:text-white"
+              aria-label={t('common.close')}
+              className="p-2 hover:bg-accent rounded-full transition-colors text-muted-foreground hover:text-foreground"
             >
               <X size={18} strokeWidth={1.5} />
             </button>
           </div>
 
-          <div className="p-10 overflow-y-auto flex flex-col gap-10">
-            <div className="grid grid-cols-2 gap-10">
-              <div className="flex flex-col gap-3">
-                <span className="text-2xs font-bold uppercase tracking-[0.4em] text-neutral-500">
-                  Start Frame
-                </span>
-                <div className="relative aspect-video rounded-2xl overflow-hidden bg-neutral-900 border border-border group">
-                  <img
-                    src={startImage}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    alt="Start"
-                  />
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm">
-                    <span className="text-2xs font-bold uppercase tracking-widest text-white/80 flex items-center gap-2">
-                      <ImageIcon size={12} /> Source Active
-                    </span>
-                  </div>
+          <div className="p-6 overflow-y-auto flex flex-col gap-8">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="flex flex-col gap-2">
+                <span className={frameLabel}>{t('moodboard.frame.start')}</span>
+                <div className="relative aspect-video rounded-xl overflow-hidden bg-muted border border-border">
+                  <Thumb src={startImage} className="w-full h-full object-cover" alt="" />
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3">
-                <span className="text-2xs font-bold uppercase tracking-[0.4em] text-neutral-500">
-                  End Frame
-                </span>
-                <div
+              <div className="flex flex-col gap-2">
+                <span className={frameLabel}>{t('moodboard.frame.end')}</span>
+                <button
+                  type="button"
                   onClick={() => endInputRef.current?.click()}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Select end frame image"
-                  className="relative aspect-video rounded-2xl overflow-hidden bg-neutral-900 border border-dashed border-border/70 hover:border-neutral-500 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 group"
+                  className="relative aspect-video rounded-xl overflow-hidden bg-muted border border-dashed border-border/70 hover:border-border-hover transition-colors cursor-pointer flex flex-col items-center justify-center gap-3 group"
                 >
                   {endImage ? (
                     <>
-                      <img
-                        src={endImage}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                        alt="End"
-                      />
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm">
-                        <span className="text-2xs font-bold uppercase tracking-widest text-white/80 flex items-center gap-2">
-                          <Upload size={12} /> Change Frame
-                        </span>
-                      </div>
+                      <Thumb src={endImage} className="w-full h-full object-cover" alt="" />
+                      <span
+                        className={cn(
+                          // EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia
+                          'absolute inset-0 bg-black/50 flex items-center justify-center gap-2 text-xs font-medium text-white',
+                          hoverReveal
+                        )}
+                      >
+                        <Upload size={12} /> {t('moodboard.frame.changeEnd')}
+                      </span>
                     </>
                   ) : (
                     <>
-                      <div className="w-14 h-14 rounded-full bg-neutral-800 flex items-center justify-center group-hover:scale-110 transition-transform border border-border/70">
-                        <Upload
-                          size={20}
-                          className="text-neutral-500 group-hover:text-white transition-colors"
-                        />
-                      </div>
-                      <span className="text-2xs font-bold uppercase tracking-widest text-neutral-500 group-hover:text-white transition-colors">
-                        Upload End Frame
+                      <Upload
+                        size={20}
+                        className="text-muted-foreground group-hover:text-foreground transition-colors"
+                      />
+                      <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                        {t('moodboard.frame.uploadEnd')}
                       </span>
                     </>
                   )}
-                  <input
-                    type="file"
-                    ref={endInputRef}
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-                </div>
+                </button>
+                <input
+                  type="file"
+                  ref={endInputRef}
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
               </div>
             </div>
 
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <span className="text-2xs font-bold uppercase tracking-[0.4em] text-neutral-500">
-                  Cinematic Vision
-                </span>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-4">
+                <label htmlFor="frame-animate-prompt" className={frameLabel}>
+                  {t('moodboard.frame.motion')}
+                </label>
                 <div className="flex gap-2">
                   {PROMPT_PRESETS.map((p) => (
                     <button
                       key={p.id}
                       onClick={() => setPrompt(p.prompt)}
-                      className="px-3 py-1.5 rounded-full bg-neutral-800/50 border border-border/70 text-2xs font-bold uppercase tracking-widest text-neutral-400 hover:bg-neutral-700 hover:text-white transition-colors flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-full bg-muted border border-border/70 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                     >
-                      <Film size={9} />
-                      {p.name}
+                      {t(`moodboard.frame.presets.${p.id}`)}
                     </button>
                   ))}
                 </div>
               </div>
               <textarea
+                id="frame-animate-prompt"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Describe the cinematic transition between frames..."
-                className="w-full bg-neutral-900/50 border border-border focus:border-neutral-600 rounded-2xl p-6 text-sm outline-none transition-colors min-h-[140px] resize-none text-white placeholder:text-neutral-700"
+                placeholder={t('moodboard.frame.promptPlaceholder')}
+                className="w-full bg-muted border border-border focus:border-ring rounded-xl p-5 text-sm outline-none transition-colors min-h-[140px] resize-none text-foreground placeholder:text-muted-foreground"
               />
             </div>
           </div>
 
-          <div className="p-7 bg-neutral-900/30 border-t border-border flex justify-end items-center gap-4">
-            <span className="text-2xs font-serif italic text-neutral-600 mr-auto">
-              Veo 3 interpolates motion between frames
-            </span>
+          <div className="px-6 py-5 border-t border-border flex justify-end items-center gap-3">
             <button
               onClick={onSoundToggle}
+              aria-pressed={allowSound}
+              aria-label={t('moodboard.frame.sound')}
+              title={t('moodboard.frame.sound')}
               className={`p-3 rounded-xl border transition-colors ${
                 allowSound
-                  ? 'bg-white text-black border-white'
-                  : 'bg-neutral-900 text-neutral-500 border-border hover:border-neutral-600'
+                  ? 'bg-foreground text-background border-foreground'
+                  : 'bg-muted text-muted-foreground border-border hover:border-border-hover'
               }`}
             >
               {allowSound ? <Volume2 size={18} /> : <VolumeX size={18} />}
@@ -209,7 +193,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
               onClick={() => endImage && prompt && onAnimate(startImage, endImage, prompt)}
             >
               <Send size={16} className="mr-2" />
-              Generate Cinematic Video
+              {t('moodboard.frame.generate')}
             </Button>
           </div>
         </motion.div>

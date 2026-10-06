@@ -265,7 +265,7 @@ function renderExportMetadata(
   ctx.textAlign = 'right';
   ctx.font = '8px Manrope, sans-serif';
   ctx.globalAlpha = 0.4;
-  ctx.fillText('VSN LABS — Wind Tunnel', w - 10, y0);
+  ctx.fillText('VSN LABS Wind Tunnel', w - 10, y0);
   ctx.restore();
 }
 
@@ -448,6 +448,8 @@ export const WindTunnelCanvas = forwardRef<
       const oc = offscreen.getContext('2d')!;
       oc.scale(multiplier, multiplier);
       const cfg = configRef.current;
+      // EXCEÇÃO ao audit:design/hardcoded-hex-color: fundo padrão do frame EXPORTADO (canvas 2D),
+      // não cromo; o usuário troca em cfg.bgColor.
       oc.fillStyle = cfg.bgColor || '#0a0a0a';
       oc.fillRect(0, 0, w, h);
 
@@ -820,6 +822,8 @@ export const WindTunnelCanvas = forwardRef<
 
       activeCountRef.current = particles.getActiveCount();
 
+      // EXCEÇÃO ao audit:design/hardcoded-hex-color: fundo padrão da simulação em canvas 2D;
+      // o usuário troca em cfg.bgColor.
       ctx.fillStyle = cfg.bgColor || '#0a0a0a';
       ctx.fillRect(0, 0, cw, ch);
 
@@ -925,6 +929,8 @@ export const WindTunnelCanvas = forwardRef<
 
       if (recordingRef.current) {
         ctx.save();
+        // EXCEÇÃO ao audit:design/hardcoded-hex-color: ponto REC desenhado em canvas 2D, sem
+        // acesso a token CSS.
         ctx.fillStyle = '#ff3333';
         ctx.globalAlpha = 0.6 + Math.sin(now * 0.005) * 0.4;
         ctx.beginPath();
@@ -1004,6 +1010,7 @@ export const WindTunnelCanvas = forwardRef<
     if (e.button !== 0 && e.button !== 2) return;
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
+    // EXCEÇÃO ao ruido-scan/realce-que-nao-decide: estado do ponteiro no canvas, não realce visual
     mouseRef.current = {
       active: true,
       button: e.button,

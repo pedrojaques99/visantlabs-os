@@ -103,11 +103,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
       <div className="space-y-4">
         {/* Nome e Tags características */}
         <div>
-          <h3
-            className={`text-2xl md:text-3xl font-semibold font-manrope mb-2 ${
-              theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-            }`}
-          >
+          <h3 className="text-2xl md:text-3xl font-semibold font-manrope mb-2 text-foreground">
             {displayName}
             {displayAge}
           </h3>
@@ -136,11 +132,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
         {(localPersona.demographics || isEditing) && (
           <div className="space-y-4">
             <div>
-              <h4
-                className={`font-medium mb-3 font-manrope text-sm opacity-80 ${
-                  theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-                }`}
-              >
+              <h4 className="font-medium mb-3 font-manrope text-sm opacity-80 text-foreground">
                 {t('branding.demographics')}
               </h4>
               {isEditing && onContentChange ? (
@@ -151,11 +143,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                   minHeight="200px"
                 />
               ) : (
-                <p
-                  className={`text-sm font-manrope leading-relaxed ${
-                    theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                  }`}
-                >
+                <p className="text-sm font-manrope leading-relaxed text-muted-foreground">
                   {localPersona.demographics}
                 </p>
               )}
@@ -187,14 +175,10 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
       {/* Desejos */}
       {((localPersona.desires && localPersona.desires.length > 0) || isEditing) && (
         <div className="space-y-4">
-          <h3
-            className={`text-lg md:text-xl font-semibold font-manrope ${
-              theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-            }`}
-          >
+          <h3 className="text-lg md:text-xl font-medium font-manrope text-foreground">
             {personaInfo?.name
               ? `O que o ${personaInfo.name.split(' ')[0]} realmente deseja?`
-              : t('branding.whatPersonaDesires') || 'O que a persona realmente deseja?'}
+              : t('branding.whatPersonaDesires')}
           </h3>
           {isEditing && onContentChange ? (
             <div className="space-y-2">
@@ -213,9 +197,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                   <Button
                     variant="ghost"
                     onClick={() => handleRemoveDesire(index)}
-                    className={`p-2 hover:bg-destructive/20 rounded transition-colors hover:text-destructive self-start ${
-                      theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                    }`}
+                    className="p-2 hover:bg-destructive/20 rounded transition-colors hover:text-destructive self-start text-muted-foreground"
                     title="Remover desejo"
                   >
                     <X className="h-4 w-4" />
@@ -225,7 +207,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
               <Button
                 variant="ghost"
                 onClick={handleAddDesire}
-                className={`flex items-center gap-2 px-4 py-2 border hover:border-neutral-600/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-colors duration-300 ${
+                className={`flex items-center gap-2 px-4 py-2 border hover:border-neutral-600/50 hover:text-foreground rounded-xl text-sm transition-colors duration-300 ${
                   theme === 'dark'
                     ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
                     : 'bg-neutral-100 border-neutral-300 text-neutral-800'
@@ -246,13 +228,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                       : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'
                   }`}
                 >
-                  <p
-                    className={`text-sm font-manrope leading-relaxed ${
-                      theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
-                    }`}
-                  >
-                    {desire}
-                  </p>
+                  <p className="text-sm font-manrope leading-relaxed text-foreground">{desire}</p>
                 </div>
               ))}
             </div>
@@ -263,12 +239,8 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
       {/* Dores */}
       {((localPersona.pains && localPersona.pains.length > 0) || isEditing) && (
         <div className="space-y-4">
-          <h3
-            className={`text-lg md:text-xl font-semibold font-manrope ${
-              theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-            }`}
-          >
-            {t('branding.pains') || 'Dores e frustrações'}
+          <h3 className="text-lg md:text-xl font-medium font-manrope text-foreground">
+            {t('branding.pains')}
           </h3>
           {isEditing && onContentChange ? (
             <div className="space-y-2">
@@ -287,9 +259,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                   <Button
                     variant="ghost"
                     onClick={() => handleRemovePain(index)}
-                    className={`p-2 hover:bg-destructive/20 rounded transition-colors hover:text-destructive self-start ${
-                      theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                    }`}
+                    className="p-2 hover:bg-destructive/20 rounded transition-colors hover:text-destructive self-start text-muted-foreground"
                     title="Remover dor"
                   >
                     <X className="h-4 w-4" />
@@ -299,7 +269,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
               <Button
                 variant="ghost"
                 onClick={handleAddPain}
-                className={`flex items-center gap-2 px-4 py-2 border hover:border-neutral-600/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-colors duration-300 ${
+                className={`flex items-center gap-2 px-4 py-2 border hover:border-neutral-600/50 hover:text-foreground rounded-xl text-sm transition-colors duration-300 ${
                   theme === 'dark'
                     ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
                     : 'bg-neutral-100 border-neutral-300 text-neutral-800'
@@ -320,13 +290,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                       : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'
                   }`}
                 >
-                  <p
-                    className={`text-sm font-manrope leading-relaxed ${
-                      theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
-                    }`}
-                  >
-                    {pain}
-                  </p>
+                  <p className="text-sm font-manrope leading-relaxed text-foreground">{pain}</p>
                 </div>
               ))}
             </div>

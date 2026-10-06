@@ -23,18 +23,16 @@ export const PersonaGrid: React.FC<PersonaGridProps> = ({ selectedId, onSelect, 
           key={seg.id}
           onClick={() => onSelect(seg.id)}
           className={cn(
-            'flex flex-col items-center gap-2 p-4 rounded-lg border transition-colors text-center',
+            'flex flex-col items-center gap-2 p-4 rounded-xl border transition-colors text-center',
             selectedId === seg.id
-              ? 'border-brand-cyan/40 bg-brand-cyan/5 text-white'
-              : 'border-neutral-700/50 bg-neutral-800/30 text-neutral-400 hover:border-neutral-600'
+              ? 'border-brand-cyan/40 bg-brand-cyan/5 text-foreground'
+              : 'border-border bg-muted/40 text-muted-foreground hover:border-border-hover'
           )}
         >
           <seg.icon className="w-6 h-6" />
-          <span className="text-sm font-mono font-medium">
-            {t(`onboarding.persona.${seg.id}.label`) || seg.label}
-          </span>
-          <span className="text-xs text-neutral-500">
-            {t(`onboarding.persona.${seg.id}.desc`) || seg.desc}
+          <span className="text-sm font-medium">{t(`onboarding.persona.${seg.id}.label`)}</span>
+          <span className="text-xs text-muted-foreground">
+            {t(`onboarding.persona.${seg.id}.desc`)}
           </span>
         </button>
       ))}

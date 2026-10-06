@@ -276,6 +276,30 @@ const prefersReducedMotion =
     ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
     : false;
 
+// Local error boundary around ONLY the HDRI <Environment>. The HDRI comes from
+// R2 (or a user URL); a fetch failure (CORS on localhost, offline, 404) used to
+// throw past Suspense and take the whole 3D Studio into the page ErrorBoundary.
+// Here it degrades to the network-free lightformer environment below and the
+// scene keeps rendering. Keyed by URL upstream, so picking another HDRI retries.
+class HdriErrorBoundary extends React.Component<
+  { url: string; children: React.ReactNode; fallback: React.ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: unknown) {
+    console.warn(
+      `[SceneCanvas] HDRI failed to load (${this.props.url}); using built-in lighting.`,
+      error
+    );
+  }
+  render() {
+    return this.state.hasError ? this.props.fallback : this.props.children;
+  }
+}
+
 function HdriLoadingFallback() {
   return (
     <Environment background={false} environmentIntensity={1} frames={1}>
@@ -538,15 +562,17 @@ function EnvironmentContent() {
           const hdriUrl =
             s.customHdriUrl || ENVIRONMENT_PRESETS.find((p) => p.id === s.environment)?.file;
           return hdriUrl ? (
-            <Environment
-              background={s.hdriBackground}
-              files={hdriUrl}
-              backgroundBlurriness={s.hdriBlur}
-              backgroundIntensity={s.hdriIntensity}
-              environmentIntensity={s.hdriIntensity}
-              environmentRotation={hdriRotationEuler}
-              backgroundRotation={hdriRotationEuler}
-            />
+            <HdriErrorBoundary key={hdriUrl} url={hdriUrl} fallback={<HdriLoadingFallback />}>
+              <Environment
+                background={s.hdriBackground}
+                files={hdriUrl}
+                backgroundBlurriness={s.hdriBlur}
+                backgroundIntensity={s.hdriIntensity}
+                environmentIntensity={s.hdriIntensity}
+                environmentRotation={hdriRotationEuler}
+                backgroundRotation={hdriRotationEuler}
+              />
+            </HdriErrorBoundary>
           ) : (
             <Environment background={false} environmentIntensity={1.5} frames={1}>
               <mesh position={[0, 25, 0]}>
@@ -748,7 +774,7 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(
               gl.domElement.addEventListener('webglcontextlost', (e) => {
                 e.preventDefault();
                 import('sonner').then(({ toast }) =>
-                  toast.error('WebGL context lost — attempting recovery...', {
+                  toast.error('WebGL context lost. Trying to recover...', {
                     id: 'webgl-context',
                   })
                 );

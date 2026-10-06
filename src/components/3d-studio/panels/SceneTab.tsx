@@ -1,9 +1,10 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { Thumb } from '@/components/ui/Thumb';
 import { ScrubInput } from '@/components/ui/ScrubInput';
 import { Button } from '@/components/ui/button';
+import { Dropzone } from '@/components/ui/Dropzone';
 import { Switch } from '@/components/ui/switch';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -135,10 +136,6 @@ export const SceneTab: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const store = useStudio3DStore(useShallow(scenePanelSelector));
-  const [isDragging, setIsDragging] = useState(false);
-  const dragCounter = useRef(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const modelInputRef = useRef<HTMLInputElement>(null);
   const lastPngFile = useRef<File | null>(null);
   const [isRetracing, setIsRetracing] = useState(false);
 
@@ -183,14 +180,12 @@ export const SceneTab: React.FC = React.memo(() => {
     });
   }, []);
 
-  const handleModelUpload = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
+  const handleModelFile = useCallback(
+    (file: File | undefined) => {
       if (!file) return;
       const url = URL.createObjectURL(file);
       store.setModelUrl(url, file.name);
       toast.success(t('studio3d.input.loaded', { fileName: file.name }));
-      e.target.value = '';
     },
     [store, t]
   );
@@ -218,7 +213,7 @@ export const SceneTab: React.FC = React.memo(() => {
           store.setSvgData(svg, file.name);
           toast.success(t('studio3d.input.converted', { fileName: file.name }));
         } catch (err) {
-          console.error('PNG→SVG conversion failed:', err);
+          console.error('PNG to SVG conversion failed:', err);
           toast.error(t('studio3d.input.processFailed'));
         } finally {
           store.setIsLoading(false);
@@ -294,46 +289,6 @@ export const SceneTab: React.FC = React.memo(() => {
     [store, t]
   );
 
-  const handleFileUpload = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) await processFile(file);
-      e.target.value = '';
-    },
-    [processFile]
-  );
-
-  const handleDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragCounter.current++;
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragCounter.current--;
-    if (dragCounter.current === 0) setIsDragging(false);
-  }, []);
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
-
-  const handleDrop = useCallback(
-    async (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
-      dragCounter.current = 0;
-      const file = e.dataTransfer.files?.[0];
-      if (file) await processFile(file);
-    },
-    [processFile]
-  );
-
   return (
     <>
       {/* Quick-start: built-in scene presets + on-brand scenes + Random */}
@@ -369,66 +324,30 @@ export const SceneTab: React.FC = React.memo(() => {
         </div>
 
         {store.inputMode === 'model' ? (
-          <div
-            onClick={() => modelInputRef.current?.click()}
-            className={cn(
-              'flex flex-col items-center gap-2 p-4 border border-dashed rounded-lg cursor-pointer transition-colors',
-              'border-white/10 hover:border-white/20'
-            )}
-          >
-            <Upload size={20} className="text-neutral-500" />
-            <span className="text-2xs uppercase tracking-wider text-neutral-500 text-center">
-              {store.fileName || (isMobile ? t('mobile.tapToUpload') : 'Drop GLB / GLTF')}
-            </span>
-            <input
-              ref={modelInputRef}
-              type="file"
-              accept=".glb,.gltf"
-              onChange={handleModelUpload}
-              className="hidden"
-              aria-label="Upload GLB or GLTF model"
-            />
-          </div>
+          <Dropzone
+            onFiles={(files) => handleModelFile(files[0])}
+            accept=".glb,.gltf"
+            label={
+              store.fileName || (isMobile ? t('mobile.tapToUpload') : t('studio3d.input.dropModel'))
+            }
+            dropTarget={false}
+            className="h-auto py-4"
+          />
         ) : store.inputMode === 'svg' ? (
-          <div
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className={cn(
-              'flex flex-col items-center gap-2 p-4 border border-dashed rounded-lg cursor-pointer transition-all',
-              isDragging
-                ? 'border-white/30 bg-white/5 scale-[1.02]'
-                : 'border-white/10 hover:border-white/20'
-            )}
-          >
-            <Upload
-              size={20}
-              className={cn('transition-colors', isDragging ? 'text-white' : 'text-neutral-500')}
-            />
-            <span
-              className={cn(
-                'text-2xs uppercase tracking-wider transition-colors text-center',
-                isDragging ? 'text-white' : 'text-neutral-500'
-              )}
-            >
-              {store.isLoading ? (
+          <Dropzone
+            onFiles={(files) => processFile(files[0])}
+            accept=".svg,.png,.jpg,.jpeg,.webp"
+            disabled={store.isLoading}
+            label={
+              store.isLoading ? (
                 <GlitchLoader size={12} />
               ) : (
                 store.fileName ||
                 (isMobile ? t('mobile.tapToUpload') : t('studio3d.input.dropZone'))
-              )}
-            </span>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".svg,.png,.jpg,.jpeg,.webp"
-              onChange={handleFileUpload}
-              className="hidden"
-              aria-label="Upload SVG or image"
-            />
-          </div>
+              )
+            }
+            className="h-auto py-4"
+          />
         ) : (
           <div className="space-y-2">
             <input
@@ -437,16 +356,16 @@ export const SceneTab: React.FC = React.memo(() => {
               onChange={(e) => store.setText(e.target.value)}
               placeholder={t('studio3d.input.textPlaceholder')}
               aria-label="Text input"
-              className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/20"
+              className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring"
             />
             <select
               value={store.font}
               onChange={(e) => store.setFont(e.target.value)}
               aria-label="Font selection"
-              className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-neutral-300 focus:outline-none focus:border-white/20 appearance-none cursor-pointer"
+              className="w-full bg-muted border border-border rounded px-2 py-1.5 text-xs text-muted-foreground focus:outline-none focus:border-ring appearance-none cursor-pointer"
             >
               {FONT_OPTIONS.map((f) => (
-                <option key={f} value={f} className="bg-neutral-900">
+                <option key={f} value={f} className="bg-popover">
                   {f}
                 </option>
               ))}
@@ -465,7 +384,7 @@ export const SceneTab: React.FC = React.memo(() => {
               onChange={(e) => setSceneName(e.target.value)}
               placeholder="Scene name..."
               aria-label="Scene name"
-              className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/20"
+              className="flex-1 bg-muted border border-border rounded px-2 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring"
             />
             <Button
               variant="outline"
@@ -497,10 +416,10 @@ export const SceneTab: React.FC = React.memo(() => {
             </Button>
           </div>
           {scenesLoading && (
-            <div className="text-2xs text-neutral-600 text-center py-2">Loading scenes...</div>
+            <div className="text-2xs text-muted-foreground text-center py-2">Loading scenes...</div>
           )}
           {savedScenes.length > 0 && (
-            <div className="space-y-1 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700">
+            <div className="space-y-1 max-h-32 overflow-y-auto scrollbar-thin ">
               {savedScenes.map((scene) => (
                 <div key={scene.id} className="flex items-center gap-1.5 group">
                   <button
@@ -510,13 +429,13 @@ export const SceneTab: React.FC = React.memo(() => {
                       else toast.error('Failed to load scene');
                     }}
                     aria-label="Load scene"
-                    className="flex-1 flex items-center gap-2 text-left px-2 py-1 rounded text-2xs text-neutral-400 hover:bg-white/5 hover:text-white transition-colors"
+                    className="flex-1 flex items-center gap-2 text-left px-2 py-1 rounded text-2xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                   >
                     {scene.thumbnail ? (
-                      <img
+                      <Thumb
                         src={scene.thumbnail}
                         alt=""
-                        className="w-6 h-6 rounded border border-white/10 object-cover shrink-0"
+                        className="w-6 h-6 rounded border border-border object-cover shrink-0"
                         draggable={false}
                       />
                     ) : (
@@ -531,7 +450,7 @@ export const SceneTab: React.FC = React.memo(() => {
                       toast.success('Scene deleted');
                     }}
                     aria-label="Delete scene"
-                    className="opacity-0 group-hover:opacity-100 p-1 text-neutral-600 hover:text-destructive transition-[color,background-color,border-color,opacity]"
+                    className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-destructive transition-[color,background-color,border-color,opacity]"
                   >
                     <Trash2 size={10} />
                   </button>
@@ -651,9 +570,7 @@ export const SceneTab: React.FC = React.memo(() => {
         icon={<Link size={13} />}
         badge={
           store.showChain ? (
-            <span className="text-3xs font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
-              on
-            </span>
+            <span className="text-3xs text-success bg-success/10 px-1.5 py-0.5 rounded">on</span>
           ) : undefined
         }
       >
@@ -750,7 +667,7 @@ export const SceneTab: React.FC = React.memo(() => {
             <Button
               variant="outline"
               size="sm"
-              className="w-full text-2xs uppercase tracking-wider h-8"
+              className="w-full text-2xs h-8"
               disabled={isRetracing}
               onClick={handleRetrace}
             >
@@ -968,45 +885,45 @@ const CommunityGallery: React.FC = React.memo(() => {
       icon={<Globe size={13} />}
       badge={
         scenes.length > 0 ? (
-          <span className="text-3xs font-mono text-neutral-600">{scenes.length}</span>
+          <span className="text-3xs font-mono text-muted-foreground">{scenes.length}</span>
         ) : undefined
       }
     >
       {!loaded ? (
         <button
           onClick={load}
-          className="w-full px-2 py-2 rounded text-2xs uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
+          className="w-full px-2 py-2 rounded text-2xs bg-muted text-muted-foreground hover:bg-accent hover:text-foreground transition-colors border border-dashed border-border"
         >
           {loading ? <GlitchLoader size={12} /> : 'Browse public scenes'}
         </button>
       ) : scenes.length === 0 ? (
-        <p className="text-center text-neutral-600 text-2xs py-3">No public scenes yet</p>
+        <p className="text-center text-muted-foreground text-2xs py-3">No public scenes yet</p>
       ) : (
-        <div className="space-y-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700">
+        <div className="space-y-1 max-h-48 overflow-y-auto scrollbar-thin ">
           {scenes.map((scene) => (
             <div key={scene.id} className="flex items-center gap-1.5 group">
               <button
                 onClick={() => handleFork(scene.id)}
                 disabled={forking === scene.id}
-                className="flex-1 flex items-center gap-2 text-left px-2 py-1.5 rounded text-2xs text-neutral-400 hover:bg-white/5 hover:text-white transition-colors disabled:opacity-50"
+                className="flex-1 flex items-center gap-2 text-left px-2 py-1.5 rounded text-2xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors disabled:opacity-50"
               >
                 {scene.thumbnailUrl ? (
-                  <img
+                  <Thumb
                     src={scene.thumbnailUrl}
                     alt=""
-                    className="w-7 h-7 rounded border border-white/10 object-cover shrink-0"
+                    className="w-7 h-7 rounded border border-border object-cover shrink-0"
                     draggable={false}
                   />
                 ) : (
                   <div
-                    className="w-7 h-7 rounded border border-white/10 shrink-0"
+                    className="w-7 h-7 rounded border border-border shrink-0"
                     style={{ backgroundColor: scene.config?.background || '#0a0a0a' }}
                   />
                 )}
                 <div className="flex-1 min-w-0">
                   <span className="block truncate text-2xs">{scene.name}</span>
                   {scene.user?.name && (
-                    <span className="block truncate text-3xs text-neutral-600">
+                    <span className="block truncate text-3xs text-muted-foreground">
                       {scene.user.name}
                     </span>
                   )}

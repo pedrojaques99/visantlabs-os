@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Check, X, Palette, Type, Image as ImageIcon } from '@/lib/ui/icons';
+import { Thumb } from '@/components/ui/Thumb';
 
 interface FigmaImportModalProps {
   isOpen: boolean;
@@ -68,7 +69,7 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px] bg-neutral-900 border-neutral-800 text-neutral-200 p-0 overflow-hidden">
         <DialogHeader className="p-6 pb-2 border-b border-neutral-800/50">
-          <DialogTitle className="text-xl font-bold font-manrope flex items-center gap-2">
+          <DialogTitle className="text-xl font-semibold font-manrope flex items-center gap-2">
             <Palette className="text-neutral-400" size={20} />
             Importar do Figma
           </DialogTitle>
@@ -81,9 +82,7 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
               <div className="flex items-center gap-2 font-medium">
                 <div
                   className={`p-1 rounded ${
-                    importColors
-                      ? 'bg-brand-cyan/20 text-brand-cyan'
-                      : 'bg-neutral-800 text-neutral-500'
+                    importColors ? 'bg-muted text-foreground' : 'bg-muted text-muted-foreground'
                   }`}
                 >
                   <Palette size={14} />
@@ -100,13 +99,13 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
                 {previewData.colors.slice(0, 12).map((color, idx) => (
                   <div
                     key={idx}
-                    className="w-8 h-8 rounded-md border border-white/10 shadow-sm"
+                    className="w-8 h-8 rounded-md border border-border shadow-sm"
                     style={{ backgroundColor: color.hex }}
                     title={color.name}
                   />
                 ))}
                 {previewData.colors.length > 12 && (
-                  <div className="w-8 h-8 rounded-md bg-neutral-800 flex items-center justify-center text-2xs text-neutral-500 font-mono">
+                  <div className="w-8 h-8 rounded-md bg-neutral-800 flex items-center justify-center text-2xs tabular-nums text-muted-foreground">
                     +{previewData.colors.length - 12}
                   </div>
                 )}
@@ -120,9 +119,7 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
               <div className="flex items-center gap-2 font-medium">
                 <div
                   className={`p-1 rounded ${
-                    importTypography
-                      ? 'bg-brand-cyan/20 text-brand-cyan'
-                      : 'bg-neutral-800 text-neutral-500'
+                    importTypography ? 'bg-muted text-foreground' : 'bg-muted text-muted-foreground'
                   }`}
                 >
                   <Type size={14} />
@@ -138,13 +135,13 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
               <div className="space-y-1.5 p-3 bg-neutral-950/50 rounded-xl border border-neutral-800/50">
                 {previewData.typography.slice(0, 4).map((font, idx) => (
                   <div key={idx} className="flex items-center justify-between text-xs">
-                    <span className="text-neutral-400 font-mono italic">{font.role}</span>
-                    <span className="font-bold">{font.family}</span>
+                    <span className="text-muted-foreground">{font.role}</span>
+                    <span className="font-medium">{font.family}</span>
                   </div>
                 ))}
                 {previewData.typography.length > 4 && (
-                  <p className="text-2xs text-neutral-600 font-mono text-center pt-1 border-t border-neutral-800/30">
-                    + {previewData.typography.length - 4} estilos adicionais
+                  <p className="text-2xs text-muted-foreground text-center pt-1 border-t border-border">
+                    +{previewData.typography.length - 4} estilos adicionais
                   </p>
                 )}
               </div>
@@ -167,21 +164,23 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 {previewData.components.map((comp) => (
-                  <div
+                  <button
+                    type="button"
                     key={comp.key}
                     onClick={() => toggleLogo(comp.key)}
+                    aria-pressed={selectedLogos.includes(comp.key)}
                     className={`
-                      relative flex flex-col items-center p-3 rounded-xl border cursor-pointer transition-[color,background-color,border-color,box-shadow] gap-2
+                      relative flex flex-col items-center p-3 rounded-xl border cursor-pointer transition-colors gap-2
                       ${
                         selectedLogos.includes(comp.key)
-                          ? 'bg-brand-cyan/5 border-brand-cyan shadow-[0_0_10px_oklch(from var(--brand-cyan) l c h / 10%)]'
-                          : 'bg-neutral-950/50 border-neutral-800 hover:border-neutral-700'
+                          ? 'bg-brand-cyan/5 border-brand-cyan'
+                          : 'bg-muted/30 border-border hover:border-ring'
                       }
                     `}
                   >
                     {comp.thumbnailUrl ? (
-                      <div className="w-full h-16 rounded bg-neutral-900 border border-neutral-800/50 flex items-center justify-center p-2 group-hover:bg-neutral-800 transition-colors">
-                        <img
+                      <div className="w-full h-16 rounded bg-muted border border-border flex items-center justify-center p-2">
+                        <Thumb
                           src={comp.thumbnailUrl}
                           alt={comp.name}
                           className="max-w-full max-h-full object-contain"
@@ -192,15 +191,15 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
                         <ImageIcon className="text-neutral-700" size={24} />
                       </div>
                     )}
-                    <span className="text-2xs font-mono text-neutral-400 truncate w-full text-center">
+                    <span className="text-2xs text-muted-foreground truncate w-full text-center">
                       {comp.name}
                     </span>
                     {selectedLogos.includes(comp.key) && (
-                      <div className="absolute top-2 right-2 bg-brand-cyan text-black rounded-full p-0.5">
+                      <div className="absolute top-2 right-2 bg-foreground text-background rounded-full p-0.5">
                         <Check size={8} strokeWidth={4} />
                       </div>
                     )}
-                  </div>
+                  </button>
                 ))}
               </div>
             )}
@@ -208,12 +207,7 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
         </div>
 
         <DialogFooter className="p-6 pt-2 border-t border-neutral-800/50 gap-2">
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            disabled={isImporting}
-            className="text-neutral-400 font-mono text-xs"
-          >
+          <Button variant="ghost" onClick={onClose} disabled={isImporting} className="text-xs">
             Cancelar
           </Button>
           <Button
@@ -221,7 +215,7 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
             disabled={
               isImporting || (!importColors && !importTypography && selectedLogos.length === 0)
             }
-            className="bg-brand-cyan hover:bg-brand-cyan/90 text-black px-8 font-bold"
+            className="bg-brand-cyan hover:bg-brand-cyan/90 text-black px-8 font-medium"
           >
             {isImporting ? <GlitchLoader size={16} /> : 'Importar'}
           </Button>

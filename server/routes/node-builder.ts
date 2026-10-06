@@ -58,8 +58,8 @@ router.post('/generate', authenticate, async (req: AuthRequest, res) => {
       )
       .join('\n\n');
 
-    await chargeCredits(req.userId!, 1);
-    charged = true;
+    // Só estorna o que foi cobrado: admin e ilimitado voltam charged:false.
+    charged = (await chargeCredits(req.userId!, 1)).charged;
 
     const result = await completeText({
       system: systemInstruction,
@@ -110,8 +110,8 @@ router.post('/shader-params', authenticate, async (req: AuthRequest, res) => {
 
   let charged = false;
   try {
-    await chargeCredits(req.userId!, 1);
-    charged = true;
+    // Só estorna o que foi cobrado: admin e ilimitado voltam charged:false.
+    charged = (await chargeCredits(req.userId!, 1)).charged;
 
     const result = await completeText({
       system: SHADER_SELECTOR_SYSTEM_PROMPT,

@@ -63,7 +63,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 aria-label="Navigation"
               >
                 <div
-                  className="absolute inset-0 bg-black/50"
+                  className="absolute inset-0 bg-background/80"
                   onClick={() => setMobileNavOpen(false)}
                   aria-hidden
                 />

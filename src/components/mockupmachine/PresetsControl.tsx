@@ -3,6 +3,7 @@ import { Save, FolderOpen, MoreVertical, Trash2, Check, X } from '@/lib/ui/icons
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { savedPresetsService, SavedPreset } from '@/services/savedPresetsService';
 import { useMockup } from './MockupContext';
 import { toast } from 'sonner';
@@ -56,13 +57,13 @@ export const PresetsControl: React.FC = () => {
       };
 
       await savedPresetsService.save(presetName.trim(), config);
-      toast.success(t('mockup.presetSaved') || 'Preset salvo com sucesso!');
+      toast.success(t('mockup.presetSaved'));
       setPresetName('');
       setIsSaving(false);
       await loadPresets();
     } catch (error) {
       console.error('Failed to save preset:', error);
-      toast.error(t('mockup.presetSaveError') || 'Erro ao salvar preset.');
+      toast.error(t('mockup.presetSaveError'));
     } finally {
       setIsLoading(false);
     }
@@ -90,7 +91,7 @@ export const PresetsControl: React.FC = () => {
       mockupContext.setAdditionalPrompt(config.additionalPrompt);
     if (config.designType) mockupContext.setDesignType(config.designType);
 
-    toast.success(t('mockup.presetLoaded') || 'Preset carregado com sucesso!');
+    toast.success(t('mockup.presetLoaded'));
     setIsOpen(false);
   };
 
@@ -99,9 +100,9 @@ export const PresetsControl: React.FC = () => {
     try {
       await savedPresetsService.delete(id);
       setPresets(presets.filter((p) => p.id !== id));
-      toast.success('Preset removido.');
+      toast.success(t('mockup.presetDeleted'));
     } catch (error) {
-      toast.error('Erro ao remover preset.');
+      toast.error(t('mockup.presetDeleteError'));
     }
   };
 
@@ -118,16 +119,14 @@ export const PresetsControl: React.FC = () => {
             setIsSaving(false);
           }}
           className={cn(
-            'flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-xs uppercase tracking-wide transition-colors flex-1 justify-center border',
+            'flex items-center gap-1.5 px-3 py-2 rounded-md text-xs transition-colors flex-1 justify-center border',
             isOpen
-              ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
-              : theme === 'dark'
-                ? 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:text-neutral-300'
-                : 'bg-white/50 text-neutral-600 border-neutral-200 hover:bg-neutral-100 hover:text-neutral-800'
+              ? 'bg-brand-cyan/10 text-foreground border-brand-cyan/30'
+              : 'bg-card text-muted-foreground border-border hover:bg-accent hover:text-foreground'
           )}
         >
           <FolderOpen size={14} />
-          <span>Carregar Preset</span>
+          <span>{t('mockup.loadPreset')}</span>
         </Button>
         <Button
           variant="ghost"
@@ -136,16 +135,14 @@ export const PresetsControl: React.FC = () => {
             setIsOpen(false);
           }}
           className={cn(
-            'flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-xs uppercase tracking-wide transition-colors flex-1 justify-center border',
+            'flex items-center gap-1.5 px-3 py-2 rounded-md text-xs transition-colors flex-1 justify-center border',
             isSaving
-              ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
-              : theme === 'dark'
-                ? 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:text-neutral-300'
-                : 'bg-white/50 text-neutral-600 border-neutral-200 hover:bg-neutral-100 hover:text-neutral-800'
+              ? 'bg-brand-cyan/10 text-foreground border-brand-cyan/30'
+              : 'bg-card text-muted-foreground border-border hover:bg-accent hover:text-foreground'
           )}
         >
           <Save size={14} />
-          <span>Salvar Config</span>
+          <span>{t('mockup.savePreset')}</span>
         </Button>
       </div>
 
@@ -162,7 +159,8 @@ export const PresetsControl: React.FC = () => {
           <div className="flex gap-2">
             <Input
               type="text"
-              placeholder="Nome do preset..."
+              placeholder={t('mockup.presetNamePlaceholder')}
+              aria-label={t('mockup.presetName')}
               value={presetName}
               onChange={(e) => setPresetName(e.target.value)}
               className={cn(
@@ -209,41 +207,46 @@ export const PresetsControl: React.FC = () => {
           )}
         >
           {isLoading ? (
-            <div className="px-4 py-4 text-xs text-neutral-500 text-center font-mono">
-              Carregando...
+            <div className="px-4 py-4 text-xs text-neutral-500 text-center">
+              {t('common.loading')}
             </div>
           ) : presets.length === 0 ? (
-            <div className="px-4 py-4 text-xs text-neutral-500 text-center font-mono">
-              Nenhum preset salvo
+            <div className="px-4 py-4 text-xs text-neutral-500 text-center">
+              {t('mockup.noPresets')}
             </div>
           ) : (
             <div className="flex flex-col">
               {presets.map((preset) => (
                 <div
                   key={preset.id}
-                  onClick={() => handleLoad(preset.config)}
                   className={cn(
-                    'flex items-center justify-between px-4 py-2.5 cursor-pointer transition-colors border-b last:border-0 group',
+                    'flex items-center justify-between pr-2 transition-colors border-b last:border-0 group',
                     theme === 'dark'
                       ? 'hover:bg-neutral-800/80 border-neutral-800/50'
                       : 'hover:bg-neutral-50 border-neutral-100'
                   )}
                 >
-                  <span
+                  <button
+                    type="button"
+                    onClick={() => handleLoad(preset.config)}
                     className={cn(
-                      'text-sm transition-colors',
+                      'flex-1 min-w-0 truncate text-left px-4 py-2.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                       theme === 'dark'
-                        ? 'text-neutral-300 group-hover:text-white'
-                        : 'text-neutral-700 group-hover:text-black'
+                        ? 'text-neutral-300 group-hover:text-foreground'
+                        : 'text-neutral-700 group-hover:text-foreground'
                     )}
                   >
                     {preset.name}
-                  </span>
+                  </button>
                   <Button
                     variant="ghost"
                     onClick={(e) => handleDelete(e, preset.id)}
-                    className="p-1.5 text-neutral-500 hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors opacity-0 group-hover:opacity-100"
-                    title="Remover Preset"
+                    className={cn(
+                      hoverReveal,
+                      'p-1.5 text-neutral-500 hover:text-destructive hover:bg-destructive/10 rounded-md'
+                    )}
+                    title={t('mockup.deletePreset')}
+                    aria-label={t('mockup.deletePreset')}
                   >
                     <Trash2 size={14} />
                   </Button>

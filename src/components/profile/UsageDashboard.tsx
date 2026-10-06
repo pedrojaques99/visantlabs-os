@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { TrendingUp, Zap, Clock, Activity } from '@/lib/ui/icons';
 import { GlitchLoader } from '../ui/GlitchLoader';
+import { ErrorState } from '../ui/ErrorState';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { useUsageStats, useDailyUsage } from '@/hooks/queries/useUsage';
+import { useTranslation } from '@/hooks/useTranslation';
+import { cn } from '@/lib/utils';
 
 interface DailyPoint {
   date: string;
@@ -42,7 +44,7 @@ function BarChart({ data, metric }: { data: DailyPoint[]; metric: ChartMetric })
                 y={y}
                 width={barWidth}
                 height={barHeight}
-                fill="rgb(0 210 190 / 0.6)"
+                className="fill-foreground/60"
                 rx={2}
               >
                 <title>{`${point.date}: ${values[i]} ${metric}`}</title>
@@ -53,7 +55,7 @@ function BarChart({ data, metric }: { data: DailyPoint[]; metric: ChartMetric })
                   y={chartHeight + 16}
                   textAnchor="middle"
                   fontSize="9"
-                  fill="rgb(115 115 115)"
+                  className="fill-muted-foreground"
                   fontFamily="monospace"
                 >
                   {point.date.slice(5)}
@@ -67,8 +69,9 @@ function BarChart({ data, metric }: { data: DailyPoint[]; metric: ChartMetric })
   );
 }
 
-const FEATURE_OPTIONS: { value: FeatureFilter; label: string }[] = [
-  { value: 'all', label: 'All Features' },
+// Product names stay as-is; only "all" is copy.
+const FEATURE_OPTIONS: { value: FeatureFilter; label: string | null }[] = [
+  { value: 'all', label: null },
   { value: 'mockupmachine', label: 'Mockup Machine' },
   { value: 'brandingmachine', label: 'Branding Machine' },
   { value: 'canvas', label: 'Canvas' },
@@ -80,6 +83,7 @@ const FEATURE_OPTIONS: { value: FeatureFilter; label: string }[] = [
  * Renders only the content; callers own the page/section chrome.
  */
 export const UsageDashboard: React.FC<{ enabled?: boolean }> = ({ enabled = true }) => {
+  const { t } = useTranslation();
   const [chartMetric, setChartMetric] = useState<ChartMetric>('calls');
   const [featureFilter, setFeatureFilter] = useState<FeatureFilter>('all');
 
@@ -91,110 +95,92 @@ export const UsageDashboard: React.FC<{ enabled?: boolean }> = ({ enabled = true
   const isLoadingStats = statsQuery.isLoading;
   const isLoadingDaily = dailyQuery.isLoading;
 
-  const statCards = [
+  const statCards: { label: string; value: number; sub?: string }[] = [
+    { label: t('profile.usage.totalCalls'), value: stats?.totalRecords ?? 0 },
+    { label: t('profile.usage.totalCredits'), value: stats?.totalCredits ?? 0 },
     {
-      label: 'Total API Calls',
-      value: stats?.totalRecords ?? 0,
-      icon: <Activity size={18} className="text-foreground" />,
-    },
-    {
-      label: 'Total Credits Used',
-      value: stats?.totalCredits ?? 0,
-      icon: <Zap size={18} className="text-warning" />,
-    },
-    {
-      label: 'Last 7 Days',
+      label: t('profile.usage.last7'),
       value: stats?.last7Days.count ?? 0,
-      icon: <Clock size={18} className="text-purple-400" />,
-      sub: `${stats?.last7Days.credits ?? 0} credits`,
+      sub: t('profile.usage.creditsCount', { count: stats?.last7Days.credits ?? 0 }),
     },
     {
-      label: 'Last 30 Days',
+      label: t('profile.usage.last30'),
       value: stats?.last30Days.count ?? 0,
-      icon: <TrendingUp size={18} className="text-success" />,
-      sub: `${stats?.last30Days.credits ?? 0} credits`,
+      sub: t('profile.usage.creditsCount', { count: stats?.last30Days.credits ?? 0 }),
     },
   ];
 
   const featureRows = [
-    {
-      key: 'mockupmachine',
-      label: 'Mockup Machine',
-      color: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    },
-    {
-      key: 'brandingmachine',
-      label: 'Branding Machine',
-      color: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-    },
-    { key: 'canvas', label: 'Canvas', color: 'bg-success/20 text-success border-success/30' },
+    { key: 'mockupmachine', label: 'Mockup Machine' },
+    { key: 'brandingmachine', label: 'Branding Machine' },
+    { key: 'canvas', label: 'Canvas' },
   ] as const;
+
+  // A failed stats load must not read as "0 calls, 0 credits".
+  if (statsQuery.isError) {
+    return (
+      <ErrorState title={t('profile.usage.loadFailed')} onRetry={() => statsQuery.refetch()} />
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statCards.map((card) => (
-          <Card key={card.label} className="bg-neutral-900 border border-white/10 rounded-xl">
+          <Card key={card.label} className="bg-card border border-border rounded-xl">
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                {card.icon}
-                <span className="text-xs text-neutral-500 font-mono">{card.label}</span>
-              </div>
-              <p className="text-2xl font-semibold font-manrope text-neutral-200">
+              <span className="block text-xs text-muted-foreground mb-2">{card.label}</span>
+              <p className="text-2xl font-semibold tabular-nums text-foreground">
                 {isLoadingStats ? <GlitchLoader size={20} /> : card.value.toLocaleString()}
               </p>
-              {card.sub && <p className="text-xs text-neutral-600 font-mono mt-1">{card.sub}</p>}
+              {card.sub && <p className="text-xs text-muted-foreground mt-1">{card.sub}</p>}
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* Chart Section */}
-      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+      <Card className="bg-card border border-border rounded-xl">
         <CardContent className="p-4 md:p-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
-            <h2 className="text-base font-semibold text-neutral-200 font-manrope">
-              30-Day History
+            <h2 className="text-base font-medium text-foreground">
+              {t('profile.usage.history30')}
             </h2>
             <div className="flex items-center gap-2 flex-wrap">
               {/* Feature filter */}
               <select
                 value={featureFilter}
                 onChange={(e) => setFeatureFilter(e.target.value as FeatureFilter)}
-                className="bg-neutral-800/50 border border-neutral-700/50 text-neutral-400 text-xs font-mono rounded-md px-3 py-1.5 focus:outline-none focus:border-neutral-600"
+                aria-label={t('profile.usage.filterLabel')}
+                className="bg-muted border border-border text-muted-foreground text-xs rounded-md px-3 py-1.5 focus:outline-none focus:border-ring"
               >
                 {FEATURE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
-                    {opt.label}
+                    {opt.label ?? t('profile.usage.allFeatures')}
                   </option>
                 ))}
               </select>
 
               {/* Metric toggle */}
-              <div className="flex items-center bg-neutral-800/50 border border-neutral-700/50 rounded-md overflow-hidden text-xs font-mono">
-                <Button
-                  variant="ghost"
-                  onClick={() => setChartMetric('calls')}
-                  className={`px-3 py-1.5 rounded-none transition-colors ${
-                    chartMetric === 'calls'
-                      ? 'bg-brand-cyan/10 text-brand-cyan'
-                      : 'text-neutral-500 hover:text-neutral-300'
-                  }`}
-                >
-                  Calls
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => setChartMetric('credits')}
-                  className={`px-3 py-1.5 rounded-none transition-colors ${
-                    chartMetric === 'credits'
-                      ? 'bg-warning/10 text-warning'
-                      : 'text-neutral-500 hover:text-neutral-300'
-                  }`}
-                >
-                  Credits
-                </Button>
+              <div className="flex items-center bg-muted border border-border rounded-md overflow-hidden text-xs">
+                {(['calls', 'credits'] as const).map((m) => (
+                  <Button
+                    key={m}
+                    variant="ghost"
+                    size="xs"
+                    aria-pressed={chartMetric === m}
+                    onClick={() => setChartMetric(m)}
+                    className={cn(
+                      'px-3 rounded-none',
+                      chartMetric === m
+                        ? 'bg-brand-cyan/10 text-brand-cyan'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    {m === 'calls' ? t('profile.usage.calls') : t('profile.usage.credits')}
+                  </Button>
+                ))}
               </div>
             </div>
           </div>
@@ -203,9 +189,15 @@ export const UsageDashboard: React.FC<{ enabled?: boolean }> = ({ enabled = true
             <div className="flex items-center justify-center h-[170px]">
               <GlitchLoader size={24} />
             </div>
+          ) : dailyQuery.isError ? (
+            <ErrorState
+              title={t('profile.usage.loadFailed')}
+              onRetry={() => dailyQuery.refetch()}
+              className="py-8"
+            />
           ) : daily.length === 0 ? (
             <div className="flex items-center justify-center h-[170px]">
-              <p className="text-neutral-600 font-mono text-sm">No data for this period</p>
+              <p className="text-muted-foreground text-sm">{t('profile.usage.noData')}</p>
             </div>
           ) : (
             <BarChart data={daily} metric={chartMetric} />
@@ -214,10 +206,10 @@ export const UsageDashboard: React.FC<{ enabled?: boolean }> = ({ enabled = true
       </Card>
 
       {/* Feature Breakdown */}
-      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+      <Card className="bg-card border border-border rounded-xl">
         <CardContent className="p-4 md:p-6">
-          <h2 className="text-base font-semibold text-neutral-200 font-manrope mb-4">
-            Feature Breakdown
+          <h2 className="text-base font-medium text-foreground mb-4">
+            {t('profile.usage.byFeature')}
           </h2>
           {isLoadingStats ? (
             <div className="flex items-center justify-center py-6">
@@ -228,23 +220,24 @@ export const UsageDashboard: React.FC<{ enabled?: boolean }> = ({ enabled = true
               {featureRows.map((row) => {
                 const data = stats?.byFeature[row.key] ?? { count: 0, credits: 0 };
                 return (
-                  <div
-                    key={row.key}
-                    className="bg-neutral-800/30 border border-neutral-700/30 rounded-lg p-4"
-                  >
+                  <div key={row.key} className="bg-muted/40 border border-border rounded-xl p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <Badge className={`text-xs border ${row.color}`}>{row.label}</Badge>
+                      <Badge variant="neutral">{row.label}</Badge>
                     </div>
                     <div className="space-y-1">
                       <div className="flex justify-between text-sm">
-                        <span className="text-neutral-500 font-mono text-xs">API Calls</span>
-                        <span className="text-neutral-200 font-semibold">
+                        <span className="text-muted-foreground text-xs">
+                          {t('profile.usage.calls')}
+                        </span>
+                        <span className="text-foreground font-medium tabular-nums">
                           {data.count.toLocaleString()}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-neutral-500 font-mono text-xs">Credits</span>
-                        <span className="text-neutral-200 font-semibold">
+                        <span className="text-muted-foreground text-xs">
+                          {t('profile.usage.credits')}
+                        </span>
+                        <span className="text-foreground font-medium tabular-nums">
                           {data.credits.toLocaleString()}
                         </span>
                       </div>

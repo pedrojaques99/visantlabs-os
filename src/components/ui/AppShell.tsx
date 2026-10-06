@@ -9,7 +9,7 @@ export interface AppShellProps {
 export const AppShell: React.FC<AppShellProps> = ({ children, className }) => (
   <div
     className={cn(
-      'fixed inset-0 top-10 md:top-14 bg-neutral-950 overflow-hidden select-none pb-[env(safe-area-inset-bottom)]',
+      'fixed inset-0 top-10 md:top-14 bg-background overflow-hidden select-none pb-[env(safe-area-inset-bottom)]',
       className
     )}
     style={{ zIndex: 40 }}
@@ -45,7 +45,7 @@ export const AppShellPanel: React.FC<{
 }> = ({ children, side = 'right', visible = true, width = 300, className }) => (
   <div
     className={cn(
-      'absolute top-3 bottom-12 z-10 transition-all duration-300',
+      'absolute top-3 bottom-12 z-10 transition-[opacity,transform] duration-300',
       side === 'right' ? 'right-3' : 'left-3',
       visible ? 'translate-x-0 opacity-100' : 'opacity-0 pointer-events-none',
       className
@@ -66,7 +66,7 @@ export const AppShellStatusBar: React.FC<{ children: React.ReactNode; className?
   className,
 }) => (
   <div className={cn('absolute bottom-3 left-1/2 -translate-x-1/2 z-10', className)}>
-    <div className="flex items-center gap-3 px-4 py-1.5 rounded-full bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 text-2xs text-neutral-600">
+    <div className="flex items-center gap-3 px-4 py-1.5 rounded-full bg-card border border-border text-2xs text-muted-foreground">
       {children}
     </div>
   </div>

@@ -111,24 +111,24 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
               <>
                 <motion.div
                   style={{ opacity: nopeOpacity }}
-                  className="pointer-events-none absolute top-5 right-5 flex items-center gap-1.5 rounded-lg border border-destructive/60 px-2.5 py-1 text-destructive"
+                  className="pointer-events-none absolute top-5 right-5 flex items-center gap-1.5 rounded-xl border border-destructive/60 px-2.5 py-1 text-destructive"
                 >
                   <X size={16} />
-                  <span className="text-2xs font-bold uppercase tracking-widest">Nope</span>
+                  <span className="text-xs font-medium">Nope</span>
                 </motion.div>
                 <motion.div
                   style={{ opacity: likeOpacity }}
-                  className="pointer-events-none absolute top-5 left-5 flex items-center gap-1.5 rounded-lg border border-success/60 px-2.5 py-1 text-success"
+                  className="pointer-events-none absolute top-5 left-5 flex items-center gap-1.5 rounded-xl border border-success/60 px-2.5 py-1 text-success"
                 >
                   <Heart size={16} />
-                  <span className="text-2xs font-bold uppercase tracking-widest">Curti</span>
+                  <span className="text-xs font-medium">Curti</span>
                 </motion.div>
                 <motion.div
                   style={{ opacity: superOpacity }}
-                  className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 rounded-lg border border-brand-cyan/70 px-3 py-1.5 text-foreground"
+                  className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 rounded-xl border border-brand-cyan/70 px-3 py-1.5 text-foreground"
                 >
                   <Gem size={18} />
-                  <span className="text-2xs font-bold uppercase tracking-widest">Superlike</span>
+                  <span className="text-xs font-medium">Superlike</span>
                 </motion.div>
               </>
             )}
@@ -138,17 +138,17 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
             {active && (
               <>
                 {/* Território — pill suave (não mono cru) */}
-                <span className="mb-6 inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-2xs font-mono uppercase tracking-widest text-neutral-400">
+                <span className="mb-6 inline-flex items-center rounded-full border border-border bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
                   {formatTag(card.territory)}
                 </span>
 
                 {/* Nome */}
-                <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-neutral-50 break-words">
+                <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight text-foreground break-words">
                   {card.name}
                 </h2>
 
                 {/* Divisor — dá âncora ao nome e mata o "card oco" */}
-                <span className="my-5 h-px w-10 bg-white/10" />
+                <span className="my-5 h-px w-10 bg-border" />
 
                 {/* Defesa */}
                 <p className="max-w-xs text-sm leading-relaxed text-neutral-400">
@@ -175,8 +175,8 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                   como livre (o servidor mantém 'unknown' de propósito) */}
                 {card.availability?.status === 'unknown' && (
                   <span
-                    title="RDAP indisponível — não foi possível verificar o domínio"
-                    className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-2xs font-mono text-neutral-500"
+                    title="RDAP indisponível: não foi possível verificar o domínio"
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-1 text-2xs font-mono text-muted-foreground"
                   >
                     <Globe size={11} />
                     domínio não verificado

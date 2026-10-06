@@ -82,12 +82,12 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
       >
         <div className="flex items-center justify-between p-6 border-b border-neutral-800/60 bg-neutral-900/20">
           <h2 className="text-lg font-semibold text-neutral-200 font-manrope tracking-tight">
-            {t('workflows.edit.title') || 'Edit Workflow'}
+            {t('workflows.edit.title')}
           </h2>
           <Button
             variant="ghost"
             onClick={onClose}
-            className="p-2 text-neutral-500 hover:text-white transition-[color,background-color,border-color,box-shadow] hover:bg-neutral-800/50 rounded-md"
+            className="p-2 text-neutral-500 hover:text-foreground transition-[color,background-color,border-color,box-shadow] hover:bg-neutral-800/50 rounded-md"
           >
             <X size={20} />
           </Button>
@@ -96,7 +96,7 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
         <div className="p-6 space-y-5">
           <div className="space-y-2">
             <MicroTitle as="label" className="ml-1">
-              {t('workflows.edit.name') || 'Name'}
+              {t('workflows.edit.name')}
             </MicroTitle>
             <Input
               value={name}
@@ -106,7 +106,7 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
           </div>
           <div className="space-y-2">
             <MicroTitle as="label" className="ml-1">
-              {t('workflows.edit.description') || 'Description'}
+              {t('workflows.edit.description')}
             </MicroTitle>
             <Textarea
               value={description}
@@ -117,7 +117,7 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
           <div className="flex gap-4">
             <div className="flex-1 space-y-2">
               <MicroTitle as="label" className="ml-1">
-                {t('workflows.edit.category') || 'Category'}
+                {t('workflows.edit.category')}
               </MicroTitle>
               <Select
                 value={category}
@@ -131,7 +131,7 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
             </div>
             <div className="w-32 space-y-2">
               <MicroTitle as="label" className="ml-1">
-                {t('workflows.edit.visibility') || 'Visibility'}
+                {t('workflows.edit.visibility')}
               </MicroTitle>
               <Button
                 variant="ghost"
@@ -144,15 +144,13 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
                 )}
               >
                 {isPublic ? <Globe size={14} /> : <Lock size={14} />}
-                {isPublic
-                  ? t('workflows.visibility.public') || 'Public'
-                  : t('workflows.visibility.private') || 'Private'}
+                {isPublic ? t('workflows.visibility.public') : t('workflows.visibility.private')}
               </Button>
             </div>
           </div>
           <div className="space-y-2">
             <MicroTitle as="label" className="ml-1">
-              {t('workflows.edit.tags') || 'Tags (comma separated)'}
+              {t('workflows.edit.tags')}
             </MicroTitle>
             <Input
               value={tags}
@@ -168,7 +166,7 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
             onClick={onClose}
             className="font-mono text-neutral-400 hover:text-neutral-200"
           >
-            {t('common.cancel') || 'Cancel'}
+            {t('common.cancel')}
           </Button>
           <Button
             variant="brand"
@@ -181,7 +179,7 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
             ) : (
               <Save size={14} className="mr-2" />
             )}
-            {t('common.save') || 'Save Changes'}
+            {t('common.save')}
           </Button>
         </div>
       </div>

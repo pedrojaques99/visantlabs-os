@@ -1,4 +1,5 @@
 import React from 'react';
+import { Thumb } from '@/components/ui/Thumb';
 import { Dices, PenLine, Pickaxe } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -66,42 +67,31 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
 
   const promptTooltip = () => {
     if (!promptDisabled) return t('mockup.generatePromptShortcut');
-    if (isGeneratingPrompt) return t('mockup.generatingPrompt') || 'Gerando prompt...';
-    return (
-      t('messages.selectDesignTypeFirst') ||
-      t('messages.completeSteps') ||
-      'Conclua o setup antes de gerar o prompt.'
-    );
+    if (isGeneratingPrompt) return t('mockup.generatingPrompt');
+    return t('messages.completeSteps');
   };
   const outputsTooltip = () => {
     if (!outputsDisabled) {
       if (creditsOutputs > 0)
-        return `${t('mockup.generateOutputs')} — ${creditsOutputs} ${
+        return `${t('mockup.generateOutputs')} (${creditsOutputs} ${
           creditsOutputs === 1 ? t('mockup.creditUnitSingular') : t('mockup.creditUnitPlural')
-        }`;
+        })`;
       return t('mockup.generateOutputsShortcut');
     }
-    if (isGeneratingPrompt) return t('mockup.generatingPrompt') || 'Gerando prompt...';
-    if (isGeneratingOutputs) return t('mockup.generatingOutputs') || 'Gerando resultados...';
-    if (!isPromptReady && !autoGenerate)
-      return t('mockup.generatePromptFirst') || 'Gere um prompt primeiro.';
-    if (!isPromptReady && autoGenerate)
-      return t('mockup.generateAll') || 'Gere o prompt e as imagens em um clique.';
-    return (
-      t('messages.selectDesignTypeFirst') ||
-      t('messages.completeSteps') ||
-      t('mockup.insufficientCredits') ||
-      'Conclua o setup ou verifique créditos.'
-    );
+    if (isGeneratingPrompt) return t('mockup.generatingPrompt');
+    if (isGeneratingOutputs) return t('mockup.generatingOutputs');
+    if (!isPromptReady && !autoGenerate) return t('mockup.generatePromptFirst');
+    if (!isPromptReady && autoGenerate) return t('mockup.generateAll');
+    return t('messages.completeSteps');
   };
   const surpriseTooltip = () => {
     const base = isSurpriseMeMode
       ? t('mockup.surpriseMeModeActiveTooltip')
       : t('mockup.surpriseMeTooltip');
     if (autoGenerate && creditsSurpriseMe > 0)
-      return `${base} — ${creditsSurpriseMe} ${
+      return `${base} (${creditsSurpriseMe} ${
         creditsSurpriseMe === 1 ? t('mockup.creditUnitSingular') : t('mockup.creditUnitPlural')
-      }`;
+      })`;
     return base;
   };
 
@@ -138,17 +128,15 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
             onClick={onClick}
             disabled={disabled}
             className={cn(
-              'relative flex items-center justify-center rounded-xl border font-bold transition-all duration-300 h-12 md:h-14',
+              'relative flex items-center justify-center rounded-xl border font-medium transition-[color,background-color,border-color,opacity,transform,filter] duration-300 h-12 md:h-14',
               label ? 'px-4 gap-2 md:px-5' : 'w-12 md:w-14',
               disabled
-                ? 'bg-neutral-800 border-white/10 text-neutral-500 opacity-40 cursor-not-allowed'
-                : 'bg-white border-white text-black shadow-lg hover:bg-white/90 hover:scale-[1.02] active:scale-[0.98]'
+                ? 'bg-muted border-border text-muted-foreground opacity-40 cursor-not-allowed'
+                : 'bg-foreground border-foreground text-background shadow-lg hover:opacity-90 active:scale-[0.98]'
             )}
           >
             <span className="flex shrink-0 items-center justify-center">{icon}</span>
-            {label && (
-              <span className="text-xs font-bold uppercase tracking-[0.12em]">{label}</span>
-            )}
+            {label && <span className="text-xs font-medium">{label}</span>}
           </Button>
         </Tooltip>
       );
@@ -172,7 +160,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
 
   const Wrapper = isInline ? 'div' : GlassPanel;
   const wrapperClass = cn(
-    'transition-all duration-300 origin-center flex flex-col items-center mx-auto',
+    'transition-[color,background-color,border-color,opacity,transform,filter] duration-300 origin-center flex flex-col items-center mx-auto',
     'w-full sm:w-fit pointer-events-auto px-2 sm:px-0',
     !isInline && 'max-w-full'
   );
@@ -183,8 +171,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
         {/* Pool Director Mode Indicator */}
         {isSurpriseMeMode && (
           <div className="absolute -top-5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 animate-fade-in">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand-cyan animate-pool-dot-breathe inline-block" />
-            <span className="text-2xs font-bold text-foreground tracking-[0.15em] uppercase whitespace-nowrap">
+            <span className="text-2xs font-medium text-foreground whitespace-nowrap">
               {t('mockup.surpriseMeModeActiveTooltip')}
             </span>
           </div>
@@ -205,7 +192,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
             isSurpriseMeMode,
             surpriseTooltip(),
             autoGenerate ? creditsSurpriseMe : 0,
-            t('mockup.surpriseMe') || 'Surprise Me',
+            t('mockup.surpriseMe'),
             'surpriseMe'
           )}
         </div>
@@ -213,7 +200,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
         {!isSurpriseMeMode && (
           <>
             {/* Divider */}
-            <div className="w-[1px] h-10 bg-white/5 mx-1" />
+            <div className="w-[1px] h-10 bg-muted mx-1" />
 
             {/* 2. MAIN GENERATION FLOW */}
             <div className="flex items-center gap-2">
@@ -236,7 +223,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                   !!isPromptReady,
                   isPromptReady ? outputsTooltip() : promptTooltip(),
                   isPromptReady ? creditsOutputs : 0,
-                  t('mockup.outputsShort') || 'Gerar'
+                  t('mockup.outputsShort')
                 )
               ) : (
                 <>
@@ -251,7 +238,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                     !!isPromptReady,
                     promptTooltip(),
                     undefined,
-                    t('mockup.promptShort') || 'Prompt'
+                    t('mockup.promptShort')
                   )}
                   {renderButton(
                     onGenerateOutputs || (() => {}),
@@ -264,7 +251,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                     false,
                     outputsTooltip(),
                     creditsOutputs,
-                    t('mockup.outputsShort') || 'Gerar'
+                    t('mockup.outputsShort')
                   )}
                 </>
               )}
@@ -275,11 +262,11 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
         {/* Uploaded image thumb - only in collapsed (pool) mode */}
         {!isInline && isSurpriseMeMode && thumbSrc && (
           <div
-            className="w-14 h-14 shrink-0 rounded-xl border border-white/10 overflow-hidden bg-neutral-900/50"
+            className="w-14 h-14 shrink-0 rounded-xl border border-border overflow-hidden bg-neutral-900/50"
             role="img"
-            aria-label={t('mockup.uploadedDesignAlt') || 'Design enviado'}
+            aria-label={t('mockup.uploadedDesignAlt')}
           >
-            <img src={thumbSrc} alt="" className="w-full h-full object-cover" />
+            <Thumb src={thumbSrc} alt="" className="w-full h-full object-cover" />
           </div>
         )}
       </div>

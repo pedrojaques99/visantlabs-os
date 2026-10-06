@@ -10,7 +10,6 @@ export interface BgRemoveItem {
   resultBase64: string;
   status: BgRemoveStatus;
   error?: string;
-  progressPhase?: string;
   progressValue?: number;
 }
 
@@ -43,7 +42,6 @@ function requeueDone(items: BgRemoveItem[]): BgRemoveItem[] {
           status: 'queued' as const,
           resultBase64: '',
           error: undefined,
-          progressPhase: undefined,
           progressValue: undefined,
         }
       : i

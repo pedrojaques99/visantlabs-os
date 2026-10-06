@@ -27,6 +27,10 @@ import {
 } from '@/services/visualSearchApi';
 import { useNeedsLightBg } from '@/hooks/useNeedsLightBg';
 import { glassSurface } from '@/lib/ui/glass';
+import { Thumb } from '@/components/ui/Thumb';
+import { MediaTile } from '@/components/ui/MediaTile';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { Badge } from '@/components/ui/badge';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -247,31 +251,19 @@ export const VisualSearchPage: React.FC = () => {
 
   const tabBar = (
     <div className="flex items-center gap-1.5 mt-2.5">
-      {TABS.map((tab) => {
-        const Icon = tab.icon;
-        const isActive = activeTab === tab.id;
-        return (
-          <button
-            key={tab.id}
-            onClick={() => {
-              setActiveTab(tab.id);
-              setUserPickedTab(true);
-            }}
-            className={cn(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-2xs font-mono uppercase tracking-wider border transition-colors',
-              isActive
-                ? 'bg-white/5 border-white/10 text-neutral-200'
-                : 'border-transparent text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]'
-            )}
-          >
-            <Icon size={12} className="shrink-0" />
-            {tab.label}
-          </button>
-        );
-      })}
+      <SegmentedControl
+        aria-label="Result type"
+        size="sm"
+        options={TABS.map((tab) => ({ value: tab.id, label: tab.label, icon: tab.icon }))}
+        value={activeTab}
+        onChange={(id) => {
+          setActiveTab(id);
+          setUserPickedTab(true);
+        }}
+      />
 
       {hasSearched && !isLoading && filteredResults.length > 0 && (
-        <span className="ml-auto text-2xs font-mono text-neutral-700">
+        <span className="ml-auto text-2xs tabular-nums text-muted-foreground">
           {filteredResults.length} results
         </span>
       )}
@@ -281,7 +273,7 @@ export const VisualSearchPage: React.FC = () => {
   return (
     <PageShell
       pageId="visual-search"
-      seoTitle="Visual Search — Visant Labs"
+      seoTitle="Visual Search"
       seoDescription="Search for design inspiration, typography, logos, and layouts"
       title="Visual Search"
       width="full"
@@ -289,8 +281,10 @@ export const VisualSearchPage: React.FC = () => {
     >
       {showEmptyState ? (
         <div className="flex flex-col items-center justify-center min-h-[60vh] px-6">
-          <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Visual Search</h2>
-          <p className="text-sm text-neutral-600 mb-8">Logos, letters, layouts, typography</p>
+          <h2 className="text-2xl font-semibold text-foreground mb-2 tracking-tight">
+            Visual Search
+          </h2>
+          <p className="text-sm text-muted-foreground mb-8">Logos, letters, layouts, typography</p>
           <SearchBar
             ref={searchBarRef}
             value={query}
@@ -298,7 +292,7 @@ export const VisualSearchPage: React.FC = () => {
             size="lg"
             placeholder="Search..."
             containerClassName="max-w-xl w-full"
-            className={cn('focus:border-white/10', glassSurface.control)}
+            className={cn('focus:border-ring', glassSurface.control)}
             autoFocus
           />
           <div className="mt-4">{tabBar}</div>
@@ -308,7 +302,7 @@ export const VisualSearchPage: React.FC = () => {
           {/* Sticky search bar + tabs — below the fixed h-10/md:h-14 header */}
           <div
             className={cn(
-              'sticky z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-2 pb-3 bg-neutral-950/90 backdrop-blur-md border-b border-neutral-800',
+              'sticky z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-2 pb-3 bg-background border-b border-border',
               inShell ? 'top-0' : 'top-10 md:top-14'
             )}
           >
@@ -319,7 +313,7 @@ export const VisualSearchPage: React.FC = () => {
               size="md"
               placeholder="Search..."
               containerClassName="max-w-2xl"
-              className={cn('focus:border-white/10', glassSurface.control)}
+              className={cn('focus:border-ring', glassSurface.control)}
             />
             {tabBar}
           </div>
@@ -327,8 +321,8 @@ export const VisualSearchPage: React.FC = () => {
           {/* Letter Crops */}
           {letterCrops.length > 0 && !isLoading && (
             <div className="mt-4 mb-6">
-              <p className="text-2xs font-mono text-neutral-600 uppercase tracking-wider mb-3">
-                Isolated · {letterCrops.length} crops
+              <p className="text-xs text-muted-foreground mb-3">
+                Isolated letters <span className="tabular-nums">({letterCrops.length})</span>
               </p>
               <div
                 className="grid gap-3"
@@ -353,10 +347,7 @@ export const VisualSearchPage: React.FC = () => {
                 style={{ gridTemplateColumns: `repeat(${isMobile ? 2 : columns}, minmax(0, 1fr))` }}
               >
                 {Array.from({ length: 12 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="aspect-square rounded-lg bg-neutral-900/50 animate-pulse"
-                  />
+                  <div key={i} className="aspect-square rounded-xl bg-muted/50 animate-pulse" />
                 ))}
               </div>
             ) : filteredResults.length > 0 ? (
@@ -388,15 +379,15 @@ export const VisualSearchPage: React.FC = () => {
                     {Array.from({ length: columns }).map((_, i) => (
                       <div
                         key={`loader-${i}`}
-                        className="aspect-square rounded-lg bg-neutral-900/50 animate-pulse"
+                        className="aspect-square rounded-xl bg-muted/50 animate-pulse"
                       />
                     ))}
                   </div>
                 )}
               </>
             ) : hasSearched ? (
-              <div className="flex flex-col items-center justify-center py-20 text-neutral-600">
-                <Search size={24} className="mb-3 text-neutral-700" />
+              <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                <Search size={24} className="mb-3 text-muted-foreground" />
                 <p className="text-sm">No results for "{query}"</p>
               </div>
             ) : null}
@@ -410,18 +401,18 @@ export const VisualSearchPage: React.FC = () => {
                   variant="ghost"
                   onClick={() => handleColumnsChange(-1)}
                   disabled={columns <= 2}
-                  className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30"
+                  className="p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
                 >
                   <Minus size={14} />
                 </Button>
-                <span className="text-xs font-mono text-neutral-400 min-w-[1.5rem] text-center">
+                <span className="text-xs font-mono text-muted-foreground min-w-[1.5rem] text-center">
                   {columns}
                 </span>
                 <Button
                   variant="ghost"
                   onClick={() => handleColumnsChange(1)}
                   disabled={columns >= 6}
-                  className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30"
+                  className="p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
                 >
                   <Plus size={14} />
                 </Button>
@@ -445,31 +436,20 @@ const CropCard: React.FC<{ crop: LetterCrop }> = ({ crop }) => {
   const needsLightBg = useNeedsLightBg(crop.thumbnailUrl);
 
   return (
-    <a
+    <MediaTile
+      src={crop.thumbnailUrl}
+      alt={`${crop.letter}, ${crop.style || 'letter'}`}
+      layout="overlay"
       href={crop.cropUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group relative overflow-hidden rounded-lg border border-neutral-800 hover:border-white/10 transition-colors"
-    >
-      <div
-        className={cn(
-          'aspect-square relative overflow-hidden flex items-center justify-center p-2',
-          needsLightBg ? 'bg-white' : 'bg-neutral-900/50'
-        )}
-      >
-        <img
-          src={crop.thumbnailUrl}
-          alt={`${crop.letter} — ${crop.style || 'letter'}`}
-          className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
-          loading="lazy"
-        />
-      </div>
-      {crop.style && (
-        <div className="absolute bottom-0 inset-x-0 bg-neutral-950/80 px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <span className="text-2xs text-neutral-300">{crop.style}</span>
-        </div>
-      )}
-    </a>
+      imageClassName={cn('object-contain p-2', needsLightBg && 'bg-white')}
+      badge={
+        crop.style ? (
+          <Badge variant="neutral" className="px-1.5 text-2xs">
+            {crop.style}
+          </Badge>
+        ) : undefined
+      }
+    />
   );
 };
 
@@ -483,34 +463,13 @@ const ResultCard: React.FC<{
   const needsLightBg = useNeedsLightBg(result.thumbnailUrl);
 
   return (
-    <div
-      className="group relative overflow-hidden rounded-lg border border-neutral-800 hover:border-white/10 cursor-pointer transition-colors"
+    <MediaTile
+      src={result.thumbnailUrl}
+      alt={result.title}
+      layout="overlay"
       onClick={onClick}
-    >
-      <div
-        className={cn(
-          'aspect-square relative overflow-hidden',
-          isVector && needsLightBg ? 'bg-white' : 'bg-neutral-900/50'
-        )}
-      >
-        <img
-          src={result.thumbnailUrl}
-          alt={result.title}
-          className={cn(
-            'w-full h-full group-hover:scale-105 transition-transform duration-300',
-            isVector ? 'object-contain p-3' : 'object-cover'
-          )}
-          loading="lazy"
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = 'none';
-          }}
-        />
-
-        <div className="absolute inset-0 bg-neutral-950/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-3">
-          <p className="text-2xs text-neutral-200 line-clamp-2 leading-relaxed">{result.title}</p>
-        </div>
-      </div>
-    </div>
+      imageClassName={cn(isVector && 'object-contain p-3', isVector && needsLightBg && 'bg-white')}
+    />
   );
 };
 
@@ -543,7 +502,7 @@ const ResultModal: React.FC<{
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/90 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
@@ -551,20 +510,23 @@ const ResultModal: React.FC<{
         onClick={(e) => e.stopPropagation()}
       >
         <GlassPanel intensity="strong" padding="md" className="space-y-4">
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={onClose}
-            className="absolute top-4 right-4 text-neutral-500 hover:text-neutral-300 transition-colors z-10"
+            aria-label="Close"
+            className="absolute top-4 right-4 z-10 text-muted-foreground hover:text-foreground"
           >
             <X size={18} />
-          </button>
+          </Button>
 
           <div
             className={cn(
-              'rounded-lg overflow-hidden',
-              isVector && needsLightBg ? 'bg-white' : 'bg-neutral-900/50'
+              'rounded-xl overflow-hidden',
+              isVector && needsLightBg ? 'bg-white' : 'bg-muted/50'
             )}
           >
-            <img
+            <Thumb
               src={result.imageUrl}
               alt={result.title}
               className={cn(
@@ -575,24 +537,24 @@ const ResultModal: React.FC<{
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-sm text-neutral-200 font-medium">{result.title}</h3>
+            <h3 className="text-sm text-foreground font-medium">{result.title}</h3>
 
             {result.attribution && (
-              <p className="text-2xs text-neutral-600">
+              <p className="text-2xs text-muted-foreground">
                 {result.attribution.authorUrl ? (
                   <a
                     href={result.attribution.authorUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-neutral-400 hover:text-neutral-200 underline underline-offset-2"
+                    className="text-muted-foreground hover:text-foreground underline underline-offset-2"
                   >
                     {result.attribution.author}
                   </a>
                 ) : (
-                  <span className="text-neutral-400">{result.attribution.author}</span>
+                  <span className="text-muted-foreground">{result.attribution.author}</span>
                 )}
-                {' · '}
-                <span className="text-neutral-700">{SOURCE_LABELS[result.source]}</span>
+                {' via '}
+                <span className="text-muted-foreground">{SOURCE_LABELS[result.source]}</span>
               </p>
             )}
 
@@ -600,7 +562,7 @@ const ResultModal: React.FC<{
               href={result.imageUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-2xs text-neutral-500 hover:text-neutral-300 transition-colors"
+              className="inline-flex items-center gap-1.5 text-2xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <ExternalLink size={12} />
               Open original

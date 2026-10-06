@@ -93,13 +93,10 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(
     if (!hasContent) {
       return (
         <div className="relative flex flex-col items-center justify-center h-full w-full min-w-0 text-center p-6 sm:p-8 md:p-12 animate-fade-in overflow-hidden">
-          <GlassPanel
-            padding="lg"
-            className="relative z-10 flex flex-col items-center backdrop-blur-md shadow-2xl"
-          >
+          <GlassPanel padding="lg" className="relative z-10 flex flex-col items-center shadow-2xl">
             <MicroTitle
               as="h3"
-              className="text-xl md:text-2xl font-bold text-neutral-300 mb-4 drop-shadow-md"
+              className="text-xl md:text-2xl font-semibold text-neutral-300 mb-4 drop-shadow-md"
             >
               {t('mockup.awaitingGeneration')}
             </MicroTitle>
@@ -115,42 +112,55 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(
     // For single image, we want to contain it within view height if possible
     if (isSingleImage) {
       return (
-        <section className="h-full w-full min-w-0 flex items-center justify-center p-3 sm:p-4 overflow-hidden relative">
-          <MockupCard
-            key={0}
-            base64Image={mockups[0]}
-            isLoading={isLoading[0] && !mockups[0]}
-            isRedrawing={isLoading[0] && !!mockups[0]}
-            onRedraw={() => onRedraw(0)}
-            onView={() => onView(0)}
-            onNewAngle={(angle) => onNewAngle(0, angle)}
-            onNewBackground={() => onNewBackground(0)}
-            onReImagine={
-              onReImagine ? (reimaginePrompt) => onReImagine(0, reimaginePrompt) : undefined
-            }
-            onSave={onSave ? (imageBase64) => onSave(0, imageBase64) : undefined}
-            isSaved={savedIndices.has(0)}
-            mockupId={savedMockupIds?.get(0)}
-            onToggleLike={onToggleLike ? () => onToggleLike(0) : undefined}
-            isLiked={getIsLiked(0)}
-            onLikeStateChange={
-              savedMockupIds?.get(0) && onLikeStateChange ? onLikeStateChange(0) : undefined
-            }
-            onRemove={onRemove ? () => onRemove(0) : undefined}
-            prompt={prompt}
-            designType={designType}
-            tags={tags}
-            brandingTags={brandingTags}
-            aspectRatio={aspectRatio}
-            editButtonsDisabled={editButtonsDisabled}
-            creditsPerOperation={creditsPerOperation}
-            generationId={generationIds?.[0]}
-            feedbackContext={feedbackContext}
-            feedbackRating={feedbackRatings?.get(0) ?? null}
-            onFeedbackRatingChange={
-              onFeedbackRatingChange ? (r) => onFeedbackRatingChange(0, r) : undefined
-            }
-          />
+        // A largura máxima sai da ALTURA disponível (100cqh) menos o rodapé de ações
+        // do MockupCard (~44px), na proporção do tile: assim imagem + rodapé cabem
+        // sem corte. Se mesmo assim não couber, o corpo rola (m-auto centraliza sem
+        // esconder o topo, ao contrário de items-center com overflow).
+        <section className="relative flex h-full w-full min-w-0 flex-col overflow-y-auto overflow-x-hidden p-3 sm:p-4 custom-scrollbar [container-type:size]">
+          <div
+            className="m-auto w-full"
+            style={{
+              maxWidth: `calc((100cqh - 48px) * ${
+                aspectRatio === '16:9' ? 16 / 9 : aspectRatio === '4:3' ? 4 / 3 : 1
+              })`,
+            }}
+          >
+            <MockupCard
+              key={0}
+              base64Image={mockups[0]}
+              isLoading={isLoading[0] && !mockups[0]}
+              isRedrawing={isLoading[0] && !!mockups[0]}
+              onRedraw={() => onRedraw(0)}
+              onView={() => onView(0)}
+              onNewAngle={(angle) => onNewAngle(0, angle)}
+              onNewBackground={() => onNewBackground(0)}
+              onReImagine={
+                onReImagine ? (reimaginePrompt) => onReImagine(0, reimaginePrompt) : undefined
+              }
+              onSave={onSave ? (imageBase64) => onSave(0, imageBase64) : undefined}
+              isSaved={savedIndices.has(0)}
+              mockupId={savedMockupIds?.get(0)}
+              onToggleLike={onToggleLike ? () => onToggleLike(0) : undefined}
+              isLiked={getIsLiked(0)}
+              onLikeStateChange={
+                savedMockupIds?.get(0) && onLikeStateChange ? onLikeStateChange(0) : undefined
+              }
+              onRemove={onRemove ? () => onRemove(0) : undefined}
+              prompt={prompt}
+              designType={designType}
+              tags={tags}
+              brandingTags={brandingTags}
+              aspectRatio={aspectRatio}
+              editButtonsDisabled={editButtonsDisabled}
+              creditsPerOperation={creditsPerOperation}
+              generationId={generationIds?.[0]}
+              feedbackContext={feedbackContext}
+              feedbackRating={feedbackRatings?.get(0) ?? null}
+              onFeedbackRatingChange={
+                onFeedbackRatingChange ? (r) => onFeedbackRatingChange(0, r) : undefined
+              }
+            />
+          </div>
         </section>
       );
     }
@@ -184,10 +194,9 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(
             return (
               <div key={index} className="relative min-w-0 w-full">
                 {compareLabel && (
-                  <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm border border-white/10">
-                    <span className="text-2xs font-mono text-neutral-300 tracking-wide">
-                      {compareLabel}
-                    </span>
+                  // EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia
+                  <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded bg-black/70 border border-border">
+                    <span className="text-2xs text-neutral-300 ">{compareLabel}</span>
                   </div>
                 )}
                 <MockupCard

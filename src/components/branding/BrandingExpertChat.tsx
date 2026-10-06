@@ -309,7 +309,7 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
         <div
           className={cn(
             mode === 'modal'
-              ? 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm'
+              ? 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm'
               : 'w-full h-full flex flex-col'
           )}
         >
@@ -326,16 +326,16 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
             {/* Sidebar */}
             <div
               className={cn(
-                'flex flex-col bg-neutral-950/80 border-r border-white/5 transition-all duration-200 ease-in-out',
-                mode === 'modal' ? 'rounded-l-2xl md:rounded-l-2xl' : 'rounded-none',
+                'flex flex-col bg-card/80 border-r border-border transition-[width] duration-200 ease-in-out',
+                mode === 'modal' ? 'rounded-l-xl md:rounded-l-xl' : 'rounded-none',
                 sidebarOpen ? 'w-48' : 'w-0 overflow-hidden'
               )}
             >
               {/* New Session Button */}
-              <div className="p-3 border-b border-white/5">
+              <div className="p-3 border-b border-border">
                 <button
                   onClick={createNewSession}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white text-sm font-medium transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-accent hover:bg-accent text-foreground text-sm font-medium transition-colors"
                 >
                   <Plus size={16} />
                   <span>Nova</span>
@@ -356,10 +356,10 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
                       key={session._id}
                       onClick={() => loadSession(session._id)}
                       className={cn(
-                        'w-full text-left px-3 py-2 rounded-lg text-xs transition-colors group relative',
+                        'w-full text-left px-3 py-2 rounded-xl text-xs transition-colors group relative',
                         currentSessionId === session._id
-                          ? 'bg-white/15 text-white'
-                          : 'text-neutral-400 hover:bg-white/10 hover:text-neutral-200'
+                          ? 'bg-accent text-foreground'
+                          : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                       )}
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -375,7 +375,7 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
                               if (e.key === 'Escape') setEditingSessionId(null);
                             }}
                             onClick={(e) => e.stopPropagation()}
-                            className="flex-1 bg-white/10 border border-white/20 rounded px-2 py-0.5 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-white/40"
+                            className="flex-1 bg-accent border border-border-hover rounded px-2 py-0.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring"
                             placeholder="Título da sessão"
                           />
                         ) : (
@@ -407,10 +407,10 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
             <div className="flex flex-col flex-1 min-w-0">
               {/* Mobile Sidebar Toggle */}
               {mode === 'modal' && (
-                <div className="md:hidden flex items-center p-2 border-b border-white/5">
+                <div className="md:hidden flex items-center p-2 border-b border-border">
                   <button
                     onClick={() => setSidebarOpen(!sidebarOpen)}
-                    className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                    className="p-1.5 hover:bg-accent rounded-xl transition-colors"
                   >
                     {sidebarOpen ? <ChevronLeft size={18} /> : <Menu size={18} />}
                   </button>
@@ -421,19 +421,19 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
                 className={cn(
                   'h-full flex flex-1 flex-col overflow-hidden',
                   mode === 'modal'
-                    ? 'rounded-none md:rounded-r-2xl border-0 md:border-l md:border-white/5'
-                    : 'rounded-none md:rounded-2xl border-none md:border'
+                    ? 'rounded-none md:rounded-r-xl border-0 md:border-l md:border-border'
+                    : 'rounded-none md:rounded-xl border-none md:border'
                 )}
                 padding="none"
               >
                 {/* Header */}
-                <div className="flex items-center justify-between p-5 md:px-8 border-b border-white/5 bg-white/5 gap-3">
+                <div className="flex items-center justify-between p-5 md:px-8 border-b border-border bg-muted gap-3">
                   <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-brand-gradient flex items-center justify-center text-white shadow-lg shrink-0">
                       <Diamond size={16} className="md:w-[20px]" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-semibold text-neutral-100 text-sm md:text-base truncate">
+                      <h3 className="font-semibold text-foreground text-sm md:text-base truncate">
                         Especialista em Branding
                       </h3>
                       <p className="text-2xs md:text-xs text-neutral-400">
@@ -465,7 +465,7 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
                       size="icon"
                       aria-label="Fechar"
                       onClick={onClose}
-                      className="hover:bg-white/10 h-8 w-8 shrink-0"
+                      className="hover:bg-accent h-8 w-8 shrink-0"
                     >
                       <X size={18} aria-hidden="true" />
                     </Button>
@@ -489,17 +489,19 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
                   ))}
                   {isLoading && (
                     <div className="flex gap-3">
-                      <div className="w-8 h-8 rounded-full bg-neutral-900 border border-white/10 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center">
                         <Bot size={16} className="text-foreground animate-pulse" />
                       </div>
-                      <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex items-center gap-2">
+                      <div className="bg-muted border border-border rounded-xl p-4 flex items-center gap-2">
                         <GlitchLoader size={16} />
                         <span className="text-xs text-neutral-500">
                           {toolsBeingUsed.length > 0
                             ? toolsBeingUsed.includes('web_search')
-                              ? '🔍 Pesquisando na web...'
-                              : `Usando ferramentas: ${toolsBeingUsed.join(', ')}...`
-                            : 'O Especialista está pensando...'}
+                              ? t('branding.expert.searchingWeb')
+                              : t('branding.expert.usingTools', {
+                                  tools: toolsBeingUsed.join(', '),
+                                })
+                            : t('branding.expert.thinking')}
                         </span>
                       </div>
                     </div>
@@ -508,14 +510,14 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
                 </div>
 
                 {/* Footer / Input - Native Feel */}
-                <div className="p-4 md:px-10 md:py-8 border-t border-white/5 bg-neutral-950/40 relative z-30 pb-[env(safe-area-inset-bottom,16px)]">
+                <div className="p-4 md:px-10 md:py-8 border-t border-border bg-card/40 relative z-30 pb-[env(safe-area-inset-bottom,16px)]">
                   {/* Attached Files */}
                   {attachedFiles.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-2 px-1">
                       {attachedFiles.map((file, i) => (
                         <div
                           key={i}
-                          className="flex items-center gap-2 px-2 py-1 bg-white/10 rounded-md border border-white/5 text-2xs text-neutral-300"
+                          className="flex items-center gap-2 px-2 py-1 bg-accent rounded-md border border-border text-2xs text-foreground"
                         >
                           {getFileIcon(file.type)}
                           <span className="truncate max-w-[100px]">{file.name}</span>

@@ -12,23 +12,26 @@ import {
 import { useImageEditorStore, type EditorTool, type EditorAction } from '@/stores/imageEditorStore';
 import { IMAGE_EDITOR } from '@/constants/imageEditorTokens';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 
-const TOOLS: { id: EditorTool; icon: LucideIcon; label: string }[] = [
-  { id: 'rect', icon: Square, label: 'Rectangle' },
-  { id: 'circle', icon: Circle, label: 'Circle' },
-  { id: 'brush', icon: Paintbrush, label: 'Brush' },
-  { id: 'eraser', icon: Eraser, label: 'Eraser' },
+// label = chave em imageEditor.tools.* / imageEditor.actions.*
+const TOOLS: { id: EditorTool; icon: LucideIcon }[] = [
+  { id: 'rect', icon: Square },
+  { id: 'circle', icon: Circle },
+  { id: 'brush', icon: Paintbrush },
+  { id: 'eraser', icon: Eraser },
 ];
 
-const ACTIONS: { id: EditorAction; icon: LucideIcon; label: string }[] = [
-  { id: 'inpaint', icon: Scissors, label: 'Inpaint' },
-  { id: 'expand', icon: Maximize, label: 'Expand' },
-  { id: 'remove-bg', icon: ImageOff, label: 'Remove BG' },
+const ACTIONS: { id: EditorAction; icon: LucideIcon }[] = [
+  { id: 'inpaint', icon: Scissors },
+  { id: 'expand', icon: Maximize },
+  { id: 'remove-bg', icon: ImageOff },
 ];
 
 const Divider = () => <div className={IMAGE_EDITOR.toolbar.divider} />;
 
 export const ImageEditorToolbar: React.FC = () => {
+  const { t } = useTranslation();
   const activeTool = useImageEditorStore((s) => s.activeTool);
   const activeAction = useImageEditorStore((s) => s.activeAction);
   const brushSize = useImageEditorStore((s) => s.brushSize);
@@ -57,15 +60,15 @@ export const ImageEditorToolbar: React.FC = () => {
           key={action.id}
           onClick={() => setActiveAction(action.id)}
           className={cn(
-            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider transition-colors',
+            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors',
             activeAction === action.id
               ? IMAGE_EDITOR.toolbar.activeTool
               : IMAGE_EDITOR.toolbar.inactiveTool
           )}
-          title={action.label}
+          title={t(`imageEditor.actions.${action.id}`)}
         >
           <action.icon size={14} />
-          <span className="hidden sm:inline">{action.label}</span>
+          <span className="hidden sm:inline">{t(`imageEditor.actions.${action.id}`)}</span>
         </button>
       ))}
 
@@ -79,12 +82,14 @@ export const ImageEditorToolbar: React.FC = () => {
               key={tool.id}
               onClick={() => setActiveTool(tool.id)}
               className={cn(
-                'p-1.5 rounded-lg transition-colors',
+                'p-1.5 rounded-xl transition-colors',
                 activeTool === tool.id
                   ? IMAGE_EDITOR.toolbar.activeTool
                   : IMAGE_EDITOR.toolbar.inactiveTool
               )}
-              title={tool.label}
+              title={t(`imageEditor.tools.${tool.id}`)}
+              aria-label={t(`imageEditor.tools.${tool.id}`)}
+              aria-pressed={activeTool === tool.id}
             >
               <tool.icon size={16} />
             </button>
@@ -95,7 +100,7 @@ export const ImageEditorToolbar: React.FC = () => {
           {/* Brush size */}
           {(activeTool === 'brush' || activeTool === 'eraser') && (
             <div className="flex items-center gap-2 px-1">
-              <span className="text-2xs text-neutral-500 font-mono w-4 text-right">
+              <span className="text-2xs text-neutral-500 tabular-nums w-4 text-right">
                 {brushSize}
               </span>
               <input
@@ -116,23 +121,23 @@ export const ImageEditorToolbar: React.FC = () => {
             onClick={undoMask}
             disabled={maskOperations.length === 0}
             className={cn(
-              'px-2 py-1 rounded-lg text-2xs font-mono uppercase tracking-wider transition-colors',
+              'px-2 py-1 rounded-xl text-xs transition-colors',
               IMAGE_EDITOR.toolbar.inactiveTool,
               'disabled:opacity-30'
             )}
           >
-            Undo
+            {t('imageEditor.undo')}
           </button>
           <button
             onClick={clearMask}
             disabled={maskOperations.length === 0}
             className={cn(
-              'px-2 py-1 rounded-lg text-2xs font-mono uppercase tracking-wider transition-colors',
+              'px-2 py-1 rounded-xl text-xs transition-colors',
               IMAGE_EDITOR.toolbar.inactiveTool,
               'disabled:opacity-30'
             )}
           >
-            Clear
+            {t('imageEditor.clear')}
           </button>
         </>
       )}

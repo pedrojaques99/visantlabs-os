@@ -43,6 +43,14 @@ export function useMasonryColumns(bp: MasonryBreakpoints = DEFAULT_BREAKPOINTS):
 
 interface MasonryProps<T> {
   items: T[];
+  /**
+   * Renders one tile. The tile MUST reserve its own height before its image
+   * loads: Masonry does not measure, it only splits items into columns. A tile
+   * whose height comes from a not-yet-loaded `<img>` (e.g. `h-auto`) starts at 0px,
+   * so every column holds a row of slivers and a dead URL stays a sliver forever.
+   * Use `<Thumb aspectRatio={w / h} />` (from `@/components/ui/Thumb`) with the
+   * item's known ratio; when the ratio is unknown, pass a fixed one (e.g. `1`).
+   */
   renderItem: (item: T, index: number) => React.ReactNode;
   getKey: (item: T, index: number) => React.Key;
   /** Fixed column count. Omit to compute responsively (via `useMasonryColumns`). */

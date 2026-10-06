@@ -138,6 +138,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
       position: { x: 0.1, y: 0.1 },
       size: { w: 0.8, h: 0.1 },
       align: 'left',
+      // EXCEÇÃO ao audit:design/inline-font-size: dado da camada Konva (px do criativo), não estilo de UI.
       fontSize: 64,
       fontFamily: defaultFont,
       color: '#ffffff',
@@ -195,7 +196,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
         <div className="flex items-center gap-1">
           <button
             onClick={() => navigate('/create/projects')}
-            className="p-1.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-brand-cyan transition-colors"
+            className="p-1.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-foreground transition-colors"
             title="My Creatives"
           >
             <FolderOpen size={13} />
@@ -203,7 +204,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
           <button
             onClick={() => undo()}
             disabled={pastStates.length === 0}
-            className="p-1.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-brand-cyan disabled:opacity-30 disabled:pointer-events-none transition-colors"
+            className="p-1.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors"
             title="Desfazer (Ctrl+Z)"
           >
             <Undo2 size={13} />
@@ -211,7 +212,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
           <button
             onClick={() => redo()}
             disabled={futureStates.length === 0}
-            className="p-1.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-brand-cyan disabled:opacity-30 disabled:pointer-events-none transition-colors"
+            className="p-1.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors"
             title="Refazer (Ctrl+Shift+Z)"
           >
             <Redo2 size={13} />
@@ -233,12 +234,12 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
                 (e.target as HTMLInputElement).blur();
               }
             }}
-            className="w-full bg-neutral-900/60 border border-white/10 focus:border-neutral-600 rounded px-2 py-1.5 text-sm font-manrope text-neutral-200 outline-none"
+            className="w-full bg-neutral-900/60 border border-border focus:border-neutral-600 rounded px-2 py-1.5 text-sm font-manrope text-neutral-200 outline-none"
           />
         ) : (
           <button
             onClick={() => setIsEditingName(true)}
-            className="text-left truncate text-sm font-manrope text-neutral-200 hover:text-brand-cyan px-2 py-1.5 border border-transparent hover:border-neutral-800 rounded transition-colors"
+            className="text-left truncate text-sm font-manrope text-neutral-200 hover:text-foreground px-2 py-1.5 border border-transparent hover:border-neutral-800 rounded transition-colors"
             title="Click to rename"
           >
             {projectName || 'Untitled Creative'}
@@ -285,7 +286,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
               e.dataTransfer.setData('application/vsn-asset-type', 'text');
               e.dataTransfer.dropEffect = 'copy';
             }}
-            className="px-2 py-2.5 rounded text-2xs font-mono border bg-neutral-900/60 border-white/10 text-neutral-400 hover:text-white hover:border-neutral-700 transition-colors flex items-center justify-center gap-1.5"
+            className="px-2 py-2.5 rounded text-2xs font-mono border bg-neutral-900/60 border-border text-neutral-400 hover:text-white hover:border-neutral-700 transition-colors flex items-center justify-center gap-1.5"
           >
             <Type size={12} /> Texto
           </button>
@@ -296,7 +297,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
               e.dataTransfer.setData('application/vsn-asset-type', 'shape');
               e.dataTransfer.dropEffect = 'copy';
             }}
-            className="px-2 py-2.5 rounded text-2xs font-mono border bg-neutral-900/60 border-white/10 text-neutral-400 hover:text-white hover:border-neutral-700 transition-colors flex items-center justify-center gap-1.5"
+            className="px-2 py-2.5 rounded text-2xs font-mono border bg-neutral-900/60 border-border text-neutral-400 hover:text-white hover:border-neutral-700 transition-colors flex items-center justify-center gap-1.5"
           >
             <Square size={12} /> Shape
           </button>
@@ -339,7 +340,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
                 className={`flex items-center gap-2 px-2 py-1.5 rounded text-2xs font-mono cursor-pointer transition-colors ${
                   isSelected
                     ? 'bg-brand-cyan/10 text-brand-cyan'
-                    : 'text-neutral-400 hover:bg-white/5'
+                    : 'text-neutral-400 hover:bg-accent'
                 }`}
               >
                 <button
@@ -403,14 +404,14 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
                 className={`flex items-center gap-2 px-2 py-1.5 rounded text-2xs font-mono cursor-pointer transition-colors border-t border-neutral-800 mt-1 pt-2 ${
                   backgroundSelected
                     ? 'bg-brand-cyan/10 text-brand-cyan'
-                    : 'text-neutral-500 hover:bg-white/5'
+                    : 'text-neutral-500 hover:bg-accent'
                 }`}
               >
                 <Icon size={12} className="shrink-0" />
-                <span className="flex-1 truncate">Fundo · {label}</span>
+                <span className="flex-1 truncate">Fundo ({label})</span>
                 {hasOverlay && (
                   <span
-                    className="w-3 h-3 rounded-sm shrink-0 border border-white/10"
+                    className="w-3 h-3 rounded-md shrink-0 border border-border"
                     style={{ background: overlay.color ?? `rgba(0,0,0,${overlay.opacity})` }}
                   />
                 )}
@@ -449,18 +450,20 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
 
         <div className="flex items-center gap-2">
           <Button
-            variant="ghost"
+            variant="surface"
+            size="lg"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 py-3 font-mono text-xs font-bold flex items-center justify-center gap-2 bg-neutral-900/60 border border-white/10 hover:border-neutral-700 text-neutral-200 hover:text-brand-cyan disabled:opacity-50"
+            className="flex-1 gap-2 px-4 text-xs font-medium"
           >
             {isSaving ? <GlitchLoader size={14} /> : <Save size={14} />}
             {isPersistedId(creativeId) ? 'Atualizar' : 'Salvar'}
           </Button>
           <Button
-            variant="brand"
+            variant="primary"
+            size="lg"
             onClick={onExport}
-            className="flex-1 py-3 font-mono text-xs font-bold flex items-center justify-center gap-2"
+            className="flex-1 gap-2 px-4 text-xs font-medium"
           >
             <Download size={14} /> PNG
           </Button>

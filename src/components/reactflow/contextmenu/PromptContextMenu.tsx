@@ -77,11 +77,14 @@ export const PromptContextMenu: React.FC<PromptContextMenuProps> = ({
         onWheel={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <div className="px-3 py-2.5 border-b border-neutral-800/30 flex items-center justify-between sticky top-0 bg-neutral-950/70 backdrop-blur-xl z-10 rounded-t-2xl">
-          <span className="text-xs font-semibold text-neutral-300 uppercase">Prompt Actions</span>
+        <div className="px-3 py-2.5 border-b border-neutral-800/30 flex items-center justify-between sticky top-0 bg-neutral-950/70 backdrop-blur-xl z-10 rounded-t-xl">
+          <span className="text-xs font-medium text-neutral-300">
+            {t('canvasNodes.promptContextMenu.title')}
+          </span>
           <Button
             variant="ghost"
             onClick={onClose}
+            aria-label={t('common.close')}
             className="p-1 text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/50 rounded transition-colors duration-150 cursor-pointer"
           >
             <X size={16} />
@@ -95,10 +98,10 @@ export const PromptContextMenu: React.FC<PromptContextMenuProps> = ({
               onSavePrompt();
               onClose();
             }}
-            className="w-full px-2 py-1.5 text-left text-sm text-foreground hover:bg-brand-cyan/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md font-semibold"
+            className="w-full px-2 py-1.5 text-left text-sm text-foreground hover:bg-brand-cyan/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md font-medium"
           >
             <Save size={16} className="text-foreground flex-shrink-0" />
-            <span className="text-2xs tracking-wide flex-1 text-left">
+            <span className="text-2xs flex-1 text-left">
               {t('canvasNodes.nodeContextMenu.savePrompt')}
             </span>
           </Button>
@@ -114,7 +117,7 @@ export const PromptContextMenu: React.FC<PromptContextMenuProps> = ({
             className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md"
           >
             <CopyIcon size={16} className="text-neutral-400 flex-shrink-0" />
-            <span className="font-medium text-2xs tracking-wide flex-1 text-left">
+            <span className="font-medium text-2xs flex-1 text-left">
               {t('canvasNodes.nodeContextMenu.duplicate')}
             </span>
           </Button>
@@ -128,9 +131,7 @@ export const PromptContextMenu: React.FC<PromptContextMenuProps> = ({
             className="w-full px-2 py-1.5 text-left text-sm text-destructive hover:bg-destructive/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md"
           >
             <Trash2 size={16} className="text-destructive flex-shrink-0" />
-            <span className="font-medium text-2xs tracking-wide flex-1 text-left">
-              {t('common.delete')}
-            </span>
+            <span className="font-medium text-2xs flex-1 text-left">{t('common.delete')}</span>
           </Button>
         </div>
       </div>

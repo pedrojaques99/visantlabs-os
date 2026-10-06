@@ -50,20 +50,17 @@ export const InstructionsIdentityPanel: React.FC = () => {
         onClick={() => setIsInstructionsExpanded(!isInstructionsExpanded)}
         className={cn(
           'w-full flex justify-between items-center text-left p-3 transition-colors duration-200',
-          theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
+          'hover:bg-accent'
         )}
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <FileText
-            size={14}
-            className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-          />
+          <FileText size={14} className="text-muted-foreground" />
           <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
             <MicroTitle as="span">
               {t('mockup.instructions')} / {t('mockup.identity')}
             </MicroTitle>
             {!isInstructionsExpanded && (instructions || ctxSelectedBrandingTags.length > 0) && (
-              <span className="text-2xs font-mono truncate max-w-[200px]">
+              <span className="text-2xs truncate max-w-[200px]">
                 {instructions && (
                   <span className="text-foreground">
                     {instructions.substring(0, 30)}
@@ -71,7 +68,7 @@ export const InstructionsIdentityPanel: React.FC = () => {
                   </span>
                 )}
                 {instructions && ctxSelectedBrandingTags.length > 0 && (
-                  <span className="text-neutral-500"> · </span>
+                  <span className="text-neutral-500">, </span>
                 )}
                 {ctxSelectedBrandingTags.length > 0 && (
                   <span className="text-neutral-500">
@@ -103,18 +100,12 @@ export const InstructionsIdentityPanel: React.FC = () => {
                 className={cn(
                   'p-1 rounded-md transition-colors',
                   theme === 'dark'
-                    ? 'hover:bg-white/10 text-neutral-500 hover:text-brand-cyan'
-                    : 'hover:bg-neutral-100 text-neutral-500 hover:text-brand-cyan'
+                    ? 'hover:bg-accent text-neutral-500 hover:text-foreground'
+                    : 'hover:bg-neutral-100 text-neutral-500 hover:text-foreground'
                 )}
-                title={
-                  isInstructionsTextareaVisible
-                    ? t('mockup.collapse') || 'Collapse'
-                    : t('mockup.expand') || 'Expand'
-                }
+                title={isInstructionsTextareaVisible ? t('mockup.collapse') : t('mockup.expand')}
                 aria-label={
-                  isInstructionsTextareaVisible
-                    ? t('mockup.collapse') || 'Collapse'
-                    : t('mockup.expand') || 'Expand'
+                  isInstructionsTextareaVisible ? t('mockup.collapse') : t('mockup.expand')
                 }
               >
                 {isInstructionsTextareaVisible ? <X size={12} /> : <Plus size={12} />}
@@ -126,10 +117,8 @@ export const InstructionsIdentityPanel: React.FC = () => {
                 onChange={(e) => setInstructions(e.target.value)}
                 placeholder={t('mockup.instructionsPlaceholder')}
                 className={cn(
-                  'w-full min-h-[80px] p-3 text-sm font-mono rounded-md focus:outline-none resize-none shadow-inner animate-fade-in',
-                  theme === 'dark'
-                    ? 'bg-black/10 border border-white/10 text-white placeholder:text-neutral-700 focus:border-neutral-600'
-                    : 'bg-white border border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-600'
+                  'w-full min-h-[80px] p-3 text-sm rounded-md focus:outline-none resize-none shadow-inner animate-fade-in',
+                  'bg-background border border-border text-foreground placeholder:text-muted-foreground focus:border-ring'
                 )}
               />
             )}
@@ -144,10 +133,7 @@ export const InstructionsIdentityPanel: React.FC = () => {
           >
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
-                <Palette
-                  size={12}
-                  className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-                />
+                <Palette size={12} className="text-muted-foreground" />
                 <MicroTitle as="span">{t('mockup.identity')}</MicroTitle>
               </div>
               <Button
@@ -160,8 +146,8 @@ export const InstructionsIdentityPanel: React.FC = () => {
                 className={cn(
                   'p-1 rounded-md transition-colors',
                   theme === 'dark'
-                    ? 'hover:bg-white/10 text-neutral-500 hover:text-brand-cyan'
-                    : 'hover:bg-neutral-100 text-neutral-500 hover:text-brand-cyan'
+                    ? 'hover:bg-accent text-neutral-500 hover:text-foreground'
+                    : 'hover:bg-neutral-100 text-neutral-500 hover:text-foreground'
                 )}
                 title={t('mockup.customTagLabel')}
                 aria-label={t('mockup.customTagLabel')}

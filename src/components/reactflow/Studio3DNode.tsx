@@ -15,6 +15,9 @@ import { NodeSlider } from './shared/node-slider';
 import { useStudio3DStore } from '@/stores/studio3dStore';
 import type { SceneHandle } from '@/components/3d-studio/engine/useSceneRef';
 import { toast } from 'sonner';
+import { Thumb } from '@/components/ui/Thumb';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const SceneCanvas = React.lazy(() =>
   import('@/components/3d-studio/SceneCanvas').then((m) => ({ default: m.SceneCanvas }))
@@ -39,6 +42,7 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
   id,
   dragging,
 }) => {
+  const { t } = useTranslation();
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const isLoading = data.isLoading || false;
   const hasResult = !!(data.resultImageUrl || data.resultImageBase64);
@@ -158,13 +162,13 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
             },
           });
         }
-        toast.success('3D snapshot captured');
+        toast.success(t('canvasNodes.studio3dNode.snapshotCaptured'));
       } catch {
-        toast.error('Failed to capture snapshot');
+        toast.error(t('canvasNodes.studio3dNode.snapshotFailed'));
       }
     }
     setIsEditorOpen(false);
-  }, [data.onUpdateData, id]);
+  }, [data.onUpdateData, id, t]);
 
   const handleCanvasReady = useCallback((canvas: HTMLCanvasElement) => {
     canvasRef.current = canvas;
@@ -185,7 +189,7 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
       >
         {selected && !dragging && (
           <NodeResizer
-            color="brand-cyan"
+            color="var(--brand-cyan)"
             isVisible={selected}
             minWidth={320}
             minHeight={200}
@@ -208,16 +212,16 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
         {/* Empty state */}
         {!hasResult && !isLoading && (
           <div className="w-full space-y-[var(--node-gap-sm)]">
-            <div className="w-full px-4 py-3 bg-neutral-800/30 border-node border-neutral-700/30 rounded text-xs font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-50">
+            <div className="w-full px-4 py-3 bg-neutral-800/30 border-node border-neutral-700/30 rounded text-xs text-neutral-500 flex items-center justify-center gap-3 opacity-50">
               <Box size={14} />
-              No render yet
+              {t('canvasNodes.studio3dNode.noRender')}
             </div>
             <button
               onClick={openEditor}
-              className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-neutral-800 hover:border-neutral-700 rounded text-xs font-mono text-foreground flex items-center justify-center gap-2 cursor-pointer transition-[color,background-color,border-color,opacity]"
+              className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border-node border-neutral-800 hover:border-neutral-700 rounded text-xs text-foreground flex items-center justify-center gap-2 cursor-pointer transition-[color,background-color,border-color,opacity]"
             >
               <Pencil size={14} />
-              Open 3D Editor
+              {t('canvasNodes.studio3dNode.openEditor')}
             </button>
           </div>
         )}
@@ -225,7 +229,10 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
         {/* Loading state */}
         {isLoading && !hasResult && (
           <div className="mt-2 pt-2 border-t border-neutral-700/30 flex-1 min-h-[100px] flex items-center justify-center">
-            <NodePlaceholder isLoading={true} emptyMessage="Rendering 3D..." />
+            <NodePlaceholder
+              isLoading={true}
+              emptyMessage={t('canvasNodes.studio3dNode.rendering')}
+            />
           </div>
         )}
 
@@ -237,9 +244,9 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
             onMouseLeave={() => setIsHovered(false)}
           >
             <div className="relative w-full h-full flex items-center justify-center">
-              <img
+              <Thumb
                 src={resultImageUrl}
-                alt="3D render result"
+                alt={t('canvasNodes.studio3dNode.resultAlt')}
                 className="w-full h-full object-contain rounded"
                 onLoad={(e) => {
                   const img = e.target as HTMLImageElement;
@@ -255,16 +262,16 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
 
             {isLoading && (
               <div className="absolute top-3 left-3 z-20">
-                <div className="p-1.5 rounded-md bg-neutral-950/60 backdrop-blur-sm border-node border-neutral-800 shadow-lg">
-                  <GlitchLoader size={14} color="brand-cyan" />
+                <div className="p-1.5 rounded-md bg-neutral-950/80 border-node border-neutral-800 shadow-lg">
+                  <GlitchLoader size={14} />
                 </div>
               </div>
             )}
 
             <div
               className={cn(
-                'absolute top-3 right-3 flex gap-1.5 transition-[color,background-color,border-color,box-shadow,opacity,filter] backdrop-blur-sm z-10',
-                selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                'absolute top-3 right-3 flex gap-1.5 z-10',
+                selected ? 'opacity-100' : hoverReveal
               )}
             >
               <NodeButton
@@ -274,6 +281,7 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
                   e.stopPropagation();
                   openEditor();
                 }}
+                aria-label={t('canvasNodes.studio3dNode.openEditor')}
               >
                 <Pencil size={14} />
               </NodeButton>
@@ -285,6 +293,7 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
                     e.stopPropagation();
                     data.onViewFullscreen!(resultImageUrl, data.resultImageBase64);
                   }}
+                  aria-label={t('common.viewFullscreen')}
                 >
                   <Maximize2 size={14} />
                 </NodeButton>
@@ -293,7 +302,7 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
                 variant="ghost"
                 size="xs"
                 onClick={handleDownload}
-                aria-label="Download render"
+                aria-label={t('common.download')}
               >
                 <Download size={14} />
               </NodeButton>
@@ -311,19 +320,19 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
                   key={m}
                   onClick={() => updateSetting('material', m)}
                   className={cn(
-                    'px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider border-node transition-colors',
+                    'px-2 py-0.5 rounded text-2xs border-node transition-colors',
                     material === m
-                      ? 'bg-white/10 text-white border-white/20'
+                      ? 'bg-accent text-foreground border-border-hover'
                       : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
                   )}
                 >
-                  {m}
+                  {t(`canvasNodes.studio3dNode.material.${m}`)}
                 </button>
               ))}
             </div>
 
             <NodeSlider
-              label="Depth"
+              label={t('canvasNodes.studio3dNode.depth')}
               value={depth}
               min={1}
               max={80}
@@ -333,9 +342,9 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
 
             <button
               onClick={openEditor}
-              className="w-full px-2 py-1 rounded text-2xs font-mono uppercase tracking-wider border-node bg-brand-cyan/10 text-foreground border-white/20 hover:bg-brand-cyan/20 transition-colors text-center"
+              className="w-full px-2 py-1 rounded text-2xs border-node bg-muted text-foreground border-border-hover hover:bg-accent transition-colors text-center"
             >
-              Full Editor
+              {t('canvasNodes.studio3dNode.fullEditor')}
             </button>
           </div>
         )}
@@ -346,14 +355,14 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
         <div className="fixed inset-0 z-[9999] bg-neutral-950 flex flex-col">
           {/* Modal header */}
           <div className="h-10 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between px-4 shrink-0">
-            <span className="text-2xs text-neutral-400 uppercase tracking-widest">
-              3D Studio — Node Editor
+            <span className="text-xs text-neutral-400">
+              {t('canvasNodes.studio3dNode.editorTitle')}
             </span>
             <button
               onClick={closeEditor}
               className="px-3 py-1 bg-white hover:bg-neutral-200 text-black text-2xs font-medium rounded transition-colors"
             >
-              Save & Close
+              {t('canvasNodes.studio3dNode.saveClose')}
             </button>
           </div>
           {/* Scene */}
@@ -361,8 +370,8 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
             <Suspense
               fallback={
                 <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-2xs uppercase tracking-widest text-neutral-600 animate-pulse">
-                    Loading 3D engine...
+                  <span className="text-2xs text-neutral-600 animate-pulse">
+                    {t('canvasNodes.studio3dNode.loadingEngine')}
                   </span>
                 </div>
               }

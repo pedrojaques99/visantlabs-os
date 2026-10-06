@@ -3,6 +3,7 @@ import { Modal } from '@/components/ui/Modal';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { cn } from '@/lib/utils';
+import { Thumb } from '@/components/ui/Thumb';
 import { ChevronLeft, Image as ImageIcon } from '@/lib/ui/icons';
 import type { BrandGuideline } from '@/lib/figma-types';
 
@@ -70,13 +71,15 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
         <div className="space-y-3">
           <button
             onClick={handleBack}
-            className="flex items-center gap-1 text-2xs text-neutral-400 hover:text-white transition-colors"
+            className="flex items-center gap-1 text-2xs text-muted-foreground hover:text-foreground transition-colors"
           >
             <ChevronLeft size={14} /> Back to guidelines
           </button>
 
           {!selectedGuideline.logos || selectedGuideline.logos.length === 0 ? (
-            <p className="text-center text-neutral-500 text-sm py-8">No logos in this guideline</p>
+            <p className="text-center text-muted-foreground text-sm py-8">
+              No logos in this guideline
+            </p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {[...selectedGuideline.logos]
@@ -94,28 +97,28 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
                       key={logo.id}
                       onClick={() => handlePickLogo(logo)}
                       className={cn(
-                        'group relative flex flex-col items-center gap-2 p-3 rounded-lg border transition-colors cursor-pointer',
+                        'group relative flex flex-col items-center gap-2 p-3 rounded-xl border transition-colors cursor-pointer',
                         svg
                           ? 'border-success/30 hover:border-success/60 hover:bg-success/5'
-                          : 'border-white/10 hover:border-white/30 hover:bg-white/5'
+                          : 'border-border hover:border-border-hover hover:bg-accent'
                       )}
                     >
-                      <div className="w-full aspect-square flex items-center justify-center bg-white/5 rounded overflow-hidden relative">
-                        <img
+                      <div className="w-full aspect-square flex items-center justify-center bg-muted rounded overflow-hidden relative">
+                        <Thumb
                           src={logo.url}
                           alt={logo.label || logo.variant}
                           className="max-w-full max-h-full object-contain p-2"
                         />
                         <span
                           className={cn(
-                            'absolute top-1 right-1 px-1.5 py-0.5 rounded text-3xs font-mono uppercase tracking-wider',
-                            svg ? 'bg-success/20 text-success' : 'bg-white/10 text-neutral-500'
+                            'absolute top-1 right-1 px-1.5 py-0.5 rounded text-3xs font-mono',
+                            svg ? 'bg-success/20 text-success' : 'bg-accent text-muted-foreground'
                           )}
                         >
                           {svg ? 'SVG' : 'IMG'}
                         </span>
                       </div>
-                      <span className="text-2xs uppercase tracking-wider text-neutral-400 group-hover:text-white transition-colors">
+                      <span className="text-2xs text-muted-foreground group-hover:text-foreground transition-colors">
                         {logo.label || logo.variant}
                       </span>
                     </button>
@@ -133,7 +136,7 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
               placeholder="Search guidelines..."
             />
           )}
-          <div className="grid grid-cols-1 gap-2 max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700">
+          <div className="grid grid-cols-1 gap-2 max-h-[400px] overflow-y-auto scrollbar-thin ">
             {filteredGuidelines.map((g) => {
               const primaryLogo = g.logos?.find((l) => l.variant === 'primary') || g.logos?.[0];
               return (
@@ -141,27 +144,27 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
                   key={g.id}
                   onClick={() => setSelectedGuideline(g)}
                   className={cn(
-                    'flex items-center gap-3 p-3 rounded-lg border border-white/10',
-                    'hover:border-white/30 hover:bg-white/5 transition-colors text-left'
+                    'flex items-center gap-3 p-3 rounded-xl border border-border',
+                    'hover:border-border-hover hover:bg-accent transition-colors text-left'
                   )}
                 >
-                  <div className="w-10 h-10 rounded bg-white/5 flex items-center justify-center shrink-0 overflow-hidden">
+                  <div className="w-10 h-10 rounded bg-muted flex items-center justify-center shrink-0 overflow-hidden">
                     {primaryLogo ? (
-                      <img
+                      <Thumb
                         src={primaryLogo.url}
                         alt=""
                         className="max-w-full max-h-full object-contain p-1"
                       />
                     ) : (
-                      <ImageIcon size={16} className="text-neutral-600" />
+                      <ImageIcon size={16} className="text-muted-foreground" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white truncate">
+                    <p className="text-sm text-foreground truncate">
                       {g.identity?.name || g.name || 'Untitled'}
                     </p>
                     {g.logos && g.logos.length > 0 && (
-                      <p className="text-2xs text-neutral-500">
+                      <p className="text-2xs text-muted-foreground">
                         {g.logos.length} logo{g.logos.length > 1 ? 's' : ''}
                       </p>
                     )}

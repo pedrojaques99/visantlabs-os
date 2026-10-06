@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Maximize2, Download, Video, Film, Trash2, X } from '@/lib/ui/icons';
 import { AnimationPreset } from '../../types/moodboard';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface BatchToolbarProps {
   selectedCount: number;
@@ -28,6 +29,7 @@ export const BatchToolbar: React.FC<BatchToolbarProps> = ({
   onAISuggest,
   isAISuggesting,
 }) => {
+  const { t } = useTranslation();
   if (totalCount === 0) return null;
 
   return (
@@ -39,28 +41,28 @@ export const BatchToolbar: React.FC<BatchToolbarProps> = ({
           exit={{ y: 100, opacity: 0 }}
           className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 flex justify-center pointer-events-none"
         >
-          <div className="bg-neutral-950/90 backdrop-blur-xl px-6 py-3 rounded-full border border-border shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex items-center gap-5 pointer-events-auto">
+          <div className="bg-popover/90 backdrop-blur-xl px-6 py-3 rounded-full border border-border shadow-2xl flex items-center gap-5 pointer-events-auto">
             <div className="flex items-center gap-3 pr-5 border-r border-border">
-              <div className="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center font-bold text-sm">
+              <div className="w-9 h-9 rounded-full bg-foreground text-background flex items-center justify-center font-semibold text-sm tabular-nums">
                 {selectedCount}
               </div>
               <div className="flex flex-col">
-                <span className="text-2xs font-bold uppercase tracking-widest text-neutral-500">
-                  Selected
+                <span className="text-xs font-medium text-muted-foreground">
+                  {t('moodboard.batch.selected')}
                 </span>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={onClearSelection}
-                    className="text-2xs font-bold uppercase tracking-widest text-white hover:opacity-60 transition-colors flex items-center gap-1"
+                    className="text-xs font-medium text-foreground hover:opacity-60 transition-opacity flex items-center gap-1"
                   >
-                    Clear <X size={9} />
+                    {t('moodboard.batch.clear')} <X size={10} />
                   </button>
                   {selectedCount < totalCount && (
                     <button
                       onClick={onSelectAll}
-                      className="text-2xs font-bold uppercase tracking-widest text-success hover:text-success transition-colors"
+                      className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      All
+                      {t('moodboard.batch.all')}
                     </button>
                   )}
                 </div>
@@ -71,51 +73,55 @@ export const BatchToolbar: React.FC<BatchToolbarProps> = ({
               <button
                 onClick={onAISuggest}
                 disabled={isAISuggesting}
-                title="AI Suggest"
-                className="p-2.5 rounded-full bg-neutral-800 border border-border/70 text-neutral-300 hover:text-white hover:border-neutral-500 transition-[color,background-color,border-color,opacity] disabled:opacity-40"
+                title={t('moodboard.batch.aiSuggest')}
+                aria-label={t('moodboard.batch.aiSuggest')}
+                className="p-2.5 rounded-full bg-muted border border-border/70 text-muted-foreground hover:text-foreground hover:border-border-hover transition-[color,background-color,border-color,opacity] disabled:opacity-40"
               >
                 <Video size={16} className={isAISuggesting ? 'animate-pulse' : ''} />
               </button>
 
-              <div className="h-6 w-px bg-neutral-800 mx-1" />
+              <div className="h-6 w-px bg-muted mx-1" />
 
               <button
                 onClick={onBatchUpscale}
-                title="Upscale selected"
-                className="p-2.5 rounded-full bg-neutral-800 border border-border/70 text-neutral-300 hover:text-white hover:border-neutral-500 transition-[color,background-color,border-color,opacity]"
+                title={t('moodboard.batch.upscale')}
+                aria-label={t('moodboard.batch.upscale')}
+                className="p-2.5 rounded-full bg-muted border border-border/70 text-muted-foreground hover:text-foreground hover:border-border-hover transition-[color,background-color,border-color,opacity]"
               >
                 <Maximize2 size={16} strokeWidth={1} />
               </button>
               <button
                 onClick={onBatchDownload}
-                title="Download selected"
-                className="p-2.5 rounded-full bg-neutral-800 border border-border/70 text-neutral-300 hover:text-white hover:border-neutral-500 transition-colors"
+                title={t('moodboard.batch.download')}
+                aria-label={t('moodboard.batch.download')}
+                className="p-2.5 rounded-full bg-muted border border-border/70 text-muted-foreground hover:text-foreground hover:border-border-hover transition-colors"
               >
                 <Download size={16} strokeWidth={1} />
               </button>
 
-              <div className="h-6 w-px bg-neutral-800 mx-1" />
+              <div className="h-6 w-px bg-muted mx-1" />
 
-              <div className="flex items-center gap-1 bg-neutral-900 p-1 rounded-full border border-border">
+              <div className="flex items-center gap-1 bg-muted p-1 rounded-full border border-border">
                 {(['zoom-in', 'zoom-out', 'pan-lr', 'pan-rl', 'fade-in'] as AnimationPreset[]).map(
                   (preset) => (
                     <button
                       key={preset}
                       onClick={() => onBatchRemotion(preset)}
-                      className="px-2.5 py-1.5 rounded-full hover:bg-white hover:text-black transition-colors text-2xs font-bold uppercase tracking-widest text-neutral-400"
+                      className="px-2.5 py-1.5 rounded-full hover:bg-foreground hover:text-background transition-colors text-xs font-medium text-muted-foreground"
                     >
-                      {preset.split('-')[0]}
+                      {t(`moodboard.item.presets.${preset}`)}
                     </button>
                   )
                 )}
               </div>
 
-              <div className="h-6 w-px bg-neutral-800 mx-1" />
+              <div className="h-6 w-px bg-muted mx-1" />
 
               <button
                 onClick={onBatchRemove}
-                title="Remove selected"
-                className="p-2.5 rounded-full bg-neutral-800 border border-border/70 text-neutral-400 hover:text-destructive hover:border-destructive/40 transition-colors"
+                title={t('moodboard.batch.remove')}
+                aria-label={t('moodboard.batch.remove')}
+                className="p-2.5 rounded-full bg-muted border border-border/70 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
               >
                 <Trash2 size={16} strokeWidth={1} />
               </button>

@@ -148,13 +148,13 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
                       if (e.key === 'Enter') commitEdit();
                       if (e.key === 'Escape') setEditing(null);
                     }}
-                    className="h-6 px-2 rounded border border-white/20 bg-neutral-800/60 text-xs text-neutral-200 focus:outline-none focus:border-white/30"
+                    className="h-6 px-2 rounded border border-border-hover bg-muted text-xs text-foreground focus:outline-none focus:border-ring"
                     style={{ width: `${Math.max(editValue.length * 7 + 24, 60)}px` }}
                   />
                 ) : (
                   <span
                     key={idx}
-                    className="group/tag inline-flex items-center gap-1 px-2 h-6 rounded border border-white/10 bg-neutral-800/30 text-xs text-neutral-300 cursor-pointer hover:border-white/20 hover:bg-neutral-800/50 transition-colors"
+                    className="group/tag inline-flex items-center gap-1 px-2 h-6 rounded border border-border bg-muted text-xs text-foreground cursor-pointer hover:border-border-hover hover:bg-accent transition-colors"
                     onClick={() => startEdit(cat, idx)}
                     title="Click to edit"
                   >
@@ -188,12 +188,12 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
                     }
                   }}
                   placeholder="Nova tag..."
-                  className="h-6 px-2 rounded border border-white/20 bg-neutral-800/60 text-xs text-neutral-200 placeholder:text-neutral-700 focus:outline-none focus:border-white/30 w-24"
+                  className="h-6 px-2 rounded border border-border-hover bg-muted text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring w-24"
                 />
               ) : (
                 <button
                   onClick={() => setAddingTo(cat)}
-                  className="h-6 px-1.5 rounded border border-dashed border-neutral-800 text-neutral-700 hover:text-neutral-400 hover:border-white/15 transition-colors"
+                  className="h-6 px-1.5 rounded border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-border-hover transition-colors"
                   aria-label={`Add tag to ${cat}`}
                 >
                   <Plus size={10} />
@@ -219,7 +219,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
                 }
               }}
               placeholder="nova_categoria"
-              className="h-6 px-2 rounded border border-white/20 bg-neutral-800/60 text-xs text-neutral-400 font-mono placeholder:text-neutral-700 focus:outline-none focus:border-white/30 w-36"
+              className="h-6 px-2 rounded border border-border-hover bg-muted text-xs text-muted-foreground font-mono placeholder:text-muted-foreground focus:outline-none focus:border-ring w-36"
             />
           </div>
         )}

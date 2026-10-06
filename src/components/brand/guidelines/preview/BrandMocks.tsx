@@ -5,6 +5,7 @@ import { buildRoleTheme, readableOn } from './mockTokens';
 import { Artboard } from './Artboard';
 import { FitText } from './FitText';
 import type { BrandColorTheme } from '@/lib/figma-types';
+import { Thumb } from '@/components/ui/Thumb';
 
 /** User-editable content overrides (the "trocar textos/variáveis" lever). */
 export interface MockOverrides {
@@ -839,7 +840,7 @@ export const XProfileMock: React.FC<MockProps> = ({ tokens, className }) => {
   const handle = tokens.name.toLowerCase().replace(/\s+/g, '');
   return (
     <div
-      className={cn('relative w-full overflow-hidden rounded-2xl shadow-2xl', className)}
+      className={cn('relative w-full overflow-hidden rounded-xl shadow-2xl', className)}
       style={{ aspectRatio: '16 / 10', background: ct.bg, color: ct.text }}
     >
       <div className="absolute inset-0 flex flex-col">
@@ -920,7 +921,7 @@ export const XProfileMock: React.FC<MockProps> = ({ tokens, className }) => {
           >
             {smartTrunc(tokens.description, 80) ||
               smartTrunc(tokens.tagline, 80) ||
-              `Assets by creatives → for creatives`}
+              `Assets by creatives, for creatives`}
           </p>
         </div>
       </div>
@@ -1030,7 +1031,7 @@ export const NotificationMock: React.FC<MockProps> = ({ tokens, className }) => 
   const ct = pickColorTheme(tokens, 0);
   return (
     <div
-      className={cn('relative w-full overflow-hidden rounded-2xl shadow-2xl', className)}
+      className={cn('relative w-full overflow-hidden rounded-xl shadow-2xl', className)}
       style={{ aspectRatio: '5 / 2', background: ct.bg, color: ct.text }}
     >
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-[3%] px-[6%]">
@@ -1094,7 +1095,7 @@ export const NotificationMock: React.FC<MockProps> = ({ tokens, className }) => 
               className="opacity-60 truncate"
               style={{ fontFamily: tokens.bodyFamily, fontSize: 'clamp(8px, 1.6cqi, 13px)' }}
             >
-              {smartTrunc(tokens.description, 50) || 'Assets by creatives → for creatives'}
+              {smartTrunc(tokens.description, 50) || 'Assets by creatives, for creatives'}
             </p>
           </div>
         </div>
@@ -1109,7 +1110,7 @@ export const AppStoreMock: React.FC<MockProps> = ({ tokens, className }) => {
   const { theme } = tokens;
   return (
     <div
-      className={cn('relative w-full overflow-hidden rounded-2xl shadow-2xl', className)}
+      className={cn('relative w-full overflow-hidden rounded-xl shadow-2xl', className)}
       style={{ aspectRatio: '2 / 3', background: ct.bg, color: ct.text }}
     >
       <div className="absolute inset-0 flex flex-col p-[7%]">
@@ -1159,7 +1160,7 @@ export const AppStoreMock: React.FC<MockProps> = ({ tokens, className }) => {
           style={{ background: `${ct.primary}0A`, border: `1px solid ${ct.text}10` }}
         >
           {pickMedia(tokens, 'product') ? (
-            <img
+            <Thumb
               src={pickMedia(tokens, 'product')!}
               alt=""
               className="w-full h-full object-cover"
@@ -1291,7 +1292,7 @@ export const PresentationSlideMock: React.FC<MockProps> = ({ tokens, className }
   const ct = pickColorTheme(tokens, 0);
   return (
     <div
-      className={cn('relative w-full overflow-hidden rounded-2xl shadow-2xl', className)}
+      className={cn('relative w-full overflow-hidden rounded-xl shadow-2xl', className)}
       style={{ aspectRatio: '16 / 9', background: ct.bg, color: ct.text }}
     >
       <div className="absolute inset-0 flex">
@@ -1326,7 +1327,7 @@ export const PresentationSlideMock: React.FC<MockProps> = ({ tokens, className }
           <div className="flex items-center gap-3">
             <div className="flex gap-1">
               {tokens.palette.slice(0, 5).map((c, i) => (
-                <span key={i} className="w-6 h-1.5 rounded-sm" style={{ background: c.hex }} />
+                <span key={i} className="w-6 h-1.5 rounded-md" style={{ background: c.hex }} />
               ))}
             </div>
             <span className="text-3xs opacity-30" style={{ fontFamily: tokens.bodyFamily }}>

@@ -21,10 +21,12 @@ export const SEGMENTS: Segment[] = [
     label: 'Designer',
     desc: 'UI/UX, branding, visual design',
     icon: Palette,
-    route: '/mockupmachine',
-    actionTitle: 'Crie seu primeiro mockup',
-    actionDesc: 'Veja o poder da plataforma em acao — um mockup profissional em segundos.',
-    actionCta: 'Criar mockup',
+    // Brand-first: a home promete "Criar meu brand system", então o designer cai na
+    // marca, não no gerador. O mockup vem depois, já lendo o brand system.
+    route: '/brand-guidelines',
+    actionTitle: 'Crie seu brand system',
+    actionDesc: 'Sobe o material da marca. Paleta, logo e tom viram regra pro seu agente.',
+    actionCta: 'Criar meu brand system',
   },
   {
     id: 'agency',
@@ -34,7 +36,7 @@ export const SEGMENTS: Segment[] = [
     route: '/brand-guidelines',
     actionTitle: 'Centralize a marca dos seus clientes',
     actionDesc:
-      'Uma fonte de verdade por cliente — compartilhe, gere e repita sem copiar hex na mao.',
+      'Uma fonte de verdade por cliente. Compartilhe, gere e repita sem copiar hex na mão.',
     actionCta: 'Criar brand guideline',
   },
   {
@@ -44,7 +46,7 @@ export const SEGMENTS: Segment[] = [
     icon: Megaphone,
     route: '/content-studio',
     actionTitle: 'Gere conteudo para todas as redes',
-    actionDesc: 'Um brief, varias pecas — copy e imagem consistentes com a marca, de uma vez.',
+    actionDesc: 'Um brief, várias peças. Copy e imagem consistentes com a marca, de uma vez.',
     actionCta: 'Abrir Content Studio',
   },
   {

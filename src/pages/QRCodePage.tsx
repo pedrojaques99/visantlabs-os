@@ -77,10 +77,10 @@ export const QRCodePage: React.FC = () => {
 
   const panel = (
     <div className="space-y-6">
-      <h2 className="text-2xs font-medium text-neutral-500">Settings</h2>
+      <h2 className="text-2xs font-medium text-muted-foreground">Settings</h2>
 
       <div>
-        <label className="block text-xs font-medium text-neutral-300 mb-2">Text or URL</label>
+        <label className="block text-xs font-medium text-foreground mb-2">Text or URL</label>
         <FormInput
           type="text"
           value={text}
@@ -91,7 +91,7 @@ export const QRCodePage: React.FC = () => {
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-neutral-300 mb-2">Size: {size}px</label>
+        <label className="block text-xs font-medium text-foreground mb-2">Size: {size}px</label>
         <input
           type="range"
           min="128"
@@ -99,12 +99,12 @@ export const QRCodePage: React.FC = () => {
           step="32"
           value={size}
           onChange={(e) => setSize(Number(e.target.value))}
-          className="w-full h-2 bg-zinc-800 rounded-md appearance-none cursor-pointer accent-brand-cyan"
+          className="w-full h-2 bg-muted rounded-md appearance-none cursor-pointer accent-brand-cyan"
         />
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-neutral-300 mb-2">
+        <label className="block text-xs font-medium text-foreground mb-2">
           Error Correction Level
         </label>
         <Select
@@ -122,7 +122,7 @@ export const QRCodePage: React.FC = () => {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-medium text-neutral-300 mb-2">Background</label>
+          <label className="block text-xs font-medium text-foreground mb-2">Background</label>
           <FormInput
             type="color"
             value={bgColor}
@@ -131,7 +131,7 @@ export const QRCodePage: React.FC = () => {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-neutral-300 mb-2">Foreground</label>
+          <label className="block text-xs font-medium text-foreground mb-2">Foreground</label>
           <FormInput
             type="color"
             value={fgColor}
@@ -142,7 +142,7 @@ export const QRCodePage: React.FC = () => {
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-neutral-300 mb-2">
+        <label className="block text-xs font-medium text-foreground mb-2">
           Margin: {marginSize}px
         </label>
         <input
@@ -152,7 +152,7 @@ export const QRCodePage: React.FC = () => {
           step="1"
           value={marginSize}
           onChange={(e) => setMarginSize(Number(e.target.value))}
-          className="w-full h-2 bg-zinc-800 rounded-md appearance-none cursor-pointer accent-brand-cyan"
+          className="w-full h-2 bg-muted rounded-md appearance-none cursor-pointer accent-brand-cyan"
         />
       </div>
     </div>
@@ -161,15 +161,13 @@ export const QRCodePage: React.FC = () => {
   const statusBar = hasText ? (
     <button
       onClick={handleDownload}
-      className="flex items-center gap-2 text-2xs font-medium uppercase tracking-widest text-foreground hover:text-brand-cyan/80 transition-colors"
+      className="flex items-center gap-2 text-xs font-medium text-foreground hover:text-brand-cyan/80 transition-colors"
     >
       <Download className="w-3.5 h-3.5" />
       Download PNG
     </button>
   ) : (
-    <span className="text-2xs uppercase tracking-widest text-neutral-600">
-      Enter text to generate
-    </span>
+    <span className="text-xs text-muted-foreground">Enter text to generate</span>
   );
 
   return (
@@ -191,7 +189,7 @@ export const QRCodePage: React.FC = () => {
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, ease }}
             ref={qrCodeRef}
-            className="p-6 bg-white rounded-2xl shadow-2xl shadow-black/40"
+            className="p-6 bg-white rounded-xl shadow-2xl shadow-black/40"
           >
             <QRCodeSVG
               value={text}
@@ -209,7 +207,7 @@ export const QRCodePage: React.FC = () => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.3, ease }}
-            className="text-center text-neutral-600"
+            className="text-center text-muted-foreground"
           >
             <QrCode className="w-20 h-20 mx-auto mb-4 opacity-30" />
             <p className="text-xs">{t('q.r.code.enter_text_to_generate_qr_code')}</p>

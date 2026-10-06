@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getArchetypeImage } from '@/constants/archetypeImages';
+import { Thumb } from '@/components/ui/Thumb';
 
 interface ArchetypesSectionProps {
   archetypes: {
@@ -59,6 +60,7 @@ const ArchetypeCard: React.FC<{
   }) => void;
 }> = ({ archetype, isPrimary, isEditing = false, onContentChange }) => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const imagePath = getArchetypeImage(archetype.title);
   const [localArchetype, setLocalArchetype] = useState(archetype);
   const prevArchetypeRef = useRef<string>(JSON.stringify(archetype));
@@ -131,58 +133,24 @@ const ArchetypeCard: React.FC<{
     >
       {/* Coluna 1: Card de Imagem */}
       <div className="flex items-center justify-center">
-        {imagePath ? (
-          <img
-            src={imagePath}
-            alt={localArchetype.title}
-            className="w-full max-w-[300px] h-auto object-contain rounded-md"
-            style={{ maxHeight: '450px' }}
-            onError={(e) => {
-              // Se a imagem falhar ao carregar, esconde e mostra o fallback
-              const target = e.target as HTMLImageElement;
-              if (target) {
-                target.style.display = 'none';
-                const fallback = target.nextElementSibling as HTMLElement;
-                if (fallback) {
-                  fallback.style.display = 'flex';
-                }
-              }
-            }}
-          />
-        ) : null}
-        <div
-          className={`w-full max-w-[300px] aspect-[2/3] flex items-center justify-center rounded-md ${
-            theme === 'dark'
-              ? 'bg-neutral-800/40 border border-neutral-700/60'
-              : 'bg-neutral-100 border border-neutral-300'
-          }`}
-          style={{ display: imagePath ? 'none' : 'flex' }}
-        >
-          <span
-            className={`text-sm font-manrope text-center px-4 ${
-              theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
-            }`}
-          >
-            {localArchetype.title}
-          </span>
-        </div>
+        <Thumb
+          src={imagePath || undefined}
+          alt={localArchetype.title}
+          aspectRatio="2 / 3"
+          fallbackLabel={localArchetype.title}
+          className="w-full max-w-[300px] object-contain rounded-md"
+        />
       </div>
 
       {/* Coluna 2: Texto */}
       <div className="space-y-4">
         <div>
-          <span
-            className={`text-xs uppercase  ${
-              theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
-            }`}
-          >
-            {isPrimary ? 'Arquétipo Primário' : 'Arquétipo Secundário'}
+          <span className="text-xs text-neutral-500">
+            {isPrimary
+              ? t('branding.visant.primaryArchetype')
+              : t('branding.visant.secondaryArchetype')}
           </span>
-          <h3
-            className={`text-xl font-semibold font-manrope mt-1 ${
-              theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-            }`}
-          >
+          <h3 className="text-xl font-semibold font-manrope mt-1 text-foreground">
             {localArchetype.title}
           </h3>
         </div>
@@ -190,13 +158,7 @@ const ArchetypeCard: React.FC<{
         {isEditing ? (
           <div className="space-y-4">
             <div>
-              <label
-                className={`block text-sm font-medium mb-2 ${
-                  theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
-                }`}
-              >
-                Descrição
-              </label>
+              <label className="block text-sm font-medium mb-2 text-foreground">Descrição</label>
               <Textarea
                 value={localArchetype.description}
                 onChange={(e) => handleDescriptionChange(e.target.value)}
@@ -208,13 +170,7 @@ const ArchetypeCard: React.FC<{
               />
             </div>
             <div>
-              <label
-                className={`block text-sm font-medium mb-2 ${
-                  theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
-                }`}
-              >
-                Exemplos
-              </label>
+              <label className="block text-sm font-medium mb-2 text-foreground">Exemplos</label>
               <div className="space-y-2">
                 {localArchetype.examples.map((example, index) => (
                   <div key={index} className="flex gap-2">
@@ -260,21 +216,11 @@ const ArchetypeCard: React.FC<{
           </div>
         ) : (
           <div className="space-y-4">
-            <p
-              className={`text-sm font-manrope leading-relaxed ${
-                theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-              }`}
-            >
+            <p className="text-sm font-manrope leading-relaxed text-muted-foreground">
               {localArchetype.description}
             </p>
             <div>
-              <h4
-                className={`text-sm font-semibold font-manrope mb-2 ${
-                  theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
-                }`}
-              >
-                Exemplos:
-              </h4>
+              <h4 className="text-sm font-medium font-manrope mb-2 text-foreground">Exemplos:</h4>
               <div className="flex flex-wrap gap-2">
                 {localArchetype.examples.map((example, index) => (
                   <span
@@ -387,11 +333,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
         }
       >
         <CardContent className="p-4">
-          <h4
-            className={`text-xs font-semibold font-manrope mb-2 ${
-              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-            }`}
-          >
+          <h4 className="text-xs font-medium font-manrope mb-2 text-muted-foreground">
             Justificativa
           </h4>
           {isEditing ? (
@@ -402,11 +344,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
               minHeight="80px"
             />
           ) : (
-            <p
-              className={`text-xs font-manrope leading-snug whitespace-pre-wrap ${
-                theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-              }`}
-            >
+            <p className="text-xs font-manrope leading-snug whitespace-pre-wrap text-muted-foreground">
               {localArchetypes.reasoning}
             </p>
           )}

@@ -18,6 +18,7 @@ import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
+import { Thumb } from '../ui/Thumb';
 import { authService } from '@/services/authService';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -435,7 +436,7 @@ export const AdminReferenceLibrary: React.FC = () => {
             onClick={() => setSelectedRef(ref)}
           >
             <div className="relative aspect-square bg-neutral-950">
-              <img
+              <Thumb
                 src={ref.referenceImageUrl}
                 alt={ref.name}
                 className="w-full h-full object-cover"
@@ -582,7 +583,7 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Image */}
-          <div className="aspect-square bg-neutral-900 rounded-lg overflow-hidden">
+          <div className="aspect-square bg-neutral-900 rounded-xl overflow-hidden">
             <img
               src={ref_.referenceImageUrl}
               alt={ref_.name}
@@ -653,8 +654,9 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
             </div>
 
             {/* Metadata */}
-            <div className="text-2xs text-neutral-600 font-mono">
-              ID: {ref_.id} · {new Date(ref_.createdAt).toLocaleDateString('pt-BR')}
+            <div className="flex flex-wrap gap-x-3 text-2xs text-neutral-600 font-mono">
+              <span>ID: {ref_.id}</span>
+              <span>{new Date(ref_.createdAt).toLocaleDateString('pt-BR')}</span>
             </div>
           </div>
         </div>
@@ -666,7 +668,7 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
             {DIMENSION_KEYS.map((key) => (
               <div
                 key={key}
-                className="bg-neutral-900/50 border border-neutral-800 rounded-lg p-2 space-y-1"
+                className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-2 space-y-1"
               >
                 <span className="text-2xs font-mono text-neutral-500 uppercase">
                   {DIMENSION_LABELS[key]}
@@ -778,7 +780,7 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
 // ─── Stat Card ───────────────────────────────────────────────
 
 const StatCard: React.FC<{ label: string; value: number | string }> = ({ label, value }) => (
-  <div className="bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-center">
+  <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-center">
     <p className="text-lg font-bold text-foreground">
       {typeof value === 'number' ? value.toLocaleString('pt-BR') : value}
     </p>

@@ -37,7 +37,8 @@ const RULES = [
     fix: "Replace 'border ' with 'border-node ' — border-node uses --node-border-width (0.5px)",
     // Matches `border ` followed by anything that isn't `-node` or a border-color class
     // i.e. catches `border transition-all`, `border rounded`, etc. (standalone border without color on same line)
-    pattern: /\bborder\s+(?!node\b|border-)[a-zA-Z]/,
+    // (?<![\w-]) instead of \b: the tail of `border-border` is not a standalone `border`.
+    pattern: /(?<![\w-])border\s+(?!node\b|border-)[a-zA-Z]/,
     scope: 'nodes-and-ui',
   },
   {
@@ -103,6 +104,30 @@ function scanFile(filePath, rules) {
     });
   }
   return violations;
+}
+
+// ─── Self-test (locks the false positives already fixed) ─────────────────────
+// A new case that escapes: add it here, never replace one.
+if (process.argv.includes('--self-test')) {
+  const rule = (id) => RULES.find((r) => r.id === id).pattern;
+  const cases = [
+    ['plain-border-1px', "'border rounded-md'", true],
+    ['plain-border-1px', "'px-2 border transition-all'", true],
+    ['plain-border-1px', "'border border-border rounded-md'", false],
+    ['plain-border-1px', "'border-node border-border rounded-md'", false],
+    ['plain-border-1px', "'bg-muted border border-border rounded-md text-sm'", false],
+    ['plain-border-1px', "'border-border rounded-md'", false],
+    ['plain-border-1px', "'border-node rounded-md'", false],
+    ['plain-border-1px', "'hover:border rounded'", true],
+  ];
+  let fail = 0;
+  for (const [id, line, expect] of cases) {
+    const got = rule(id).test(line);
+    if (got !== expect) fail++;
+    console.log(`  ${got === expect ? 'ok  ' : 'FAIL'}  ${id}  ${line}  (expected ${expect}, got ${got})`);
+  }
+  console.log(fail ? `\n${fail} case(s) failed.` : `\n${cases.length} cases ok.`);
+  process.exit(fail ? 1 : 0);
 }
 
 // ─── Run ─────────────────────────────────────────────────────────────────────

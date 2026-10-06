@@ -13,6 +13,7 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { AppShellTopBar } from '@/components/ui/AppShell';
 import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export interface ToolEditorTopBarProps {
   title: string;
@@ -41,24 +42,25 @@ export const ToolEditorTopBar: React.FC<ToolEditorTopBarProps> = ({
   extraRight,
   showLegalMenu = true,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
     <AppShellTopBar
       left={
         <>
-          <Tooltip content="Back to apps">
+          <Tooltip content={t('common.backToApps')}>
             <Button
               variant="ghost"
               size="icon"
-              aria-label="Back to apps"
-              className="h-7 w-7 text-neutral-500"
+              aria-label={t('common.backToApps')}
+              className="h-7 w-7 text-muted-foreground"
               onClick={() => navigate(backTo)}
             >
               <ChevronLeft size={16} />
             </Button>
           </Tooltip>
-          <MicroTitle className="text-2xs text-neutral-600 st ml-1">{title}</MicroTitle>
+          <MicroTitle className="text-2xs text-muted-foreground ml-1">{title}</MicroTitle>
           {extraLeft}
         </>
       }
@@ -66,12 +68,12 @@ export const ToolEditorTopBar: React.FC<ToolEditorTopBarProps> = ({
         <>
           {extraRight}
           {undo && (
-            <Tooltip content="Undo (Ctrl+Z)">
+            <Tooltip content={t('toolEditor.undoHint')}>
               <Button
                 variant="ghost"
                 size="icon"
-                aria-label="Undo"
-                className="h-7 w-7 text-neutral-500 disabled:opacity-30"
+                aria-label={t('toolEditor.undo')}
+                className="h-7 w-7 text-muted-foreground disabled:opacity-30"
                 disabled={undo.disabled}
                 onClick={undo.handler}
               >
@@ -80,12 +82,12 @@ export const ToolEditorTopBar: React.FC<ToolEditorTopBarProps> = ({
             </Tooltip>
           )}
           {redo && (
-            <Tooltip content="Redo (Ctrl+Shift+Z)">
+            <Tooltip content={t('toolEditor.redoHint')}>
               <Button
                 variant="ghost"
                 size="icon"
-                aria-label="Redo"
-                className="h-7 w-7 text-neutral-500 disabled:opacity-30"
+                aria-label={t('toolEditor.redo')}
+                className="h-7 w-7 text-muted-foreground disabled:opacity-30"
                 disabled={redo.disabled}
                 onClick={redo.handler}
               >
@@ -93,24 +95,26 @@ export const ToolEditorTopBar: React.FC<ToolEditorTopBarProps> = ({
               </Button>
             </Tooltip>
           )}
-          <Tooltip content="Reset settings (R)">
+          <Tooltip content={t('toolEditor.resetHint')}>
             <Button
               variant="ghost"
               size="icon"
-              aria-label="Reset settings"
-              className="h-7 w-7 text-neutral-500"
+              aria-label={t('common.resetSettingsTitle')}
+              className="h-7 w-7 text-muted-foreground"
               onClick={onReset}
             >
               <RotateCcw size={14} />
             </Button>
           </Tooltip>
           {!isMobile && (
-            <Tooltip content={panelVisible ? 'Hide panel (Tab)' : 'Show panel (Tab)'}>
+            <Tooltip
+              content={panelVisible ? t('toolEditor.hidePanelHint') : t('toolEditor.showPanelHint')}
+            >
               <Button
                 variant="ghost"
                 size="icon"
-                aria-label={panelVisible ? 'Hide panel' : 'Show panel'}
-                className="h-7 w-7 text-neutral-500"
+                aria-label={panelVisible ? t('common.hidePanel') : t('common.showPanel')}
+                className="h-7 w-7 text-muted-foreground"
                 onClick={onTogglePanel}
               >
                 {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}

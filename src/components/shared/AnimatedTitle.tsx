@@ -23,7 +23,7 @@ export default function AnimatedTitle({ text, className = '' }: AnimatedTitlePro
           key={index}
           onMouseEnter={() => setHoveredIndex(index)}
           onMouseLeave={() => setHoveredIndex(null)}
-          className="inline-block transition-all duration-200 hover:scale-100 cursor-default"
+          className="inline-block cursor-default"
           style={{
             transformOrigin: 'center',
           }}

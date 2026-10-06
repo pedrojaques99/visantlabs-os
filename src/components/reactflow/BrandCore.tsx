@@ -15,6 +15,7 @@ import {
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { BrandCoreData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
+import { Thumb } from '@/components/ui/Thumb';
 import { toast } from 'sonner';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
@@ -296,24 +297,21 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
         type="target"
         position={Position.Left}
         id="image-input"
-        label={t('canvasNodes.brandCore.logo') || 'Logo'}
-        className="w-2 h-2 bg-brand-cyan border-2 border-black"
+        label={t('canvasNodes.brandCore.logo')}
         style={{ top: '90px' }}
       />
       <LabeledHandle
         type="target"
         position={Position.Left}
         id="pdf-input"
-        label={t('canvasNodes.brandCore.identityGuide') || 'Identity'}
-        className="w-2 h-2 bg-brand-cyan border-2 border-black"
+        label={t('canvasNodes.brandCore.identityGuide')}
         style={{ top: '180px' }}
       />
       <LabeledHandle
         type="target"
         position={Position.Left}
         id="strategy-input"
-        label={t('canvasNodes.brandCore.strategy') || 'Strategy'}
-        className="w-2 h-2 bg-brand-cyan border-2 border-black"
+        label={t('canvasNodes.brandCore.strategy')}
         style={{ top: '270px' }}
       />
 
@@ -322,17 +320,12 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
         type="source"
         position={Position.Right}
         id="prompt-output"
-        label={t('canvasNodes.brandCore.output') || 'Output'}
-        className="w-2 h-2 bg-brand-cyan border-2 border-black"
+        label={t('canvasNodes.brandCore.output')}
         style={{ top: '50px' }}
       />
 
       {/* Header */}
-      <NodeHeader
-        icon={Palette}
-        title={t('canvasNodes.brandCore.title') || 'Brand Core'}
-        selected={selected}
-      />
+      <NodeHeader icon={Palette} title={t('canvasNodes.brandCore.title')} selected={selected} />
 
       <div className="p-4 flex flex-col gap-[var(--node-gap)]">
         {/* Inputs Section */}
@@ -340,9 +333,9 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
           {/* Logo Input */}
           <div
             className={cn(
-              'p-3 rounded-md border-node transition-[color,background-color,border-color,box-shadow,filter] duration-300 backdrop-blur-sm',
+              'p-3 rounded-md border-node transition-colors duration-300',
               hasLogo
-                ? 'bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]'
+                ? 'bg-neutral-900/60 border-neutral-700'
                 : 'bg-neutral-900/40 border-neutral-700/30'
             )}
           >
@@ -350,8 +343,8 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               <div className="flex items-center gap-2">
                 <div
                   className={cn(
-                    'w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor]',
-                    hasLogo ? 'text-brand-cyan bg-brand-cyan' : 'text-neutral-500 bg-neutral-600'
+                    'w-1.5 h-1.5 rounded-full',
+                    hasLogo ? 'bg-success' : 'bg-neutral-600'
                   )}
                 />
                 <span className="text-2xs font-medium text-neutral-400">
@@ -363,6 +356,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   variant="ghost"
                   size="xs"
                   onClick={handleRemoveLogo}
+                  aria-label={t('canvasNodes.brandCore.removeLogo')}
                   className="h-6 w-6 text-neutral-500 hover:text-destructive p-0"
                 >
                   <X size={12} />
@@ -373,20 +367,20 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
             {hasLogo ? (
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-md overflow-hidden bg-neutral-950/40 border-node border-neutral-700/50 p-1 flex items-center justify-center shadow-inner">
-                  <img
+                  <Thumb
                     src={
                       logoBase64.startsWith('data:')
                         ? logoBase64
                         : `data:image/png;base64,${logoBase64}`
                     }
-                    alt="Logo"
+                    alt={t('canvasNodes.brandCore.logo')}
                     className="max-w-full max-h-full object-contain"
+                    fallbackClassName="w-full h-full"
                   />
                 </div>
                 <div className="flex-1">
-                  <div className="text-2xs font-medium text-neutral-400">Connected</div>
-                  <div className="text-2xs text-neutral-400 line-clamp-1 opacity-60">
-                    Property detected
+                  <div className="text-2xs font-medium text-neutral-400">
+                    {t('canvasNodes.brandCore.connected')}
                   </div>
                 </div>
               </div>
@@ -408,7 +402,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   <UploadCloud size={14} className="mr-2" />
                   {t('canvasNodes.brandCore.uploadLogo')}
                 </NodeButton>
-                <div className="text-2xs text-neutral-600 text-center tracking-tighter opacity-70">
+                <div className="text-2xs text-neutral-600 text-center">
                   {t('canvasNodes.brandCore.orConnectLogoOrImageNode')}
                 </div>
               </div>
@@ -418,9 +412,9 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
           {/* Identity Input (PDF or Image) */}
           <div
             className={cn(
-              'p-3 rounded-md border-node transition-[color,background-color,border-color,box-shadow,opacity,filter] duration-300 backdrop-blur-sm',
+              'p-3 rounded-md border-node transition-colors duration-300',
               hasIdentity
-                ? 'bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]'
+                ? 'bg-neutral-900/60 border-neutral-700'
                 : 'bg-neutral-900/40 border-neutral-700/30'
             )}
           >
@@ -428,10 +422,8 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               <div className="flex items-center gap-2">
                 <div
                   className={cn(
-                    'w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor]',
-                    hasIdentity
-                      ? 'text-brand-cyan bg-brand-cyan'
-                      : 'text-neutral-500 bg-neutral-600'
+                    'w-1.5 h-1.5 rounded-full',
+                    hasIdentity ? 'bg-success' : 'bg-neutral-600'
                   )}
                 />
                 <span className="text-2xs font-medium text-neutral-400">
@@ -443,6 +435,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   variant="ghost"
                   size="xs"
                   onClick={handleRemoveIdentity}
+                  aria-label={t('canvasNodes.brandCore.removeIdentityGuide')}
                   className="h-6 w-6 text-neutral-500 hover:text-destructive p-0"
                 >
                   <X size={12} />
@@ -457,14 +450,16 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 </div>
                 <div className="flex-1 overflow-hidden">
                   <div className="text-2xs font-medium text-neutral-400">
-                    {identityType?.toUpperCase() || 'FILE'} CONNECTED
+                    {t('canvasNodes.brandCore.fileConnected', {
+                      type: identityType?.toUpperCase() || 'PDF',
+                    })}
                   </div>
                   <div className="text-2xs text-neutral-400 line-clamp-1 opacity-60">
                     {connectedPdf
-                      ? 'Reference document'
+                      ? t('common.referenceDocument')
                       : connectedImage
-                        ? 'Style reference'
-                        : 'Local upload'}
+                        ? t('canvasNodes.brandCore.styleReference')
+                        : t('common.localUpload')}
                   </div>
                 </div>
               </div>
@@ -484,10 +479,10 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   className="shadow-sm"
                 >
                   <FileText size={14} className="mr-2" />
-                  Upload PDF or PNG
+                  {t('canvasNodes.brandCore.uploadIdentity')}
                 </NodeButton>
-                <div className="text-2xs text-neutral-600 text-center tracking-tighter opacity-70">
-                  Or connect a PDF Node or Image Node (PNG)
+                <div className="text-2xs text-neutral-600 text-center">
+                  {t('canvasNodes.brandCore.orConnectPdfOrImageNode')}
                 </div>
               </div>
             )}
@@ -496,51 +491,45 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
           {/* Strategy Input */}
           <div
             className={cn(
-              'p-3 rounded-md border-node transition-[color,background-color,border-color,box-shadow,opacity,filter] duration-300 backdrop-blur-sm',
+              'p-3 rounded-md border-node transition-colors duration-300',
               hasStrategies
-                ? 'bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]'
+                ? 'bg-neutral-900/60 border-neutral-700'
                 : 'bg-neutral-900/40 border-neutral-700/30'
             )}
           >
             <div className="flex items-center gap-2 mb-2">
               <div
                 className={cn(
-                  'w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor]',
-                  hasStrategies
-                    ? 'text-brand-cyan bg-brand-cyan'
-                    : 'text-neutral-500 bg-neutral-600'
+                  'w-1.5 h-1.5 rounded-full',
+                  hasStrategies ? 'bg-success' : 'bg-neutral-600'
                 )}
               />
               <span className="text-2xs font-medium text-neutral-400">
-                {t('canvasNodes.brandCore.strategy') || 'Strategy'}
+                {t('canvasNodes.brandCore.strategy')}
               </span>
             </div>
-            <div className="text-2xs text-neutral-500 font-mono pl-3.5">
+            <div className="text-2xs text-neutral-500 pl-3.5">
               {hasStrategies
-                ? `${connectedStrategies.length} Strategy Node(s) Connected`
-                : 'Connect Strategy Node(s) (optional)'}
+                ? t('canvasNodes.brandCore.strategiesConnected', {
+                    count: connectedStrategies.length,
+                  })
+                : t('canvasNodes.brandCore.connectStrategies')}
             </div>
           </div>
         </div>
 
         {/* Analyze Button */}
         {canAnalyze && (
-          <NodeButton
-            onClick={handleAnalyze}
-            disabled={!canAnalyze}
-            variant="primary"
-            size="full"
-            className="shadow-sm backdrop-blur-sm"
-          >
+          <NodeButton onClick={handleAnalyze} disabled={!canAnalyze} variant="primary" size="full">
             {isAnalyzing ? (
               <>
                 <GlitchLoader size={14} className="mr-2" color="currentColor" />
-                <span>Analyzing...</span>
+                <span>{t('canvasNodes.brandCore.analyzing')}</span>
               </>
             ) : (
               <>
                 <Palette size={14} className="mr-2" />
-                <span>Analyze Brand Identity</span>
+                <span>{t('canvasNodes.brandCore.analyze')}</span>
               </>
             )}
           </NodeButton>
@@ -548,19 +537,22 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
         {/* Analysis Status */}
         {isAnalyzing && (
-          <div className="px-3 py-2.5 bg-muted border-node border-neutral-800 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
+          <div className="px-3 py-2.5 bg-muted border-node border-neutral-800 rounded-md flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="p-1.5 rounded-full bg-muted-foreground/15">
-                <GlitchLoader size={12} color="brand-cyan" />
+                <GlitchLoader size={12} />
               </div>
-              <span className="text-2xs text-foreground font-bold">Analysis in progress...</span>
+              <span className="text-2xs text-foreground font-medium">
+                {t('canvasNodes.brandCore.analyzing')}
+              </span>
             </div>
             {nodeData.onCancelAnalyze && (
               <NodeButton
                 variant="ghost"
                 size="xs"
                 onClick={() => nodeData.onCancelAnalyze?.(id)}
-                className="h-6 w-6 text-foreground hover:bg-brand-cyan/20 hover:text-brand-cyan"
+                aria-label={t('canvasNodes.brandCore.cancelAnalysis')}
+                className="h-6 w-6 text-foreground hover:bg-neutral-800"
               >
                 <X size={14} />
               </NodeButton>
@@ -577,10 +569,10 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               onClick={() => setIsExpandedBrandIdentity(!isExpandedBrandIdentity)}
               className="flex items-center justify-between group/expand px-1"
             >
-              <span className="text-2xs font-bold text-neutral-500 group-hover:text-neutral-300 transition-colors">
-                Brand Identity
+              <span className="text-2xs font-medium text-neutral-500 group-hover/expand:text-neutral-300 transition-colors">
+                {t('canvasNodes.brandCore.identity')}
               </span>
-              <div className="p-1 rounded-full bg-neutral-900/50 group-hover:bg-neutral-800 transition-colors">
+              <div className="p-1 rounded-full bg-neutral-900/50 group-hover/expand:bg-neutral-800 transition-colors">
                 {isExpandedBrandIdentity ? (
                   <ChevronUp size={12} className="text-neutral-400" />
                 ) : (
@@ -595,9 +587,9 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 {(brandIdentity.logo.colors.length > 0 ||
                   brandIdentity.logo.style ||
                   brandIdentity.logo.elements.length > 0) && (
-                  <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20 backdrop-blur-sm">
-                    <div className="text-2xs font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">
-                      Logo DNA
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
+                    <div className="text-2xs font-medium text-neutral-500 mb-2">
+                      {t('canvasNodes.brandCore.logoDna')}
                     </div>
                     <div className="space-y-3">
                       {brandIdentity.logo.colors.length > 0 && (
@@ -608,12 +600,10 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                               className="flex items-center gap-1.5 px-2 py-1 bg-neutral-950/40 rounded border-node border-neutral-700/30 shadow-sm"
                             >
                               <div
-                                className="w-2.5 h-2.5 rounded border-node border-white/10 shadow-sm"
+                                className="w-2.5 h-2.5 rounded border-node border-border shadow-sm"
                                 style={{ backgroundColor: color }}
                               />
-                              <span className="text-neutral-400 font-mono text-2xs uppercase">
-                                {color}
-                              </span>
+                              <span className="text-neutral-400 font-mono text-2xs">{color}</span>
                             </div>
                           ))}
                         </div>
@@ -622,13 +612,17 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                       <div className="space-y-1.5 border-t border-neutral-700/20 pt-2 text-neutral-300 leading-relaxed">
                         {brandIdentity.logo.style && (
                           <div className="flex gap-2">
-                            <span className="text-neutral-500 text-2xs shrink-0">Style:</span>
+                            <span className="text-neutral-500 text-2xs shrink-0">
+                              {t('canvasNodes.brandCore.style')}
+                            </span>
                             <span>{brandIdentity.logo.style}</span>
                           </div>
                         )}
                         {brandIdentity.logo.elements.length > 0 && (
                           <div className="flex gap-2">
-                            <span className="text-neutral-500 text-2xs shrink-0">Traits:</span>
+                            <span className="text-neutral-500 text-2xs shrink-0">
+                              {t('canvasNodes.brandCore.traits')}
+                            </span>
                             <div className="flex flex-wrap gap-1">
                               {brandIdentity.logo.elements.map((element, idx) => (
                                 <span
@@ -650,15 +644,24 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 {(brandIdentity.colors.primary.length > 0 ||
                   brandIdentity.colors.secondary.length > 0 ||
                   brandIdentity.colors.accent.length > 0) && (
-                  <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20 backdrop-blur-sm">
-                    <div className="text-2xs font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">
-                      Color Palettes
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
+                    <div className="text-2xs font-medium text-neutral-500 mb-2">
+                      {t('canvasNodes.brandCore.palettes')}
                     </div>
                     <div className="space-y-3">
                       {[
-                        { label: 'Primary', palette: brandIdentity.colors.primary },
-                        { label: 'Secondary', palette: brandIdentity.colors.secondary },
-                        { label: 'Accent', palette: brandIdentity.colors.accent },
+                        {
+                          label: t('canvasNodes.brandCore.primary'),
+                          palette: brandIdentity.colors.primary,
+                        },
+                        {
+                          label: t('canvasNodes.brandCore.secondary'),
+                          palette: brandIdentity.colors.secondary,
+                        },
+                        {
+                          label: t('canvasNodes.brandCore.accent'),
+                          palette: brandIdentity.colors.accent,
+                        },
                       ].map(
                         ({ label, palette }) =>
                           palette.length > 0 && (
@@ -668,12 +671,10 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                                 {palette.map((color, idx) => (
                                   <div key={idx} className="group/color relative">
                                     <div
-                                      className="w-6 h-6 rounded border-node border-white/10 shadow-sm transition-transform group-hover/color:scale-110"
+                                      className="w-6 h-6 rounded border-node border-border"
+                                      title={color}
                                       style={{ backgroundColor: color }}
                                     />
-                                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-neutral-950 text-white text-2xs font-mono rounded opacity-0 group-hover/color:opacity-100 transition-opacity z-10 whitespace-nowrap border-node border-neutral-700">
-                                      {color}
-                                    </div>
                                   </div>
                                 ))}
                               </div>
@@ -688,15 +689,17 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 {(brandIdentity.personality.tone ||
                   brandIdentity.personality.feeling ||
                   brandIdentity.personality.values?.length > 0) && (
-                  <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20 backdrop-blur-sm">
-                    <div className="text-2xs font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">
-                      Brand Personality
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border-node border-neutral-700/20">
+                    <div className="text-2xs font-medium text-neutral-500 mb-2">
+                      {t('canvasNodes.brandCore.personality')}
                     </div>
                     <div className="space-y-2.5 text-neutral-400">
                       <div className="grid grid-cols-2 gap-3">
                         {brandIdentity.personality.tone && (
                           <div className="space-y-0.5">
-                            <span className="text-neutral-600 text-2xs">Tone</span>
+                            <span className="text-neutral-600 text-2xs">
+                              {t('canvasNodes.brandCore.tone')}
+                            </span>
                             <div className="text-neutral-300 line-clamp-2">
                               {brandIdentity.personality.tone}
                             </div>
@@ -704,7 +707,9 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                         )}
                         {brandIdentity.personality.feeling && (
                           <div className="space-y-0.5">
-                            <span className="text-neutral-600 text-2xs">Vibe</span>
+                            <span className="text-neutral-600 text-2xs">
+                              {t('canvasNodes.brandCore.vibe')}
+                            </span>
                             <div className="text-neutral-300 line-clamp-2">
                               {brandIdentity.personality.feeling}
                             </div>
@@ -740,9 +745,9 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               variant="ghost"
               size="full"
               onClick={() => setIsExpandedVisual(!isExpandedVisual)}
-              className="flex items-center justify-between text-xs font-mono text-neutral-400 hover:text-neutral-300 mb-2 px-3"
+              className="flex items-center justify-between text-xs text-neutral-400 hover:text-neutral-300 mb-2 px-3"
             >
-              <span>Visual Prompts</span>
+              <span>{t('canvasNodes.brandCore.visualPrompts')}</span>
               {isExpandedVisual ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </NodeButton>
 
@@ -751,11 +756,14 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 {visualPrompts.mockupPrompt && (
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <div className="text-xs text-neutral-500 font-mono">Mockup Prompt</div>
+                      <div className="text-xs text-neutral-500">
+                        {t('canvasNodes.brandCore.mockupPrompt')}
+                      </div>
                       <NodeButton
                         variant="ghost"
                         size="xs"
                         onClick={() => handleCopyPrompt(visualPrompts.mockupPrompt!, 'mockup')}
+                        aria-label={t('canvasNodes.brandCore.copyPrompt')}
                         className="p-1 hover:bg-neutral-800 rounded"
                       >
                         {copiedPrompt === 'mockup' ? (
@@ -774,7 +782,9 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 {visualPrompts.compositionPrompt && (
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <div className="text-xs text-neutral-500 font-mono">Composition Prompt</div>
+                      <div className="text-xs text-neutral-500">
+                        {t('canvasNodes.brandCore.compositionPrompt')}
+                      </div>
                       <NodeButton
                         variant="ghost"
                         size="xs"
@@ -799,11 +809,14 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 {visualPrompts.stylePrompt && (
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <div className="text-xs text-neutral-500 font-mono">Style Prompt</div>
+                      <div className="text-xs text-neutral-500">
+                        {t('canvasNodes.brandCore.stylePrompt')}
+                      </div>
                       <NodeButton
                         variant="ghost"
                         size="xs"
                         onClick={() => handleCopyPrompt(visualPrompts.stylePrompt!, 'style')}
+                        aria-label={t('canvasNodes.brandCore.copyPrompt')}
                         className="p-1 hover:bg-neutral-800 rounded"
                       >
                         {copiedPrompt === 'style' ? (
@@ -826,18 +839,22 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
         {/* Strategic Prompts Section */}
         {strategicPrompts?.consolidated && (
           <div className="border-t border-neutral-700/30 pt-3">
-            <div
+            <button
+              type="button"
               onClick={() => setIsExpandedStrategic(!isExpandedStrategic)}
-              className="w-full flex items-center justify-between text-xs font-mono text-neutral-400 hover:text-neutral-300 mb-2 cursor-pointer"
+              aria-expanded={isExpandedStrategic}
+              className="w-full flex items-center justify-between text-xs text-neutral-400 hover:text-neutral-300 mb-2"
             >
-              <span>Strategic Prompts (Consolidated)</span>
+              <span>{t('canvasNodes.brandCore.strategicPrompts')}</span>
               {isExpandedStrategic ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            </div>
+            </button>
 
             {isExpandedStrategic && (
               <div className="space-y-3 text-xs">
                 <div className="flex items-center justify-between mb-1">
-                  <div className="text-xs text-neutral-500 font-mono">Consolidated Strategy</div>
+                  <div className="text-xs text-neutral-500">
+                    {t('canvasNodes.brandCore.consolidatedStrategy')}
+                  </div>
                   <NodeButton
                     variant="ghost"
                     size="xs"
@@ -868,8 +885,10 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
         {/* Generating Prompts Status */}
         {isGeneratingPrompts && (
           <div className="mt-4 px-3 py-2 bg-muted border-node border-neutral-800 rounded flex items-center gap-3">
-            <GlitchLoader size={14} color="brand-cyan" />
-            <span className="text-xs text-foreground">Generating prompts...</span>
+            <GlitchLoader size={14} />
+            <span className="text-xs text-foreground">
+              {t('canvasNodes.brandCore.generatingPrompts')}
+            </span>
           </div>
         )}
       </div>

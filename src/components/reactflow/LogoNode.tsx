@@ -14,6 +14,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { ConfirmationModal } from '../ConfirmationModal';
 import { Input } from '@/components/ui/input';
+import { Thumb } from '@/components/ui/Thumb';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -108,7 +109,7 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     >
       {selected && !dragging && (
         <NodeResizer
-          color="brand-cyan"
+          color="var(--brand-cyan)"
           isVisible={selected}
           minWidth={100}
           minHeight={100}
@@ -124,7 +125,7 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         type="source"
         position={Position.Right}
         id="logo-output"
-        className="w-2 h-2 bg-brand-cyan border-2 border-black node-handle"
+        className="node-handle handle-image"
       />
 
       {/* Header */}
@@ -134,7 +135,7 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
       {logoImageUrl ? (
         <div className="relative">
           <div className="relative w-full h-auto min-h-[1210px] bg-neutral-900/50 rounded border-node border-neutral-700/30 overflow-hidden">
-            <img
+            <Thumb
               src={logoImageUrl}
               alt={t('canvasNodes.logoNode.logoAltText')}
               className="w-full h-full object-contain p-2"
@@ -174,13 +175,10 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
-        title={t('canvasNodes.logoNode.deleteTitle') || 'Delete Logo Node'}
-        message={
-          t('canvasNodes.logoNode.deleteMessage') ||
-          'Are you sure you want to delete this logo node?'
-        }
-        confirmText={t('canvasNodes.logoNode.deleteButton') || 'Delete'}
-        cancelText={t('canvasNodes.logoNode.cancelButton') || 'Cancel'}
+        title={t('canvasNodes.logoNode.deleteTitle')}
+        message={t('canvasNodes.logoNode.deleteMessage')}
+        confirmText={t('canvasNodes.logoNode.deleteButton')}
+        cancelText={t('canvasNodes.logoNode.cancelButton')}
         variant="danger"
       />
     </NodeContainer>

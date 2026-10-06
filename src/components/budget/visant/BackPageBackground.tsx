@@ -1,12 +1,13 @@
 import React from 'react';
 
+import { DEFAULT_DOCUMENT_ACCENT } from './documentColors';
 interface BackPageBackgroundProps {
   accentColor?: string;
   opacity?: number;
 }
 
 export const BackPageBackground: React.FC<BackPageBackgroundProps> = ({
-  accentColor = 'brand-cyan',
+  accentColor = DEFAULT_DOCUMENT_ACCENT,
   opacity = 0.3,
 }) => {
   return (

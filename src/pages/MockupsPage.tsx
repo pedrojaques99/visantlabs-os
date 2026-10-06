@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Search, ImageIcon, Minus, Plus } from '@/lib/ui/icons';
 import { SearchBar } from '../components/ui/SearchBar';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { mockupApi, type Mockup } from '../services/mockupApi';
 import { FullScreenViewer } from '../components/FullScreenViewer';
-import { AuthModal } from '../components/AuthModal';
 import { useLayout } from '@/hooks/useLayout';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
+import { MediaTile } from '../components/ui/MediaTile';
+import { EmptyState } from '../components/ui/EmptyState';
+import { ErrorState } from '../components/ui/ErrorState';
 import { getImageUrl, isSafeUrl } from '@/utils/imageUtils';
 import { translateTag } from '@/utils/localeUtils';
 import { CollapsibleSidebar } from '../components/mockupmachine/CollapsibleSidebar';
@@ -26,9 +27,7 @@ export const MockupsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTag, setFilterTag] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
-  const { isAuthenticated, subscriptionStatus } = useLayout();
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const { isAuthenticated } = useLayout();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [columns, setColumns] = useState(() => {
     const saved = localStorage.getItem('mockupsPageColumns');
@@ -108,10 +107,6 @@ export const MockupsPage: React.FC = () => {
     setSelectedMockup(mockup);
   }, []);
 
-  const handleNavigateMockup = useCallback((mockup: Mockup) => {
-    setSelectedMockup(mockup);
-  }, []);
-
   const getCurrentIndex = useCallback(() => {
     if (!selectedMockup || !filteredMockups.length) return 0;
     const index = filteredMockups.findIndex((m) => m._id === selectedMockup._id);
@@ -121,72 +116,6 @@ export const MockupsPage: React.FC = () => {
   const currentIndex = useMemo(() => getCurrentIndex(), [getCurrentIndex]);
   const hasPrevious = currentIndex > 0;
   const hasNext = currentIndex < filteredMockups.length - 1;
-
-  const handleImportToCanvas = useCallback(
-    (mockup: Mockup) => {
-      // Store mockup in localStorage for CanvasPage to pick up
-      try {
-        localStorage.setItem('import-mockup', JSON.stringify(mockup));
-        navigate('/canvas');
-      } catch (error) {
-        console.error('Failed to store mockup for import:', error);
-      }
-    },
-    [navigate]
-  );
-
-  const handleEdit = useCallback(
-    (mockup: Mockup) => {
-      const imageUrl = getImageUrl(mockup);
-      if (imageUrl && mockup.imageBase64) {
-        navigate(`/editor?image=${encodeURIComponent(mockup.imageBase64)}`);
-      }
-    },
-    [navigate]
-  );
-
-  // Handler to navigate to MockupMachinePage with image for editing
-  const handleNavigateToMockupMachine = useCallback(
-    async (
-      mockup: Mockup,
-      operation?: 'zoom-in' | 'zoom-out' | 'new-angle' | 'new-background' | 're-imagine',
-      operationData?: string
-    ) => {
-      try {
-        // Store mockup data in localStorage for MockupMachinePage to pick up
-        const mockupData = {
-          imageBase64: mockup.imageBase64,
-          imageUrl: mockup.imageUrl,
-          prompt: mockup.prompt,
-          designType: mockup.designType,
-          tags: mockup.tags,
-          brandingTags: mockup.brandingTags,
-          aspectRatio: mockup.aspectRatio,
-          operation,
-          operationData, // For angle name or re-imagine prompt
-        };
-        localStorage.setItem('edit-mockup', JSON.stringify(mockupData));
-        navigate('/');
-      } catch (error) {
-        console.error('Failed to store mockup for editing:', error);
-      }
-    },
-    [navigate]
-  );
-
-  // Calculate credits needed (default to 1 credit for edit operations)
-  const creditsNeededForEdit = useMemo(() => {
-    // Default to 1 credit for community mockups (assuming HD model)
-    return 1;
-  }, []);
-
-  // Check if edit operations should be disabled
-  const isEditOperationDisabled = useMemo(() => {
-    if (isAuthenticated !== true) return true;
-    if (!subscriptionStatus) return true;
-    const totalCredits = subscriptionStatus.totalCredits || 0;
-    return totalCredits < creditsNeededForEdit;
-  }, [isAuthenticated, subscriptionStatus, creditsNeededForEdit]);
 
   const handleCloseViewer = () => {
     setSelectedMockup(null);
@@ -292,37 +221,40 @@ export const MockupsPage: React.FC = () => {
       setError(
         err?.message?.includes('Failed to fetch')
           ? t('mockupsPage.cannotConnectServer')
-          : t('mockupsPage.loadFailed') || 'Could not load mockups. Try again.'
+          : t('mockupsPage.loadFailed')
       );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const showErrorBanner = Boolean(error);
-
+  // Mesma busca inline do /canvas: expande no header e colapsa ao sair vazia.
   const headerActions = (
-    <div className="relative flex-shrink-0">
-      <Button
-        variant="ghost"
-        onClick={() => setShowSearch(!showSearch)}
-        className="p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-neutral-950/20"
-        title={t('common.search')}
-      >
-        <Search size={22} />
-      </Button>
-      {showSearch && (
-        <div className="absolute top-12 right-0 bg-neutral-950/90 backdrop-blur-sm border border-neutral-700/30 rounded-md p-2 min-w-[240px] shadow-lg animate-[fadeInScale_0.2s_ease-out] z-50">
-          <SearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder={t('mockupsPage.searchPlaceholder')}
-            iconSize={14}
-            className="bg-transparent border-neutral-700/30 text-sm font-mono"
-            containerClassName="w-full"
-            autoFocus
-          />
-        </div>
+    <div className="flex items-center flex-shrink-0">
+      {showSearch ? (
+        <SearchBar
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder={t('mockupsPage.searchPlaceholder')}
+          iconSize={14}
+          className="h-10 text-sm"
+          containerClassName="w-[180px] md:w-[220px]"
+          autoFocus
+          onBlur={() => {
+            if (!searchQuery.trim()) setShowSearch(false);
+          }}
+        />
+      ) : (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setShowSearch(true)}
+          className="text-muted-foreground hover:text-foreground"
+          title={t('common.search')}
+          aria-label={t('common.search')}
+        >
+          <Search size={20} />
+        </Button>
       )}
     </div>
   );
@@ -330,46 +262,28 @@ export const MockupsPage: React.FC = () => {
   return (
     <PageShell
       pageId="mockups"
-      seoTitle="Mockups da Comunidade"
-      seoDescription="Explore mockups criados pela comunidade. Descubra designs profissionais e inspire-se para seus próprios projetos."
+      seoTitle={t('mockups.galeria_da_comunidade')}
+      seoDescription={t('mockups.explore_designs_profissionais_e_inspires')}
       title={t('mockups.galeria_da_comunidade')}
-      microTitle="Systems // Gallery"
       description={t('mockups.explore_designs_profissionais_e_inspires')}
       breadcrumb={[
-        { label: t('apps.home') || 'Home', to: '/' },
-        { label: t('community.title') || 'Community', to: '/community' },
-        { label: t('mockups.title') || 'Mockups' },
+        { label: t('apps.home'), to: '/' },
+        { label: t('community.title'), to: '/community' },
+        { label: t('mockups.title') },
       ]}
       actions={headerActions}
     >
       <div className="relative z-10">
-        {/* Error Banner */}
-        {showErrorBanner && (
-          <div className="mb-6">
-            <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3 flex items-center justify-between backdrop-blur-sm">
-              <p className="text-destructive font-mono text-xs flex-1">{error}</p>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setError(null);
-                  loadMockups();
-                }}
-                className="ml-2 px-3 py-1 bg-destructive/20 hover:bg-destructive/30 text-destructive font-mono text-xs rounded transition-colors"
-              >
-                {t('mockupsPage.retry')}
-              </Button>
-            </div>
-          </div>
-        )}
-
         {/* Top Row: Sidebar */}
         <div className="mb-8">
           <CollapsibleSidebar
             isCollapsed={isSidebarCollapsed}
             onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            title="Community Mockups"
-            count={mockups.length}
-            countLabel={mockups.length === 1 ? 'mockup' : 'mockups'}
+            title={t('mockupsPage.filters')}
+            countText={t(
+              mockups.length === 1 ? 'mockupsPage.count_one' : 'mockupsPage.count_other',
+              { count: mockups.length }
+            )}
             allTags={allTags}
             filterTag={filterTag}
             onFilterTagChange={setFilterTag}
@@ -382,27 +296,27 @@ export const MockupsPage: React.FC = () => {
           {/* Floating Column Control */}
           {filteredMockups.length > 0 && !isMobile && (
             <div className="fixed bottom-4 md:bottom-6 left-4 md:left-6 z-30">
-              <GlassPanel padding="sm" className="flex-row items-center gap-1 bg-neutral-950/50">
+              <GlassPanel padding="sm" className="flex-row items-center gap-1">
                 <Button
-                  variant="ghost"
+                  variant="action"
                   onClick={() => handleColumnsChange(columns - 1)}
                   disabled={columns <= 1}
-                  className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
-                  aria-label="Decrease columns"
+                  aria-label={t('common.decreaseColumns')}
+                  title={t('common.decreaseColumns')}
                 >
                   <Minus size={14} />
                 </Button>
                 <div className="px-2.5">
-                  <span className="text-xs font-mono text-neutral-400 min-w-[1.5rem] text-center">
+                  <span className="text-xs font-mono text-muted-foreground min-w-[1.5rem] text-center">
                     {columns}
                   </span>
                 </div>
                 <Button
-                  variant="ghost"
+                  variant="action"
                   onClick={() => handleColumnsChange(columns + 1)}
                   disabled={columns >= 6}
-                  className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
-                  aria-label="Increase columns"
+                  aria-label={t('common.increaseColumns')}
+                  title={t('common.increaseColumns')}
                 >
                   <Plus size={14} />
                 </Button>
@@ -410,22 +324,35 @@ export const MockupsPage: React.FC = () => {
             </div>
           )}
 
-          {/* Empty State — suppressed while an error banner is showing, so a
-              failed load never also claims "no mockups yet". */}
-          {error ? null : filteredMockups.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[50vh] text-center py-16">
-              <ImageIcon size={64} className="text-neutral-700 mb-6" strokeWidth={1} />
-              <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-3">
-                {mockups.length === 0
-                  ? t('mockupsPage.noMockupsYet')
-                  : t('mockupsPage.noMatchesFound')}
-              </h2>
-              <p className="text-sm text-neutral-600 font-mono max-w-md">
-                {mockups.length === 0
-                  ? t('mockupsPage.generateBlankMockups')
-                  : t('mockupsPage.tryAdjustingSearch')}
-              </p>
+          {/* A failed load is an error with retry, never the "no mockups yet" empty state. */}
+          {/* While loading, never claim "no mockups yet". */}
+          {isLoading && mockups.length === 0 ? (
+            <div className="flex justify-center py-24">
+              <GlitchLoader size={28} />
             </div>
+          ) : error ? (
+            <ErrorState
+              description={error}
+              retryLabel={t('mockupsPage.retry')}
+              onRetry={() => {
+                setError(null);
+                loadMockups();
+              }}
+            />
+          ) : filteredMockups.length === 0 ? (
+            <EmptyState
+              icon={ImageIcon}
+              title={
+                mockups.length === 0
+                  ? t('mockupsPage.noMockupsYet')
+                  : t('mockupsPage.noMatchesFound')
+              }
+              description={
+                mockups.length === 0
+                  ? t('mockupsPage.generateBlankMockups')
+                  : t('mockupsPage.tryAdjustingSearch')
+              }
+            />
           ) : (
             <div className={getGridClasses()} style={getGridStyle()}>
               {filteredMockups.map((mockup) => {
@@ -433,23 +360,13 @@ export const MockupsPage: React.FC = () => {
                 if (!imageUrl) return null;
 
                 return (
-                  <GlassPanel
+                  <MediaTile
                     key={mockup._id}
-                    className="group relative overflow-hidden hover:border-neutral-600/50 transition-all duration-300"
-                  >
-                    {/* Image */}
-                    <div
-                      className="aspect-square relative overflow-hidden bg-neutral-900/50 cursor-pointer"
-                      onClick={() => handleView(mockup)}
-                    >
-                      <img
-                        src={imageUrl}
-                        alt={mockup.prompt || 'Mockup'}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                      />
-                    </div>
-                  </GlassPanel>
+                    layout="overlay"
+                    src={imageUrl}
+                    alt={mockup.prompt || t('community.mockupAlt')}
+                    onClick={() => handleView(mockup)}
+                  />
                 );
               })}
             </div>
@@ -502,35 +419,10 @@ export const MockupsPage: React.FC = () => {
               }
             }}
             isLiked={selectedMockup.isLiked || false}
-            onZoomIn={() => handleNavigateToMockupMachine(selectedMockup, 'zoom-in')}
-            onZoomOut={() => handleNavigateToMockupMachine(selectedMockup, 'zoom-out')}
-            onNewAngle={(angle) =>
-              handleNavigateToMockupMachine(selectedMockup, 'new-angle', angle)
-            }
-            onNewBackground={() => handleNavigateToMockupMachine(selectedMockup, 'new-background')}
-            onReImagine={(reimaginePrompt) =>
-              handleNavigateToMockupMachine(selectedMockup, 're-imagine', reimaginePrompt)
-            }
-            editButtonsDisabled={isEditOperationDisabled}
-            creditsPerOperation={creditsNeededForEdit}
             onNavigatePrevious={hasPrevious ? handlePreviousMockup : undefined}
             onNavigateNext={hasNext ? handleNextMockup : undefined}
             hasPrevious={hasPrevious}
             hasNext={hasNext}
-          />
-        )}
-
-        {/* Auth Modal */}
-        {showAuthModal && (
-          <AuthModal
-            isOpen={showAuthModal}
-            onClose={() => setShowAuthModal(false)}
-            onSuccess={() => {
-              setShowAuthModal(false);
-              // Authentication state will be updated automatically by Layout context
-            }}
-            isSignUp={isSignUp}
-            setIsSignUp={setIsSignUp}
           />
         )}
       </div>

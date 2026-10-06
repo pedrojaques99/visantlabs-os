@@ -19,11 +19,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import {
-  ExpandableColorPicker,
-  SectionLabel,
-  SegmentedControl,
-} from '@/components/shared/ToolPanel';
+import { ExpandableColorPicker, SectionLabel } from '@/components/shared/ToolPanel';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { cn } from '@/lib/utils';
 
 interface CanvasSettingsModalProps {
@@ -86,9 +83,9 @@ function SettingRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 py-2.5 group/row rounded-lg transition-colors">
+    <div className="flex items-center justify-between gap-4 py-2.5 group/row rounded-xl transition-colors">
       <div className="flex items-center gap-3 min-w-0">
-        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.04] shrink-0 transition-colors group-hover/row:bg-white/[0.06]">
+        <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-muted border border-border shrink-0 transition-colors group-hover/row:bg-accent">
           <Icon
             size={15}
             className="text-neutral-500 transition-colors group-hover/row:text-neutral-400"
@@ -118,7 +115,7 @@ function ColorSettingRow({
   return (
     <div className="space-y-2 py-2.5">
       <div className="flex items-center gap-2.5">
-        <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/[0.03] border border-white/[0.04] shrink-0">
+        <div className="flex items-center justify-center w-7 h-7 rounded-xl bg-muted border border-border shrink-0">
           <Icon size={14} className="text-neutral-500" />
         </div>
         <span className="text-sm text-neutral-200">{label}</span>
@@ -186,12 +183,12 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <div
         className={cn(
-          'bg-neutral-950 border border-white/[0.06] rounded-2xl w-full max-w-[460px] max-h-[85vh] flex flex-col shadow-2xl',
+          'bg-neutral-950 border border-border rounded-xl w-full max-w-[460px] max-h-[85vh] flex flex-col shadow-2xl',
           'animate-in fade-in-0 zoom-in-[0.97] duration-200'
         )}
         onClick={(e) => e.stopPropagation()}
@@ -200,74 +197,69 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
         <div className="flex items-center justify-between px-5 py-3.5">
           <div className="flex items-center gap-2.5">
             <Settings2 size={16} className="text-neutral-500" />
-            <h2 className="text-sm font-medium text-neutral-200">
-              {t('canvas.settings') || 'Canvas Settings'}
-            </h2>
+            <h2 className="text-sm font-medium text-neutral-200">{t('canvas.settings')}</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/[0.05] transition-colors"
+            className="p-1 rounded-xl text-neutral-600 hover:text-neutral-300 hover:bg-accent transition-colors"
           >
             <X size={15} />
           </button>
         </div>
 
-        <Separator className="bg-white/[0.04]" />
+        <Separator className="bg-muted" />
 
         {/* Tabs */}
         <Tabs defaultValue="canvas" className="flex-1 flex flex-col min-h-0 gap-0">
           <div className="px-4 pt-2.5 pb-0">
-            <TabsList className="w-full bg-white/[0.03] border border-white/[0.05] h-8 p-0.5 rounded-lg">
+            <TabsList className="w-full bg-muted border border-border h-8 p-0.5 rounded-xl">
               <TabsTrigger value="canvas" className="flex-1 gap-1.5 text-2xs h-full rounded-md">
                 <LayoutGrid size={12} />
-                {t('canvas.settingsTabCanvas') || 'Canvas'}
+                {t('canvas.settingsTabCanvas')}
               </TabsTrigger>
               <TabsTrigger value="edges" className="flex-1 gap-1.5 text-2xs h-full rounded-md">
                 <Link2 size={12} />
-                {t('canvas.settingsTabEdges') || 'Edges'}
+                {t('canvas.settingsTabEdges')}
               </TabsTrigger>
               <TabsTrigger value="colors" className="flex-1 gap-1.5 text-2xs h-full rounded-md">
                 <Paintbrush size={12} />
-                {t('canvas.settingsTabColors') || 'Colors'}
+                {t('canvas.settingsTabColors')}
               </TabsTrigger>
             </TabsList>
           </div>
 
           {/* --- Canvas Tab --- */}
           <TabsContent value="canvas" className="flex-1 overflow-y-auto px-4 pb-4 pt-1 mt-0">
-            <SectionLabel>{t('canvas.settingsDisplay') || 'Display'}</SectionLabel>
+            <SectionLabel>{t('canvas.settingsDisplay')}</SectionLabel>
             <div className="divide-y divide-white/[0.04]">
               <SettingRow
                 icon={Grid3x3}
-                label={t('canvas.showGrid') || 'Show Grid'}
-                description={t('canvas.showGridDesc') || 'Dot grid on the canvas background'}
+                label={t('canvas.showGrid')}
+                description={t('canvas.showGridDesc')}
               >
                 <Switch checked={showGrid} onCheckedChange={(v) => onShowGridChange?.(v)} />
               </SettingRow>
               <SettingRow
                 icon={Maximize2}
-                label={t('canvas.showMinimap') || 'Minimap'}
-                description={t('canvas.showMinimapDesc') || 'Overview of the full canvas'}
+                label={t('canvas.showMinimap')}
+                description={t('canvas.showMinimapDesc')}
               >
                 <Switch checked={showMinimap} onCheckedChange={(v) => onShowMinimapChange?.(v)} />
               </SettingRow>
               <SettingRow
                 icon={ZoomIn}
-                label={t('canvas.showControls') || 'Zoom Controls'}
-                description={t('canvas.showControlsDesc') || 'Zoom and fit controls overlay'}
+                label={t('canvas.showControls')}
+                description={t('canvas.showControlsDesc')}
               >
                 <Switch checked={showControls} onCheckedChange={(v) => onShowControlsChange?.(v)} />
               </SettingRow>
             </div>
             <div className="mt-2">
-              <SectionLabel>{t('canvas.settingsAdvanced') || 'Advanced'}</SectionLabel>
+              <SectionLabel>{t('canvas.settingsAdvanced')}</SectionLabel>
               <SettingRow
                 icon={Beaker}
-                label={t('canvas.experimentalMode') || 'Experimental Mode'}
-                description={
-                  t('canvas.experimentalModeDesc') ||
-                  'Show preview nodes like Shader, Strategy, etc.'
-                }
+                label={t('canvas.experimentalMode')}
+                description={t('canvas.experimentalModeDesc')}
               >
                 <Switch
                   checked={experimentalMode}
@@ -279,42 +271,44 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
 
           {/* --- Edges Tab --- */}
           <TabsContent value="edges" className="flex-1 overflow-y-auto px-4 pb-4 pt-1 mt-0">
-            <SectionLabel>{t('canvas.settingsConnections') || 'Connections'}</SectionLabel>
+            <SectionLabel>{t('canvas.settingsConnections')}</SectionLabel>
             <div className="divide-y divide-white/[0.04]">
               <SettingRow
                 icon={Link2}
-                label={t('canvas.edgeStyle') || 'Line Style'}
-                description={t('canvas.edgeStyleDesc') || 'Style for connections between nodes'}
+                label={t('canvas.edgeStyle')}
+                description={t('canvas.edgeStyleDesc')}
               >
                 <SegmentedControl
+                  size="sm"
+                  aria-label={t('canvas.edgeStyle')}
                   value={edgeStyle}
-                  onChange={(v) => onEdgeStyleChange?.(v as 'solid' | 'dashed')}
+                  onChange={(v) => onEdgeStyleChange?.(v)}
                   options={[
-                    { value: 'solid', label: t('canvas.edgeStyleSolid') || 'Solid' },
-                    { value: 'dashed', label: t('canvas.edgeStyleDash') || 'Dash' },
+                    { value: 'solid', label: t('canvas.edgeStyleSolid') },
+                    { value: 'dashed', label: t('canvas.edgeStyleDash') },
                   ]}
                 />
               </SettingRow>
               <SettingRow
                 icon={Link2}
-                label={t('canvas.edgeWidth') || 'Line Weight'}
-                description={t('canvas.edgeWidthDesc') || 'Thickness of connection lines'}
+                label={t('canvas.edgeWidth')}
+                description={t('canvas.edgeWidthDesc')}
               >
                 <SegmentedControl
+                  size="sm"
+                  aria-label={t('canvas.edgeWidth')}
                   value={edgeStrokeWidth}
-                  onChange={(v) => onEdgeStrokeWidthChange?.(v as 'normal' | 'thin')}
+                  onChange={(v) => onEdgeStrokeWidthChange?.(v)}
                   options={[
-                    { value: 'normal', label: t('canvas.edgeWidthBold') || 'Bold' },
-                    { value: 'thin', label: t('canvas.edgeWidthThin') || 'Thin' },
+                    { value: 'normal', label: t('canvas.edgeWidthBold') },
+                    { value: 'thin', label: t('canvas.edgeWidthThin') },
                   ]}
                 />
               </SettingRow>
             </div>
             {/* Edge preview */}
-            <div className="mt-3 p-3.5 bg-white/[0.02] rounded-xl border border-white/[0.04]">
-              <p className="text-2xs font-mono text-neutral-600 uppercase tracking-widest mb-2.5">
-                {t('canvas.preview') || 'Preview'}
-              </p>
+            <div className="mt-3 p-3.5 bg-muted rounded-xl border border-border">
+              <p className="text-xs font-medium text-neutral-500 mb-2.5">{t('canvas.preview')}</p>
               <svg viewBox="0 0 300 40" className="w-full" preserveAspectRatio="xMidYMid meet">
                 <line
                   x1="24"
@@ -327,7 +321,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                   strokeDasharray={edgeStyle === 'dashed' ? '8 5' : 'none'}
                   strokeLinecap="round"
                 />
-                <circle cx="24" cy="20" r="5" className="fill-brand-cyan" />
+                <circle cx="24" cy="20" r="5" className="fill-neutral-300" />
                 <circle cx="276" cy="20" r="5" className="fill-neutral-600" />
               </svg>
             </div>
@@ -335,9 +329,9 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
 
           {/* --- Colors Tab --- */}
           <TabsContent value="colors" className="flex-1 overflow-y-auto px-4 pb-4 pt-1 mt-0">
-            <SectionLabel>{t('canvas.settingsTheme') || 'Theme'}</SectionLabel>
+            <SectionLabel>{t('canvas.settingsTheme')}</SectionLabel>
             <div className="divide-y divide-white/[0.04]">
-              <ColorSettingRow icon={Palette} label={t('canvas.backgroundColor') || 'Background'}>
+              <ColorSettingRow icon={Palette} label={t('canvas.backgroundColor')}>
                 <ExpandableColorPicker
                   color={backgroundColor}
                   onChange={(c) => onBackgroundColorChange?.(c)}
@@ -347,7 +341,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                 />
               </ColorSettingRow>
 
-              <ColorSettingRow icon={Diamond} label={t('canvas.brandCyanColor') || 'Accent Color'}>
+              <ColorSettingRow icon={Diamond} label={t('canvas.brandCyanColor')}>
                 <ExpandableColorPicker
                   color={brandCyan.startsWith('#') ? brandCyan : '#00d9ff'}
                   onChange={(c) => onBrandCyanChange?.(c)}
@@ -357,12 +351,10 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                 />
               </ColorSettingRow>
 
-              <ColorSettingRow icon={Grid3x3} label={t('canvas.gridColor') || 'Grid'}>
+              <ColorSettingRow icon={Grid3x3} label={t('canvas.gridColor')}>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-2xs text-neutral-500">
-                      {t('canvas.showGrid') || 'Visible'}
-                    </span>
+                    <span className="text-2xs text-neutral-500">{t('canvas.showGrid')}</span>
                     <Switch checked={showGrid} onCheckedChange={(v) => onShowGridChange?.(v)} />
                   </div>
                   <ExpandableColorPicker
@@ -374,7 +366,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                 </div>
               </ColorSettingRow>
 
-              <ColorSettingRow icon={MousePointer2} label={t('canvas.cursorColor') || 'Cursor'}>
+              <ColorSettingRow icon={MousePointer2} label={t('canvas.cursorColor')}>
                 <ExpandableColorPicker
                   color={cursorColor.startsWith('#') ? cursorColor : '#ffffff'}
                   onChange={(c) => onCursorColorChange?.(c)}

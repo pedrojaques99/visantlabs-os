@@ -2,6 +2,7 @@ import React, { useRef, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Upload } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
+import { Dropzone } from '@/components/ui/Dropzone';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
 import { BrandFunnelBanner } from '@/components/funnel/BrandFunnelBanner';
@@ -28,14 +29,17 @@ export const GridMachinePage: React.FC = () => {
   const analysis = store((s) => s.analysis);
   const clear = store((s) => s.clear);
 
-  const loadSvg = useCallback((content: string, name: string) => {
-    store.getState().setSvg(content, name);
-    const result = analyzeSvg(content);
-    store.getState().setAnalysis(result);
-    const anchors = result.points.filter((p) => p.type === 'anchor').length;
-    const handles = result.points.filter((p) => p.type === 'handle').length;
-    toast.success(t('grid.machine.loaded_name_anchors_anchors_handles_h'));
-  }, []);
+  const loadSvg = useCallback(
+    (content: string, name: string) => {
+      store.getState().setSvg(content, name);
+      const result = analyzeSvg(content);
+      store.getState().setAnalysis(result);
+      const anchors = result.points.filter((p) => p.type === 'anchor').length;
+      const handles = result.points.filter((p) => p.type === 'handle').length;
+      toast.success(t('grid.machine.loaded', { name, anchors, handles }));
+    },
+    [store, t]
+  );
 
   const { exportScaled } = useExportCanvas({
     filenamePrefix: `grid-${fileName?.replace(/\.svg$/i, '') || 'export'}`,
@@ -98,9 +102,8 @@ export const GridMachinePage: React.FC = () => {
     return () => window.removeEventListener('paste', handlePasteText);
   }, [loadSvg]);
 
-  const handleFileSelect = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
+  const readSvgFile = useCallback(
+    (file: File | undefined) => {
       if (!file) return;
       if (!file.name.endsWith('.svg') && file.type !== 'image/svg+xml') {
         toast.error(t('grid.machine.please_upload_an_svg_file'));
@@ -109,9 +112,16 @@ export const GridMachinePage: React.FC = () => {
       const reader = new FileReader();
       reader.onload = () => loadSvg(reader.result as string, file.name);
       reader.readAsText(file);
+    },
+    [loadSvg, t]
+  );
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      readSvgFile(e.target.files?.[0]);
       e.target.value = '';
     },
-    [loadSvg]
+    [readSvgFile]
   );
 
   const handleDrop = useCallback(
@@ -127,7 +137,7 @@ export const GridMachinePage: React.FC = () => {
       reader.onload = () => loadSvg(reader.result as string, file.name);
       reader.readAsText(file);
     },
-    [loadSvg]
+    [loadSvg, t]
   );
 
   const anchorCount = analysis?.points.filter((p) => p.type === 'anchor').length ?? 0;
@@ -135,8 +145,8 @@ export const GridMachinePage: React.FC = () => {
 
   const statusItems = svgContent
     ? [
-        { label: `${anchorCount} anchors` },
-        { label: `${handleCount} handles` },
+        { label: t('grid.machine.anchorsCount', { count: anchorCount }) },
+        { label: t('grid.machine.handlesCount', { count: handleCount }) },
         ...(analysis
           ? [
               {
@@ -151,21 +161,21 @@ export const GridMachinePage: React.FC = () => {
 
   return (
     <ToolEditorShell
-      title="GRID MACHINE"
-      documentTitle="Grid Machine — Visant"
+      title={t('apps.gridMachine.name')}
+      documentTitle={t('apps.gridMachine.name')}
       panelVisible={panelVisible && !!svgContent}
       setPanelVisible={setPanelVisible}
       onReset={clear}
       resetTitle={t('grid.machine.clear_workspace')}
       resetMessage={t('grid.machine.this_will_remove_the_current_svg_and_')}
-      resetConfirmText="Clear"
+      resetConfirmText={t('grid.machine.clear')}
       extraTopBarRight={
-        <Tooltip content="Open SVG (Ctrl+O)">
+        <Tooltip content={t('grid.machine.openSvgShortcut')}>
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Open SVG"
-            className="h-7 w-7 text-neutral-500"
+            aria-label={t('grid.machine.openSvg')}
+            className="h-7 w-7 text-muted-foreground"
             onClick={() => fileInputRef.current?.click()}
           >
             <Upload size={14} />
@@ -201,21 +211,15 @@ export const GridMachinePage: React.FC = () => {
       {svgContent ? (
         <GridCanvas ref={gridRef} />
       ) : (
-        <div className="w-full h-full flex items-center justify-center">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex flex-col items-center gap-3 p-10 rounded-2xl border border-dashed border-white/10 hover:border-white/20 transition-colors cursor-pointer group"
-          >
-            <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-              <Upload size={20} className="text-neutral-500 group-hover:text-neutral-300" />
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-neutral-400">{t('grid.machine.drop_an_svg_file_here')}</p>
-              <p className="text-2xs text-neutral-600 mt-1">
-                {t('grid.machine.or_click_ctrlv_to_paste')}
-              </p>
-            </div>
-          </button>
+        <div className="w-full h-full flex items-center justify-center px-4">
+          <Dropzone
+            onFiles={(files) => readSvgFile(files[0])}
+            accept=".svg,image/svg+xml"
+            label={t('grid.machine.drop_an_svg_file_here')}
+            hint={t('grid.machine.or_click_ctrlv_to_paste')}
+            dropTarget={false}
+            className="max-w-md"
+          />
         </div>
       )}
     </ToolEditorShell>

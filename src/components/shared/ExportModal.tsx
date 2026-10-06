@@ -8,6 +8,7 @@ import { ScrubInput } from '@/components/ui/ScrubInput';
 import { downloadBlob } from '@/utils/clipboard';
 import { applyShaderToCanvas } from '@/utils/shaders/applyShaderToCanvas';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export type ExportFormat = 'png' | 'jpeg' | 'webp' | 'svg' | 'mp4' | 'gif' | 'webm';
 
@@ -61,7 +62,7 @@ const FPS_OPTIONS = [
 ];
 
 interface ExportPreset {
-  label: string;
+  labelKey: string;
   format: ExportFormat;
   scale: number;
   duration?: number;
@@ -69,10 +70,16 @@ interface ExportPreset {
 }
 
 const EXPORT_PRESETS: ExportPreset[] = [
-  { label: 'Product Shot', format: 'png', scale: 2 },
-  { label: 'Social Post', format: 'png', scale: 1.5 },
-  { label: 'Instagram Reel', format: 'mp4', scale: 1, duration: 3, fps: 30 },
-  { label: 'Web Preview', format: 'webp', scale: 1 },
+  { labelKey: 'toolEditor.export.presets.productShot', format: 'png', scale: 2 },
+  { labelKey: 'toolEditor.export.presets.socialPost', format: 'png', scale: 1.5 },
+  {
+    labelKey: 'toolEditor.export.presets.instagramReel',
+    format: 'mp4',
+    scale: 1,
+    duration: 3,
+    fps: 30,
+  },
+  { labelKey: 'toolEditor.export.presets.webPreview', format: 'webp', scale: 1 },
 ];
 
 function estimateVideoSize(
@@ -126,6 +133,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   onVideoFpsChange,
   onExportVideo,
 }) => {
+  const { t } = useTranslation();
   const baseFormats = onExportSvg ? [...RASTER_FORMATS, SVG_FORMAT] : RASTER_FORMATS;
   const FORMAT_OPTIONS =
     isVideo && onExportVideo ? [...baseFormats, ...VIDEO_FORMATS] : baseFormats;
@@ -290,12 +298,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
       setCopied(true);
-      toast.success('Copied to clipboard');
+      toast.success(t('toolEditor.export.copied'));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error('Failed to copy — try downloading instead');
+      toast.error(t('toolEditor.export.copyFailed'));
     }
-  }, [canvasRef, format, scale, getShaderSettings, onExportScaled]);
+  }, [canvasRef, format, scale, getShaderSettings, onExportScaled, t]);
 
   const handleExport = useCallback(async () => {
     const source = canvasRef.current;
@@ -308,7 +316,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         if (!onExportVideo) throw new Error('Video export not available');
         const blob = await onExportVideo(format as 'mp4' | 'gif' | 'webm', setExportProgress);
         downloadBlob(blob, `${filenamePrefix}_${Date.now()}.${format}`);
-        toast.success(`Exported ${format.toUpperCase()}`);
+        toast.success(t('toolEditor.export.exported', { format: format.toUpperCase() }));
         onClose();
         return;
       }
@@ -318,7 +326,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         if (!svgStr) throw new Error('SVG export not available');
         const blob = new Blob([svgStr], { type: 'image/svg+xml' });
         downloadBlob(blob, `${filenamePrefix}_vector_${Date.now()}.svg`);
-        toast.success('Exported SVG (vector)');
+        toast.success(t('toolEditor.export.exportedSvg'));
         onClose();
         return;
       }
@@ -359,10 +367,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
       const dims = `${exportCanvas.width}x${exportCanvas.height}`;
       downloadBlob(blob, `${filenamePrefix}_${dims}_${Date.now()}.${fmt.ext}`);
-      toast.success(`Exported ${fmt.label} (${dims})`);
+      toast.success(t('toolEditor.export.exportedDims', { format: fmt.label, dims }));
       onClose();
     } catch {
-      toast.error('Export failed — try again');
+      toast.error(t('toolEditor.export.failed'));
     } finally {
       setIsExporting(false);
     }
@@ -378,6 +386,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     onClose,
     FORMAT_OPTIONS,
     onExportVideo,
+    t,
   ]);
 
   if (!isOpen) return null;
@@ -397,7 +406,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   return (
     <div
       className={cn(
-        'fixed inset-0 z-50 flex items-center justify-center bg-black/60 transition-all duration-200',
+        'fixed inset-0 z-50 flex items-center justify-center bg-black/60 transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-200',
         isVisible ? 'backdrop-blur-sm opacity-100' : 'backdrop-blur-none opacity-0'
       )}
       onClick={onClose}
@@ -405,20 +414,18 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       <div
         ref={modalRef}
         className={cn(
-          'w-[400px] bg-neutral-950 border border-neutral-800/50 rounded-xl shadow-2xl transition-all duration-200',
+          'w-[400px] bg-popover border border-border rounded-xl shadow-2xl transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-200',
           isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         )}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800/50">
-          <span className="text-2xs uppercase tracking-widest text-neutral-300">
-            Export Settings
-          </span>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <span className="text-2xs text-muted-foreground">{t('toolEditor.export.title')}</span>
           <button
             onClick={onClose}
-            className="text-neutral-600 hover:text-neutral-300 transition-colors p-1"
-            title="Close (Esc)"
+            className="text-muted-foreground hover:text-foreground transition-colors p-1"
+            title={t('common.closeEsc')}
           >
             <X size={14} />
           </button>
@@ -427,7 +434,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         <div className="px-5 py-5 space-y-5">
           {/* Preview — Video (live stream) or Image (thumbnail) */}
           {isVideoFormat ? (
-            <div className="relative flex justify-center rounded-lg overflow-hidden border border-neutral-800/50 bg-black">
+            <div className="relative flex justify-center rounded-xl overflow-hidden border border-border bg-black">
               <video
                 ref={videoPreviewRef}
                 muted
@@ -460,7 +467,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </div>
           ) : previewUrl ? (
             <div className="flex justify-center">
-              <div className="relative rounded-lg overflow-hidden border border-neutral-800/50 bg-[repeating-conic-gradient(#1a1a1a_0%_25%,#111_0%_50%)] bg-[length:12px_12px]">
+              <div className="relative rounded-xl overflow-hidden border border-border bg-[repeating-conic-gradient(#1a1a1a_0%_25%,#111_0%_50%)] bg-[length:12px_12px]">
                 <img
                   src={previewUrl}
                   alt="Export preview"
@@ -473,17 +480,17 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
           {/* Format */}
           <div className="space-y-2">
-            <span className="text-2xs uppercase tracking-widest text-neutral-500">Format</span>
+            <span className="text-2xs text-muted-foreground">{t('miniTools.format')}</span>
             <div className="flex flex-wrap gap-1.5">
               {FORMAT_OPTIONS.map((f) => (
                 <button
                   key={f.id}
                   onClick={() => setFormat(f.id)}
                   className={cn(
-                    'flex-1 min-w-[52px] py-2 rounded-md text-2xs font-mono uppercase tracking-wider transition-colors duration-200 border',
+                    'flex-1 min-w-[52px] py-2 rounded-md text-2xs font-mono transition-colors duration-200 border',
                     format === f.id
-                      ? 'bg-white/10 text-white border-white/20'
-                      : 'bg-neutral-900/50 text-neutral-400 border-neutral-800/50 hover:bg-neutral-800/30'
+                      ? 'bg-accent text-foreground border-border-hover'
+                      : 'bg-muted/50 text-muted-foreground border-border hover:bg-accent'
                   )}
                 >
                   {f.label}
@@ -499,16 +506,16 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 isVideoFormat ? IS_VIDEO_FORMAT(p.format) : !IS_VIDEO_FORMAT(p.format)
               ).map((p) => (
                 <button
-                  key={p.label}
+                  key={p.labelKey}
                   onClick={() => {
                     setFormat(p.format);
                     setScale(p.scale);
                     if (p.duration) onVideoDurationChange?.(p.duration);
                     if (p.fps) onVideoFpsChange?.(p.fps);
                   }}
-                  className="px-2.5 py-1 rounded-full text-2xs font-mono text-neutral-500 bg-neutral-900/50 border border-neutral-800/50 hover:bg-white/5 hover:text-neutral-300 transition-colors"
+                  className="px-2.5 py-1 rounded-full text-2xs text-muted-foreground bg-muted/50 border border-border hover:bg-accent hover:text-foreground transition-colors"
                 >
-                  {p.label}
+                  {t(p.labelKey)}
                 </button>
               ))}
             </div>
@@ -518,7 +525,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           {IS_LOSSY_IMAGE(format) && (
             <div className="space-y-2">
               <NodeSlider
-                label="Quality"
+                label={t('toolEditor.export.quality')}
                 value={quality}
                 min={0.1}
                 max={1}
@@ -532,17 +539,17 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           {/* Scale (raster image only) */}
           {!isVideoFormat && format !== 'svg' && (
             <div className="space-y-2">
-              <span className="text-2xs uppercase tracking-widest text-neutral-500">Scale</span>
+              <span className="text-2xs text-muted-foreground">{t('toolEditor.export.scale')}</span>
               <div className="flex gap-1.5">
                 {SCALE_OPTIONS.map((s) => (
                   <button
                     key={s.id}
                     onClick={() => setScale(s.id)}
                     className={cn(
-                      'flex-1 py-2 rounded-md text-2xs font-mono uppercase tracking-wider transition-colors duration-200 border',
+                      'flex-1 py-2 rounded-md text-2xs font-mono transition-colors duration-200 border',
                       scale === s.id
-                        ? 'bg-white/10 text-white border-white/20'
-                        : 'bg-neutral-900/50 text-neutral-400 border-neutral-800/50 hover:bg-neutral-800/30'
+                        ? 'bg-accent text-foreground border-border-hover'
+                        : 'bg-muted/50 text-muted-foreground border-border hover:bg-accent'
                     )}
                   >
                     {s.label}
@@ -557,7 +564,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <ScrubInput
-                  label="Duration"
+                  label={t('toolEditor.export.duration')}
                   value={videoDuration}
                   min={0.5}
                   max={30}
@@ -567,9 +574,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   hint="Video duration in seconds"
                 />
                 <div className="space-y-1">
-                  <span className="text-2xs font-mono text-neutral-500 uppercase tracking-widest">
-                    FPS
-                  </span>
+                  <span className="text-xs text-muted-foreground">FPS</span>
                   <div className="flex gap-1">
                     {FPS_OPTIONS.map((f) => (
                       <button
@@ -578,8 +583,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                         className={cn(
                           'flex-1 py-1.5 rounded text-2xs font-mono transition-colors border',
                           videoFps === f.id
-                            ? 'bg-white/10 text-white border-white/20'
-                            : 'bg-neutral-900/50 text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'
+                            ? 'bg-accent text-foreground border-border-hover'
+                            : 'bg-muted/50 text-muted-foreground border-border hover:bg-accent'
                         )}
                       >
                         {f.label}
@@ -592,8 +597,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           )}
 
           {/* Output info */}
-          <div className="flex items-center justify-between text-2xs font-mono text-neutral-500 bg-neutral-900/40 rounded-md px-3 py-2">
-            <span>Output</span>
+          <div className="flex items-center justify-between text-2xs font-mono text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+            <span>{t('toolEditor.export.output')}</span>
             <div className="flex items-center gap-3">
               {isVideoFormat ? (
                 <>
@@ -603,7 +608,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                     {sourceW} × {sourceH}px
                   </span>
                   {videoSizeEstimate && (
-                    <span className="text-neutral-600">{videoSizeEstimate}</span>
+                    <span className="text-muted-foreground">{videoSizeEstimate}</span>
                   )}
                 </>
               ) : (
@@ -613,7 +618,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                       ? `${sourceW} × ${sourceH} vector`
                       : `${outputW} × ${outputH}px`}
                   </span>
-                  {sizeEstimate && <span className="text-neutral-600">{sizeEstimate}</span>}
+                  {sizeEstimate && <span className="text-muted-foreground">{sizeEstimate}</span>}
                 </>
               )}
             </div>
@@ -628,8 +633,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               onClick={handleCopyToClipboard}
               disabled={isExporting || !source}
               variant="outline"
-              className="h-10 px-3 border-neutral-800 bg-transparent hover:bg-neutral-800/50 text-neutral-400 hover:text-neutral-200"
-              title="Copy to clipboard"
+              className="h-10 px-3 border-border bg-transparent hover:bg-accent text-muted-foreground hover:text-foreground"
+              title={t('toolEditor.export.copy')}
             >
               {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
             </Button>
@@ -639,12 +644,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           <Button
             onClick={handleExport}
             disabled={isExporting || !source}
-            className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-10 text-xs gap-2"
+            className="flex-1 bg-foreground hover:bg-foreground/90 text-background font-medium h-10 text-xs gap-2"
           >
             {isExporting ? (
               <>
                 <Loader2 size={14} className="animate-spin" />
-                {exportProgress > 0 ? `${Math.round(exportProgress)}%` : 'Exporting...'}
+                {exportProgress > 0 ? `${Math.round(exportProgress)}%` : t('common.exporting')}
               </>
             ) : (
               <>

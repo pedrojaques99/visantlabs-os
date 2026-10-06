@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Upload, Maximize2, Diamond, X } from '@/lib/ui/icons';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Maximize2, Diamond, X } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -14,12 +14,16 @@ import { ImageCompareSlider } from '@/components/shared/ImageCompareSlider';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
+import { Dropzone } from '@/components/ui/Dropzone';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToolInput } from '@/hooks/useToolInput';
 import { QuickActions } from '@/components/shared/QuickActions';
 import JSZip from 'jszip';
 import { glassSurface } from '@/lib/ui/glass';
-import { fadeInUp, itemEnter, transitions } from '@/lib/ui/motion';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { Thumb } from '@/components/ui/Thumb';
+import { fade, transitions } from '@/lib/ui/motion';
 
 const SCALE_OPTIONS = [2, 3, 4] as const;
 
@@ -54,7 +58,6 @@ async function processItem(
 
 export const UpscalePage: React.FC = () => {
   const { t } = useTranslation();
-  const inputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [convertProgress, setConvertProgress] = useState(0);
@@ -88,7 +91,7 @@ export const UpscalePage: React.FC = () => {
     items.find((i) => i.id === previewId) || items.find((i) => i.status === 'done') || items[0];
 
   const handleFiles = useCallback(
-    (fileList: FileList) => {
+    (fileList: FileList | File[]) => {
       const valid: { url: string; name: string }[] = [];
       Array.from(fileList).forEach((file) => {
         const error = validateFile(file, 'image');
@@ -101,14 +104,6 @@ export const UpscalePage: React.FC = () => {
       if (valid.length) addFiles(valid);
     },
     [addFiles]
-  );
-
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files) handleFiles(e.target.files);
-      if (e.target) e.target.value = '';
-    },
-    [handleFiles]
   );
 
   const handleDrop = useCallback(
@@ -130,7 +125,7 @@ export const UpscalePage: React.FC = () => {
     if (isProcessing) return;
     const toProcess = items.filter((i) => i.status === 'queued' || i.status === 'error');
     if (!toProcess.length) {
-      toast.info('Nothing to process');
+      toast.info(t('miniTools.nothingToProcess'));
       return;
     }
 
@@ -144,8 +139,8 @@ export const UpscalePage: React.FC = () => {
       setConvertProgress(Math.round((done / total) * 100));
     }
     setIsProcessing(false);
-    toast.success(`${done} image${done > 1 ? 's' : ''} upscaled`);
-  }, [items, scaleFactor, sharpening, isProcessing, updateItem, setIsProcessing]);
+    toast.success(t('miniTools.upscale.done', { count: done }));
+  }, [items, scaleFactor, sharpening, isProcessing, updateItem, setIsProcessing, t]);
 
   const handleDownloadAll = useCallback(async () => {
     const doneItems = items.filter((i) => i.status === 'done' && i.resultBase64);
@@ -166,64 +161,64 @@ export const UpscalePage: React.FC = () => {
     }
     const blob = await zip.generateAsync({ type: 'blob' });
     downloadBlob(blob, `upscale-batch-${scaleFactor}x-${Date.now()}.zip`);
-    toast.success('ZIP downloaded');
-  }, [items, scaleFactor]);
+    toast.success(t('miniTools.zipDownloaded'));
+  }, [items, scaleFactor, t]);
 
   const handleCopyPreview = useCallback(async () => {
     const src = previewItem?.resultBase64 || previewItem?.sourceUrl;
     if (!src) return;
     const result = await copyImageAsPng(src);
-    if (result.success) toast.success('Copied to clipboard');
-    else toast.error(result.error || 'Copy failed');
-  }, [previewItem]);
+    if (result.success) toast.success(t('miniTools.copied'));
+    else toast.error(result.error || t('miniTools.copyFailed'));
+  }, [previewItem, t]);
 
   const hasItems = items.length > 0;
 
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Add more */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-xs font-medium cursor-pointer transition-colors duration-200">
-        <Upload size={12} />
-        Add images
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          multiple
-          className="hidden"
-          onChange={handleInputChange}
-        />
-      </label>
+      <Dropzone
+        onFiles={handleFiles}
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        label={t('miniTools.addImages')}
+        size="sm"
+        dropTarget={false}
+      />
 
       {/* Thumbnail queue */}
       <div className="max-h-[32vh] overflow-y-auto space-y-1.5 pr-1">
-        {items.map((item, i) => (
+        {items.map((item) => (
           <motion.div
             key={item.id}
             onClick={() => setPreviewId(item.id)}
-            {...itemEnter(i)}
+            {...fade}
             layout
             className={cn(
-              'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors duration-200 group',
-              previewItem?.id === item.id
-                ? 'bg-neutral-800/60 ring-1 ring-neutral-600'
-                : 'hover:bg-neutral-900/60'
+              'group flex items-center gap-2 p-1.5 rounded-xl cursor-pointer transition-colors duration-200',
+              previewItem?.id === item.id ? 'bg-muted ring-1 ring-border' : 'hover:bg-muted/60'
             )}
           >
-            <img
+            <Thumb
               src={item.resultBase64 || item.sourceUrl}
               alt=""
-              className="w-10 h-10 rounded object-cover bg-neutral-900 flex-shrink-0"
+              className="w-10 h-10 rounded object-cover bg-muted flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-2xs font-mono text-neutral-300 truncate">{item.fileName}</p>
+              <p className="text-2xs font-mono text-foreground truncate">{item.fileName}</p>
               <StatusBadge status={item.status} />
             </div>
             <button
+              type="button"
+              aria-label={t('miniTools.remove')}
               onClick={(e) => {
                 e.stopPropagation();
                 removeItem(item.id);
               }}
-              className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-neutral-300 transition-[color,background-color,border-color,opacity] duration-200 flex-shrink-0"
+              className={cn(
+                hoverReveal,
+                'text-muted-foreground hover:text-foreground flex-shrink-0'
+              )}
             >
               <X size={12} />
             </button>
@@ -231,42 +226,36 @@ export const UpscalePage: React.FC = () => {
         ))}
       </div>
 
-      <div className="h-px bg-neutral-800" />
+      <div className="h-px bg-border" />
 
       {/* Controls */}
       <div className="space-y-4">
         {/* Scale buttons */}
         <div className="space-y-1.5">
-          <span className="text-xs font-medium text-neutral-500">Scale</span>
-          <div className="flex gap-1">
-            {SCALE_OPTIONS.map((s) => (
-              <motion.button
-                key={s}
-                onClick={() => setScaleFactor(s)}
-                disabled={isProcessing}
-                className={cn(
-                  'flex-1 px-2 py-1 rounded text-xs font-mono transition-colors duration-200',
-                  scaleFactor === s
-                    ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40'
-                    : 'bg-neutral-900 text-neutral-500 border border-neutral-800 hover:border-neutral-600'
-                )}
-                whileHover={{ scale: 1.05, transition: transitions.fast }}
-                whileTap={{ scale: 0.95, transition: transitions.press }}
-              >
-                {s}x
-              </motion.button>
-            ))}
-          </div>
+          <span className="text-xs font-medium text-muted-foreground">
+            {t('miniTools.upscale.scale')}
+          </span>
+          <SegmentedControl
+            aria-label={t('miniTools.upscale.scale')}
+            size="sm"
+            fullWidth
+            value={String(scaleFactor)}
+            onChange={(v) => setScaleFactor(Number(v))}
+            disabled={isProcessing}
+            options={SCALE_OPTIONS.map((s) => ({ value: String(s), label: `${s}x` }))}
+          />
         </div>
 
         {/* Sharpening slider */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <Diamond size={10} className="text-neutral-500" />
-              <span className="text-xs font-medium text-neutral-500">Sharpening</span>
+              <Diamond size={10} className="text-muted-foreground" />
+              <span className="text-xs font-medium text-muted-foreground">
+                {t('miniTools.upscale.sharpening')}
+              </span>
             </div>
-            <span className="text-2xs font-mono text-neutral-500 tabular-nums">
+            <span className="text-2xs font-mono text-muted-foreground tabular-nums">
               {Math.round(sharpening * 100)}%
             </span>
           </div>
@@ -278,12 +267,12 @@ export const UpscalePage: React.FC = () => {
             value={sharpening}
             onChange={(e) => setSharpening(parseFloat(e.target.value))}
             disabled={isProcessing}
-            className="w-full h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
+            className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
           />
         </div>
       </div>
 
-      <div className="h-px bg-neutral-800" />
+      <div className="h-px bg-border" />
 
       {/* Actions */}
       <div className="space-y-2">
@@ -293,7 +282,9 @@ export const UpscalePage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium transition-colors duration-200"
+                variant="primary"
+                size="sm"
+                className="w-full text-xs"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -302,8 +293,10 @@ export const UpscalePage: React.FC = () => {
                 )}
                 <span className="ml-2">
                   {isProcessing
-                    ? `Processing…`
-                    : `Upscale ${queuedOrErrorCount > 1 ? `${queuedOrErrorCount} images` : ''}`}
+                    ? t('common.processing')
+                    : queuedOrErrorCount > 1
+                      ? t('miniTools.upscale.runCount', { count: queuedOrErrorCount })
+                      : t('miniTools.upscale.run')}
                 </span>
               </Button>
             </motion.div>
@@ -315,7 +308,7 @@ export const UpscalePage: React.FC = () => {
               <QuickActions
                 toolId="upscale"
                 outputMime="image/png"
-                summary={`${doneCount} image${doneCount > 1 ? 's' : ''} upscaled`}
+                summary={t('miniTools.upscale.done', { count: doneCount })}
                 onDownloadAll={handleDownloadAll}
                 onCopy={handleCopyPreview}
                 assetData={
@@ -336,8 +329,8 @@ export const UpscalePage: React.FC = () => {
   ) : undefined;
 
   const statusBarContent = hasItems ? (
-    <div className="flex items-center gap-3 text-2xs font-mono uppercase tracking-widest tabular-nums">
-      <span className="text-neutral-400">
+    <div className="flex items-center gap-3 text-2xs tabular-nums text-muted-foreground">
+      <span>
         {doneCount}/{items.length}
       </span>
     </div>
@@ -351,7 +344,7 @@ export const UpscalePage: React.FC = () => {
       documentTitle={t('apps.bicubicUpscale.name')}
       onReset={hasItems ? reset : undefined}
       panel={panelContent}
-      panelLabel="Queue & settings"
+      panelLabel={t('miniTools.panelLabel')}
       statusBar={statusBarContent}
       dragDrop={{
         onDrop: handleDrop,
@@ -362,60 +355,15 @@ export const UpscalePage: React.FC = () => {
     >
       <AnimatePresence mode="wait">
         {!hasItems ? (
-          /* ─── Empty / Upload state — vertically centered ─── */
-          <motion.div key="upload" {...fadeInUp} className="flex flex-col items-center gap-6 py-8">
-            <motion.div
-              className={cn(
-                'w-16 h-16 rounded-2xl flex items-center justify-center',
-                glassSurface.panel
-              )}
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ ...transitions.base, delay: 0.08 }}
-            >
-              <Maximize2 size={28} className="text-neutral-500" />
-            </motion.div>
-
-            <motion.div
-              className="text-center space-y-2"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...transitions.base, delay: 0.12 }}
-            >
-              <p className="text-sm text-neutral-300 font-medium">
-                Upscale images with bicubic interpolation
-              </p>
-              <p className="text-xs text-neutral-600 font-mono">
-                Up to 4x with sharpening — batch supported
-              </p>
-            </motion.div>
-
-            <motion.label
-              className={cn(
-                'flex flex-col items-center justify-center gap-3 w-full max-w-md h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-all',
-                isDragOver
-                  ? 'border-brand-cyan bg-brand-cyan/5 scale-[1.02]'
-                  : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40 hover:bg-neutral-900/40'
-              )}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...transitions.base, delay: 0.16 }}
-              whileHover={{ scale: 1.01, transition: transitions.fast }}
-              whileTap={{ scale: 0.99, transition: transitions.press }}
-            >
-              <Upload size={24} className="text-neutral-500" />
-              <span className="text-xs font-medium text-neutral-500">
-                Drop images or click to upload
-              </span>
-              <input
-                ref={inputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                multiple
-                className="hidden"
-                onChange={handleInputChange}
-              />
-            </motion.label>
+          <motion.div key="upload" {...fade} className="flex w-full justify-center py-8">
+            <Dropzone
+              onFiles={handleFiles}
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              label={t('miniTools.dropImages')}
+              dropTarget={false}
+              className="max-w-md"
+            />
           </motion.div>
         ) : (
           /* ─── Working state — centered preview with ImageCompareSlider ─── */
@@ -423,22 +371,15 @@ export const UpscalePage: React.FC = () => {
             key="workspace"
             {...fadeScale}
             className={cn(
-              'relative w-full max-w-3xl rounded-2xl overflow-hidden min-h-[300px] flex items-center justify-center',
-              glassSurface.panel
+              'relative w-full max-w-3xl rounded-xl overflow-hidden min-h-[300px] flex items-center justify-center',
+              glassSurface.surface
             )}
           >
             {previewItem ? (
               <>
                 <AnimatePresence mode="wait">
                   {previewItem.status === 'done' && previewItem.resultBase64 ? (
-                    <motion.div
-                      key="compare"
-                      className="w-full"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={transitions.base}
-                    >
+                    <motion.div key="compare" className="w-full" {...fade}>
                       <ImageCompareSlider
                         before={previewItem.sourceUrl}
                         after={previewItem.resultBase64}
@@ -450,10 +391,7 @@ export const UpscalePage: React.FC = () => {
                       src={previewItem.sourceUrl}
                       alt={previewItem.fileName}
                       className="w-full h-auto max-h-[60vh] object-contain"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={transitions.base}
+                      {...fade}
                     />
                   )}
                 </AnimatePresence>
@@ -461,15 +399,12 @@ export const UpscalePage: React.FC = () => {
                 <AnimatePresence>
                   {isProcessing && (
                     <motion.div
-                      className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={transitions.base}
+                      className="absolute inset-0 flex items-center justify-center bg-background/80"
+                      {...fade}
                     >
                       <FlyingPaperLoader
                         progress={convertProgress}
-                        label={`${convertProgress}% — ${doneCount}/${items.length}`}
+                        label={`${convertProgress}% · ${doneCount}/${items.length}`}
                       />
                     </motion.div>
                   )}

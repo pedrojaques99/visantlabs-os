@@ -21,11 +21,14 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';
 import { useUpdateGuideline } from '@/hooks/queries/useBrandGuidelines';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';
+import { useTranslation } from '@/hooks/useTranslation';
+import { cn } from '@/lib/utils';
 
 interface Props {
   guideline: BrandGuideline;
@@ -45,12 +48,13 @@ const fileToBase64 = (file: File): Promise<string> =>
 
 const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <label className="block space-y-1.5">
-    <span className="text-2xs uppercase tracking-widest text-neutral-500">{label}</span>
+    <span className="text-xs font-medium text-muted-foreground">{label}</span>
     {children}
   </label>
 );
 
 export const BrandQuickEditDialog: React.FC<Props> = ({ guideline, open, onOpenChange }) => {
+  const { t } = useTranslation();
   const update = useUpdateGuideline();
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -80,9 +84,9 @@ export const BrandQuickEditDialog: React.FC<Props> = ({ guideline, open, onOpenC
       const base64 = await fileToBase64(file);
       await brandGuidelineApi.uploadLogo(guideline.id, base64, 'primary', 'Primary');
       await qc.invalidateQueries({ queryKey: ['brand-guidelines'] });
-      toast.success('Logo updated');
+      toast.success(t('brandQuickEdit.logoUpdated'));
     } catch {
-      toast.error('Failed to upload logo');
+      toast.error(t('brandQuickEdit.logoFailed'));
     } finally {
       setUploading(false);
     }
@@ -113,10 +117,10 @@ export const BrandQuickEditDialog: React.FC<Props> = ({ guideline, open, onOpenC
       { id: guideline.id, data: patch },
       {
         onSuccess: () => {
-          toast.success('Brand updated');
+          toast.success(t('brandQuickEdit.saved'));
           onOpenChange(false);
         },
-        onError: () => toast.error('Failed to save changes'),
+        onError: () => toast.error(t('brandQuickEdit.saveFailed')),
       }
     );
   };
@@ -125,16 +129,14 @@ export const BrandQuickEditDialog: React.FC<Props> = ({ guideline, open, onOpenC
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Quick edit</DialogTitle>
-          <DialogDescription>
-            The core of this brand — the rest lives in the full view.
-          </DialogDescription>
+          <DialogTitle>{t('brandQuota.quickEdit')}</DialogTitle>
+          <DialogDescription>{t('brandQuickEdit.description')}</DialogDescription>
         </DialogHeader>
 
         <DialogBody className="space-y-5">
           {/* Logo → brand mark / avatar */}
           <div className="flex items-center gap-4">
-            <div className="ring-2 ring-neutral-800 rounded-lg">
+            <div className="ring-1 ring-border rounded-xl">
               <BrandAvatar brand={guideline} size={56} rounded="md" preference="primary" />
             </div>
             <div className="space-y-1">
@@ -147,11 +149,9 @@ export const BrandQuickEditDialog: React.FC<Props> = ({ guideline, open, onOpenC
                 onClick={() => fileRef.current?.click()}
               >
                 {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-                {uploading ? 'Uploading…' : 'Upload logo'}
+                {uploading ? t('brandQuickEdit.uploading') : t('brandQuickEdit.uploadLogo')}
               </Button>
-              <p className="text-2xs text-neutral-500">
-                Becomes the brand&apos;s avatar everywhere.
-              </p>
+              <p className="text-xs text-muted-foreground">{t('brandQuickEdit.logoHint')}</p>
             </div>
             <input
               ref={fileRef}
@@ -166,48 +166,39 @@ export const BrandQuickEditDialog: React.FC<Props> = ({ guideline, open, onOpenC
             />
           </div>
 
-          <Field label="Name">
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Brand name"
-            />
+          <Field label={t('brandQuickEdit.name')}>
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
-          <Field label="Tagline">
-            <Input
-              value={tagline}
-              onChange={(e) => setTagline(e.target.value)}
-              placeholder="A short, memorable line"
-            />
+          <Field label={t('brandQuickEdit.tagline')}>
+            <Input value={tagline} onChange={(e) => setTagline(e.target.value)} />
           </Field>
-          <Field label="Positioning">
-            <textarea
+          <Field label={t('brandQuickEdit.positioning')}>
+            <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="One or two lines on what the brand is"
               rows={2}
-              className="w-full resize-none rounded-lg border border-neutral-800 bg-neutral-950/50 px-3 py-2 text-sm text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/10"
+              className="min-h-0"
             />
           </Field>
           <div className="grid grid-cols-[1fr_auto] gap-3">
-            <Field label="Website">
+            <Field label={t('brandQuickEdit.website')}>
               <Input
                 value={website}
                 onChange={(e) => setWebsite(e.target.value)}
                 placeholder="https://"
               />
             </Field>
-            <Field label="Primary">
+            <Field label={t('brandQuickEdit.primary')}>
               <div className="flex items-center gap-2">
                 <span
-                  className="w-9 h-9 rounded-lg border border-neutral-800 shrink-0"
+                  className="w-9 h-9 rounded-xl border border-border shrink-0"
                   style={{ backgroundColor: hexValid && primaryHex ? primaryHex : 'transparent' }}
                 />
                 <Input
                   value={primaryHex}
                   onChange={(e) => setPrimaryHex(e.target.value)}
                   placeholder="#000000"
-                  className={cnHex(hexValid)}
+                  className={cn('w-28 font-mono', !hexValid && 'border-destructive')}
                 />
               </div>
             </Field>
@@ -216,19 +207,14 @@ export const BrandQuickEditDialog: React.FC<Props> = ({ guideline, open, onOpenC
 
         <DialogFooter className="flex-row justify-end gap-2">
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button onClick={handleSave} disabled={update.isPending || !hexValid || !name.trim()}>
             {update.isPending && <Loader2 size={14} className="animate-spin mr-1.5" />}
-            Save
+            {t('common.save')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 };
-
-// Small helper so the hex input flags an invalid value inline.
-function cnHex(valid: boolean): string {
-  return valid ? 'w-28 font-mono' : 'w-28 font-mono border-destructive focus:ring-destructive/30';
-}

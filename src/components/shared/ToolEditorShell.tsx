@@ -9,6 +9,7 @@ import { ToolEditorStatusBar, type StatusItem } from './ToolEditorStatusBar';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export interface ToolEditorShellProps {
   title: string;
@@ -53,9 +54,9 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
   panelVisible,
   setPanelVisible,
   onReset,
-  resetTitle = 'Reset settings',
-  resetMessage = 'All settings will return to defaults.',
-  resetConfirmText = 'Reset',
+  resetTitle,
+  resetMessage,
+  resetConfirmText,
   undo,
   redo,
   extraTopBarLeft,
@@ -73,6 +74,7 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
   canvasClassName,
   children,
 }) => {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -86,8 +88,8 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
   const handleReset = useCallback(() => {
     onReset();
     setConfirmReset(false);
-    toast.success('Settings reset');
-  }, [onReset]);
+    toast.success(t('common.settingsReset'));
+  }, [onReset, t]);
 
   const canvasPadding = useMemo(
     () => ({
@@ -111,8 +113,11 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
     ? 'absolute inset-0 transition-[padding] duration-[var(--dur-slow)]'
     : 'absolute inset-0 pt-10 transition-[padding] duration-[var(--dur-slow)]';
 
+  // O editor é sempre escuro: `dark` escopa os tokens do tema escuro nesta subárvore
+  // (o variant do Tailwind é `&:is(.dark *)`), então o painel continua escuro com o app em
+  // tema claro. `text-foreground` porque a cor herdada do body já vem resolvida no tema claro.
   return (
-    <AppShell>
+    <AppShell className="dark text-foreground">
       {!hideTopBar && (
         <ToolEditorTopBar
           title={title}
@@ -135,7 +140,7 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
         {...dragProps}
       >
         <CanvasErrorBoundary>{children}</CanvasErrorBoundary>
-        <DropOverlay visible={isDragOver} message={dropMessage || 'Drop file here'} />
+        <DropOverlay visible={isDragOver} message={dropMessage} />
       </div>
 
       {!isMobile && (
@@ -162,9 +167,9 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
         isOpen={confirmReset}
         onClose={() => setConfirmReset(false)}
         onConfirm={handleReset}
-        title={resetTitle}
-        message={resetMessage}
-        confirmText={resetConfirmText}
+        title={resetTitle ?? t('common.resetSettingsTitle')}
+        message={resetMessage ?? t('common.resetSettingsMessage')}
+        confirmText={resetConfirmText ?? t('common.reset')}
         variant="warning"
       />
     </AppShell>

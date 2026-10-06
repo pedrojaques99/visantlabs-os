@@ -43,7 +43,7 @@ export const BrandSwitcher: React.FC<BrandSwitcherProps> = ({
           {
             value: ALL_VALUE,
             label: t('nav.allBrands'),
-            icon: <Layers size={13} className="text-neutral-400" />,
+            icon: <Layers size={13} className="text-muted-foreground" />,
           },
         ]
       : []),
@@ -55,7 +55,7 @@ export const BrandSwitcher: React.FC<BrandSwitcherProps> = ({
     {
       value: MANAGE_VALUE,
       label: t('cockpit.switcher.manageBrands'),
-      icon: <Plus size={12} className="text-neutral-400" />,
+      icon: <Plus size={12} className="text-muted-foreground" />,
     },
   ];
 
@@ -65,7 +65,7 @@ export const BrandSwitcher: React.FC<BrandSwitcherProps> = ({
   return (
     <div
       className={cn(
-        'flex items-center px-1.5 bg-muted/40 border border-border rounded-lg hover:bg-muted hover:border-border transition-[color,background-color,border-color,box-shadow] duration-200 shadow-sm h-9',
+        'flex min-w-0 items-center px-1.5 bg-muted/40 border border-border rounded-xl hover:bg-muted hover:border-border transition-[color,background-color,border-color,box-shadow] duration-200 shadow-sm h-9',
         className
       )}
       data-vsn-component="BrandSwitcher"
@@ -80,12 +80,12 @@ export const BrandSwitcher: React.FC<BrandSwitcherProps> = ({
         }}
         placeholder={t('cockpit.switcher.placeholder')}
         variant="node"
-        className="h-full min-w-[160px] bg-transparent border-none text-xs hover:text-neutral-200 shadow-none focus:ring-0"
+        className="h-full min-w-0 bg-transparent border-none text-xs hover:text-foreground shadow-none focus:ring-0"
         footer={
           brands.length > 1 ? (
-            <div className="flex items-center justify-between px-2 py-1.5 text-2xs text-neutral-500">
+            <div className="flex items-center justify-between px-2 py-1.5 text-2xs text-muted-foreground">
               <span>{t('nav.lastBrand')}</span>
-              <kbd className="font-mono px-1 py-0.5 rounded bg-neutral-800/60 border border-neutral-700/50 text-neutral-400">
+              <kbd className="font-mono px-1 py-0.5 rounded bg-muted border border-border text-muted-foreground">
                 ⌥B
               </kbd>
             </div>

@@ -6,6 +6,7 @@ import {
   escapeRegex,
   visibilityFilter,
   parseBrandTerms,
+  HAS_IMAGE,
 } from '../references/engine.js';
 
 describe('references engine — visibility', () => {
@@ -108,10 +109,17 @@ describe('references engine — brand terms (ranking only)', () => {
 
 describe('references engine — browsable guard', () => {
   it('requires an image, so failed ingests never reach the grid', () => {
-    expect(buildReferenceFilter({}).referenceImageUrl).toEqual({
-      $exists: true,
-      $nin: [null, ''],
-    });
+    const rule = buildReferenceFilter({}).referenceImageUrl as { $regex: RegExp };
+    expect(rule).toEqual(HAS_IMAGE.referenceImageUrl);
+    expect(rule.$regex.test('https://cdn.example.com/ref.png')).toBe(true);
+    expect(rule.$regex.test('HTTP://cdn.example.com/ref.png')).toBe(true);
+  });
+
+  it('rejects local-ingest paths that only resolve on the ingest machine', () => {
+    const { $regex } = HAS_IMAGE.referenceImageUrl;
+    expect($regex.test('/api/local-image?path=Z:\\refs\\a.png')).toBe(false);
+    expect($regex.test('')).toBe(false);
+    expect($regex.test('data:image/png;base64,AAAA')).toBe(false);
   });
 
   it('excludes PSD scenes by psdPath being a STRING, not by $exists', () => {

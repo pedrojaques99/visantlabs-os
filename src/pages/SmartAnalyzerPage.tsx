@@ -11,7 +11,6 @@ import {
   X,
   Plus,
   Globe,
-  Cpu,
   RefreshCw,
   Diamond,
 } from '@/lib/ui/icons';
@@ -30,6 +29,7 @@ import { GEMINI_MODELS } from '../constants/geminiModels';
 import { MockupCard } from '@/components/mockupmachine/MockupCard';
 import { API_BASE } from '@/config/api';
 import { copyToClipboard } from '@/utils/clipboard';
+import { useTranslation } from '@/hooks/useTranslation';
 
 function injectFont(content: string, font: string, mode: 'figma-plugin' | 'image-gen'): string {
   if (!font) return content;
@@ -75,6 +75,7 @@ interface AnalysisResult {
 
 export const SmartAnalyzerPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user } = useLayout();
   const isAdmin = user?.isAdmin === true;
 
@@ -187,7 +188,7 @@ export const SmartAnalyzerPage: React.FC = () => {
   // Redirect non-admins
   React.useEffect(() => {
     if (user && !isAdmin) {
-      toast.error('Admin access required');
+      toast.error(t('smartAnalyzerPage.toast.adminRequired'));
       navigate('/apps');
     }
   }, [user, isAdmin, navigate]);
@@ -282,37 +283,40 @@ export const SmartAnalyzerPage: React.FC = () => {
 
   const pendingAnalyze = useRef(false);
 
-  const handleFileSelect = useCallback((file: File) => {
-    if (!file) return;
+  const handleFileSelect = useCallback(
+    (file: File) => {
+      if (!file) return;
 
-    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      toast.error('Invalid file type. Use PNG, JPG, or WebP.');
-      return;
-    }
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error(t('smartAnalyzerPage.toast.invalidType'));
+        return;
+      }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('File too large. Max 5MB.');
-      return;
-    }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(t('smartAnalyzerPage.toast.tooLarge'));
+        return;
+      }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = (reader.result as string).split(',')[1];
-      setImage({
-        base64,
-        mimeType: file.type,
-        preview: URL.createObjectURL(file),
-      });
-      setResult(null);
-      setGeneratedImage(null);
-      setGeneratedVariations([]);
-      setEditedPrompt('');
-      setActiveSuggestions([]);
-      pendingAnalyze.current = true;
-    };
-    reader.readAsDataURL(file);
-  }, []);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = (reader.result as string).split(',')[1];
+        setImage({
+          base64,
+          mimeType: file.type,
+          preview: URL.createObjectURL(file),
+        });
+        setResult(null);
+        setGeneratedImage(null);
+        setGeneratedVariations([]);
+        setEditedPrompt('');
+        setActiveSuggestions([]);
+        pendingAnalyze.current = true;
+      };
+      reader.readAsDataURL(file);
+    },
+    [t]
+  );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -350,7 +354,7 @@ export const SmartAnalyzerPage: React.FC = () => {
 
   const handleGenerateInline = useCallback(async () => {
     if (!result?.prompt || !image?.base64) {
-      toast.error('Analyze the image first');
+      toast.error(t('smartAnalyzerPage.toast.analyzeFirst'));
       return;
     }
 
@@ -380,7 +384,7 @@ export const SmartAnalyzerPage: React.FC = () => {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Generation failed');
+        throw new Error(error.error || t('smartAnalyzerPage.toast.generationFailed'));
       }
 
       const data = await response.json();
@@ -389,20 +393,20 @@ export const SmartAnalyzerPage: React.FC = () => {
 
       if (imageResult) {
         setGeneratedImage(imageResult);
-        toast.success('Generated successfully!');
+        toast.success(t('smartAnalyzerPage.toast.generated'));
       } else {
-        throw new Error('No image returned from server');
+        throw new Error(t('smartAnalyzerPage.toast.noImage'));
       }
     } catch (error: any) {
-      toast.error('Failed to generate image');
+      toast.error(t('smartAnalyzerPage.toast.generateFailed'));
     } finally {
       setIsGenerating(false);
     }
-  }, [result, image, aspectRatio, refinedPrompt]);
+  }, [result, image, aspectRatio, refinedPrompt, t]);
 
   const handleGenerateVariations = useCallback(async () => {
     if (!result?.prompt || !image?.base64) {
-      toast.error('Analyze the image first');
+      toast.error(t('smartAnalyzerPage.toast.analyzeFirst'));
       return;
     }
 
@@ -410,7 +414,7 @@ export const SmartAnalyzerPage: React.FC = () => {
     setGeneratedImage(null);
     setGeneratedVariations([]);
 
-    toast.loading('Envisioning multiple variations...', { id: 'variations' });
+    toast.loading(t('smartAnalyzerPage.toast.variationsLoading'), { id: 'variations' });
 
     try {
       const token = authService.getToken();
@@ -452,16 +456,18 @@ export const SmartAnalyzerPage: React.FC = () => {
 
       if (validResults.length > 0) {
         setGeneratedVariations(validResults);
-        toast.success(`Generated ${validResults.length} variations!`, { id: 'variations' });
+        toast.success(t('smartAnalyzerPage.toast.variationsDone', { count: validResults.length }), {
+          id: 'variations',
+        });
       } else {
-        throw new Error('Generation failed for all variations');
+        throw new Error(t('smartAnalyzerPage.toast.variationsAllFailed'));
       }
     } catch (error: any) {
-      toast.error('Failed to generate variations', { id: 'variations' });
+      toast.error(t('smartAnalyzerPage.toast.variationsFailed'), { id: 'variations' });
     } finally {
       setIsGeneratingVariations(false);
     }
-  }, [result, image, aspectRatio, refinedPrompt]);
+  }, [result, image, aspectRatio, refinedPrompt, t]);
 
   const handleSaveToLibrary = async (imageBase64: string) => {
     if (!result || !imageBase64) return;
@@ -476,9 +482,9 @@ export const SmartAnalyzerPage: React.FC = () => {
         isLiked: isLiked,
       });
       setMockupId(saved._id || null);
-      toast.success('Saved to your library');
+      toast.success(t('smartAnalyzerPage.toast.saved'));
     } catch (error) {
-      toast.error('Failed to save media');
+      toast.error(t('smartAnalyzerPage.toast.saveFailed'));
     }
   };
 
@@ -494,9 +500,11 @@ export const SmartAnalyzerPage: React.FC = () => {
       const newStatus = !isLiked;
       await mockupApi.update(mockupId, { isLiked: newStatus });
       setIsLiked(newStatus);
-      toast.success(newStatus ? 'Added to favorites' : 'Removed from favorites');
+      toast.success(
+        newStatus ? t('smartAnalyzerPage.toast.favAdded') : t('smartAnalyzerPage.toast.favRemoved')
+      );
     } catch (error) {
-      toast.error('Failed to update favorite status');
+      toast.error(t('smartAnalyzerPage.toast.favFailed'));
     }
   };
 
@@ -514,13 +522,13 @@ export const SmartAnalyzerPage: React.FC = () => {
           const file = item.getAsFile();
           if (file) {
             handleFileSelect(file);
-            toast.success('Image captured from clipboard');
+            toast.success(t('smartAnalyzerPage.toast.pasted'));
             break;
           }
         }
       }
     },
-    [handleFileSelect]
+    [handleFileSelect, t]
   );
 
   React.useEffect(() => {
@@ -539,7 +547,7 @@ export const SmartAnalyzerPage: React.FC = () => {
     if (!image) return;
 
     if (refinements.length > 0) {
-      toast.loading('Refining prompt...', { id: 'refine' });
+      toast.loading(t('smartAnalyzerPage.toast.refining'), { id: 'refine' });
     } else {
       setIsAnalyzing(true);
     }
@@ -579,20 +587,20 @@ export const SmartAnalyzerPage: React.FC = () => {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Analysis failed');
+        throw new Error(error.error || t('smartAnalyzerPage.toast.analysisFailed'));
       }
 
       const data = await response.json();
 
       if (refinements.length > 0) {
         setEditedPrompt(data.prompt);
-        toast.success('Prompt refined', { id: 'refine' });
+        toast.success(t('smartAnalyzerPage.toast.refined'), { id: 'refine' });
       } else {
         setResult(data);
-        toast.success('Analysis complete');
+        toast.success(t('smartAnalyzerPage.toast.analysisDone'));
       }
     } catch (error: any) {
-      toast.error(error.message || 'Analysis failed', { id: 'refine' });
+      toast.error(error.message || t('smartAnalyzerPage.toast.analysisFailed'), { id: 'refine' });
     } finally {
       setIsAnalyzing(false);
     }
@@ -602,7 +610,11 @@ export const SmartAnalyzerPage: React.FC = () => {
     if (!result || !displayContent) return;
     copyToClipboard(displayContent);
     setCopied(true);
-    toast.success(result.mode === 'figma-plugin' ? 'Operations JSON copied!' : 'Prompt copied!');
+    toast.success(
+      result.mode === 'figma-plugin'
+        ? t('smartAnalyzerPage.toast.opsCopied')
+        : t('smartAnalyzerPage.toast.promptCopied')
+    );
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -627,7 +639,7 @@ export const SmartAnalyzerPage: React.FC = () => {
 
   const publishToCommunity = async () => {
     if (!result || !publishName.trim()) {
-      toast.error('Name is required');
+      toast.error(t('smartAnalyzerPage.toast.nameRequired'));
       return;
     }
 
@@ -658,13 +670,13 @@ export const SmartAnalyzerPage: React.FC = () => {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to publish');
+        throw new Error(error.error || t('smartAnalyzerPage.toast.publishFailed'));
       }
 
-      toast.success('Published to Community!');
+      toast.success(t('smartAnalyzerPage.toast.published'));
       setShowPublishModal(false);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to publish');
+      toast.error(error.message || t('smartAnalyzerPage.toast.publishFailed'));
     } finally {
       setIsPublishing(false);
     }
@@ -672,33 +684,29 @@ export const SmartAnalyzerPage: React.FC = () => {
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
-      'ui-screenshot': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-      'figma-design': 'bg-pink-500/20 text-pink-400 border-pink-500/30',
-      mockup: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+      'ui-screenshot': 'bg-chart-1/20 text-chart-1 border-chart-1/30',
+      'figma-design': 'bg-chart-2/20 text-chart-2 border-chart-2/30',
+      mockup: 'bg-chart-3/20 text-chart-3 border-chart-3/30',
       texture: 'bg-warning/20 text-warning border-warning/30',
       ambience: 'bg-success/20 text-success border-success/30',
       luminance: 'bg-warning/20 text-warning border-warning/30',
-      '3d': 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+      '3d': 'bg-chart-4/20 text-chart-4 border-chart-4/30',
       aesthetics: 'bg-destructive/20 text-destructive border-destructive/30',
-      themes: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
+      themes: 'bg-chart-5/20 text-chart-5 border-chart-5/30',
     };
-    return colors[category] || 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30';
+    return colors[category] || 'bg-muted text-muted-foreground border-border';
   };
 
   const adminActions = (
     <div className="flex items-center gap-4">
-      <div className="flex flex-col items-end mr-4">
-        <span className="text-2xs text-neutral-500">System Access</span>
-        <span className="text-xs font-mono text-white">ADMINISTRATOR</span>
-      </div>
       {step !== 'idle' && (
         <Button
           onClick={reset}
           variant="ghost"
-          className="h-10 px-4 text-neutral-500 hover:text-white hover:bg-white/5 border border-transparent hover:border-neutral-800 transition-colors rounded-lg"
+          className="h-10 px-4 text-muted-foreground hover:text-foreground hover:bg-accent border border-transparent hover:border-border transition-colors rounded-xl"
         >
           <RefreshCw size={14} className="mr-2" />
-          Reset
+          {t('smartAnalyzerPage.reset')}
         </Button>
       )}
     </div>
@@ -707,15 +715,17 @@ export const SmartAnalyzerPage: React.FC = () => {
   return (
     <PageShell
       pageId="smart-analyzer"
-      seoTitle="Smart Analyzer | Admin"
-      seoDescription="AI-powered image analysis and prompt generation"
-      title="Image Analyzer"
-      microTitle="Admin // Analysis"
-      description="AI-powered design and prompt engine for professional workflows."
-      breadcrumb={[{ label: 'Systems', to: '/apps' }, { label: 'Smart Analyzer' }]}
+      seoTitle="Smart Analyzer (admin)"
+      seoDescription={t('smartAnalyzerPage.seoDescription')}
+      title={t('smartAnalyzerPage.title')}
+      description={t('smartAnalyzerPage.description')}
+      breadcrumb={[
+        { label: t('apps.title'), to: '/apps' },
+        { label: t('smartAnalyzerPage.breadcrumb') },
+      ]}
       actions={adminActions}
     >
-      <div className="selection:bg-brand-cyan/30 selection:text-brand-cyan">
+      <div>
         <AnimatePresence mode="wait">
           {step === 'idle' && (
             <motion.div
@@ -731,8 +741,8 @@ export const SmartAnalyzerPage: React.FC = () => {
                 className={cn(
                   'group relative border-2 border-dashed transition-colors duration-500 flex flex-col items-center justify-center h-[400px] text-center',
                   isDragging
-                    ? 'border-brand-cyan bg-brand-cyan/5'
-                    : 'border-neutral-800 hover:border-neutral-700 bg-neutral-900/20'
+                    ? 'border-ring bg-muted/30'
+                    : 'border-border hover:border-border-hover bg-muted/20'
                 )}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
@@ -748,24 +758,21 @@ export const SmartAnalyzerPage: React.FC = () => {
                 />
 
                 <div className="relative">
-                  <div className="w-20 h-20 rounded-full bg-neutral-950 flex items-center justify-center border border-neutral-800 group-hover:border-neutral-700 transition-colors duration-500">
+                  <div className="w-20 h-20 rounded-full bg-background flex items-center justify-center border border-border group-hover:border-border-hover transition-colors duration-500">
                     <ImageIcon
                       size={32}
-                      className="text-neutral-500 group-hover:text-brand-cyan transition-colors"
+                      className="text-muted-foreground group-hover:text-foreground transition-colors"
                     />
                   </div>
                 </div>
 
                 <div className="mt-8 space-y-2">
-                  <h3 className="text-xl font-medium text-white">Start here</h3>
-                  <p className="text-sm text-neutral-500 max-w-xs">
-                    Drag an image here, click to browse, or paste with Ctrl+V.
+                  <h3 className="text-xl font-medium text-foreground">
+                    {t('smartAnalyzerPage.idle.title')}
+                  </h3>
+                  <p className="text-sm text-muted-foreground max-w-xs">
+                    {t('smartAnalyzerPage.idle.paste')} <kbd className="font-mono">Ctrl+V</kbd>.
                   </p>
-                </div>
-
-                <div className="mt-12 flex items-center gap-2 text-2xs font-mono tracking-widest text-neutral-600 uppercase border border-neutral-800 px-4 py-1.5 rounded-full">
-                  <Cpu size={10} />
-                  System Ready
                 </div>
               </GlassPanel>
             </motion.div>
@@ -781,21 +788,23 @@ export const SmartAnalyzerPage: React.FC = () => {
               className="max-w-md mx-auto flex flex-col items-center gap-6 py-20"
             >
               <div className="relative">
-                <div className="w-24 h-24 rounded-full bg-neutral-950 flex items-center justify-center border border-neutral-800">
+                <div className="w-24 h-24 rounded-full bg-background flex items-center justify-center border border-border">
                   <GlitchLoader size={28} />
                 </div>
-                <div className="absolute inset-0 rounded-full border border-neutral-700 animate-ping" />
+                <div className="absolute inset-0 rounded-full border border-border-hover animate-ping" />
               </div>
 
               <div className="text-center space-y-2">
-                <h3 className="text-sm font-semibold text-white">Extracting prompt</h3>
-                <p className="text-xs text-neutral-500 animate-pulse">
-                  Analyzing visual patterns...
+                <h3 className="text-sm font-medium text-foreground">
+                  {t('smartAnalyzerPage.analyzing.title')}
+                </h3>
+                <p className="text-xs text-muted-foreground animate-pulse">
+                  {t('smartAnalyzerPage.analyzing.subtitle')}
                 </p>
               </div>
 
               {image && (
-                <div className="w-32 h-20 rounded-xl overflow-hidden border border-neutral-800 opacity-40">
+                <div className="w-32 h-20 rounded-xl overflow-hidden border border-border opacity-40">
                   <img src={image.preview} alt="" className="w-full h-full object-cover" />
                 </div>
               )}
@@ -812,24 +821,28 @@ export const SmartAnalyzerPage: React.FC = () => {
               <div className="grid lg:grid-cols-12 gap-12">
                 <div className="lg:col-span-8 space-y-10">
                   {/* #2: GENERATED RESULT BLOCK (LARGE) - Moved above prompt */}
-                  {/* #2: GENERATED RESULT BLOCK (LARGE) - Moved above prompt */}
                   {(isGenerating ||
                     isGeneratingVariations ||
                     generatedImage ||
                     generatedVariations.length > 0) && (
                     <div className="space-y-6">
                       <div className="flex items-center justify-between pl-1">
-                        <h4 className="text-xs font-medium text-neutral-300 flex items-center gap-3">
-                          <span className="w-2 h-2 rounded-full bg-neutral-600" />
+                        <h4 className="text-xs font-medium text-foreground">
                           {generatedVariations.length > 0
-                            ? 'Visual Variations Suite'
-                            : 'Generated Visual Synthesis'}
+                            ? t('smartAnalyzerPage.result.variations')
+                            : t('smartAnalyzerPage.result.result')}
                         </h4>
-                        <span className="text-2xs font-mono text-neutral-600 uppercase tracking-widest">
-                          {generatedVariations.length > 0
-                            ? `${generatedVariations.length} Scenarios`
-                            : '8K • Photorealistic'}{' '}
-                          • {selectedFont || 'Standard'}
+                        <span className="text-2xs text-muted-foreground">
+                          {[
+                            generatedVariations.length > 0
+                              ? t('smartAnalyzerPage.result.variationsCount', {
+                                  count: generatedVariations.length,
+                                })
+                              : null,
+                            selectedFont || null,
+                          ]
+                            .filter(Boolean)
+                            .join(', ')}
                         </span>
                       </div>
 
@@ -845,10 +858,9 @@ export const SmartAnalyzerPage: React.FC = () => {
                             {generatedVariations.map((v, idx) => (
                               <motion.div
                                 key={`var-${idx}`}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: idx * 0.1 }}
-                                className="relative aspect-video rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800 shadow-2xl"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="relative"
                               >
                                 <MockupCard
                                   base64Image={v}
@@ -862,7 +874,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                                   aspectRatio={aspectRatio as any}
                                   prompt={refinedPrompt}
                                   designType={result.category}
-                                  className="w-full h-full"
+                                  className="w-full"
                                 />
                               </motion.div>
                             ))}
@@ -872,7 +884,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                             key="single-result"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="relative aspect-video rounded-3xl overflow-hidden bg-neutral-900 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-neutral-800"
+                            className="relative"
                           >
                             <MockupCard
                               base64Image={generatedImage}
@@ -890,7 +902,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                               aspectRatio={aspectRatio as any}
                               prompt={refinedPrompt}
                               designType={result.category}
-                              className="w-full h-full"
+                              className="w-full"
                             />
                           </motion.div>
                         )}
@@ -902,48 +914,50 @@ export const SmartAnalyzerPage: React.FC = () => {
                   <div className="flex flex-col">
                     <GlassPanel
                       padding="lg"
-                      className="rounded-3xl border-neutral-800/60 bg-neutral-950/40 relative group"
+                      className="rounded-xl border-border bg-card/40 relative group"
                     >
                       {/* Header: category chip + secondary actions */}
                       <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                           <span
                             className={cn(
-                              'text-2xs font-mono uppercase tracking-widest px-3 py-1.5 rounded-lg border',
+                              'text-2xs px-3 py-1.5 rounded-xl border',
                               getCategoryColor(result.category)
                             )}
                           >
                             {result.category}
                           </span>
                           {result.confidence != null && (
-                            <span className="text-2xs font-mono text-neutral-600">
+                            <span className="text-2xs tabular-nums text-muted-foreground">
                               {Math.round(result.confidence * 100)}%
                             </span>
                           )}
                           {result.name && (
-                            <span className="text-2xs font-mono text-neutral-600 truncate max-w-[200px]">
+                            <span className="text-2xs text-muted-foreground truncate max-w-[200px]">
                               {result.name}
                             </span>
                           )}
                         </div>
 
-                        <div className="flex items-center gap-1.5 p-1 bg-white/5 border border-white/10 rounded-xl">
+                        <div className="flex items-center gap-1.5 p-1 bg-muted border border-border rounded-xl">
                           <Button
                             onClick={() => setIsEditingPrompt(!isEditingPrompt)}
                             variant="ghost"
                             className={cn(
-                              'h-8 px-3 rounded-lg text-2xs font-mono uppercase tracking-widest transition-colors',
+                              'h-8 px-3 rounded-xl text-xs transition-colors',
                               isEditingPrompt
                                 ? 'bg-brand-cyan text-black'
-                                : 'text-neutral-500 hover:text-white'
+                                : 'text-muted-foreground hover:text-foreground'
                             )}
                           >
-                            {isEditingPrompt ? 'Save' : 'Edit'}
+                            {isEditingPrompt
+                              ? t('smartAnalyzerPage.prompt.save')
+                              : t('smartAnalyzerPage.prompt.edit')}
                           </Button>
                           <Button
                             onClick={openPublishModal}
                             variant="ghost"
-                            className="h-8 w-8 p-0 rounded-lg text-neutral-500 hover:text-white hover:bg-white/5"
+                            className="h-8 w-8 p-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent"
                           >
                             <Globe size={14} />
                           </Button>
@@ -960,8 +974,8 @@ export const SmartAnalyzerPage: React.FC = () => {
                               e.target.style.height = 'auto';
                               e.target.style.height = e.target.scrollHeight + 'px';
                             }}
-                            className="w-full bg-transparent border-0 text-lg leading-relaxed text-neutral-200 focus:ring-0 resize-none font-sans scrollbar-hide selection:bg-brand-cyan/30 p-0 min-h-[120px]"
-                            placeholder="Edit your prompt..."
+                            className="w-full bg-transparent border-0 text-lg leading-relaxed text-foreground focus:ring-0 resize-none font-sans scrollbar-hide p-0 min-h-[120px]"
+                            placeholder={t('smartAnalyzerPage.prompt.editPlaceholder')}
                             autoFocus
                             onFocus={(e) => {
                               e.target.style.height = 'auto';
@@ -969,21 +983,21 @@ export const SmartAnalyzerPage: React.FC = () => {
                             }}
                           />
                         ) : (
-                          <pre className="text-lg leading-relaxed text-neutral-200 whitespace-pre-wrap font-sans selection:bg-brand-cyan/30">
+                          <pre className="text-lg leading-relaxed text-foreground whitespace-pre-wrap font-sans">
                             {refinedPrompt}
                           </pre>
                         )}
                       </div>
 
                       {/* Primary CTA: Copy */}
-                      <div className="mt-8 pt-6 border-t border-neutral-800 flex items-center gap-3">
+                      <div className="mt-8 pt-6 border-t border-border flex items-center gap-3">
                         <Button
                           onClick={copyPrompt}
                           className={cn(
-                            'h-12 px-6 rounded-xl font-semibold text-sm transition-all active:scale-[0.98]',
+                            'h-12 px-6 rounded-xl font-medium text-sm transition-colors',
                             copied
                               ? 'bg-success/20 text-success border border-success/30'
-                              : 'bg-white hover:bg-neutral-200 text-black'
+                              : 'bg-primary hover:bg-primary/90 text-primary-foreground'
                           )}
                         >
                           {copied ? (
@@ -991,7 +1005,9 @@ export const SmartAnalyzerPage: React.FC = () => {
                           ) : (
                             <Copy size={16} className="mr-2" />
                           )}
-                          {copied ? 'Copied!' : 'Copy Prompt'}
+                          {copied
+                            ? t('smartAnalyzerPage.prompt.copied')
+                            : t('smartAnalyzerPage.prompt.copy')}
                         </Button>
 
                         {result.mode === 'image-gen' && (
@@ -1001,7 +1017,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                               disabled={isGenerating || isGeneratingVariations}
                               variant="outline"
                               className={cn(
-                                'h-12 px-5 border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/5 text-neutral-400 hover:text-brand-cyan rounded-xl transition-[color,background-color,border-color,opacity] text-xs font-semibold',
+                                'h-12 px-5 border-border hover:border-border-hover hover:bg-accent text-muted-foreground hover:text-foreground rounded-xl transition-[color,background-color,border-color,opacity] text-xs font-medium',
                                 isGenerating && 'opacity-80'
                               )}
                             >
@@ -1010,29 +1026,31 @@ export const SmartAnalyzerPage: React.FC = () => {
                               ) : (
                                 <Diamond size={14} className="mr-2 opacity-50" />
                               )}
-                              {isGenerating ? 'Generating...' : 'Generate'}
+                              {isGenerating
+                                ? t('smartAnalyzerPage.prompt.generating')
+                                : t('smartAnalyzerPage.prompt.generate')}
                             </Button>
                             <Button
                               onClick={() => handleGenerateVariations()}
                               disabled={isGenerating || isGeneratingVariations}
                               variant="ghost"
-                              className="h-12 px-4 text-neutral-500 hover:text-neutral-300 text-xs font-semibold"
+                              className="h-12 px-4 text-muted-foreground hover:text-foreground text-xs font-medium"
                             >
                               {isGeneratingVariations ? (
                                 <GlitchLoader size={14} className="mr-2" />
                               ) : (
                                 <Diamond size={14} className="mr-2 opacity-30" />
                               )}
-                              4x Variations
+                              {t('smartAnalyzerPage.prompt.variations4x')}
                             </Button>
                           </>
                         )}
                       </div>
 
                       {/* Refinements */}
-                      <div className="mt-8 space-y-4 pt-6 border-t border-neutral-800">
-                        <h4 className="text-xs font-medium text-neutral-400 pl-1 flex items-center gap-2">
-                          <Plus size={10} /> Refinements
+                      <div className="mt-8 space-y-4 pt-6 border-t border-border">
+                        <h4 className="text-xs font-medium text-muted-foreground pl-1 flex items-center gap-2">
+                          <Plus size={10} /> {t('smartAnalyzerPage.refinements.title')}
                         </h4>
                         <div className="flex flex-wrap gap-2">
                           {getPromptSuggestions(result.category).map((s) => (
@@ -1040,10 +1058,10 @@ export const SmartAnalyzerPage: React.FC = () => {
                               key={s}
                               onClick={() => toggleSuggestion(s)}
                               className={cn(
-                                'px-4 py-2.5 rounded-xl text-2xs font-mono uppercase tracking-widest transition-all border outline-none active:scale-95',
+                                'px-4 py-2.5 rounded-xl text-xs transition-colors border outline-none',
                                 activeSuggestions.includes(s)
-                                  ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan shadow-[0_0_20px_rgba(34,211,238,0.1)]'
-                                  : 'bg-neutral-900/30 border-neutral-800 text-neutral-500 hover:border-neutral-700 hover:text-neutral-300'
+                                  ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan'
+                                  : 'bg-muted/30 border-border text-muted-foreground hover:border-border-hover hover:text-foreground'
                               )}
                             >
                               {activeSuggestions.includes(s) && (
@@ -1055,8 +1073,8 @@ export const SmartAnalyzerPage: React.FC = () => {
 
                           <div className="relative group/input flex items-center min-w-[200px]">
                             <Input
-                              placeholder="Custom..."
-                              className="h-[42px] px-5 pl-10 bg-neutral-950 border-neutral-800/80 rounded-xl text-2xs font-mono uppercase tracking-widest placeholder:text-neutral-700 focus:border-neutral-600 transition-colors"
+                              placeholder={t('smartAnalyzerPage.refinements.custom')}
+                              className="h-[42px] px-5 pl-10 bg-background border-border rounded-xl text-xs placeholder:text-muted-foreground focus:border-ring transition-colors"
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                   const val = e.currentTarget.value.trim();
@@ -1069,7 +1087,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                             />
                             <Plus
                               size={12}
-                              className="absolute left-4 text-neutral-600 group-focus-within/input:text-neutral-300 transition-colors"
+                              className="absolute left-4 text-muted-foreground group-focus-within/input:text-foreground transition-colors"
                             />
                           </div>
 
@@ -1080,10 +1098,10 @@ export const SmartAnalyzerPage: React.FC = () => {
                                 setActiveSuggestions([]);
                                 setEditedPrompt('');
                               }}
-                              className="h-10 px-4 text-2xs font-mono uppercase tracking-[0.1em] text-neutral-600 hover:text-white"
+                              className="h-10 px-4 text-xs text-muted-foreground hover:text-foreground"
                             >
                               <RefreshCw size={10} className="mr-2" />
-                              Reset
+                              {t('smartAnalyzerPage.reset')}
                             </Button>
                           )}
                         </div>
@@ -1096,26 +1114,25 @@ export const SmartAnalyzerPage: React.FC = () => {
                 <div className="lg:col-span-4 space-y-12">
                   {/* SOURCE IMAGE + REPLACE */}
                   <div className="space-y-4">
-                    <h4 className="text-xs font-medium text-neutral-400 flex items-center gap-2 pl-1">
-                      <ImageIcon size={12} /> Source
+                    <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2 pl-1">
+                      <ImageIcon size={12} /> {t('smartAnalyzerPage.sidebar.source')}
                     </h4>
                     <GlassPanel
                       padding="none"
-                      className="rounded-2xl overflow-hidden border-white/10 opacity-80 hover:opacity-100 transition-opacity relative group/source"
+                      className="rounded-xl overflow-hidden border-border opacity-80 hover:opacity-100 transition-opacity relative group/source"
                     >
                       <img
                         src={image?.preview}
-                        alt="Source"
+                        alt={t('smartAnalyzerPage.sidebar.source')}
                         className="w-full aspect-square object-cover cursor-zoom-in"
                         onClick={() => image?.preview && setShowFullImage(image.preview)}
                       />
+                      {/* Reveal named-group: visível em toque e foco, some só com hover disponível. */}
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover/source:opacity-100 transition-opacity"
+                        className="absolute bottom-2 right-2 text-xs text-foreground bg-popover/90 px-3 py-1.5 rounded-xl border border-border opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/source:opacity-100 focus-visible:opacity-100 transition-opacity"
                       >
-                        <span className="text-2xs font-mono uppercase tracking-widest text-white/80 bg-black/40 px-4 py-2 rounded-lg border border-white/10">
-                          Analyze Another
-                        </span>
+                        {t('smartAnalyzerPage.sidebar.analyzeAnother')}
                       </button>
                     </GlassPanel>
                   </div>
@@ -1123,14 +1140,14 @@ export const SmartAnalyzerPage: React.FC = () => {
                   {/* #4: TAGS & CONTROLS */}
                   {result.tags && result.tags.length > 0 && (
                     <div className="space-y-6">
-                      <h4 className="text-xs font-medium text-neutral-400 flex items-center gap-2 pl-1">
-                        <Tag size={12} /> Visual Keywords
+                      <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2 pl-1">
+                        <Tag size={12} /> {t('smartAnalyzerPage.sidebar.keywords')}
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {result.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="text-2xs font-mono px-3 py-2 rounded-xl bg-neutral-900/50 border border-white/10 text-neutral-500 transition-colors hover:text-white hover:border-neutral-700"
+                            className="text-xs px-3 py-2 rounded-xl bg-muted/50 border border-border text-muted-foreground"
                           >
                             {tag}
                           </span>
@@ -1141,24 +1158,22 @@ export const SmartAnalyzerPage: React.FC = () => {
 
                   {result.mode === 'figma-plugin' && result.tokens && (
                     <div className="space-y-6">
-                      <h4 className="text-xs font-medium text-neutral-400 flex items-center gap-2 pl-1">
-                        <Palette size={12} /> Extracted Palette
+                      <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2 pl-1">
+                        <Palette size={12} /> {t('smartAnalyzerPage.sidebar.palette')}
                       </h4>
                       <div className="grid gap-3">
                         {result.tokens.colors.map((c, i) => (
                           <div
                             key={i}
-                            className="flex items-center gap-4 bg-neutral-950/50 p-3 rounded-2xl border border-neutral-900 group hover:border-neutral-700 transition-[color,background-color,border-color,box-shadow]"
+                            className="flex items-center gap-4 bg-card/50 p-3 rounded-xl border border-border group hover:border-border-hover transition-[color,background-color,border-color,box-shadow]"
                           >
                             <div
-                              className="w-10 h-10 rounded-xl shadow-sm border border-neutral-800"
+                              className="w-10 h-10 rounded-xl shadow-sm border border-border"
                               style={{ backgroundColor: c.hex }}
                             />
                             <div className="flex-1">
-                              <span className="text-xs text-neutral-300 block mb-0.5">
-                                {c.name}
-                              </span>
-                              <span className="text-2xs text-neutral-600 font-mono uppercase tracking-tighter">
+                              <span className="text-xs text-foreground block mb-0.5">{c.name}</span>
+                              <span className="text-2xs text-muted-foreground font-mono">
                                 {c.hex}
                               </span>
                             </div>
@@ -1175,50 +1190,53 @@ export const SmartAnalyzerPage: React.FC = () => {
       </div>
 
       <Dialog open={showPublishModal} onOpenChange={setShowPublishModal}>
-        <DialogContent className="bg-neutral-950 border-neutral-800 text-white max-w-xl p-0 overflow-hidden">
-          <div className="bg-neutral-950 p-8 flex items-center justify-between">
+        <DialogContent className="bg-popover border-border text-foreground max-w-xl p-0 overflow-hidden">
+          <div className="bg-popover p-8 flex items-center justify-between">
             <div className="space-y-1">
               <DialogTitle className="text-xl font-semibold tracking-tight">
-                Save to Community
+                {t('smartAnalyzerPage.publish.title')}
               </DialogTitle>
-              <p className="text-xs text-neutral-500 leading-none">
-                Global resource synchronization
-              </p>
             </div>
-            <Globe className="text-neutral-700" size={32} />
+            <Globe className="text-muted-foreground" size={32} />
           </div>
 
           <div className="p-8 space-y-8">
             <div className="grid gap-6">
               <div className="space-y-2">
-                <label className="text-xs font-medium text-neutral-400">Title</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  {t('smartAnalyzerPage.publish.name')}
+                </label>
                 <Input
                   value={publishName}
                   onChange={(e) => setPublishName(e.target.value)}
-                  placeholder="E.g. Professional Dashboard Dark"
-                  className="bg-neutral-900 border-neutral-800 h-12 focus:border-neutral-600 focus:ring-0 transition-colors rounded-xl"
+                  placeholder={t('smartAnalyzerPage.publish.namePlaceholder')}
+                  className="bg-background border-border h-12 focus:border-ring focus:ring-0 transition-colors rounded-xl"
                 />
               </div>
 
               <div className="space-y-4">
-                <label className="text-xs font-medium text-neutral-400">Tags</label>
-                <div className="flex flex-wrap gap-2 min-h-[40px] p-4 bg-neutral-900/50 rounded-xl border border-white/10">
+                <label className="text-xs font-medium text-muted-foreground">
+                  {t('smartAnalyzerPage.publish.tags')}
+                </label>
+                <div className="flex flex-wrap gap-2 min-h-[40px] p-4 bg-muted/50 rounded-xl border border-border">
                   {publishTags.map((tag) => (
                     <span
                       key={tag}
-                      className="flex items-center gap-2 bg-neutral-900 text-neutral-300 px-3 py-1.5 rounded-lg text-2xs font-mono border border-neutral-800"
+                      className="flex items-center gap-2 bg-card text-foreground px-3 py-1.5 rounded-xl text-xs border border-border"
                     >
                       {tag}
                       <button
                         onClick={() => removeTag(tag)}
-                        className="text-neutral-600 hover:text-white"
+                        className="text-muted-foreground hover:text-foreground"
                       >
                         <X size={12} />
                       </button>
                     </span>
                   ))}
                   {publishTags.length === 0 && (
-                    <span className="text-neutral-600 text-xs">No tags defined</span>
+                    <span className="text-muted-foreground text-xs">
+                      {t('smartAnalyzerPage.publish.noTags')}
+                    </span>
                   )}
                 </div>
                 <div className="flex gap-2">
@@ -1226,13 +1244,13 @@ export const SmartAnalyzerPage: React.FC = () => {
                     value={newTag}
                     onChange={(e) => setNewTag(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                    placeholder="Add category tag..."
-                    className="bg-neutral-900 border-neutral-800 flex-1 h-11 rounded-xl"
+                    placeholder={t('smartAnalyzerPage.publish.tagPlaceholder')}
+                    className="bg-background border-border flex-1 h-11 rounded-xl"
                   />
                   <Button
                     onClick={addTag}
                     variant="outline"
-                    className="border-neutral-800 hover:bg-white hover:text-black px-4 rounded-xl"
+                    className="border-border hover:bg-primary hover:text-primary-foreground px-4 rounded-xl"
                   >
                     <Plus size={16} />
                   </Button>
@@ -1241,20 +1259,20 @@ export const SmartAnalyzerPage: React.FC = () => {
             </div>
           </div>
 
-          <DialogFooter className="bg-neutral-900/30 p-8 pt-0 flex items-center justify-between gap-4">
+          <DialogFooter className="bg-muted/30 p-8 pt-0 flex items-center justify-between gap-4">
             <Button
               variant="ghost"
               onClick={() => setShowPublishModal(false)}
-              className="text-neutral-500 hover:text-white"
+              className="text-muted-foreground hover:text-foreground"
             >
-              Cancel
+              {t('smartAnalyzerPage.publish.cancel')}
             </Button>
             <Button
               onClick={publishToCommunity}
               disabled={isPublishing || !publishName.trim()}
-              className="bg-white text-black hover:bg-neutral-200 h-12 px-8 rounded-xl font-semibold min-w-[160px]"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 rounded-xl font-medium min-w-[160px]"
             >
-              {isPublishing ? <GlitchLoader size={18} /> : 'Publish Now'}
+              {isPublishing ? <GlitchLoader size={18} /> : t('smartAnalyzerPage.publish.submit')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1262,23 +1280,20 @@ export const SmartAnalyzerPage: React.FC = () => {
 
       <Dialog open={!!showFullImage} onOpenChange={() => setShowFullImage(null)}>
         <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-0 bg-transparent flex items-center justify-center">
+          {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia (fechar sobre a foto em tela cheia) */}
           <div className="relative w-full h-full flex items-center justify-center group">
             <img
               src={showFullImage || ''}
-              alt="Preview"
-              className="max-w-full max-h-screen object-contain rounded-2xl shadow-2xl"
+              alt={t('smartAnalyzerPage.preview.alt')}
+              className="max-w-full max-h-screen object-contain rounded-xl shadow-2xl"
             />
             <Button
               variant="ghost"
               onClick={() => setShowFullImage(null)}
-              className="absolute top-4 right-4 text-white/50 hover:text-white bg-black/20 hover:bg-black/40 h-10 w-10 p-0 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all"
+              className="absolute top-4 right-4 text-white/50 hover:text-white bg-black/20 hover:bg-black/40 h-10 w-10 p-0 rounded-full transition-colors"
             >
               <X size={20} />
             </Button>
-
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 text-white/70 text-2xs font-mono uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
-              Presione ESC para sair
-            </div>
           </div>
         </DialogContent>
       </Dialog>

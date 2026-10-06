@@ -16,7 +16,7 @@ const Slider: React.FC<{
 }> = ({ label, value, min, max, step = 1, onChange, suffix }) => (
   <div className="flex flex-col gap-1">
     <div className="flex items-center justify-between text-2xs font-mono">
-      <span className="text-neutral-400 uppercase tracking-wider">{label}</span>
+      <span className="text-neutral-400">{label}</span>
       <span className="text-white tabular-nums">
         {value.toFixed(step < 1 ? 2 : 0)}
         {suffix}
@@ -44,7 +44,7 @@ const NumPair: React.FC<{
   labelB: string;
 }> = ({ label, ax, ay, onA, onB, labelA, labelB }) => (
   <div className="flex flex-col gap-1">
-    <span className="text-2xs text-neutral-400 uppercase tracking-wider">{label}</span>
+    <span className="text-2xs text-neutral-400">{label}</span>
     <div className="grid grid-cols-2 gap-1">
       <label className="flex items-center gap-1 text-2xs font-mono">
         <span className="text-neutral-500 w-4">{labelA}</span>
@@ -52,7 +52,7 @@ const NumPair: React.FC<{
           type="number"
           value={Math.round(ax * 100)}
           onChange={(e) => onA(Math.max(0, Math.min(100, Number(e.target.value))) / 100)}
-          className="w-full bg-neutral-800/60 border border-white/10 rounded px-1 py-0.5 text-white text-right focus:outline-none focus:border-neutral-600"
+          className="w-full bg-neutral-800/60 border border-border rounded px-1 py-0.5 text-white text-right focus:outline-none focus:border-neutral-600"
         />
       </label>
       <label className="flex items-center gap-1 text-2xs font-mono">
@@ -61,7 +61,7 @@ const NumPair: React.FC<{
           type="number"
           value={Math.round(ay * 100)}
           onChange={(e) => onB(Math.max(0, Math.min(100, Number(e.target.value))) / 100)}
-          className="w-full bg-neutral-800/60 border border-white/10 rounded px-1 py-0.5 text-white text-right focus:outline-none focus:border-neutral-600"
+          className="w-full bg-neutral-800/60 border border-border rounded px-1 py-0.5 text-white text-right focus:outline-none focus:border-neutral-600"
         />
       </label>
     </div>
@@ -140,8 +140,8 @@ export const LogoFiltersPopover: React.FC<Props> = ({ layerId, data }) => {
         title="Ajustes de imagem"
         className={`p-1.5 rounded transition-colors ${
           hasAny || open
-            ? 'bg-brand-cyan/20 text-brand-cyan'
-            : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            ? 'bg-muted text-foreground'
+            : 'text-neutral-400 hover:text-white hover:bg-accent'
         }`}
       >
         <Sliders size={14} />
@@ -154,17 +154,15 @@ export const LogoFiltersPopover: React.FC<Props> = ({ layerId, data }) => {
             ref={popoverRef}
             onMouseDown={(e) => e.stopPropagation()}
             style={{ left: coords.left, top: coords.top, width: 240 }}
-            className="fixed z-[10001] bg-neutral-950/95 backdrop-blur-xl border border-white/10 rounded-lg shadow-2xl p-3 flex flex-col gap-3"
+            className="fixed z-[10001] bg-neutral-950/95 backdrop-blur-xl border border-border rounded-xl shadow-2xl p-3 flex flex-col gap-3"
           >
             <div className="flex items-center justify-between">
-              <span className="text-2xs font-bold uppercase tracking-widest text-neutral-300">
-                Ajustes
-              </span>
+              <span className="text-2xs font-medium text-neutral-300">Ajustes</span>
               <button
                 type="button"
                 onClick={reset}
                 title="Resetar ajustes"
-                className="p-1 rounded text-neutral-500 hover:text-white hover:bg-white/5"
+                className="p-1 rounded text-neutral-500 hover:text-white hover:bg-accent"
               >
                 <RotateCcw size={11} />
               </button>
@@ -203,10 +201,10 @@ export const LogoFiltersPopover: React.FC<Props> = ({ layerId, data }) => {
                 onChange={(e) => setFilter({ grayscale: e.target.checked || undefined })}
                 className="accent-brand-cyan"
               />
-              <span className="uppercase tracking-wider">Preto e branco</span>
+              <span>Preto e branco</span>
             </label>
 
-            <div className="h-px bg-white/5" />
+            <div className="h-px bg-muted" />
 
             <NumPair
               label="Crop pos %"

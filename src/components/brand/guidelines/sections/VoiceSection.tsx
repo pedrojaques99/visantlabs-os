@@ -101,7 +101,7 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
               <Input
                 value={v.title}
                 onChange={(e) => set(i, { title: e.target.value })}
-                className="h-6 bg-transparent border-none px-0 text-xs font-semibold text-neutral-200 focus-visible:ring-0 placeholder:text-neutral-700"
+                className="h-6 bg-transparent border-none px-0 text-xs font-medium text-foreground focus-visible:ring-0 placeholder:text-muted-foreground"
                 placeholder="Tom (ex: Direto, Inspirador)"
               />
               <Input

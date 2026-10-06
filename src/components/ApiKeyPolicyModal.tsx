@@ -29,7 +29,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
   return (
     <div
-      className="fixed inset-0 bg-neutral-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in overflow-y-auto"
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in overflow-y-auto"
       onClick={onClose}
     >
       <div
@@ -40,7 +40,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
           variant="ghost"
           onClick={onClose}
           className="absolute top-4 right-4 bg-muted hover:bg-accent p-2 rounded-md text-muted-foreground hover:text-foreground transition-colors z-10"
-          title="Close"
+          aria-label="Close"
         >
           <X size={20} />
         </Button>
@@ -52,14 +52,14 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
               API Key Security Policy
             </h1>
           </div>
-          <p className="text-xs text-muted-foreground font-mono mb-8">
-            Last Updated: January 27, 2025 • Version: 1.0
+          <p className="text-xs text-muted-foreground mb-8">
+            Last updated January 27, 2025. Version 1.0
           </p>
 
           <div className="space-y-6 text-sm text-muted-foreground leading-relaxed max-h-[calc(90vh-180px)] overflow-y-auto">
             {/* Overview */}
             <div>
-              <h2 className="text-lg font-semibold text-foreground mb-3">Overview</h2>
+              <h2 className="text-lg font-medium text-foreground mb-3">Overview</h2>
               <p className="text-muted-foreground">
                 This document explains how we handle and secure your Gemini API keys when you choose
                 to use your own API key with our service.
@@ -68,13 +68,13 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
             {/* Security Measures */}
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Security Measures</h2>
+              <h2 className="text-lg font-medium text-foreground mb-4">Security Measures</h2>
 
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Lock className="text-muted-foreground" size={18} />
-                    <h3 className="text-base font-semibold text-foreground">Encryption</h3>
+                    <h3 className="text-base font-medium text-foreground">Encryption</h3>
                   </div>
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-6">
                     <li>
@@ -101,7 +101,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Key className="text-muted-foreground" size={18} />
-                    <h3 className="text-base font-semibold text-foreground">Access Control</h3>
+                    <h3 className="text-base font-medium text-foreground">Access Control</h3>
                   </div>
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-6">
                     <li>
@@ -125,7 +125,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                 </div>
 
                 <div>
-                  <h3 className="text-base font-semibold text-foreground mb-2">Usage</h3>
+                  <h3 className="text-base font-medium text-foreground mb-2">Usage</h3>
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-6">
                     <li>
                       <strong className="text-muted-foreground">Priority:</strong> When you provide
@@ -147,11 +147,11 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
             {/* Your Responsibilities */}
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Your Responsibilities</h2>
+              <h2 className="text-lg font-medium text-foreground mb-4">Your Responsibilities</h2>
 
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-base font-semibold text-foreground mb-2">Key Management</h3>
+                  <h3 className="text-base font-medium text-foreground mb-2">Key Management</h3>
                   <ol className="list-decimal list-inside space-y-1 text-muted-foreground ml-6">
                     <li>
                       <strong className="text-muted-foreground">Keep Your Key Secure:</strong> Never
@@ -161,19 +161,12 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                       <strong className="text-muted-foreground">Rotate Regularly:</strong> Consider
                       rotating your API key periodically for better security
                     </li>
-                    <li>
-                      <strong className="text-muted-foreground">Monitor Usage:</strong> Monitor your
-                      Google Cloud Console for unexpected usage or charges
-                    </li>
-                    <li>
-                      <strong className="text-muted-foreground">Key Restrictions:</strong> Configure
-                      API key restrictions in Google AI Studio to limit where it can be used
-                    </li>
                   </ol>
                 </div>
 
                 <div>
-                  <h3 className="text-base font-semibold text-foreground mb-2">Best Practices</h3>
+                  <h3 className="text-base font-medium text-foreground mb-2">Best Practices</h3>
+                  {/* EXCEÇÃO ao ruido-scan/mesma-info-dois-tamanhos: documento de política; "restringir/apagar a key" (prevenção) e "apagar/rotacionar" (resposta a incidente) são passos distintos. */}
                   <ol className="list-decimal list-inside space-y-1 text-muted-foreground ml-6">
                     <li>
                       <strong className="text-muted-foreground">Restrict Your Key:</strong> In
@@ -194,6 +187,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                       <strong className="text-muted-foreground">Monitor Billing:</strong> Regularly
                       check your Google Cloud billing to ensure usage aligns with expectations
                     </li>
+                    {/* EXCEÇÃO ao ruido-scan/mesma-info-dois-tamanhos: prevenção aqui, resposta a incidente em Support. */}
                     <li>
                       <strong className="text-muted-foreground">Delete When Not Needed:</strong> If
                       you stop using the service, delete your API key from our system
@@ -205,7 +199,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
             {/* How It Works */}
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">How It Works</h2>
+              <h2 className="text-lg font-medium text-foreground mb-4">How It Works</h2>
               <ol className="list-decimal list-inside space-y-1 text-muted-foreground ml-6">
                 <li>
                   <strong className="text-muted-foreground">Saving:</strong> When you save your API
@@ -228,7 +222,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
             {/* Data Privacy */}
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Data Privacy</h2>
+              <h2 className="text-lg font-medium text-foreground mb-4">Data Privacy</h2>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-6">
                 <li>We never share your API keys with third parties</li>
                 <li>
@@ -241,7 +235,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
             {/* Compliance */}
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Compliance</h2>
+              <h2 className="text-lg font-medium text-foreground mb-4">Compliance</h2>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-6">
                 <li>
                   <strong className="text-muted-foreground">Encryption Standards:</strong> We follow
@@ -262,7 +256,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
             <div className="border-t border-border pt-6">
               <div className="flex items-center gap-2 mb-3">
                 <AlertCircle className="text-warning" size={18} />
-                <h2 className="text-lg font-semibold text-foreground">Support</h2>
+                <h2 className="text-lg font-medium text-foreground">Support</h2>
               </div>
               <p className="text-muted-foreground mb-2">
                 If you have concerns about API key security or notice any suspicious activity:
@@ -276,25 +270,27 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
             {/* Additional Resources */}
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Additional Resources</h2>
+              <h2 className="text-lg font-medium text-foreground mb-4">Additional Resources</h2>
+              {/* EXCEÇÃO ao ruido-scan/mesma-info-dois-tamanhos: são títulos de três links externos diferentes. */}
               <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-6">
                 <li>
                   <a
                     href="https://aistudio.google.com/app/apikey"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-foreground hover:text-brand-cyan/80 underline flex items-center gap-1"
+                    className="text-foreground hover:text-muted-foreground underline flex items-center gap-1"
                   >
                     Google AI Studio API Keys
                     <ExternalLink size={14} />
                   </a>
                 </li>
+                {/* EXCEÇÃO ao ruido-scan/mesma-info-dois-tamanhos: títulos de links externos distintos. */}
                 <li>
                   <a
                     href="https://cloud.google.com/docs/authentication/api-keys"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-foreground hover:text-brand-cyan/80 underline flex items-center gap-1"
+                    className="text-foreground hover:text-muted-foreground underline flex items-center gap-1"
                   >
                     Google Cloud API Key Best Practices
                     <ExternalLink size={14} />
@@ -305,7 +301,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                     href="https://cloud.google.com/security/best-practices"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-foreground hover:text-brand-cyan/80 underline flex items-center gap-1"
+                    className="text-foreground hover:text-muted-foreground underline flex items-center gap-1"
                   >
                     Google Cloud Security Best Practices
                     <ExternalLink size={14} />

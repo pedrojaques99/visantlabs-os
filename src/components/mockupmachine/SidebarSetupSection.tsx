@@ -56,8 +56,8 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
             onStartOver();
             if (onClose) onClose();
           }}
-          className="h-8 w-8 rounded-full text-neutral-500 hover:text-white hover:bg-neutral-800/50 transition-[color,background-color,border-color,filter] border border-transparent hover:border-white/10"
-          title="Clear Session"
+          className="h-8 w-8 rounded-full text-neutral-500 hover:text-foreground hover:bg-neutral-800/50 transition-[color,background-color,border-color,filter] border border-transparent hover:border-border-hover"
+          title={t('mockup.startOver')}
         >
           <X size={16} />
         </Button>
@@ -66,7 +66,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
         {isAnalyzing ? (
           <div className="flex flex-col items-center justify-center py-12 px-4 animate-in fade-in duration-500">
             <div className="w-full max-w-sm">
-              <div className="p-4 rounded-xl bg-neutral-900/30 border border-neutral-800 backdrop-blur-sm">
+              <div className="p-4 rounded-xl bg-neutral-900/30 border border-neutral-800">
                 <PremiumGlitchLoader steps={ANALYSIS_STEPS} className="w-full" />
               </div>
             </div>
@@ -98,9 +98,9 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                   onStartOver();
                   onClose();
                 }}
-                className="h-12 px-6 text-neutral-500 hover:text-white hover:bg-white/5 font-mono text-2xs uppercase tracking-widest border border-transparent hover:border-white/10"
+                className="h-12 px-6 text-neutral-500 hover:text-foreground hover:bg-accent text-2xs border border-transparent hover:border-border-hover"
               >
-                {t('common.cancel') || 'Fechar'}
+                {t('common.cancel')}
               </Button>
             )}
             <PremiumButton
@@ -109,15 +109,15 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
               isLoading={isAnalyzing}
               loadingText="INITIALIZING..."
               icon={ArrowRight}
-              className="flex-1 h-12 text-2xs tracking-[0.1em] font-bold"
+              className="flex-1 h-12 text-2xs font-medium"
             >
-              {t('mockup.continue') || 'CONTINUE SETUP'}
+              {t('mockup.continue')}
             </PremiumButton>
           </div>
 
           {!canAnalyze && !isAnalyzing && !hasAnalyzed && !uploadedImage && (
-            <p className="text-center text-neutral-600 text-2xs uppercase tracking-widest animate-pulse mt-1">
-              {t('mockup.uploadRequired') || 'Waiting for design input...'}
+            <p className="text-center text-neutral-600 text-2xs animate-pulse mt-1">
+              {t('mockup.uploadRequired')}
             </p>
           )}
         </div>

@@ -119,7 +119,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-neutral-950/60 backdrop-blur-sm z-30 lg:hidden"
+          className="fixed inset-0 bg-background/60 backdrop-blur-sm z-30 lg:hidden"
           onClick={() => onToggleOpen(false)}
         />
       )}
@@ -127,7 +127,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
       {/* Mobile Toggle Button */}
       <button
         onClick={() => onToggleOpen(!isOpen)}
-        className="fixed top-10 md:top-12 left-4 z-50 lg:hidden p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center bg-card border border-neutral-800/50 rounded-md text-neutral-300 hover:bg-neutral-800/50 hover:border-neutral-700 transition-colors"
+        className="fixed top-10 md:top-12 left-4 z-50 lg:hidden p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center bg-card border border-border rounded-md text-foreground hover:bg-accent hover:border-border-hover transition-colors"
         aria-label="Toggle navigation"
       >
         {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -146,9 +146,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
       >
         <div className={cn('p-4 space-y-2', inShell ? 'pt-6' : 'pt-24 md:pt-28')}>
           {title && (
-            <h2 className="text-sm font-semibold font-mono text-neutral-400 uppercase  mb-4 px-2">
-              {title}
-            </h2>
+            <h2 className="text-sm font-medium text-muted-foreground mb-4 px-2">{title}</h2>
           )}
           {items.map((item, index) => {
             const Icon = item.icon;
@@ -162,7 +160,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                 {showDivider && (
                   <div className="pt-3 mt-2 border-t border-sidebar-border/50">
                     {externalGroupLabel && (
-                      <h3 className="text-2xs font-semibold font-mono text-neutral-500 uppercase tracking-wider px-2 pt-2 pb-1">
+                      <h3 className="text-xs font-medium text-muted-foreground px-2 pt-2 pb-1">
                         {externalGroupLabel}
                       </h3>
                     )}
@@ -176,10 +174,10 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                         onToggleOpen(false);
                       }}
                       className={cn(
-                        'flex-1 flex items-center gap-2 px-3 py-2 rounded-md text-sm font-mono transition-colors',
+                        'flex-1 flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors',
                         isActive
-                          ? 'bg-neutral-800/50 text-neutral-200 border border-neutral-700'
-                          : 'text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50'
+                          ? 'bg-muted/50 text-foreground border border-border'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                       )}
                     >
                       <Icon className="w-4 h-4 flex-shrink-0" />
@@ -192,8 +190,8 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                           toggleItem(item.id);
                         }}
                         className={cn(
-                          'p-1.5 rounded-md text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 transition-colors',
-                          isExpanded && 'text-neutral-200'
+                          'p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors',
+                          isExpanded && 'text-foreground'
                         )}
                         aria-label={isExpanded ? 'Collapse' : 'Expand'}
                         title={isExpanded ? 'Collapse' : 'Expand'}
@@ -227,13 +225,13 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                               onToggleOpen(false);
                             }}
                             className={cn(
-                              'w-full text-left px-3 py-1.5 text-xs font-mono rounded transition-colors relative',
+                              'w-full text-left px-3 py-1.5 text-xs rounded transition-colors relative',
                               isSectionActive
-                                ? 'text-neutral-200 bg-neutral-800/30 border-l-2 border-neutral-500'
+                                ? 'text-foreground bg-muted/30 border-l-2 border-ring'
                                 : activeItemId === item.id
-                                  ? 'text-neutral-300 hover:text-neutral-200'
-                                  : 'text-neutral-500 hover:text-neutral-300',
-                              'hover:bg-neutral-800/30'
+                                  ? 'text-foreground hover:text-foreground'
+                                  : 'text-muted-foreground hover:text-foreground',
+                              'hover:bg-accent'
                             )}
                           >
                             {section.label}
@@ -259,8 +257,8 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
         style={{ left: `${sidebarWidth}px`, touchAction: 'none' }}
         className="group hidden lg:flex fixed top-0 z-50 h-screen w-2.5 -translate-x-1/2 cursor-col-resize items-center justify-center"
       >
-        <div className="h-full w-px bg-sidebar-border/50 group-hover:bg-neutral-500/60 group-active:bg-neutral-400 transition-colors" />
-        <div className="absolute top-1/2 -translate-y-1/2 h-10 w-1 rounded-full bg-neutral-700/50 group-hover:bg-neutral-400/80 group-active:bg-neutral-300 transition-colors" />
+        <div className="h-full w-px bg-sidebar-border/50 group-hover:bg-ring group-active:bg-foreground transition-colors" />
+        <div className="absolute top-1/2 -translate-y-1/2 h-10 w-1 rounded-full bg-muted/50 group-hover:bg-ring group-active:bg-foreground transition-colors" />
       </div>
     </>
   );

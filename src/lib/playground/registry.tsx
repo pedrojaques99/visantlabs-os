@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useMemo, Suspense } from 'react';
 import { defineRegistry, useBoundProp } from '@json-render/react';
 import { visantCatalog } from './catalog';
 import { toast } from 'sonner';
-import { Zap } from '@/lib/ui/icons';
+import { Zap, Play } from '@/lib/ui/icons';
 
 // Layout
 import { PageShell } from '@/components/ui/PageShell';
@@ -167,9 +167,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
       const current = value ?? props.value;
       return (
         <div className="flex items-center gap-2">
-          <span className="text-2xs font-mono uppercase tracking-widest text-neutral-500">
-            {props.label}
-          </span>
+          <span className="text-xs font-medium text-neutral-500">{props.label}</span>
           <input
             type="color"
             value={current}
@@ -255,9 +253,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
     ),
     Metric: ({ props }) => (
       <GlassPanel className="p-4">
-        <span className="text-2xs font-mono uppercase tracking-widest text-neutral-500">
-          {props.label}
-        </span>
+        <span className="text-xs font-medium text-neutral-500">{props.label}</span>
         <div className="flex items-baseline gap-2 mt-1">
           <span className="text-2xl font-semibold text-neutral-100">{props.value}</span>
           {props.change && (
@@ -427,10 +423,10 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
       if (!props.imageUrl) {
         return (
           <div
-            className="rounded-lg bg-neutral-900 flex items-center justify-center"
+            className="rounded-xl bg-neutral-900 flex items-center justify-center"
             style={{ width: w, height: h }}
           >
-            <span className="text-2xs font-mono uppercase tracking-widest text-neutral-500">
+            <span className="text-xs font-medium text-neutral-500">
               Upload an image to apply shader
             </span>
           </div>
@@ -438,7 +434,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
       }
 
       return (
-        <div className="relative rounded-lg overflow-hidden bg-neutral-900">
+        <div className="relative rounded-xl overflow-hidden bg-neutral-900">
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/80 z-10">
               <GlitchLoader size="sm" />
@@ -467,7 +463,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
       return (
         <div
           ref={containerRef}
-          className="relative rounded-lg overflow-hidden bg-neutral-900"
+          className="relative rounded-xl overflow-hidden bg-neutral-900"
           style={{ width: props.width || '100%', height: props.height || 400 }}
         >
           <Suspense fallback={<GlitchLoader size="md" />}>
@@ -494,21 +490,19 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
       if (!currentSrc) {
         return (
           <div
-            className="relative rounded-lg overflow-hidden bg-neutral-900 flex items-center justify-center"
+            className="relative rounded-xl overflow-hidden bg-neutral-900 flex items-center justify-center"
             style={{ width: w, height: h }}
           >
             <div className="text-center">
-              <div className="text-neutral-600 text-3xl mb-2">▶</div>
-              <span className="text-2xs font-mono uppercase tracking-widest text-neutral-500">
-                No video loaded
-              </span>
+              <Play size={28} className="mx-auto mb-2 text-neutral-600" />
+              <span className="text-xs font-medium text-neutral-500">No video loaded</span>
             </div>
           </div>
         );
       }
 
       return (
-        <div className="relative rounded-lg overflow-hidden bg-neutral-900">
+        <div className="relative rounded-xl overflow-hidden bg-neutral-900">
           <video
             src={currentSrc}
             autoPlay={props.autoPlay ?? false}
@@ -517,7 +511,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
             muted={props.muted ?? true}
             poster={props.poster}
             style={{ width: w, height: props.height || 'auto', maxWidth: '100%' }}
-            className="rounded-lg"
+            className="rounded-xl"
           />
         </div>
       );
@@ -623,7 +617,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
       }, [w, h, JSON.stringify(currentLayers)]);
 
       return (
-        <div className="relative rounded-lg overflow-hidden bg-neutral-900">
+        <div className="relative rounded-xl overflow-hidden bg-neutral-900">
           <canvas ref={canvasRef} className="w-full h-auto" style={{ maxWidth: w }} />
         </div>
       );
@@ -691,10 +685,10 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
       if (!props.imageUrl) {
         return (
           <div
-            className="rounded-lg bg-neutral-900 flex items-center justify-center"
+            className="rounded-xl bg-neutral-900 flex items-center justify-center"
             style={{ width: w, height: h }}
           >
-            <span className="text-2xs font-mono uppercase tracking-widest text-neutral-500">
+            <span className="text-xs font-medium text-neutral-500">
               Upload an image for halftone
             </span>
           </div>
@@ -702,7 +696,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
       }
 
       return (
-        <div className="relative rounded-lg overflow-hidden bg-neutral-900">
+        <div className="relative rounded-xl overflow-hidden bg-neutral-900">
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/80 z-10">
               <GlitchLoader size="sm" />
@@ -770,10 +764,10 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
       if (!props.imageUrl) {
         return (
           <div
-            className="rounded-lg bg-neutral-900 flex items-center justify-center"
+            className="rounded-xl bg-neutral-900 flex items-center justify-center"
             style={{ width: w, height: h }}
           >
-            <span className="text-2xs font-mono uppercase tracking-widest text-neutral-500">
+            <span className="text-xs font-medium text-neutral-500">
               Upload an image for riso effect
             </span>
           </div>
@@ -781,7 +775,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
       }
 
       return (
-        <div className="relative rounded-lg overflow-hidden bg-neutral-900">
+        <div className="relative rounded-xl overflow-hidden bg-neutral-900">
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/80 z-10">
               <GlitchLoader size="sm" />
@@ -824,7 +818,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
             {props.images.map((img, i) => (
               <div
                 key={i}
-                className="rounded-lg overflow-hidden bg-neutral-800"
+                className="rounded-xl overflow-hidden bg-neutral-800"
                 style={{ gridColumn: img.span ? `span ${img.span}` : undefined }}
               >
                 {renderImg(img, 'w-full h-full object-cover')}
@@ -840,7 +834,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
             {props.images.map((img, i) => (
               <div
                 key={i}
-                className="mb-4 rounded-lg overflow-hidden bg-neutral-800 break-inside-avoid"
+                className="mb-4 rounded-xl overflow-hidden bg-neutral-800 break-inside-avoid"
               >
                 {renderImg(img, 'w-full h-auto')}
               </div>
@@ -859,7 +853,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
           }}
         >
           {props.images.map((img, i) => (
-            <div key={i} className="rounded-lg overflow-hidden bg-neutral-800 aspect-square">
+            <div key={i} className="rounded-xl overflow-hidden bg-neutral-800 aspect-square">
               {renderImg(img, 'w-full h-full object-cover')}
             </div>
           ))}
@@ -899,7 +893,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
     Text: ({ props }) => {
       const styles: Record<string, string> = {
         body: 'text-sm text-neutral-300',
-        label: 'text-2xs font-mono uppercase tracking-widest text-neutral-500',
+        label: 'text-xs font-medium text-neutral-500',
         caption: 'text-2xs text-neutral-400',
         mono: 'text-xs font-mono text-neutral-300',
       };

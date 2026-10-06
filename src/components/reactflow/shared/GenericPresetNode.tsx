@@ -18,6 +18,7 @@ import { useBaseNode } from '@/hooks/canvas/useBaseNode';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 
 import { toast } from 'sonner';
+import { Thumb } from '@/components/ui/Thumb';
 
 interface PresetItem {
   id: string;
@@ -162,7 +163,7 @@ export function createGenericPresetNode<
       >
         {selected && !dragging && (
           <NodeResizer
-            color="brand-cyan"
+            color="var(--brand-cyan)"
             isVisible={selected}
             minWidth={NODE_LAYOUT.MIN_WIDTH}
             minHeight={NODE_LAYOUT.MIN_HEIGHT}
@@ -177,7 +178,7 @@ export function createGenericPresetNode<
         {/* Header */}
         <NodeHeader
           icon={Icon}
-          title={t(config.translationKeys.title) || config.title}
+          title={t(config.translationKeys.title)}
           selected={selected}
           isBrandActive={data.isBrandActive}
           onToggleBrand={(active) => {
@@ -218,10 +219,8 @@ export function createGenericPresetNode<
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-mono truncate text-foreground font-semibold">
-                {selectedPreset?.name ||
-                  t(config.translationKeys.selectPreset) ||
-                  `Select ${config.title.toLowerCase()}`}
+              <div className="text-xs font-mono truncate text-foreground font-medium">
+                {selectedPreset?.name || t(config.translationKeys.selectPreset)}
               </div>
               {selectedPreset?.description && (
                 <div className="text-2xs font-mono text-neutral-500 truncate">
@@ -243,14 +242,14 @@ export function createGenericPresetNode<
         {!hasConnectedImage && (
           <div className="mb-2">
             <span className="text-xs font-mono text-neutral-500">
-              {t(config.translationKeys.connectImageNode) || 'Connect an image node'}
+              {t(config.translationKeys.connectImageNode)}
             </span>
           </div>
         )}
 
         {/* Generate Button */}
         <Tooltip
-          content={`${t('canvasNodes.promptNode.creditsRequired') || 'Costs'} ${getCreditsRequired(
+          content={`${t('canvasNodes.promptNode.creditsRequired')} ${getCreditsRequired(
             'mockup'
           )} ${t('canvasNodes.promptNode.credits')}`}
           delay={500}
@@ -271,16 +270,16 @@ export function createGenericPresetNode<
           >
             {isLoading ? (
               <div className="flex items-center justify-center gap-2">
-                <GlitchLoader size={14} color="brand-cyan" />
-                <span>{t(config.translationKeys.generating) || 'Generating...'}</span>
+                <GlitchLoader size={14} />
+                <span>{t(config.translationKeys.generating)}</span>
               </div>
             ) : (
               <div className="flex items-center justify-center gap-2">
                 <Icon size={14} className="group-hover/gen:rotate-12 transition-transform" />
-                <span className="font-semibold tracking-tight">
-                  {t(config.translationKeys.generateButton) || `Generate ${config.title}`}
+                <span className="font-medium tracking-tight">
+                  {t(config.translationKeys.generateButton)}
                 </span>
-                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-2xs text-foreground/80">
+                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-background/50 text-2xs text-foreground">
                   <Diamond size={10} className="opacity-50 fill-current" />
                   {getCreditsRequired('mockup')}
                 </div>
@@ -292,12 +291,12 @@ export function createGenericPresetNode<
         {/* Result Preview */}
         {hasResult && (resultImageUrl || resultImageBase64) && (
           <div className="mt-2 pt-2 border-t border-neutral-700/30">
-            <img
+            <Thumb
               src={
                 resultImageUrl ||
                 (resultImageBase64 ? `data:image/png;base64,${resultImageBase64}` : '')
               }
-              alt={t(config.translationKeys.result) || `${config.title} result`}
+              alt={t(config.translationKeys.result)}
               className="w-full h-auto rounded"
               onLoad={(e) => {
                 const img = e.target as HTMLImageElement;

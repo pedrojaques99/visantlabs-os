@@ -17,6 +17,7 @@ import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Thumb } from '@/components/ui/Thumb';
 
 interface PresetFormData {
   category: PromptCategory;
@@ -402,7 +403,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
     >
       <div>
         {error && (
-          <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded-lg flex items-center gap-2 text-destructive text-sm">
+          <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded-xl flex items-center gap-2 text-destructive text-sm">
             <AlertTriangle size={16} className="shrink-0" />
             <span>{error}</span>
           </div>
@@ -436,8 +437,8 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
           {needsReferenceImage && (
             <div className="flex items-start gap-4 pb-5 border-b border-border">
               {formData.referenceImageUrl ? (
-                <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-border bg-muted group flex-shrink-0">
-                  <img
+                <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-border bg-muted group flex-shrink-0">
+                  <Thumb
                     src={formData.referenceImageUrl}
                     alt={t('common.reference')}
                     className="w-full h-full object-cover"
@@ -459,7 +460,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                   </Button>
                 </div>
               ) : (
-                <div className="w-16 h-16 rounded-lg border border-border bg-muted flex items-center justify-center flex-shrink-0">
+                <div className="w-16 h-16 rounded-xl border border-border bg-muted flex items-center justify-center flex-shrink-0">
                   <ImageIcon className="h-6 w-6 text-muted-foreground" />
                 </div>
               )}
@@ -663,7 +664,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                 {formData.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-muted border border-border rounded-lg text-xs text-foreground"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-muted border border-border rounded-xl text-xs text-foreground"
                   >
                     <span className="text-muted-foreground">#</span>
                     {tag}

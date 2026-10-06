@@ -11,29 +11,6 @@ import { Figma } from '@/lib/ui/icons';
 import { Link } from 'react-router-dom';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-// Figma logo SVG
-const FigmaIcon = ({ size = 16 }: { size?: number }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M8 24C10.208 24 12 22.208 12 20V16H8C5.792 16 4 17.792 4 20C4 22.208 5.792 24 8 24Z"
-      fill="#0ACF83"
-    />
-    <path d="M4 12C4 9.792 5.792 8 8 8H12V16H8C5.792 16 4 14.208 4 12Z" fill="#A259FF" />
-    <path d="M4 4C4 1.792 5.792 0 8 0H12V8H8C5.792 8 4 6.208 4 4Z" fill="#F24E1E" />
-    <path d="M12 0H16C18.208 0 20 1.792 20 4C20 6.208 18.208 8 16 8H12V0Z" fill="#FF7262" />
-    <path
-      d="M20 12C20 14.208 18.208 16 16 16C13.792 16 12 14.208 12 12C12 9.792 13.792 8 16 8C18.208 8 20 9.792 20 12Z"
-      fill="#1ABCFE"
-    />
-  </svg>
-);
-
 interface FigmaLinkSectionProps {
   guideline: BrandGuideline;
   onUpdate: (data: Partial<BrandGuideline>) => void;
@@ -167,24 +144,22 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
   };
 
   return (
-    <SectionBlock id="figma" icon={<FigmaIcon size={14} />} title="Figma" span={span as any}>
+    <SectionBlock id="figma" icon={<Figma size={14} />} title="Figma" span={span as any}>
       {isLinked ? (
         <div className="space-y-4">
           {/* Linked state */}
           <div className="flex items-center gap-2">
             <div className="flex-1 min-w-0">
-              <p className="text-2xs text-neutral-500 uppercase tracking-wider mb-1">
-                Arquivo Linkado
-              </p>
+              <p className="text-xs text-muted-foreground mb-1">Arquivo Linkado</p>
               <div className="flex items-center gap-2">
-                <p className="text-xs text-neutral-300 truncate font-mono">
+                <p className="text-xs text-foreground truncate font-mono">
                   {guideline.figmaFileKey}
                 </p>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleOpenInFigma}
-                  className="h-5 w-5 text-neutral-500 hover:text-brand-cyan p-0"
+                  className="h-5 w-5 text-muted-foreground hover:text-foreground p-0"
                   title="Abrir no Figma"
                 >
                   <ExternalLink size={10} />
@@ -197,7 +172,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
                 size="sm"
                 onClick={handleImportClick}
                 disabled={isPreviewing}
-                className="h-8 px-4 text-2xs gap-1.5 bg-brand-cyan/20 hover:bg-brand-cyan text-foreground hover:text-black border border-brand-cyan/30 transition-[color,background-color,border-color,box-shadow] font-bold shadow-[0_0_15px_oklch(from var(--brand-cyan) l c h / 10%)] hover:shadow-[0_0_20px_oklch(from var(--brand-cyan) l c h / 20%)]"
+                className="h-8 px-4 text-xs gap-1.5"
               >
                 {isPreviewing ? <GlitchLoader size={12} /> : <Figma size={12} />}
                 Importar do Figma
@@ -255,14 +230,15 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
               value={figmaUrl}
               onChange={(e) => setFigmaUrl(e.target.value)}
               placeholder="Cole a URL do arquivo Figma..."
-              className="h-8 text-xs bg-white/[0.03] border-white/10 placeholder:text-neutral-600"
+              className="h-8 text-xs"
               onKeyDown={(e) => e.key === 'Enter' && handleLink()}
             />
             <Button
               onClick={handleLink}
               disabled={!figmaUrl.trim() || isLinking}
               size="sm"
-              className="h-8 px-3 shrink-0 bg-brand-cyan/10 text-foreground hover:bg-brand-cyan/20 border border-brand-cyan/20"
+              variant="outline"
+              className="h-8 px-3 shrink-0"
             >
               {isLinking ? <GlitchLoader size={12} /> : <Link2 size={12} />}
             </Button>

@@ -20,9 +20,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="w-full">
-        <label className="block text-xs text-neutral-400 mb-2 font-mono">
-          {t('budget.startDate')}
-        </label>
+        <label className="block text-xs text-neutral-400 mb-2">{t('budget.startDate')}</label>
         <FormInput
           type="date"
           value={startDate}
@@ -31,9 +29,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
         />
       </div>
       <div className="w-full">
-        <label className="block text-xs text-neutral-400 mb-2 font-mono">
-          {t('budget.endDate')}
-        </label>
+        <label className="block text-xs text-neutral-400 mb-2">{t('budget.endDate')}</label>
         <FormInput
           type="date"
           value={endDate}

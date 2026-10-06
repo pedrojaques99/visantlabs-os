@@ -22,6 +22,9 @@ import { NodeButton } from './shared/node-button';
 import { Input } from '@/components/ui/input';
 import { NodeLabel } from './shared/NodeLabel';
 
+import { Thumb } from '@/components/ui/Thumb';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+
 const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({
   data,
   selected,
@@ -517,7 +520,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({
     >
       {selected && !dragging && (
         <NodeResizer
-          color="brand-cyan"
+          color="var(--brand-cyan)"
           isVisible={selected}
           minWidth={320}
           minHeight={200}
@@ -554,11 +557,11 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({
         <div className="w-full space-y-[var(--node-gap-sm)]">
           <div className="w-full px-4 py-3 bg-neutral-800/30 border-node border-neutral-700/30 rounded text-xs font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-50">
             <ImageIcon size={14} />
-            {t('canvasNodes.shaderNode.connectImage') || 'Connect an image or video'}
+            {t('canvasNodes.shaderNode.connectImage')}
           </div>
           <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border-node border-neutral-800 hover:border-neutral-700 rounded text-xs font-mono text-foreground flex items-center justify-center gap-2 cursor-pointer transition-[color,background-color,border-color,opacity]">
             <Upload size={14} />
-            {t('canvasNodes.shaderNode.uploadImageOrVideo') || 'Upload Image or Video'}
+            {t('canvasNodes.shaderNode.uploadImageOrVideo')}
             <Input
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo"
@@ -568,9 +571,9 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({
           </label>
         </div>
       ) : hasConnectedImage && !hasResult && !isVideoInput && !isLoading ? (
-        <div className="w-full px-2 py-1.5 bg-neutral-800/30 border-node border-neutral-700/30 rounded text-xs font-mono text-neutral-400 flex items-center justify-center gap-3">
+        <div className="w-full px-2 py-1.5 bg-neutral-800/30 border-node border-neutral-700/30 rounded text-xs text-neutral-400 flex items-center justify-center gap-3">
           <ImageIcon size={14} className="text-foreground" />
-          <span>Image connected - Processing...</span>
+          <span>{t('canvasNodes.shaderNode.imageConnected')}</span>
         </div>
       ) : null}
 
@@ -581,12 +584,8 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({
             <div className="mt-2 pt-2 border-t border-neutral-700/30 flex-1 min-h-[200px] flex items-center justify-center">
               <NodePlaceholder
                 isLoading={true}
-                emptyMessage={
-                  t('canvasNodes.shaderNode.processingVideo') || 'Processing video frames...'
-                }
-                emptySubmessage={
-                  t('canvasNodes.shaderNode.applyingShader') || 'Applying shader effect'
-                }
+                emptyMessage={t('canvasNodes.shaderNode.processingVideo')}
+                emptySubmessage={t('canvasNodes.shaderNode.applyingShader')}
                 elapsedTime={elapsedTime}
               />
             </div>
@@ -647,7 +646,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({
             </div>
           ) : (
             <div className="relative w-full h-full flex items-center justify-center">
-              <img
+              <Thumb
                 src={resultImageUrl || undefined}
                 alt={t('common.shaderResult')}
                 className="w-full h-full object-contain rounded"
@@ -669,8 +668,8 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({
           {/* Floating Processing Indicator - subtle icon button */}
           {isLoading && (
             <div className="absolute top-3 left-3 z-20">
-              <div className="p-1.5 rounded-md bg-neutral-950/60 backdrop-blur-sm border-node border-neutral-800 shadow-lg">
-                <GlitchLoader size={14} color="brand-cyan" />
+              <div className="p-1.5 rounded-md bg-neutral-950/80 border-node border-neutral-800 shadow-lg">
+                <GlitchLoader size={14} />
               </div>
             </div>
           )}
@@ -678,8 +677,8 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({
           {/* Action Icons - appears on hover or when selected */}
           <div
             className={cn(
-              'absolute top-3 right-3 flex gap-1.5 transition-[color,background-color,border-color,box-shadow,opacity,filter] backdrop-blur-sm z-10',
-              selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              'absolute top-3 right-3 flex gap-1.5 transition-[color,background-color,border-color,box-shadow,opacity,filter] z-10',
+              selected ? 'opacity-100' : hoverReveal
             )}
           >
             <NodeButton

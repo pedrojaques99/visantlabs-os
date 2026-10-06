@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, NavigateFunction, Navigate } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { SEO } from '../components/SEO';
 import { VisantLogo3D, PRESETS } from '../components/3d/VisantLogo3D';
 import { Lock, LogIn } from '@/lib/ui/icons';
@@ -12,14 +11,6 @@ import { AuthModal } from '@/components/AuthModal';
 import { LandingHome } from '@/components/landing/LandingHome';
 import { GettingStartedChecklist } from '@/components/onboarding/GettingStartedChecklist';
 import { FEATURE_COCKPIT, FEATURE_COCKPIT_HOME } from '@/config/featureFlags';
-
-const playTick = () => {
-  const a = new Audio('/sounds/hihat.wav');
-  a.volume = 0.12;
-  a.play().catch(() => {
-    /* autoplay blocked — silent */
-  });
-};
 
 // ─── Real mobile detection ────────────────────────────────────────────────────
 const detectRealMobile = (): boolean => {
@@ -176,17 +167,15 @@ const fillDots = (label: string, badge: string) =>
   '·'.repeat(Math.max(3, DOT_COLS - label.length - badge.length));
 
 // ─── useLauncherApps ──────────────────────────────────────────────────────────
-// SSoT for the launcher's app roster + selection handling. Shared by the TUI
-// home (below) and the /cockpit route (App.tsx), which renders BrandCockpit
-// with the exact same apps/onSelectApp the TUI would have used.
-export interface LauncherAppsResult {
+// The launcher's app roster + selection handling. Only the TUI home below uses it.
+interface LauncherAppsResult {
   apps: AppConfig[];
   handleSelect: (app: AppConfig) => void;
   isMobile: boolean;
   isLoggedIn: boolean;
 }
 
-export const useLauncherApps = (): LauncherAppsResult => {
+const useLauncherApps = (): LauncherAppsResult => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useLayout();
   const isAdmin = user?.isAdmin === true;
@@ -255,6 +244,7 @@ interface AppRowProps {
 }
 
 const AppRow: React.FC<AppRowProps> = ({ app, num, focused, onSelect, onFocus }) => {
+  const { t, tOr } = useTranslation();
   const locked = app.badgeVariant === 'comingSoon';
   const badge = (app.badge ?? app.badgeVariant).toUpperCase();
 
@@ -262,12 +252,9 @@ const AppRow: React.FC<AppRowProps> = ({ app, num, focused, onSelect, onFocus })
     <button
       role="option"
       aria-selected={focused}
-      aria-label={`${String(num).padStart(2, '0')} ${app.name}${locked ? ', indisponível' : ''}`}
+      aria-label={`${String(num).padStart(2, '0')} ${app.name}${locked ? `, ${t('home.unavailable')}` : ''}`}
       onClick={() => !locked && onSelect()}
-      onMouseEnter={() => {
-        playTick();
-        onFocus(app.appId);
-      }}
+      onMouseEnter={() => onFocus(app.appId)}
       disabled={locked}
       className="w-full text-left flex flex-col gap-[2px] py-[3px] transition-colors duration-100 disabled:cursor-not-allowed focus:outline-none overflow-hidden"
     >
@@ -303,9 +290,8 @@ const AppRow: React.FC<AppRowProps> = ({ app, num, focused, onSelect, onFocus })
 
         {/* Dots */}
         <span
-          className="mx-1 select-none"
+          className={`mx-1 select-none ${locked ? 'text-neutral-950' : focused ? 'text-neutral-700' : 'text-neutral-900'}`}
           aria-hidden
-          style={{ color: locked ? '#0d0d0d' : focused ? '#3a3a3a' : '#1a1a1a' }}
         >
           {fillDots(app.name, badge)}
         </span>
@@ -329,7 +315,7 @@ const AppRow: React.FC<AppRowProps> = ({ app, num, focused, onSelect, onFocus })
         }`}
         aria-hidden
       >
-        {app.description}
+        {tOr(`home.appDesc.${app.appId}`, app.description)}
       </div>
     </button>
   );
@@ -369,67 +355,55 @@ const AppList: React.FC<AppListProps> = ({
         className="flex flex-col gap-[2px] max-h-[55vh] overflow-y-auto scrollbar-none"
       >
         {apps.map((app, i) => (
-          <motion.div
+          <AppRow
             key={app.appId}
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.045, duration: 0.16 }}
-          >
-            <AppRow
-              app={app}
-              num={i + 1}
-              focused={focusedIndex === i}
-              onSelect={() => onSelect(app)}
-              onFocus={() => onFocus(i, app.appId)}
-            />
-          </motion.div>
+            app={app}
+            num={i + 1}
+            focused={focusedIndex === i}
+            onSelect={() => onSelect(app)}
+            onFocus={() => onFocus(i, app.appId)}
+          />
         ))}
       </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: apps.length * 0.045 + 0.1 }}
-        className="border-t border-neutral-900 pt-3 mt-3 flex items-center gap-8 w-max"
-      >
+      <div className="border-t border-neutral-900 pt-3 mt-3 flex items-center gap-8 w-max">
         <button
           onClick={() => navigate('/apps')}
-          className="px-4 py-1.5 rounded-lg bg-white/5 border border-neutral-800 font-mono text-2xs uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/10 hover:border-white/15 transition-colors"
-          aria-label={t('home.ver_todos_os_apps')}
+          className="px-4 py-1.5 rounded-xl bg-neutral-900 border border-neutral-800 text-xs text-neutral-400 hover:text-white hover:bg-neutral-800 hover:border-neutral-700 transition-colors"
         >
-          More Apps
+          {t('home.ver_todos_os_apps')}
         </button>
 
         <div className="flex items-center gap-6">
           <button
             onClick={() => navigate('/about')}
-            className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+            className="text-xs text-neutral-700 hover:text-neutral-400 transition-colors"
           >
-            info
+            {t('home.info')}
           </button>
           {!isMobile ? (
             <button
               onClick={() => navigate('/community')}
-              className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+              className="text-xs text-neutral-700 hover:text-neutral-400 transition-colors"
             >
-              community
+              {t('home.community')}
             </button>
           ) : (
             <a
               href="mailto:contato@visant.co"
-              className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+              className="text-xs text-neutral-700 hover:text-neutral-400 transition-colors"
             >
-              contact
+              {t('home.contact')}
             </a>
           )}
           <button
             onClick={() => navigate('/docs')}
-            className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+            className="text-xs text-neutral-700 hover:text-neutral-400 transition-colors"
           >
-            docs
+            {t('home.docs')}
           </button>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };
@@ -465,7 +439,6 @@ export const HomePage: React.FC = () => {
   const moveFocus = useCallback((next: number, appId?: string) => {
     setFocusedIndex(next);
     if (appId) setPresetIndex(APP_PRESET[appId] ?? 0);
-    playTick();
   }, []);
 
   // TUI keyboard navigation — home is always the launcher now (no cockpit hijack)
@@ -524,10 +497,7 @@ export const HomePage: React.FC = () => {
   if (isAuthenticated === false) {
     return (
       <>
-        <SEO
-          title={t('homepage.seoTitle') || 'VISANT LABS'}
-          description={t('homepage.seoDescription') || 'Experimental Design Laboratory'}
-        />
+        <SEO title={t('homepage.seoTitle')} description={t('homepage.seoDescription')} />
         <LandingHome onGetStarted={() => openAuth(true)} isMobile={isMobile} />
         <AuthModal
           isOpen={showAuthModal}
@@ -547,18 +517,13 @@ export const HomePage: React.FC = () => {
 
   return (
     <>
-      <SEO
-        title={t('homepage.seoTitle') || 'VISANT LABS'}
-        description={t('homepage.seoDescription') || 'Experimental Design Laboratory'}
-      />
+      <SEO title={t('homepage.seoTitle')} description={t('homepage.seoDescription')} />
 
       <div
         className="fixed inset-0 bg-black flex items-center justify-center z-10 overflow-hidden"
         data-vsn-page="home"
         data-vsn-component="HomePage"
       >
-        <GridDotsBackground opacity={0.05} spacing={30} color="#ffffff" />
-
         {/* 3D — full-screen background, centered on right column */}
         <VisantLogo3D fullScreen presetIndex={presetIndex} xOffsetPx={isMobile ? 0 : xOffsetPx} />
 
@@ -587,12 +552,12 @@ export const HomePage: React.FC = () => {
                     exit={{ opacity: 0 }}
                     className="flex flex-col items-center gap-5 mt-4"
                   >
-                    <p className="font-mono text-2xs uppercase tracking-widest text-neutral-500 select-none text-center">
-                      brand context for your agent
+                    <p className="text-xs text-neutral-500 select-none text-center">
+                      {t('home.tagline')}
                     </p>
                     <button
                       onClick={() => setShowAuthModal(true)}
-                      className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-sm font-mono text-2xs uppercase tracking-widest text-neutral-400 hover:text-white transition-colors duration-200"
+                      className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-md text-xs text-neutral-400 hover:text-white transition-colors duration-200"
                     >
                       <LogIn size={12} />
                       <span>{t('home.sign_in')}</span>
@@ -600,13 +565,13 @@ export const HomePage: React.FC = () => {
                     <div className="flex items-center gap-6 mt-2">
                       <button
                         onClick={() => navigate('/about')}
-                        className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+                        className="text-xs text-neutral-700 hover:text-neutral-400 transition-colors"
                       >
                         {t('home.info')}
                       </button>
                       <a
                         href="mailto:contato@visant.co"
-                        className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+                        className="text-xs text-neutral-700 hover:text-neutral-400 transition-colors"
                       >
                         {t('home.contact')}
                       </a>
@@ -637,12 +602,10 @@ export const HomePage: React.FC = () => {
                       exit={{ opacity: 0 }}
                       className="flex flex-col gap-5"
                     >
-                      <p className="font-mono text-2xs uppercase tracking-widest text-neutral-500 select-none">
-                        brand context for your agent
-                      </p>
+                      <p className="text-xs text-neutral-500 select-none">{t('home.tagline')}</p>
                       <button
                         onClick={() => setShowAuthModal(true)}
-                        className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-sm font-mono text-2xs uppercase tracking-widest text-neutral-400 hover:text-white transition-colors duration-200 w-fit"
+                        className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-md text-xs text-neutral-400 hover:text-white transition-colors duration-200 w-fit"
                       >
                         <LogIn size={12} />
                         <span>{t('home.sign_in_2')}</span>
@@ -650,13 +613,13 @@ export const HomePage: React.FC = () => {
                       <div className="flex items-center gap-6">
                         <button
                           onClick={() => navigate('/about')}
-                          className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+                          className="text-xs text-neutral-700 hover:text-neutral-400 transition-colors"
                         >
                           {t('home.info_2')}
                         </button>
                         <button
                           onClick={() => navigate('/community')}
-                          className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+                          className="text-xs text-neutral-700 hover:text-neutral-400 transition-colors"
                         >
                           {t('home.community')}
                         </button>
@@ -677,7 +640,7 @@ export const HomePage: React.FC = () => {
             className="absolute bottom-6 font-mono text-2xs text-neutral-800 tracking-widest uppercase select-none"
             aria-hidden
           >
-            ↑ ↓ navigate, enter select
+            {t('home.keyboardHint')}
           </motion.p>
         )}
 

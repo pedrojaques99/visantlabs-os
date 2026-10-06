@@ -66,7 +66,7 @@ export const BrandFunnelBanner: React.FC<BrandFunnelBannerProps> = ({ toolId, cl
       animate={{ opacity: 1, y: 0 }}
       className={
         className ??
-        'fixed top-12 md:top-16 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 rounded-full border border-white/10 bg-neutral-950/80 backdrop-blur-xl pl-3 pr-1.5 py-1.5 max-w-[calc(100vw-2rem)]'
+        'fixed top-12 md:top-16 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 rounded-full border border-border bg-card/80 backdrop-blur-xl pl-3 pr-1.5 py-1.5 max-w-[calc(100vw-2rem)]'
       }
       role="status"
       data-vsn-component="BrandFunnelBanner"
@@ -77,7 +77,7 @@ export const BrandFunnelBanner: React.FC<BrandFunnelBannerProps> = ({ toolId, cl
       </span>
       <button
         onClick={handleCta}
-        className="shrink-0 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1 font-mono text-2xs uppercase tracking-widest text-neutral-200 transition-colors"
+        className="shrink-0 rounded-full bg-muted hover:bg-accent border border-border px-3 py-1 text-xs font-medium text-foreground transition-colors"
       >
         {t('funnel.banner.cta')}
       </button>

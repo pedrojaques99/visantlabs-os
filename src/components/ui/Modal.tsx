@@ -16,6 +16,14 @@ export interface ModalProps {
   closeOnEscape?: boolean;
   className?: string;
   contentClassName?: string;
+  /**
+   * Classes for the scrolling body (the element around `children`). Merged after
+   * the default `p-6 sm:p-10 md:p-12` + `overflow-y-auto` via tailwind-merge, so
+   * full-bleed content (sticky toolbars, edge-to-edge grids) can own its padding
+   * instead of fighting it with negative margins. Override EVERY breakpoint:
+   * `p-0` alone leaves `sm:p-10 md:p-12` in place, use `p-0 sm:p-0 md:p-0`.
+   */
+  bodyClassName?: string;
   headerClassName?: string;
   footer?: React.ReactNode;
   footerClassName?: string;
@@ -47,6 +55,7 @@ export const Modal: React.FC<ModalProps> = ({
   closeOnEscape = true,
   className,
   contentClassName,
+  bodyClassName,
   headerClassName,
   footer,
   footerClassName,
@@ -96,7 +105,7 @@ export const Modal: React.FC<ModalProps> = ({
       ref={modalRef}
       tabIndex={-1}
       className={cn(
-        'fixed inset-0 bg-black/70 backdrop-blur-md z-[9999] flex flex-col sm:items-center sm:justify-center overflow-hidden transition-all duration-300',
+        'fixed inset-0 bg-background/80 backdrop-blur-md z-[9999] flex flex-col sm:items-center sm:justify-center overflow-hidden transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-300',
         mobileDrawer ? 'justify-end sm:p-4' : 'justify-center p-4',
         'animate-in fade-in duration-300',
         className
@@ -109,14 +118,16 @@ export const Modal: React.FC<ModalProps> = ({
     >
       <div
         className={cn(
-          'relative w-full overflow-hidden flex flex-col transition-all duration-500',
-          'bg-popover backdrop-blur-3xl border-t sm:border border-border shadow-[0_30px_100px_rgba(0,0,0,0.8)]',
+          'relative w-full overflow-hidden flex flex-col transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-500',
+          // Craft layer: dialog elevation token + surface radius. Only the backdrop
+          // above blurs (dialog); the panel is opaque bg-popover, no glass.
+          'bg-popover border-t sm:border border-border shadow-[var(--e-modal)]',
           'animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-2 duration-500',
 
           // Mobile Drawer vs Centered Desktop
           mobileDrawer
-            ? 'rounded-t-[2.5rem] sm:rounded-2xl max-h-[95vh] sm:max-h-[92vh]'
-            : 'rounded-2xl max-h-[92vh]',
+            ? 'rounded-t-xl sm:rounded-xl max-h-[95vh] sm:max-h-[92vh]'
+            : 'rounded-xl max-h-[92vh]',
 
           // Sizing
           sizeClasses[size],
@@ -149,7 +160,7 @@ export const Modal: React.FC<ModalProps> = ({
               {description && (
                 <p
                   id={`${id}-description`}
-                  className="text-xs text-muted-foreground font-mono mt-2 opacity-70"
+                  className="text-xs text-muted-foreground mt-2 opacity-70"
                 >
                   {description}
                 </p>
@@ -159,7 +170,7 @@ export const Modal: React.FC<ModalProps> = ({
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="p-2 sm:p-3 -mr-2 sm:-mr-3 text-muted-foreground hover:text-foreground transition-all bg-muted hover:bg-accent rounded-full"
+                className="p-2 sm:p-3 -mr-2 sm:-mr-3 text-muted-foreground hover:text-foreground transition-[color,background-color,border-color,box-shadow,opacity,transform] bg-muted hover:bg-accent rounded-full"
                 title="Close (Esc)"
                 aria-label="Close modal"
               >
@@ -173,7 +184,8 @@ export const Modal: React.FC<ModalProps> = ({
         <div
           className={cn(
             'flex-1 overflow-y-auto custom-scrollbar',
-            id === 'setup-modal' ? 'p-6 sm:p-10' : 'p-6 sm:p-10 md:p-12'
+            id === 'setup-modal' ? 'p-6 sm:p-10' : 'p-6 sm:p-10 md:p-12',
+            bodyClassName
           )}
         >
           {children}

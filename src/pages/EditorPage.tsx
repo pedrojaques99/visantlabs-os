@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ImageEditor, type ImageEditorResult } from '@/components/image-editor/ImageEditor';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { SEO } from '@/components/SEO';
+import { useTranslation } from '@/hooks/useTranslation';
 
 /**
  * Standalone image editor route. Generated outputs across the app (Mockups,
@@ -14,6 +15,7 @@ import { SEO } from '@/components/SEO';
  */
 export const EditorPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [params] = useSearchParams();
 
   // react-router decodes search params once; the call sites encodeURIComponent
@@ -51,12 +53,12 @@ export const EditorPage: React.FC = () => {
     if (failed) {
       return (
         <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-neutral-950 text-neutral-400">
-          <p className="font-mono text-sm">Não foi possível carregar a imagem para edição.</p>
+          <p className="text-sm">{t('imageEditor.loadFailed')}</p>
           <button
             onClick={() => navigate(-1)}
-            className="px-4 py-2 rounded-md border border-neutral-800 font-mono text-xs uppercase tracking-widest text-neutral-400 hover:text-white hover:border-neutral-600 transition-colors"
+            className="px-4 py-2 rounded-md border border-neutral-800 text-xs font-medium text-neutral-400 hover:text-white hover:border-neutral-600 transition-colors"
           >
-            Voltar
+            {t('common.back')}
           </button>
         </div>
       );
@@ -77,11 +79,11 @@ export const EditorPage: React.FC = () => {
         onClose={handleClose}
       />
     );
-  }, [failed, src, dims]);
+  }, [failed, src, dims, t]);
 
   return (
     <>
-      <SEO title="Image Editor — Visant Labs" description="Edit and refine generated images." />
+      <SEO title={t('imageEditor.title')} description={t('imageEditor.seoDescription')} />
       {body}
     </>
   );

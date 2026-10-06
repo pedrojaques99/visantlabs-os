@@ -24,7 +24,7 @@ const SIZE_STYLES = {
     iconSize: 14,
   },
   md: {
-    input: 'pl-10 pr-10 py-2.5 text-sm rounded-lg',
+    input: 'pl-10 pr-10 py-2.5 text-sm rounded-xl',
     iconLeft: 'left-3',
     iconRight: 'right-3',
     iconSize: 16,
@@ -66,7 +66,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
         <Search
           size={resolvedIconSize}
           className={cn(
-            'absolute top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none',
+            'absolute top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none',
             s.iconLeft
           )}
         />
@@ -77,11 +77,11 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           className={cn(
-            'w-full bg-neutral-900/50 border border-neutral-800/40',
+            'w-full bg-card/50 border border-border',
             s.input,
-            'text-neutral-300 placeholder:text-neutral-600',
-            'focus:outline-none focus:border-neutral-600',
-            'transition-all duration-150',
+            'text-foreground placeholder:text-muted-foreground',
+            'focus:outline-none focus:border-ring',
+            'transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-150',
             className
           )}
           {...props}
@@ -90,7 +90,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           <button
             onClick={handleClear}
             className={cn(
-              'absolute top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300 transition-colors',
+              'absolute top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors',
               s.iconRight
             )}
             aria-label="Clear search"

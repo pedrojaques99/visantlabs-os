@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowRight } from '@/lib/ui/icons';
 import type { PipelineConfig } from '@/types/customNode';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Props {
   config: PipelineConfig;
@@ -9,16 +10,16 @@ interface Props {
 }
 
 export function PipelinePanel({ config, log, isLoading }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-2">
       {config.behavior === 'iterative-refine' ? (
-        <p className="text-2xs font-mono text-neutral-500">
-          Iterates <span className="text-brand-cyan/70">{config.iterations ?? 3}×</span> — evaluates
-          and refines each generation
+        <p className="text-2xs text-neutral-500">
+          {t('canvasNodes.customNode.iterates', { n: config.iterations ?? 3 })}
         </p>
       ) : (
         <>
-          <p className="text-2xs text-neutral-500 uppercase tracking-wider">Steps</p>
+          <p className="text-2xs text-neutral-500">{t('canvasNodes.customNode.steps')}</p>
           <div className="flex items-center gap-1 flex-wrap">
             {config.steps.map((step, i) => (
               <React.Fragment key={step.id}>

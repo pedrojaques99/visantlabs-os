@@ -53,6 +53,7 @@ import {
   Maximize2,
   Minimize2,
   Share2,
+  Check,
 } from '@/lib/ui/icons';
 import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
 import { useIsMobile } from '@/hooks/use-media-query';
@@ -326,7 +327,7 @@ export const Studio3DPage: React.FC = () => {
         setAutosaveState('error');
         // Only nag after repeated failures, not on a single transient blip.
         if (autosaveFailuresRef.current === 3) {
-          toast.error('Autosave is failing — your changes may not be saved');
+          toast.error('Autosave is failing. Your changes may not be saved');
         }
       } finally {
         autosaveInFlightRef.current = false;
@@ -656,8 +657,8 @@ export const Studio3DPage: React.FC = () => {
     { label: material },
     { label: t('studio3d.status.depth', { value: depth }) },
     { label: animate !== 'none' ? animate : 'static' },
-    ...(shaderEnabled ? [{ label: shaderType, color: 'text-neutral-400' }] : []),
-    ...(cameraInfo?.view ? [{ label: cameraInfo.view, color: 'text-neutral-400' }] : []),
+    ...(shaderEnabled ? [{ label: shaderType, color: 'text-muted-foreground' }] : []),
+    ...(cameraInfo?.view ? [{ label: cameraInfo.view, color: 'text-muted-foreground' }] : []),
     ...(cameraInfo
       ? [
           { label: `${cameraInfo.polar}° / ${cameraInfo.azimuth}°` },
@@ -668,17 +669,18 @@ export const Studio3DPage: React.FC = () => {
       ? [
           {
             label: autosaveLabel,
-            color: autosaveState === 'error' ? 'text-destructive' : 'text-neutral-500',
+            color: autosaveState === 'error' ? 'text-destructive' : 'text-muted-foreground',
           },
         ]
       : []),
   ];
 
+  // `dark contents`: os modais irmãos do shell (export, presets) ficam no escopo escuro do editor.
   return (
-    <>
+    <div className="dark contents text-foreground">
       <ToolEditorShell
         title={t('studio3d.title')}
-        documentTitle="3D Studio — Visant"
+        documentTitle="3D Studio"
         panelVisible={panelVisible}
         setPanelVisible={setPanelVisible}
         onReset={resetScene}
@@ -713,7 +715,7 @@ export const Studio3DPage: React.FC = () => {
         {/* Floating left toolbar */}
         <div
           className={cn(
-            'absolute left-3 top-3 z-20 flex flex-col gap-1 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/60 rounded-xl p-1.5 shadow-2xl shadow-black/50',
+            'absolute left-3 top-3 z-20 flex flex-col gap-1 bg-popover/90 backdrop-blur-xl border border-border rounded-xl p-1.5 shadow-2xl shadow-black/50',
             isMobile && 'left-2 top-2 p-1'
           )}
         >
@@ -721,30 +723,30 @@ export const Studio3DPage: React.FC = () => {
             onClick={() => setPanelVisible(!panelVisible)}
             title={t('studio3d.controls')}
             className={cn(
-              'flex items-center justify-center rounded-lg transition-all',
+              'flex items-center justify-center rounded-xl transition-colors',
               isMobile ? 'w-11 h-11' : 'w-9 h-9',
               panelVisible
-                ? 'bg-white/10 text-white ring-1 ring-white/30'
-                : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
+                ? 'bg-muted text-foreground ring-1 ring-ring/50'
+                : 'text-muted-foreground hover:text-foreground hover:bg-accent'
             )}
           >
             <PanelRightOpen size={isMobile ? 18 : 15} />
           </button>
 
-          <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
+          <div className="h-px bg-border mx-1 my-0.5" />
 
           <button
             onClick={undoWithFeedback}
             disabled={!canUndo}
             title={`Undo (Ctrl+Z)${undoCount ? `: ${undoCount}` : ''}`}
             className={cn(
-              'relative flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all',
+              'relative flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 disabled:pointer-events-none transition-colors',
               isMobile ? 'w-11 h-11' : 'w-9 h-9'
             )}
           >
             <Undo2 size={isMobile ? 18 : 15} />
             {undoCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-white/10 text-2xs font-mono text-neutral-400 px-0.5">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-muted text-2xs font-mono text-muted-foreground px-0.5">
                 {undoCount}
               </span>
             )}
@@ -754,25 +756,25 @@ export const Studio3DPage: React.FC = () => {
             disabled={!canRedo}
             title={`Redo (Ctrl+Shift+Z)${redoCount ? `: ${redoCount}` : ''}`}
             className={cn(
-              'relative flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all',
+              'relative flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 disabled:pointer-events-none transition-colors',
               isMobile ? 'w-11 h-11' : 'w-9 h-9'
             )}
           >
             <Redo2 size={isMobile ? 18 : 15} />
             {redoCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-white/10 text-2xs font-mono text-neutral-400 px-0.5">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-muted text-2xs font-mono text-muted-foreground px-0.5">
                 {redoCount}
               </span>
             )}
           </button>
 
-          <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
+          <div className="h-px bg-border mx-1 my-0.5" />
 
           <button
             onClick={resetScene}
             title={t('studio3d.resetScene')}
             className={cn(
-              'flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all',
+              'flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors',
               isMobile ? 'w-11 h-11' : 'w-9 h-9'
             )}
           >
@@ -782,7 +784,7 @@ export const Studio3DPage: React.FC = () => {
             onClick={() => setExportModalOpen(true)}
             title="Export (Shift+E)"
             className={cn(
-              'flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all',
+              'flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors',
               isMobile ? 'w-11 h-11' : 'w-9 h-9'
             )}
           >
@@ -802,7 +804,7 @@ export const Studio3DPage: React.FC = () => {
             }}
             title="Share link"
             className={cn(
-              'flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all',
+              'flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors',
               isMobile ? 'w-11 h-11' : 'w-9 h-9'
             )}
           >
@@ -812,7 +814,7 @@ export const Studio3DPage: React.FC = () => {
             onClick={toggleFullscreen}
             title="Fullscreen"
             className={cn(
-              'flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all',
+              'flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors',
               isMobile ? 'w-11 h-11' : 'w-9 h-9'
             )}
           >
@@ -823,18 +825,18 @@ export const Studio3DPage: React.FC = () => {
             )}
           </button>
 
-          <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
+          <div className="h-px bg-border mx-1 my-0.5" />
 
           <div className="relative">
             <button
               onClick={() => setScenePopover((v) => !v)}
               title="Scene options"
               className={cn(
-                'flex items-center justify-center rounded-lg transition-all',
+                'flex items-center justify-center rounded-xl transition-colors',
                 isMobile ? 'w-11 h-11' : 'w-9 h-9',
                 scenePopover
-                  ? 'bg-white/10 text-white'
-                  : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
+                  ? 'bg-muted text-foreground'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-accent'
               )}
             >
               <Eye size={isMobile ? 18 : 15} />
@@ -851,7 +853,7 @@ export const Studio3DPage: React.FC = () => {
                     if (e.key === 'Escape') setScenePopover(false);
                   }}
                 />
-                <div className="absolute left-full top-0 ml-2 z-40 bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/60 rounded-lg p-2 shadow-2xl shadow-black/50 min-w-[140px] space-y-0.5">
+                <div className="absolute left-full top-0 ml-2 z-40 bg-popover/95 backdrop-blur-xl border border-border rounded-xl p-2 shadow-2xl shadow-black/50 min-w-[140px] space-y-0.5">
                   {(
                     [
                       {
@@ -875,17 +877,17 @@ export const Studio3DPage: React.FC = () => {
                       key={item.label}
                       onClick={item.toggle}
                       className={cn(
-                        'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-2xs font-mono uppercase tracking-wider transition-colors',
+                        'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs transition-colors',
                         item.active
-                          ? 'text-white bg-white/10'
-                          : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
+                          ? 'text-foreground bg-muted'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                       )}
                     >
                       {item.label}
                       <div
                         className={cn(
                           'w-1.5 h-1.5 rounded-full',
-                          item.active ? 'bg-success' : 'bg-neutral-700'
+                          item.active ? 'bg-success' : 'bg-muted-foreground/50'
                         )}
                       />
                     </button>
@@ -897,11 +899,11 @@ export const Studio3DPage: React.FC = () => {
 
           {!isMobile && (
             <>
-              <div className="h-px bg-neutral-800/60 mx-1 my-0.5" />
+              <div className="h-px bg-border mx-1 my-0.5" />
               <button
                 onClick={() => setShowShortcuts((v) => !v)}
                 title="Keyboard shortcuts (?)"
-                className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors"
+                className="flex items-center justify-center w-9 h-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               >
                 <Keyboard size={15} />
               </button>
@@ -911,8 +913,8 @@ export const Studio3DPage: React.FC = () => {
 
         <Suspense
           fallback={
-            <div className="w-full h-full flex items-center justify-center bg-neutral-950">
-              <span className="text-2xs uppercase tracking-widest text-neutral-600 animate-pulse">
+            <div className="w-full h-full flex items-center justify-center bg-background">
+              <span className="text-xs text-muted-foreground animate-pulse">
                 {t('studio3d.loadingEngine')}
               </span>
             </div>
@@ -923,25 +925,26 @@ export const Studio3DPage: React.FC = () => {
           </CanvasErrorBoundary>
         </Suspense>
         {showShortcuts && (
+          // EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia (viewport 3D)
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
             onClick={() => setShowShortcuts(false)}
             role="presentation"
           >
             <div
-              className="bg-neutral-900 border border-white/10 rounded-lg p-6 max-w-sm w-full mx-4 shadow-2xl"
+              className="bg-popover border border-border rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl"
               role="dialog"
               aria-modal="true"
               aria-label="Keyboard shortcuts"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-white uppercase tracking-wider">
+                <h3 className="text-sm font-medium text-foreground">
                   {t('studio3d.shortcuts.title')}
                 </h3>
                 <button
                   onClick={() => setShowShortcuts(false)}
-                  className="text-neutral-500 hover:text-white transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
                   aria-label="Close shortcuts"
                 >
                   <X size={14} />
@@ -967,12 +970,12 @@ export const Studio3DPage: React.FC = () => {
                 ].map(([key, desc]) => (
                   <div
                     key={key}
-                    className="flex items-center justify-between py-1 border-b border-neutral-800 last:border-0"
+                    className="flex items-center justify-between py-1 border-b border-border last:border-0"
                   >
-                    <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-neutral-300 font-mono text-2xs">
+                    <kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-2xs">
                       {key}
                     </kbd>
-                    <span className="text-neutral-400">{desc}</span>
+                    <span className="text-muted-foreground">{desc}</span>
                   </div>
                 ))}
               </div>
@@ -1014,25 +1017,18 @@ export const Studio3DPage: React.FC = () => {
       />
 
       {/* Auto-render overlay */}
+      {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia (viewport 3D) */}
       {autoRenderState && (
         <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center">
-          <div className="flex flex-col items-center gap-6 p-8 rounded-2xl bg-neutral-900/90 border border-neutral-800 max-w-sm w-full mx-4">
+          <div className="flex flex-col items-center gap-6 p-8 rounded-xl bg-popover/90 border border-border max-w-sm w-full mx-4">
             <div className="relative w-20 h-20">
               {autoRenderState === 'done' ? (
                 <div className="w-20 h-20 rounded-full bg-success/20 flex items-center justify-center">
-                  <svg
-                    className="w-10 h-10 text-success"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
+                  <Check size={40} className="text-success" />
                 </div>
               ) : autoRenderState === 'error' ? (
                 <div className="w-20 h-20 rounded-full bg-destructive/20 flex items-center justify-center">
-                  <span className="text-destructive text-2xl font-bold">!</span>
+                  <span className="text-destructive text-2xl font-semibold">!</span>
                 </div>
               ) : (
                 <>
@@ -1044,7 +1040,7 @@ export const Studio3DPage: React.FC = () => {
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="3"
-                      className="text-neutral-800"
+                      className="text-muted"
                     />
                     <circle
                       cx="40"
@@ -1053,14 +1049,14 @@ export const Studio3DPage: React.FC = () => {
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="3"
-                      className="text-neutral-300"
+                      className="text-foreground"
                       strokeDasharray={`${2 * Math.PI * 36}`}
                       strokeDashoffset={`${2 * Math.PI * 36 * (1 - autoRenderProgress / 100)}`}
                       strokeLinecap="round"
                       style={{ transition: 'stroke-dashoffset 0.3s ease' }}
                     />
                   </svg>
-                  <span className="absolute inset-0 flex items-center justify-center text-sm font-mono text-neutral-300">
+                  <span className="absolute inset-0 flex items-center justify-center text-sm tabular-nums text-foreground">
                     {Math.round(autoRenderProgress)}%
                   </span>
                 </>
@@ -1068,7 +1064,7 @@ export const Studio3DPage: React.FC = () => {
             </div>
 
             <div className="text-center space-y-1">
-              <p className="text-sm font-medium text-neutral-200">
+              <p className="text-sm font-medium text-foreground">
                 {autoRenderState === 'loading' && 'Loading scene...'}
                 {autoRenderState === 'rendering' && 'Rendering frames...'}
                 {autoRenderState === 'encoding' && 'Encoding video...'}
@@ -1078,7 +1074,7 @@ export const Studio3DPage: React.FC = () => {
               {autoRenderState !== 'done' &&
                 autoRenderState !== 'error' &&
                 autoRenderStartTime > 0 && (
-                  <p className="text-2xs font-mono text-neutral-500">
+                  <p className="text-2xs font-mono text-muted-foreground">
                     {autoRender?.toUpperCase()}:{' '}
                     {Math.round((Date.now() - autoRenderStartTime) / 1000)}s elapsed
                   </p>
@@ -1091,7 +1087,7 @@ export const Studio3DPage: React.FC = () => {
                   setAutoRenderState(null);
                   setAutoRender(null);
                 }}
-                className="px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-xs font-mono text-neutral-300 uppercase tracking-wider transition-colors"
+                className="px-4 py-2 rounded-xl bg-muted hover:bg-accent text-xs text-foreground transition-colors"
               >
                 {autoRenderState === 'done' ? 'Close' : 'Dismiss'}
               </button>
@@ -1099,6 +1095,6 @@ export const Studio3DPage: React.FC = () => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { canvasApi, type CanvasProject } from '../services/canvasApi';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
 import {
   Breadcrumb,
@@ -53,7 +52,7 @@ export const CanvasSharedPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative">
+      <div className="min-h-screen bg-background text-foreground pt-14 relative">
         <div className="fixed inset-0 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="flex items-center justify-center min-h-[60vh]">
@@ -66,7 +65,7 @@ export const CanvasSharedPage: React.FC = () => {
 
   if (error || !project) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative">
+      <div className="min-h-screen bg-background text-foreground pt-14 relative">
         <div className="fixed inset-0 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="mb-6">
@@ -91,16 +90,16 @@ export const CanvasSharedPage: React.FC = () => {
             </Breadcrumb>
           </div>
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-            <h2 className="text-2xl font-bold text-neutral-200 mb-4">
+            <h2 className="text-2xl font-semibold text-foreground mb-4">
               {t('canvas.shared.project_not_found')}
             </h2>
-            <p className="text-neutral-400 mb-6">
+            <p className="text-muted-foreground mb-6">
               {error || 'The project you are looking for does not exist or is no longer shared.'}
             </p>
             <Button
               variant="ghost"
               onClick={() => navigate('/')}
-              className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md transition-colors"
+              className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-medium rounded-md transition-colors"
             >
               Go Home
             </Button>

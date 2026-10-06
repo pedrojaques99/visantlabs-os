@@ -23,6 +23,7 @@ import { CommunityPresetModal } from '@/components/CommunityPresetModal';
 import { toast } from 'sonner';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { Button } from '@/components/ui/button';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Input } from '@/components/ui/input';
 
 const PROMPT_CATEGORIES = Object.keys(CATEGORY_CONFIG) as PromptCategory[];
@@ -116,7 +117,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
       setAllPresets(result);
     } catch (err: any) {
       console.error('Failed to load all presets:', err);
-      setError(t('communityPresets.errors.failedToLoad') || 'Failed to load presets');
+      setError(t('communityPresets.errors.failedToLoad'));
     } finally {
       setIsLoading(false);
     }
@@ -367,37 +368,24 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
 
         {/* View Mode & Create */}
         <div className="flex items-center gap-2">
-          <div className="flex p-1 rounded-md bg-neutral-900 border border-neutral-800/50 flex-1">
-            <Button
-              variant="ghost"
-              onClick={() => setViewMode('all')}
-              className={cn(
-                'flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-[color,background-color,border-color,box-shadow]',
-                viewMode === 'all'
-                  ? 'bg-neutral-800 text-neutral-200 shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-300'
-              )}
-            >
-              {t('communityPresets.allPresets')}
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => setViewMode('my')}
-              className={cn(
-                'flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-[color,background-color,border-color,box-shadow]',
-                viewMode === 'my'
-                  ? 'bg-neutral-800 text-neutral-200 shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-300'
-              )}
-            >
-              {t('communityPresets.myPresets')}
-            </Button>
-          </div>
+          <SegmentedControl
+            size="sm"
+            fullWidth
+            className="flex-1"
+            aria-label={t('communityPresets.allPresets')}
+            value={viewMode}
+            onChange={setViewMode}
+            options={[
+              { value: 'all', label: t('communityPresets.allPresets') },
+              { value: 'my', label: t('communityPresets.myPresets') },
+            ]}
+          />
           <Button
-            variant="brand"
+            variant="primary"
+            size="icon-md"
             onClick={handleCreate}
-            className="p-2 rounded-md bg-brand-cyan/20 text-foreground hover:bg-brand-cyan/30 border border-brand-cyan/30 transition-colors"
             title={t('communityPresets.createNew')}
+            aria-label={t('communityPresets.createNew')}
           >
             <Plus size={16} />
           </Button>
@@ -409,7 +397,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t('communityPresets.searchPlaceholder') || 'Search presets...'}
+            placeholder={t('communityPresets.searchPlaceholder')}
             className="w-full pl-9 pr-4 py-2 bg-neutral-900/50 border border-neutral-700/50 rounded-md text-xs text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500/50"
           />
         </div>
@@ -445,7 +433,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
       <div className="flex-1 overflow-y-auto min-h-0 p-4 pt-0">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <GlitchLoader size={24} color="brand-cyan" />
+            <GlitchLoader size={24} />
           </div>
         ) : error ? (
           <div className="p-4 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-xs text-center">

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Diamond, Calendar, Eye, Trash2, Plus, Pickaxe, Search } from '@/lib/ui/icons';
+import { useNavigate } from 'react-router-dom';
+import { Diamond, Edit, Trash2, Plus, Search } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
 import { SearchBar } from '../components/ui/SearchBar';
@@ -10,7 +10,8 @@ import { PageShell } from '../components/ui/PageShell';
 import { AuthModal } from '../components/AuthModal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { ErrorState } from '@/components/ui/ErrorState';
-import { Thumb } from '@/components/ui/Thumb';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { MediaTile } from '@/components/ui/MediaTile';
 import { useLayout } from '@/hooks/useLayout';
 import {
   useCreativeProjects,
@@ -61,8 +62,8 @@ export const CreativeProjectsPage: React.FC = () => {
   }, [isAuthenticated]);
 
   React.useEffect(() => {
-    if (error) toast.error((error as Error).message || 'Failed to load creatives');
-  }, [error]);
+    if (error) toast.error((error as Error).message || t('creative.projects.loadFailed'));
+  }, [error, t]);
 
   const filteredProjects = useMemo(() => {
     let result = [...projects];
@@ -107,7 +108,7 @@ export const CreativeProjectsPage: React.FC = () => {
   const handleNameEditStart = (project: { _id: string; name: string }, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingProjectId(project._id);
-    setEditingName(project.name || 'Untitled Creative');
+    setEditingName(project.name || '');
     setTimeout(() => {
       editingInputRef.current?.focus();
       editingInputRef.current?.select();
@@ -139,37 +140,44 @@ export const CreativeProjectsPage: React.FC = () => {
   };
 
   const headerActions = (
-    <div className="flex items-center gap-3">
-      <div className="relative">
+    <div className="flex items-center gap-1 sm:gap-3">
+      {/* Mesma busca inline do /canvas: expande dentro do header e colapsa ao sair vazia. */}
+      {showSearch ? (
+        <SearchBar
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder={t('creative.projects.search_project_name')}
+          iconSize={14}
+          className="h-10 text-xs"
+          containerClassName="min-w-0 flex-1 max-w-[8.5rem] sm:flex-initial sm:max-w-none sm:w-[180px] md:w-[140px] lg:w-[180px] xl:w-[200px]"
+          autoFocus
+          onBlur={() => {
+            if (!searchQuery.trim()) setShowSearch(false);
+          }}
+        />
+      ) : (
         <Button
           variant="ghost"
-          onClick={() => setShowSearch(!showSearch)}
-          className="p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-neutral-900/40"
-          title="Search"
+          size="icon"
+          onClick={() => setShowSearch(true)}
+          className="shrink-0 text-muted-foreground hover:text-foreground"
+          title={t('common.search')}
+          aria-label={t('common.search')}
         >
           <Search size={18} />
         </Button>
-        {showSearch && (
-          <div className="absolute top-12 right-0 bg-neutral-950/90 backdrop-blur-sm border border-white/10 rounded-ml p-2 min-w-[240px] shadow-lg animate-[fadeInScale_0.2s_ease-out] z-50">
-            <SearchBar
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder={t('creative.projects.search_project_name')}
-              iconSize={14}
-              className="bg-transparent border-white/10 text-xs font-mono"
-              containerClassName="w-full"
-              autoFocus
-            />
-          </div>
-        )}
-      </div>
+      )}
       <Button
-        variant="brand"
+        variant="primary"
         onClick={handleCreateNew}
-        className="h-10 px-6 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-bold uppercase tracking-widest text-2xs rounded-md transition-all duration-300 hover:scale-[1.02] flex items-center gap-2"
+        title={t('creative.projects.newCreative')}
+        aria-label={t('creative.projects.newCreative')}
+        className="shrink-0 px-2 sm:px-4 md:px-2 lg:px-4"
       >
         <Plus className="h-4 w-4" />
-        New Creative
+        <span className="hidden sm:inline md:hidden lg:inline">
+          {t('creative.projects.newCreative')}
+        </span>
       </Button>
     </div>
   );
@@ -178,29 +186,18 @@ export const CreativeProjectsPage: React.FC = () => {
     return (
       <PageShell
         pageId="creative-projects-loading"
-        title={t('creative.projects.my_creatives')}
-        microTitle="Creative Studio // Projects"
+        title={t('creative.projects.title')}
         description={t('creative.projects.manage_your_aigenerated_creative')}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="bg-[#141414] border border-neutral-800/60 rounded-md p-6 md:p-8"
-              style={{ animationDelay: `${i * 100}ms` }}
-            >
-              <SkeletonLoader height="12rem" className="w-full rounded-md mb-4" />
-              <div className="flex items-center gap-2 mb-2">
-                <SkeletonLoader height="1.25rem" className="w-5 rounded" />
-                <SkeletonLoader height="1.5rem" className="flex-1" />
+            <div key={i} className="overflow-hidden rounded-xl border border-border bg-card">
+              <div className="aspect-[16/10] w-full">
+                <SkeletonLoader height="100%" className="w-full rounded-none" />
               </div>
-              <div className="flex items-center gap-2 mb-4">
-                <SkeletonLoader height="0.875rem" className="w-3.5 rounded" />
-                <SkeletonLoader height="0.875rem" className="w-24" />
-              </div>
-              <div className="flex items-center gap-2">
-                <SkeletonLoader height="2.5rem" className="flex-1 rounded-md" />
-                <SkeletonLoader height="2.5rem" className="w-12 rounded-xl" />
+              <div className="p-3">
+                <SkeletonLoader height="0.875rem" className="w-2/3 mb-2" />
+                <SkeletonLoader height="0.75rem" className="w-24" />
               </div>
             </div>
           ))}
@@ -209,156 +206,119 @@ export const CreativeProjectsPage: React.FC = () => {
     );
   }
 
+  const countStr = searchQuery.trim()
+    ? t('creative.projects.countFiltered', {
+        count: filteredProjects.length,
+        total: projects.length,
+      })
+    : projects.length === 1
+      ? t('creative.projects.countOne')
+      : t('creative.projects.countMany', { count: projects.length });
+
   return (
     <PageShell
       pageId="creative-projects"
-      seoTitle="My Creatives"
-      seoDescription="Manage, edit and revisit your AI-generated creatives."
-      title={t('creative.projects.my_creatives_2')}
-      microTitle="Creative Studio // Projects"
-      description={
-        projects.length === 0
-          ? 'No creatives yet'
-          : searchQuery.trim()
-            ? `${filteredProjects.length} of ${projects.length} creatives found`
-            : `Manage ${projects.length} ${projects.length === 1 ? 'creative' : 'creatives'}`
-      }
+      seoTitle={t('creative.projects.title')}
+      seoDescription={t('creative.projects.seoDescription')}
+      title={t('creative.projects.title')}
+      description={projects.length === 0 ? t('creative.projects.emptyTitle') : countStr}
       breadcrumb={[
-        { label: 'Home', to: '/' },
-        { label: 'Creative Studio', to: '/create' },
-        { label: 'Projects' },
+        { label: t('apps.home'), to: '/' },
+        { label: t('creative.projects.studio'), to: '/create' },
+        { label: t('creative.projects.title') },
       ]}
       actions={headerActions}
     >
       <div className="relative z-10" data-vsn-component="creative-projects-grid">
-        {/* Empty states */}
         {isError && projects.length === 0 ? (
-          <ErrorState onRetry={() => refetch()} />
+          <ErrorState title={t('creative.projects.loadFailed')} onRetry={() => refetch()} />
         ) : filteredProjects.length === 0 && projects.length > 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
-            <Diamond size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
-            <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
-              NO CREATIVES FOUND
-            </h2>
-            <p className="text-sm text-neutral-600 font-mono mb-6">
-              No creatives match your search query.
-            </p>
-            <Button
-              variant="ghost"
-              onClick={() => setSearchQuery('')}
-              className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95"
-            >
-              Clear Search
-            </Button>
-          </div>
+          <EmptyState
+            icon={Diamond}
+            title={t('creative.projects.noneFound')}
+            description={t('creative.projects.noneMatchSearch')}
+            actionLabel={t('common.clearSearch')}
+            onAction={() => setSearchQuery('')}
+          />
         ) : projects.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
-            <Diamond size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
-            <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
-              NO CREATIVES YET
-            </h2>
-            <p className="text-sm text-neutral-600 font-mono mb-6">
-              Generate your first brand-aware creative to get started.
-            </p>
-            <Button
-              variant="brand"
-              onClick={handleCreateNew}
-              className="px-6 py-3 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
-            >
-              <Pickaxe className="h-4 w-4" />
-              Create Your First Creative
-            </Button>
-          </div>
+          <EmptyState
+            icon={Diamond}
+            title={t('creative.projects.emptyTitle')}
+            description={t('creative.projects.emptyBody')}
+            actionLabel={t('creative.projects.createFirst')}
+            onAction={handleCreateNew}
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {filteredProjects.map((project) => {
               const thumbnail = project.thumbnailUrl || project.backgroundUrl;
+              const displayName = project.name || t('creative.projects.untitled');
+              const isEditing = editingProjectId === project._id;
+              const date = formatDate(project.updatedAt || project.createdAt);
               return (
-                <div
+                <MediaTile
                   key={project._id}
                   data-vsn-component="creative-project-card"
                   data-vsn-project-id={project._id}
-                  className="bg-[#141414]/40 backdrop-blur-sm border border-neutral-800/60 rounded-xl p-5 hover:border-neutral-700 transition-all duration-500 group cursor-pointer overflow-hidden shadow-xl"
+                  src={thumbnail}
+                  alt={displayName}
+                  aspectRatio="16 / 10"
+                  fallbackIcon={Diamond}
+                  actionLabel={displayName}
                   onClick={() => {
-                    if (editingProjectId !== project._id) handleOpen(project._id);
+                    if (!isEditing) handleOpen(project._id);
                   }}
-                >
-                  {/* Thumbnail */}
-                  <div className="relative w-full h-48 mb-6 rounded-lg overflow-hidden bg-neutral-900/50 border border-neutral-800/60">
-                    <Thumb
-                      src={thumbnail}
-                      alt={project.name || 'Creative preview'}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                      fallbackLabel={t('common.unavailable') || 'unavailable'}
-                    />
-                    <div className="absolute top-3 left-3 px-2 py-1 rounded bg-black/60 backdrop-blur-md border border-white/10 text-2xs font-mono text-muted-foreground uppercase tracking-wider">
-                      {project.format}
-                    </div>
-                  </div>
-
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        {editingProjectId === project._id ? (
-                          <Input
-                            ref={editingInputRef}
-                            type="text"
-                            value={editingName}
-                            onChange={(e) => setEditingName(e.target.value)}
-                            onBlur={() => handleNameEditSave(project._id)}
-                            onKeyDown={(e) => handleNameEditKeyDown(e, project._id)}
-                            onClick={(e) => e.stopPropagation()}
-                            className="flex-1 font-bold text-neutral-200 font-manrope text-lg bg-transparent border-b border-brand-cyan/40 focus:border-neutral-600 focus:outline-none px-1 h-auto py-0"
-                          />
-                        ) : (
-                          <h3
-                            className="font-bold text-neutral-200 font-manrope text-lg line-clamp-1 cursor-text group-hover:text-brand-cyan transition-colors"
-                            onClick={(e) =>
-                              handleNameEditStart({ _id: project._id, name: project.name }, e)
-                            }
-                            title="Click to edit"
-                          >
-                            {project.name || 'Untitled Creative'}
-                          </h3>
-                        )}
-                      </div>
-                      <div
-                        className="flex items-center gap-2 text-2xs text-neutral-500 font-mono mb-4 uppercase tracking-widest"
-                        title={`Last edited: ${formatDate(project.updatedAt || project.createdAt)}`}
+                  title={displayName}
+                  editableTitle={
+                    isEditing ? (
+                      <Input
+                        ref={editingInputRef}
+                        type="text"
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        onBlur={() => handleNameEditSave(project._id)}
+                        onKeyDown={(e) => handleNameEditKeyDown(e, project._id)}
+                        aria-label={t('canvas.renameProject')}
+                        className="h-auto border-0 border-b border-ring bg-transparent px-1 py-0 text-sm font-medium text-foreground focus:outline-none"
+                      />
+                    ) : undefined
+                  }
+                  subtitle={
+                    <span title={`${t('canvas.lastEdited')}: ${date}`}>
+                      {project.format ? `${date} · ${project.format}` : date}
+                    </span>
+                  }
+                  meta={
+                    project.prompt ? (
+                      <span className="line-clamp-2 leading-relaxed">{project.prompt}</span>
+                    ) : undefined
+                  }
+                  actions={
+                    <>
+                      <Button
+                        variant="surface"
+                        size="icon-sm"
+                        onClick={(e) =>
+                          handleNameEditStart({ _id: project._id, name: project.name }, e)
+                        }
+                        aria-label={t('canvas.renameProject')}
+                        title={t('canvas.renameProject')}
                       >
-                        <Calendar className="h-3 w-3" />
-                        <span>{formatDate(project.updatedAt || project.createdAt)}</span>
-                      </div>
-                      {project.prompt && (
-                        <p className="text-2xs text-neutral-500 font-mono line-clamp-2 mb-5 leading-relaxed opacity-60">
-                          {project.prompt}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpen(project._id);
-                      }}
-                      className="flex-1 h-10 bg-white/5 border border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/10 hover:text-brand-cyan rounded-lg text-xs font-bold uppercase tracking-wider text-neutral-400 transition-[color,background-color,border-color,opacity] duration-300 flex items-center justify-center gap-2"
-                    >
-                      <Eye className="h-4 w-4" />
-                      Open
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={(e) => handleDeleteClick(project._id, e)}
-                      disabled={deleteMutation.isPending}
-                      className="w-10 h-10 bg-white/5 border border-white/10 hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive rounded-lg text-neutral-500 transition-[color,background-color,border-color,opacity] duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="icon-sm"
+                        onClick={(e) => handleDeleteClick(project._id, e)}
+                        disabled={deleteMutation.isPending}
+                        aria-label={t('creative.projects.delete_creative')}
+                        title={t('creative.projects.delete_creative')}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  }
+                />
               );
             })}
           </div>
@@ -382,8 +342,8 @@ export const CreativeProjectsPage: React.FC = () => {
           onConfirm={handleDeleteConfirm}
           title={t('creative.projects.delete_creative')}
           message={t('creative.projects.are_you_sure_you_want_to_delete_')}
-          confirmText="Delete"
-          cancelText="Cancel"
+          confirmText={t('common.delete')}
+          cancelText={t('common.cancel')}
           variant="danger"
         />
       </div>

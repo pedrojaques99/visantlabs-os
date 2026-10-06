@@ -129,8 +129,8 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
           <Input
             value={local.name}
             onChange={(e) => update({ name: e.target.value })}
-            className="h-7 text-sm font-semibold bg-transparent border-none px-0 text-neutral-100 focus-visible:ring-0 placeholder:text-neutral-700"
-            placeholder="Brand name"
+            className="h-7 text-sm font-medium bg-transparent border-none px-0 text-foreground focus-visible:ring-0 placeholder:text-muted-foreground"
+            placeholder="Name"
           />
         </div>
 
@@ -145,7 +145,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
           value={local.description}
           onChange={(e) => update({ description: e.target.value })}
           className="border-neutral-800 text-xs min-h-[70px] resize-none text-neutral-400 placeholder:text-neutral-700 bg-transparent"
-          placeholder="Brand description..."
+          placeholder="What the brand does, for whom"
         />
 
         <div className="pt-1 border-t border-neutral-800 flex flex-wrap gap-x-3 gap-y-0">
@@ -161,7 +161,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
               <div
                 key={key}
                 className={cn(
-                  'flex items-center gap-1.5 group/link transition-all',
+                  'flex items-center gap-1.5 group/link',
                   isEmpty ? 'w-fit py-0.5' : 'w-full py-1 border-b border-neutral-800 last:border-0'
                 )}
               >
@@ -179,7 +179,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
                   value={local[key]}
                   onChange={(e) => update({ [key]: e.target.value })}
                   className={cn(
-                    'bg-transparent border-none px-0 text-xs font-mono focus-visible:ring-0 transition-all',
+                    'bg-transparent border-none px-0 text-xs font-mono focus-visible:ring-0',
                     isEmpty
                       ? 'auto-input h-5 text-neutral-700 placeholder:text-neutral-800 hover:placeholder:text-neutral-600 cursor-text'
                       : 'h-7 flex-1 text-neutral-400 placeholder:text-neutral-700'

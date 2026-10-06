@@ -41,7 +41,7 @@ export const MyBrandingsPage: React.FC = () => {
     if (project._id && project._id.trim() !== '') {
       navigate(`/branding-machine?projectId=${project._id}`);
     } else {
-      toast.error(t('branding.myBrandings.errors.invalidProjectId') || 'Invalid project ID');
+      toast.error(t('branding.myBrandings.errors.invalidProjectId'));
     }
   };
 
@@ -57,7 +57,7 @@ export const MyBrandingsPage: React.FC = () => {
     setDeletingId(projectToDelete);
     try {
       await deleteBranding.mutateAsync(projectToDelete);
-      toast.success(t('branding.myBrandings.deleted') || 'Project deleted successfully');
+      toast.success(t('branding.myBrandings.deleted'));
     } catch (error: any) {
       console.error('Error deleting project:', error);
       // error toast handled by the mutation
@@ -79,7 +79,7 @@ export const MyBrandingsPage: React.FC = () => {
     return (
       <div
         className={cn(
-          'bg-neutral-950 text-neutral-300 relative',
+          'bg-background text-foreground relative',
           inShell ? 'min-h-full' : 'min-h-screen',
           inShell ? 'pt-6' : 'pt-14'
         )}
@@ -87,7 +87,7 @@ export const MyBrandingsPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-card border border-neutral-800/60 rounded-md p-6">
+              <div key={i} className="bg-card border border-border rounded-md p-6">
                 <SkeletonLoader height="1.5rem" className="w-3/4 mb-2" />
                 <SkeletonLoader height="1rem" className="w-1/2" />
               </div>
@@ -107,7 +107,7 @@ export const MyBrandingsPage: React.FC = () => {
       />
       <div
         className={cn(
-          'bg-neutral-950 text-neutral-300 relative overflow-hidden',
+          'bg-background text-foreground relative overflow-hidden',
           inShell ? 'min-h-full' : 'min-h-screen',
           inShell ? 'pt-6' : 'pt-14'
         )}
@@ -118,30 +118,29 @@ export const MyBrandingsPage: React.FC = () => {
             <Button
               variant="ghost"
               onClick={() => navigate('/branding-machine')}
-              className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm transition-colors flex items-center gap-2 cursor-pointer flex-shrink-0"
+              className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-medium rounded-md text-sm transition-colors flex items-center gap-2 cursor-pointer flex-shrink-0"
             >
               <FilePenLine className="h-4 w-4" />
-              {t('branding.myBrandings.createNew') || 'Create New'}
+              {t('branding.myBrandings.createNew')}
             </Button>
           </div>
 
           {/* Projects Grid */}
           {projects.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-              <FileText size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
-              <h2 className="text-lg font-semibold text-neutral-200 mb-1.5">
-                {t('branding.myBrandings.emptyTitle') || 'No projects yet'}
+              <FileText size={64} className="text-muted-foreground mb-4" strokeWidth={1} />
+              <h2 className="text-lg font-semibold text-foreground mb-1.5">
+                {t('branding.myBrandings.emptyTitle')}
               </h2>
-              <p className="text-sm text-neutral-500 mb-6">
-                {t('branding.myBrandings.emptyDescription') ||
-                  'Create your first branding project to see it here.'}
+              <p className="text-sm text-muted-foreground mb-6">
+                {t('branding.myBrandings.emptyDescription')}
               </p>
               <PremiumButton
                 onClick={() => navigate('/branding-machine')}
                 className="max-w-xs h-12"
                 icon={FilePenLine}
               >
-                {t('branding.myBrandings.createFirst') || 'Create Your First Project'}
+                {t('branding.myBrandings.createFirst')}
               </PremiumButton>
             </div>
           ) : (
@@ -150,27 +149,27 @@ export const MyBrandingsPage: React.FC = () => {
                 <GlassPanel
                   key={project._id}
                   padding="none"
-                  className="p-6 md:p-8 hover:border-neutral-700/60 transition-colors duration-300 group cursor-pointer bg-[#141414]"
+                  className="p-6 md:p-8 hover:border-border-hover transition-colors duration-300 group cursor-pointer bg-card"
                   onClick={() => handleView(project)}
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <FileText className="h-5 w-5 text-neutral-500" />
-                        <h3 className="font-semibold text-neutral-200 font-manrope text-lg line-clamp-2">
+                        <FileText className="h-5 w-5 text-muted-foreground" />
+                        <h3 className="font-medium text-foreground font-manrope text-lg line-clamp-2">
                           {project.name
                             ? truncateText(project.name, 60)
                             : truncateText(project.prompt, 60)}
                         </h3>
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-neutral-400 mb-3">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
                         <Calendar className="h-3.5 w-3.5" />
                         <span>{formatDate(project.createdAt)}</span>
                       </div>
                     </div>
                   </div>
 
-                  <p className="text-sm text-neutral-400 mb-4 line-clamp-3">
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
                     {truncateText(project.prompt, 120)}
                   </p>
 
@@ -181,16 +180,16 @@ export const MyBrandingsPage: React.FC = () => {
                         e.stopPropagation();
                         handleView(project);
                       }}
-                      className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-neutral-700 rounded-md text-sm text-neutral-300 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                      className="flex-1 px-4 py-2 bg-background/70 border border-border hover:border-border-hover rounded-md text-sm text-foreground transition-colors flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Eye className="h-4 w-4" />
-                      {t('branding.myBrandings.view') || 'View'}
+                      {t('branding.myBrandings.view')}
                     </Button>
                     <Button
                       variant="ghost"
                       onClick={(e) => handleDeleteClick(project._id, e)}
                       disabled={deletingId === project._id}
-                      className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-destructive/50 hover:text-destructive rounded-md text-sm text-neutral-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                      className="px-4 py-2 bg-background/70 border border-border hover:border-destructive/50 hover:text-destructive rounded-md text-sm text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

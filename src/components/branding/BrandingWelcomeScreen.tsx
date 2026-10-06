@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import { BrandingChatInput } from './BrandingChatInput';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
-import { useTheme } from '@/hooks/useTheme';
 import { getTotalBrandingCredits } from '@/utils/creditCalculator';
-import { InteractiveASCIICopy } from '@/components/ui/InteractiveASCIICopy';
-import { GridDotsBackground } from '@/components/ui/GridDotsBackground';
 import { toast } from 'sonner';
 import { AuthModal } from '../AuthModal';
 import { GlassPanel } from '@/components/ui/GlassPanel';
@@ -25,7 +22,6 @@ export const BrandingWelcomeScreen: React.FC<BrandingWelcomeScreenProps> = ({
   isGenerating = false,
 }) => {
   const { t } = useTranslation();
-  const { theme } = useTheme();
   const { isAuthenticated, isCheckingAuth, subscriptionStatus, onCreditPackagesModalOpen } =
     useLayout();
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -58,22 +54,10 @@ export const BrandingWelcomeScreen: React.FC<BrandingWelcomeScreenProps> = ({
 
   return (
     <>
-      <div
-        className={`relative min-h-screen flex items-center justify-center p-6 overflow-hidden pt-16 md:pt-20 transition-colors duration-300 ${
-          theme === 'dark'
-        }`}
-      >
-        <div className="absolute inset-0 z-0">
-          <GridDotsBackground opacity={theme === 'dark' ? 0.02 : 0.05} />
-          <InteractiveASCIICopy isDarkMode={true} fullHeight={true} color="#52ddeb" />
-        </div>
+      <div className="relative min-h-screen flex items-center justify-center p-6 overflow-hidden pt-16 md:pt-20">
         <div className="relative z-10 max-w-2xl w-full text-center space-y-8 animate-fade-in">
           <div className="space-y-4">
-            <h1
-              className={`text-2xl md:text-3xl font-regular font-manrope  flex items-center justify-center gap-2 ${
-                theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-              }`}
-            >
+            <h1 className="text-2xl md:text-3xl font-regular font-manrope flex items-center justify-center gap-2 text-foreground">
               BRANDING MACHINE®{' '}
               <MicroTitle as="span" className="text-foreground">
                 v1.0
@@ -84,18 +68,10 @@ export const BrandingWelcomeScreen: React.FC<BrandingWelcomeScreenProps> = ({
           <div className="w-full animate-fade-in-down">
             <GlassPanel className="p-6 md:p-8 space-y-6 transition-colors duration-300">
               <div className="text-center">
-                <h2
-                  className={`text-xl md:text-2xl font-semibold mb-2 normal-case ${
-                    theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-                  }`}
-                >
+                <h2 className="text-xl md:text-2xl font-semibold mb-2 normal-case text-foreground">
                   {t('branding.describeYourBrand')}
                 </h2>
-                <p
-                  className={`text-sm md:text-base normal-case ${
-                    theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                  }`}
-                >
+                <p className="text-sm md:text-base normal-case text-muted-foreground">
                   {t('branding.describeYourBrandDescription')}
                 </p>
               </div>

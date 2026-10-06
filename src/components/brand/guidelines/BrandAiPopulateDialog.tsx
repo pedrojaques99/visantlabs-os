@@ -8,7 +8,8 @@ import {
   DialogBody,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Zap, Check, X, ChevronDown, ChevronUp } from '@/lib/ui/icons';
+import { Zap, Check, X, ChevronDown, ChevronUp, ArrowLeft } from '@/lib/ui/icons';
+import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
@@ -117,6 +118,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
   onSuccess,
 }) => {
   const emptySections = useMemo(() => getEmptySections(guideline), [guideline]);
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<Set<string>>(new Set(emptySections));
   const [loading, setLoading] = useState(false);
   const [patch, setPatch] = useState<Record<string, any> | null>(null);
@@ -232,9 +234,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-sm font-bold uppercase tracking-[0.15em]">
-              AI Generate
-            </DialogTitle>
+            <DialogTitle className="text-sm font-semibold">AI Generate</DialogTitle>
           </DialogHeader>
           <DialogBody>
             <div className="flex flex-col items-center gap-3 py-8">
@@ -253,9 +253,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
         <DialogHeader>
           <div className="flex items-center gap-2.5">
             <Zap size={14} className="text-warning" />
-            <DialogTitle className="text-sm font-bold uppercase tracking-[0.15em]">
-              AI Generate
-            </DialogTitle>
+            <DialogTitle className="text-sm font-semibold">AI Generate</DialogTitle>
           </div>
           <DialogDescription className="text-2xs text-neutral-500">
             Selecione os campos vazios para preencher com IA. Revise antes de aplicar.
@@ -268,7 +266,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
               <div className="flex items-center justify-between mb-3">
                 <button
                   onClick={toggleAll}
-                  className="text-2xs uppercase tracking-widest text-neutral-500 hover:text-neutral-300 transition-colors"
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {selected.size === emptySections.length ? 'Desmarcar tudo' : 'Selecionar tudo'}
                 </button>
@@ -283,19 +281,17 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
                   if (available.length === 0) return null;
                   return (
                     <div key={group}>
-                      <p className="text-2xs font-mono uppercase tracking-widest text-neutral-600 mb-2">
-                        {group}
-                      </p>
+                      <p className="text-xs font-medium text-muted-foreground mb-2">{group}</p>
                       <div className="space-y-1">
                         {available.map((key) => (
                           <button
                             key={key}
                             onClick={() => toggleSection(key)}
                             className={cn(
-                              'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg border text-left transition-colors',
+                              'w-full flex items-center gap-2.5 px-3 py-2 rounded-xl border text-left transition-colors',
                               selected.has(key)
                                 ? 'border-warning/30 bg-warning/[0.06] text-neutral-200'
-                                : 'border-neutral-800 bg-white/[0.03] text-neutral-500 hover:text-neutral-300'
+                                : 'border-border bg-muted text-muted-foreground hover:text-foreground'
                             )}
                           >
                             <div
@@ -333,9 +329,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
           {loading && (
             <div className="flex flex-col items-center justify-center gap-3 py-16">
               <GlitchLoader size={20} />
-              <p className="text-2xs text-neutral-500 uppercase tracking-widest">
-                Gerando conteúdo…
-              </p>
+              <p className="text-xs text-muted-foreground">Gerando conteúdo…</p>
             </div>
           )}
 
@@ -352,9 +346,9 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
                     <div
                       key={key}
                       className={cn(
-                        'rounded-lg border p-3 transition-[color,background-color,border-color,opacity]',
+                        'rounded-xl border p-3 transition-[color,background-color,border-color,opacity]',
                         isExcluded
-                          ? 'border-neutral-800 bg-white/[0.03] opacity-40'
+                          ? 'border-border bg-muted opacity-40'
                           : 'border-success/20 bg-success/[0.04]'
                       )}
                     >
@@ -369,10 +363,10 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
                         <button
                           onClick={() => toggleExclude(key)}
                           className={cn(
-                            'text-2xs uppercase tracking-widest transition-colors',
+                            'text-xs transition-colors',
                             isExcluded
-                              ? 'text-neutral-600 hover:text-success'
-                              : 'text-neutral-500 hover:text-destructive'
+                              ? 'text-muted-foreground hover:text-success'
+                              : 'text-muted-foreground hover:text-destructive'
                           )}
                         >
                           {isExcluded ? 'incluir' : 'excluir'}
@@ -385,12 +379,15 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
               </div>
 
               <div className="flex items-center justify-between mt-4">
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setPatch(null)}
-                  className="text-2xs uppercase tracking-widest text-neutral-500 hover:text-neutral-300"
+                  className="gap-1.5"
                 >
-                  ← Voltar
-                </button>
+                  <ArrowLeft size={14} />
+                  {t('common.back')}
+                </Button>
                 <div className="flex gap-2">
                   <Button
                     variant="ghost"

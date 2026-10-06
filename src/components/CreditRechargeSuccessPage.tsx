@@ -6,7 +6,6 @@ import { useLayout } from '@/hooks/useLayout';
 import { subscriptionService } from '../services/subscriptionService';
 import { authService } from '../services/authService';
 import type { SubscriptionStatus } from '../services/subscriptionService';
-import { GridDotsBackground } from './ui/GridDotsBackground';
 import { Button } from '@/components/ui/button';
 import { trackPurchase } from '@/utils/analytics';
 
@@ -93,8 +92,10 @@ export const CreditRechargeSuccessPage: React.FC = () => {
         // User is authenticated, load subscription status
         try {
           const status = await subscriptionService.getSubscriptionStatus();
+          // Detection compares lifetime earned credits; the "before" row shows the
+          // balance so it lines up with the "total" row (both totalCredits).
           const startingCredits = status.totalCreditsEarned ?? 0;
-          setPreviousCredits(startingCredits); // Store initial credits
+          setPreviousCredits(status.totalCredits ?? 0);
           setSubscriptionStatus(status);
           setIsLoading(false);
 
@@ -116,12 +117,6 @@ export const CreditRechargeSuccessPage: React.FC = () => {
                 // If credits increased, payment was successful
                 if (currentCredits > startingCredits) {
                   const added = currentCredits - startingCredits;
-                  console.log('✅ Credits updated successfully:', {
-                    initial: startingCredits,
-                    updated: currentCredits,
-                    added: added,
-                  });
-
                   // Track Purchase in Himetrica
                   trackPurchase({
                     product_id: `recharge_${added}_credits`,
@@ -137,7 +132,6 @@ export const CreditRechargeSuccessPage: React.FC = () => {
 
                 // If we've polled max times, stop polling
                 if (pollCount >= maxPolls) {
-                  console.log('⏱️ Credit update polling timeout - webhook may still be processing');
                   if (pollCreditsInterval) clearInterval(pollCreditsInterval);
                   setIsVerifyingCredits(false);
                   // Update status anyway (webhook might have processed)
@@ -196,33 +190,29 @@ export const CreditRechargeSuccessPage: React.FC = () => {
   const animatedTotalCredits = useCountAnimation(creditsConfirmed ? totalCredits : 0, 1200);
 
   return (
-    <div className="min-h-screen bg-black text-neutral-300 pt-12 md:pt-14 relative">
-      <div className="fixed inset-0 z-0"></div>
-      <div className="max-w-2xl mx-auto px-4 py-12 md:py-20 relative z-10">
+    <div className="min-h-screen bg-background text-foreground pt-12 md:pt-14">
+      <div className="max-w-2xl mx-auto px-4 py-12 md:py-20">
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
-            <div className="relative">
-              <div className="absolute inset-0 bg-neutral-500/20 rounded-md blur-xl"></div>
-              <CheckCircle size={80} className="text-success relative" />
-            </div>
+            <CheckCircle size={64} className="text-success" />
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-bold font-mono text-neutral-200 mb-4 uppercase">
+          <h1 className="text-3xl md:text-4xl font-medium text-foreground mb-4">
             {t('creditRechargeSuccess.title')}
           </h1>
 
-          <p className="text-neutral-400 font-mono text-base md:text-lg mb-2">
+          <p className="text-muted-foreground text-base md:text-lg mb-2">
             {t('creditRechargeSuccess.subtitle')}
           </p>
 
           {isCheckingAuth || isLoading ? (
             <div className="flex items-center justify-center gap-2 mt-4">
-              <GlitchLoader size={20} color="brand-cyan" />
+              <GlitchLoader size={20} />
             </div>
           ) : isVerifyingCredits ? (
             <div className="flex items-center justify-center gap-2 mt-4">
-              <GlitchLoader size={20} color="brand-cyan" />
-              <span className="text-neutral-500 text-sm font-mono">
+              <GlitchLoader size={20} />
+              <span className="text-muted-foreground text-sm">
                 {t('creditRechargeSuccess.verifying')}
               </span>
             </div>
@@ -230,53 +220,39 @@ export const CreditRechargeSuccessPage: React.FC = () => {
         </div>
 
         {creditsConfirmed && (
-          <div className="bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-md p-6 mb-8">
+          <div className="bg-card border border-border rounded-md p-6 mb-8">
             <div className="flex items-center gap-3 mb-6">
-              <Pickaxe size={24} className="text-neutral-500" />
-              <h2 className="text-xl font-semibold font-mono text-neutral-200">
+              <Pickaxe size={20} className="text-muted-foreground" />
+              <h2 className="text-lg font-medium text-foreground">
                 {t('creditRechargeSuccess.creditsPurchased')}
               </h2>
             </div>
 
-            {creditsPurchased && creditsConfirmed && (
-              <div className="mb-6">
-                <div className="text-center py-4 bg-muted border border-neutral-600/30 rounded-md">
-                  <div className="text-5xl font-bold font-mono text-foreground mb-2">
-                    +{animatedCreditsPurchased}
-                  </div>
-                  <div className="text-neutral-400 font-mono text-sm">
-                    {t('creditRechargeSuccess.creditsPurchased')}
-                  </div>
+            {creditsPurchased && (
+              <div className="mb-6 text-center py-4 bg-muted border border-border rounded-md">
+                <div className="text-5xl font-semibold text-foreground tabular-nums">
+                  +{animatedCreditsPurchased}
                 </div>
               </div>
             )}
 
-            <div className="space-y-3 pt-6 border-t border-neutral-800/50">
-              {/* Previous Credits */}
+            <div className="space-y-3 pt-6 border-t border-border">
               {previousCredits !== null && (
-                <div className="flex items-center justify-between p-3 bg-neutral-900/50 rounded-md">
-                  <span className="text-neutral-400 font-mono text-sm">
+                <div className="flex items-center justify-between p-3 bg-muted/40 rounded-md">
+                  <span className="text-muted-foreground text-sm">
                     {t('creditRechargeSuccess.previousCredits')}
                   </span>
-                  <span className="text-neutral-300 font-mono font-semibold text-lg">
+                  <span className="text-foreground font-medium text-lg tabular-nums">
                     {previousCredits} {t('creditsPackages.credits')}
                   </span>
                 </div>
               )}
 
-              {/* Arrow indicator */}
-              {previousCredits !== null && (
-                <div className="flex justify-center">
-                  <ArrowRight size={20} className="text-neutral-500 rotate-90" />
-                </div>
-              )}
-
-              {/* Total Credits */}
-              <div className="flex items-center justify-between p-3 bg-muted/50 border border-neutral-600/20 rounded-md">
-                <span className="text-neutral-300 font-mono text-sm font-semibold">
+              <div className="flex items-center justify-between p-3 bg-muted/60 border border-border rounded-md">
+                <span className="text-foreground text-sm font-medium">
                   {t('creditRechargeSuccess.totalCredits')}
                 </span>
-                <span className="text-foreground font-mono font-bold text-xl tabular-nums">
+                <span className="text-foreground font-semibold text-xl tabular-nums">
                   {animatedTotalCredits} {t('creditsPackages.credits')}
                 </span>
               </div>
@@ -285,18 +261,14 @@ export const CreditRechargeSuccessPage: React.FC = () => {
         )}
 
         <div className="text-center">
-          <Button
-            variant="brand"
-            onClick={handleGetStarted}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-colors"
-          >
+          <Button variant="brand" onClick={handleGetStarted} className="px-6">
             <span>{t('creditRechargeSuccess.getStarted')}</span>
             <ArrowRight size={16} />
           </Button>
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-neutral-500 text-xs font-mono">{t('creditRechargeSuccess.support')}</p>
+          <p className="text-muted-foreground text-xs">{t('creditRechargeSuccess.support')}</p>
         </div>
       </div>
     </div>

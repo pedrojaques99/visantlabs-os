@@ -207,8 +207,12 @@ function toList(value: string | string[] | undefined, lowercase = false): string
  *
  * Written as "has an image", not "is not a PSD", so any future failed ingest is
  * covered by the same rule without anyone remembering to extend a blocklist.
+ *
+ * "Has an image" means a URL a browser can fetch: absolute http(s). Rows from a
+ * local ingest point at `/api/local-image?path=Z:\...`, which only resolves on
+ * the machine that ingested them; in prod they became tiles that never load.
  */
-export const HAS_IMAGE = { referenceImageUrl: { $exists: true, $nin: [null, ''] } };
+export const HAS_IMAGE = { referenceImageUrl: { $regex: /^https?:\/\//i } };
 
 /**
  * PSD mockup scenes are NOT reference images. They are the mockup-store's

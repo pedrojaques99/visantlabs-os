@@ -15,6 +15,7 @@ import { NodeHeader } from './shared/node-header';
 
 import { ChatMessage } from '../shared/chat/ChatMessage';
 import { ChatInput } from '../shared/chat/ChatInput';
+import { useIsChatInPanel } from '../canvas/chatPanelPresence';
 import { ModelSelector } from '../shared/ModelSelector';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 
@@ -25,6 +26,8 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
   const { t } = useTranslation();
   const { handleResize: handleResizeWithDebounce } = useNodeResize();
   const nodeData = data as ChatNodeData;
+  // Same conversation open in the side panel: type there, one composer per chat.
+  const isInPanel = useIsChatInPanel(nodeId);
   const [inputMessage, setInputMessage] = useState('');
   const messagesAreaRef = useRef<HTMLDivElement>(null);
   const [showSystemPromptEditor, setShowSystemPromptEditor] = useState(false);
@@ -51,7 +54,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     if (nodeData.onUpdateData) {
       nodeData.onUpdateData(nodeId, { systemPrompt: systemPrompt.trim() || undefined });
       setShowSystemPromptEditor(false);
-      toast.success(t('canvasNodes.chatNode.systemPromptSaved') || 'System prompt saved');
+      toast.success(t('canvasNodes.chatNode.systemPromptSaved'));
     }
   }, [nodeId, nodeData, systemPrompt, t]);
 
@@ -60,7 +63,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
       nodeData.onUpdateData(nodeId, { systemPrompt: undefined });
       setSystemPrompt('');
       setShowSystemPromptEditor(false);
-      toast.success(t('canvasNodes.chatNode.systemPromptReset') || 'System prompt reset');
+      toast.success(t('canvasNodes.chatNode.systemPromptReset'));
     }
   }, [nodeId, nodeData, t]);
 
@@ -106,7 +109,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         type="target"
         position={Position.Left}
         id="text-input"
-        label={t('canvasNodes.chatNode.textContext') || 'Text'}
+        label={t('canvasNodes.chatNode.textContext')}
         handleType="text"
         style={{ top: 60 }}
       />
@@ -114,7 +117,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         type="target"
         position={Position.Left}
         id="strategy-input"
-        label={t('canvasNodes.chatNode.strategyData') || 'Strategy'}
+        label={t('canvasNodes.chatNode.strategyData')}
         handleType="strategy"
         style={{ top: 100 }}
       />
@@ -177,10 +180,10 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
         {/* System Prompt Editor */}
         {showSystemPromptEditor && (
-          <div className="px-4 py-3 border-b border-neutral-700/30 bg-neutral-900/50 backdrop-blur-sm animate-in slide-in-from-top-1">
+          <div className="px-4 py-3 border-b border-neutral-700/30 bg-neutral-900/50 animate-in slide-in-from-top-1">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-2xs font-semibold text-neutral-400">
-                {t('canvasNodes.chatNode.systemPrompt') || 'System Prompt'}
+              <label className="text-2xs font-medium text-neutral-400">
+                {t('canvasNodes.chatNode.systemPrompt')}
               </label>
               <div className="flex items-center gap-2">
                 <NodeButton
@@ -189,7 +192,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                   onClick={handleResetSystemPrompt}
                   className="text-2xs"
                 >
-                  {t('common.reset') || 'Reset'}
+                  {t('common.reset')}
                 </NodeButton>
                 <NodeButton
                   variant="primary"
@@ -197,7 +200,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                   onClick={handleSaveSystemPrompt}
                   className="text-2xs"
                 >
-                  {t('common.save') || 'Save'}
+                  {t('common.save')}
                 </NodeButton>
               </div>
             </div>
@@ -242,12 +245,12 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         </div>
 
         {/* Context & Input */}
-        <div className="p-8 border-t border-neutral-700/30 bg-neutral-900/60 backdrop-blur-sm space-y-5">
+        <div className="p-8 border-t border-neutral-700/30 bg-neutral-900/60 space-y-5">
           {hasContext && (
             <div className="flex items-center justify-between pb-3 border-b border-neutral-700/20">
               <div className="flex gap-2">
-                <span className="text-2xs text-neutral-400 flex items-center gap-1 uppercase font-bold tracking-widest">
-                  <CheckCircle2 size={10} /> {t('canvasNodes.chatNode.context') || 'Context'}
+                <span className="text-2xs text-neutral-400 flex items-center gap-1 font-medium">
+                  <CheckCircle2 size={10} /> {t('canvasNodes.chatNode.context')}
                 </span>
                 {connectedImages.length > 0 && (
                   <span className="text-2xs bg-neutral-800 text-neutral-300 px-2 rounded-full border-node border-neutral-800">
@@ -261,24 +264,31 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 onClick={handleSuggestMockups}
                 disabled={isLoading}
               >
-                <Diamond size={11} className="mr-1.5" />{' '}
-                {t('canvasNodes.chatNode.suggestMockups') || 'Suggest'}
+                <Diamond size={11} className="mr-1.5" /> {t('canvasNodes.chatNode.suggestMockups')}
               </NodeButton>
             </div>
           )}
-          <ChatInput
-            value={inputMessage}
-            onChange={setInputMessage}
-            onSend={handleSend}
-            isLoading={isLoading}
-            placeholder={t('canvasNodes.chatNode.typeYourMessage') || 'Pergunte algo...'}
-          />
+          {isInPanel ? (
+            <p className="text-xs text-muted-foreground">
+              {t('canvasNodes.chatNode.replyingInPanel')}
+            </p>
+          ) : (
+            // EXCEÇÃO ao ruido-scan/porta-repetida: o mesmo chat no painel lateral (ChatSidebar)
+            // registra presença e este campo some (useIsChatInPanel); nunca há dois na tela.
+            <ChatInput
+              value={inputMessage}
+              onChange={setInputMessage}
+              onSend={handleSend}
+              isLoading={isLoading}
+              placeholder={t('canvasNodes.chatNode.typeYourMessage')}
+            />
+          )}
         </div>
       </div>
 
       {isSelected && !isDragging && (
         <NodeResizer
-          color="brand-cyan"
+          color="var(--brand-cyan)"
           isVisible={isSelected}
           minWidth={500}
           minHeight={600}

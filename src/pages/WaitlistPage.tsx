@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { LinearGradientBackground } from '../components/ui/LinearGradientBackground';
 import { FormInput } from '../components/ui/form-input';
 import { Pickaxe, MessageCircle, Mail } from '@/lib/ui/icons';
@@ -28,7 +27,7 @@ export const WaitlistPage: React.FC = () => {
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      toast.error(t('waitlist.errors.invalidEmail') || 'Please enter a valid email address');
+      toast.error(t('waitlist.errors.invalidEmail'));
       return;
     }
 
@@ -39,23 +38,17 @@ export const WaitlistPage: React.FC = () => {
       await waitlistService.joinWaitlist(email);
 
       setIsSubmitted(true);
-      toast.success(
-        t('waitlist.success.addedToWaitlist') || "Thank you! You've been added to the waitlist."
-      );
+      toast.success(t('waitlist.success.addedToWaitlist'));
       setEmail('');
     } catch (error: any) {
       console.error('Error joining waitlist:', error);
       // Check if email is already in waitlist (not really an error)
       if (error.message?.includes('already in waitlist')) {
         setIsSubmitted(true);
-        toast.success(
-          t('waitlist.success.addedToWaitlist') || "Thank you! You've been added to the waitlist."
-        );
+        toast.success(t('waitlist.success.addedToWaitlist'));
         setEmail('');
       } else {
-        toast.error(
-          t('waitlist.errors.failedToJoin') || 'Failed to join waitlist. Please try again.'
-        );
+        toast.error(t('waitlist.errors.failedToJoin'));
       }
     } finally {
       setIsSubmitting(false);
@@ -91,11 +84,10 @@ export const WaitlistPage: React.FC = () => {
             {/* Header */}
             <div className="text-center mb-8 md:mb-12 animate-fade-in-fast">
               <h1 className="text-4xl md:text-5xl font-semibold font-manrope text-neutral-900 mb-4 tracking-tight">
-                {t('waitlist.title') || 'Closed Alpha // VSN Labs®'}
+                {t('waitlist.title')}
               </h1>
-              <p className="text-neutral-700 font-mono text-sm md:text-base max-w-2xl mx-auto mt-4">
-                {t('waitlist.subtitle') ||
-                  'Be among the first to access our premium tools. Get notified when we open access.'}
+              <p className="text-neutral-700 text-sm md:text-base max-w-2xl mx-auto mt-4">
+                {t('waitlist.subtitle')}
               </p>
             </div>
 
@@ -104,18 +96,15 @@ export const WaitlistPage: React.FC = () => {
               {!isSubmitted ? (
                 <form onSubmit={handleEmailSubmit} className="space-y-4">
                   <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-mono text-neutral-700 mb-2"
-                    >
-                      {t('waitlist.emailLabel') || 'Email Address'}
+                    <label htmlFor="email" className="block text-sm text-neutral-700 mb-2">
+                      {t('waitlist.emailLabel')}
                     </label>
                     <div className="relative">
                       <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-500" />
                       <FormInput
                         id="email"
                         type="email"
-                        placeholder={t('waitlist.emailPlaceholder') || 'your.email@example.com'}
+                        placeholder={t('waitlist.emailPlaceholder')}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="pl-12"
@@ -128,17 +117,20 @@ export const WaitlistPage: React.FC = () => {
                       type="submit"
                       disabled={isSubmitting}
                       className="flex-1 h-12"
-                      loadingText={t('waitlist.joining') || 'JOINING...'}
+                      loadingText={t('waitlist.joining')}
                       isLoading={isSubmitting}
                       icon={Mail}
                     >
-                      {t('waitlist.joinWaitlist') || 'Join Waitlist'}
+                      {t('waitlist.joinWaitlist')}
                     </PremiumButton>
                     {WHATSAPP_GROUP_URL && (
                       <Button
                         type="button"
                         onClick={handleWhatsAppClick}
-                        className="px-3 py-3 bg-[#25D366]/80 hover:bg-[#25D366] text-white rounded-md transition-all duration-200 flex items-center justify-center hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[#25D366]/20 cursor-pointer"
+                        variant="outline"
+                        aria-label={t('waitlist.joinWhatsAppGroup')}
+                        title={t('waitlist.joinWhatsAppGroup')}
+                        className="px-3 py-3 h-12 flex items-center justify-center"
                       >
                         <MessageCircle size={16} />
                       </Button>
@@ -147,15 +139,13 @@ export const WaitlistPage: React.FC = () => {
                 </form>
               ) : (
                 <div className="text-center py-4">
-                  <div className="text-success text-sm font-mono mb-4">
-                    {t('waitlist.addedToWaitlist') || "✓ You've been added to the waitlist!"}
-                  </div>
+                  <div className="text-success text-sm mb-4">{t('waitlist.addedToWaitlist')}</div>
                   <Button
                     variant="ghost"
                     onClick={() => setIsSubmitted(false)}
-                    className="text-foreground hover:text-brand-cyan/80 text-sm font-mono underline"
+                    className="text-foreground hover:text-muted-foreground text-sm underline"
                   >
-                    {t('waitlist.addAnotherEmail') || 'Add another email'}
+                    {t('waitlist.addAnotherEmail')}
                   </Button>
                 </div>
               )}
@@ -164,10 +154,10 @@ export const WaitlistPage: React.FC = () => {
               <div className="pt-4 border-t border-neutral-400/30">
                 <PremiumButton
                   onClick={() => navigate('/')}
-                  className="w-full h-12 bg-neutral-900/80 border-neutral-700/60 hover:border-neutral-700 text-neutral-200 hover:text-brand-cyan shadow-none"
+                  className="w-full h-12 bg-neutral-900/80 border-neutral-700/60 hover:border-neutral-700 text-neutral-200 hover:text-foreground shadow-none"
                   icon={Pickaxe}
                 >
-                  {t('waitlist.tryMockupMachineNow') || 'Try Mockup Machine Now'}
+                  {t('waitlist.tryMockupMachineNow')}
                 </PremiumButton>
               </div>
             </div>

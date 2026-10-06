@@ -2,19 +2,14 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Settings,
-  Wand2,
   ChevronDown,
   ChevronRight,
   CheckCircle2,
   ExternalLink,
   Image as ImageIcon,
-  Sparkles,
 } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { GridDotsBackground } from '@/components/ui/GridDotsBackground';
-import { MicroTitle } from '@/components/ui/MicroTitle';
 import { DemoBrandBanner } from '@/components/onboarding/DemoBrandBanner';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';
 import { extractBrandTheme } from '@/components/brand/BrandReadOnlyView';
@@ -31,6 +26,7 @@ import { selectBrandVoice } from '@/lib/brandVoice';
 import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import { cn } from '@/lib/utils';
 import { glassSurface } from '@/lib/ui/glass';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 
 // Mockup generator dialog — owner-only, loaded on demand (same as brand view).
 const BrandMockupDialog = lazyWithRetry(() =>
@@ -75,7 +71,7 @@ const ChangeLogoDialog = lazyWithRetry(() =>
  * Shortcuts collapse into a compact footer row.
  */
 
-const cardCls = cn('rounded-2xl', glassSurface.panel);
+const cardCls = cn('rounded-xl', glassSurface.panel);
 
 /** Inner tile inside a bento card (one radius step down from the card). */
 const tileCls = cn('rounded-xl', glassSurface.tile);
@@ -147,25 +143,20 @@ export const BrandCockpit: React.FC = () => {
   // `texture` foram feitos pra serem fundo; `product` e `stock` são fotos com
   // assunto no meio, que uma faixa de 180px corta na cabeça.
   //
-  // Sem imagem, o degradê vem das cores reais da marca. Nunca cai num cinza
-  // padrão: capa igual pra todo mundo é o oposto do que ela existe pra fazer.
-  const cover = useMemo(() => {
+  // Sem imagem (ou com a imagem quebrada) não há capa: degradê sintético no
+  // lugar de conteúdo é decoração, e uma faixa vazia é pior ainda.
+  const coverUrl = useMemo(() => {
     const media = heroBrand?.media ?? [];
     const rank: Record<string, number> = { background: 0, texture: 1, graphic: 2, other: 3 };
     const img = [...media]
       .filter((m) => m.type === 'image' && !!m.url)
       .sort((a, b) => (rank[a.category ?? 'other'] ?? 9) - (rank[b.category ?? 'other'] ?? 9))[0];
-    if (img) return { kind: 'image' as const, url: img.url };
-    const hex = (heroBrand?.colors ?? [])
-      .slice()
-      .sort((a, b) => (a.usageRank ?? 99) - (b.usageRank ?? 99))
-      .map((c) => c.hex)
-      .filter(Boolean)
-      .slice(0, 3);
-    if (hex.length === 0) return { kind: 'none' as const };
-    const stops = hex.length === 1 ? [hex[0], hex[0]] : hex;
-    return { kind: 'gradient' as const, css: `linear-gradient(115deg, ${stops.join(', ')})` };
+    return img?.url ?? null;
   }, [heroBrand]);
+  const [failedCover, setFailedCover] = useState<string | null>(null);
+  const hasCover = !!coverUrl && coverUrl !== failedCover;
+  // Thumb que falha some da galeria em vez de virar ícone de imagem quebrada.
+  const [failedThumbs, setFailedThumbs] = useState<Set<string>>(() => new Set());
 
   // Palette strip — the brand's real colors, most-used first (guideline data).
   const paletteColors = useMemo(() => {
@@ -254,7 +245,8 @@ export const BrandCockpit: React.FC = () => {
     // Falha de carga dos mockups não pode virar "nunca produziu nada" — é a
     // mentira clássica de silent-empty, agora na frase mais visível da tela.
     if (!brandDetail || mockupsError) return null;
-    const topGap = nextActions[0];
+    // Com a lista "Próximo passo" aberta, a voz não repete o primeiro item dela.
+    const topGap = nbaCollapsed ? nextActions[0] : undefined;
     return selectBrandVoice({
       brandName,
       hasLogo: (heroBrand?.logos?.length ?? 0) > 0,
@@ -270,6 +262,7 @@ export const BrandCockpit: React.FC = () => {
     brandDetail,
     mockupsError,
     nextActions,
+    nbaCollapsed,
     brandName,
     heroBrand,
     depthReport.score,
@@ -302,6 +295,11 @@ export const BrandCockpit: React.FC = () => {
     ].filter((s) => s.value > 0);
   }, [brandDetail]);
 
+  const galleryItems = useMemo(
+    () => brandMockups.filter((m) => !!m.imageUrl && !failedThumbs.has(m._id)).slice(0, 12),
+    [brandMockups, failedThumbs]
+  );
+
   // "Ver guidelines" — abre a rota pública numa nova aba (o que o cliente/mundo vê).
   // Fallback pro editor do dono quando a marca ainda não foi publicada (sem slug).
   const viewPublicGuidelines = useCallback(() => {
@@ -320,7 +318,7 @@ export const BrandCockpit: React.FC = () => {
   // Um <Navigate> como filho do AnimatePresence dispara "removeChild" (o Navigate
   // desmonta a rota enquanto o AnimatePresence ainda segura o nó de saída).
   if (!brandsLoading && activeBrands.length === 0) {
-    return <Navigate to="/brand-guidelines" replace />;
+    return <Navigate to="/cockpit" replace />;
   }
 
   return (
@@ -329,7 +327,6 @@ export const BrandCockpit: React.FC = () => {
       data-vsn-page="home"
       data-vsn-component="BrandCockpit"
     >
-      <GridDotsBackground opacity={0.05} spacing={30} />
       <DemoBrandBanner brandId={activeBrand?.id} />
 
       <main
@@ -352,8 +349,8 @@ export const BrandCockpit: React.FC = () => {
           ) : (
             <motion.div
               key="cockpit"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="flex flex-col gap-5 flex-1"
             >
@@ -361,24 +358,22 @@ export const BrandCockpit: React.FC = () => {
                   A marca deixa de ser um cabeçalho de texto e vira o assunto da
                   tela. O avatar cavalga a borda da capa (o `-mt-*`), que é o que
                   faz ler como perfil e não como banner com título embaixo. ── */}
-              <div data-vsn-region="brand-cover" className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-8">
-                <div
-                  className="relative h-32 sm:h-40 w-full overflow-hidden bg-muted"
-                  style={cover.kind === 'gradient' ? { backgroundImage: cover.css } : undefined}
-                >
-                  {cover.kind === 'image' && (
+              {hasCover && coverUrl && (
+                <div data-vsn-region="brand-cover" className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-8">
+                  <div className="relative h-32 sm:h-40 w-full overflow-hidden bg-muted">
                     <img
-                      src={cover.url}
+                      src={coverUrl}
                       alt=""
                       aria-hidden
+                      onError={() => setFailedCover(coverUrl)}
                       className="h-full w-full object-cover"
                     />
-                  )}
-                  {/* Véu: a capa é fundo, não conteúdo. Sem ele o nome disputa
-                      legibilidade com a foto e perde em metade das marcas. */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/20" />
+                    {/* Véu: a capa é fundo, não conteúdo. Sem ele o nome disputa
+                        legibilidade com a foto e perde em metade das marcas. */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/20" />
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* `relative z-10`: o miolo da capa é `relative`, e elemento posicionado
                   pinta ACIMA de estático mesmo vindo antes no DOM. Sem isto a capa
@@ -396,7 +391,10 @@ export const BrandCockpit: React.FC = () => {
                     onClick={() => setChangeLogoOpen(true)}
                     aria-label={t('cockpit.changeLogo')}
                     title={t('cockpit.changeLogo')}
-                    className="relative group/logo shrink-0 -mt-12 sm:-mt-14 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan/40"
+                    className={cn(
+                      'relative group shrink-0 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      hasCover && '-mt-12 sm:-mt-14'
+                    )}
                   >
                     <BrandAvatar
                       brand={heroBrand}
@@ -404,15 +402,19 @@ export const BrandCockpit: React.FC = () => {
                       rounded="md"
                       className="bg-muted ring-4 ring-background"
                     />
-                    <span className="absolute inset-0 flex items-center justify-center rounded-md bg-black/55 opacity-0 group-hover/logo:opacity-100 transition-opacity">
-                      <ImageIcon size={16} className="text-white/90" />
+                    <span
+                      className={cn(
+                        'absolute inset-0 flex items-center justify-center rounded-md bg-background/70',
+                        hoverReveal
+                      )}
+                    >
+                      <ImageIcon size={16} className="text-foreground" />
                     </span>
                   </button>
                   <div className="min-w-0">
-                    {/* "Cockpit da marca" era ruído visual — vira só a11y (leitor
-                        de tela). O contexto já é óbvio pela marca + rail. */}
-                    <MicroTitle className="sr-only">{t('cockpit.title')}</MicroTitle>
-                    <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight truncate mt-0.5">
+                    {/* O chip do topo já nomeia a marca: aqui o nome não disputa
+                        com ele em peso de título de página. */}
+                    <h2 className="text-xl font-semibold text-foreground tracking-tight truncate mt-0.5">
                       {brandName}
                     </h2>
                     {/* A voz — a única linha da tela que não serve pra outra
@@ -446,7 +448,7 @@ export const BrandCockpit: React.FC = () => {
                     >
                       <div className="h-1 w-20 rounded-full bg-muted overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-brand-cyan/70 transition-colors"
+                          className="h-full rounded-full bg-muted-foreground"
                           style={{ width: `${depthReport.score}%` }}
                         />
                       </div>
@@ -463,15 +465,6 @@ export const BrandCockpit: React.FC = () => {
                   >
                     <ExternalLink size={14} />
                     {t('cockpit.viewGuidelines')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-md"
-                    aria-label={t('cockpit.settings')}
-                    onClick={() => navigate('/profile')}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <Settings size={15} />
                   </Button>
                 </div>
               </header>
@@ -508,7 +501,7 @@ export const BrandCockpit: React.FC = () => {
                         <li key={rule.id}>
                           <button
                             onClick={openGuideline}
-                            title={brandGapHint(rule.id)}
+                            title={brandGapHint(rule.id, t)}
                             className="group flex items-center justify-between gap-3 w-full py-1.5 text-left border-b border-border last:border-0"
                           >
                             <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors truncate">
@@ -556,7 +549,6 @@ export const BrandCockpit: React.FC = () => {
                         onConnect={handleConnect}
                         contextStats={contextStats}
                         paletteColors={paletteColors}
-                        onMockup={() => setIsMockupOpen(true)}
                         onGenerate={(p) => {
                           setMockupPrompt(p);
                           setIsMockupOpen(true);
@@ -575,13 +567,10 @@ export const BrandCockpit: React.FC = () => {
                     <button
                       onClick={() => setFreeMockupsOpen((v) => !v)}
                       aria-expanded={freeMockupsOpen}
-                      className="group flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted/40"
+                      className="group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-muted/40"
                     >
-                      <span className="flex items-center gap-2">
-                        <Sparkles size={14} className="text-muted-foreground" />
-                        <span className="text-sm font-medium tracking-tight text-foreground">
-                          {t('cockpit.surprise.title')}
-                        </span>
+                      <span className="text-sm font-medium tracking-tight text-foreground">
+                        {t('cockpit.surprise.title')}
                       </span>
                       <ChevronDown
                         size={14}
@@ -592,7 +581,7 @@ export const BrandCockpit: React.FC = () => {
                       />
                     </button>
                     {freeMockupsOpen && (
-                      <div className="mt-2">
+                      <div className="mt-2 px-1 pb-1">
                         <React.Suspense fallback={null}>
                           {/* `key` obrigatória: o hero guarda em ref um Set de pares já
                               vistos. Sem remontar por marca, os pares da marca A seguem
@@ -624,7 +613,7 @@ export const BrandCockpit: React.FC = () => {
               )}
 
               {/* ── Output gallery — every generated asset, persisted per brand ── */}
-              {brandMockups.length > 0 && (
+              {galleryItems.length > 0 && (
                 <section
                   aria-label={t('cockpit.gallery.title')}
                   data-vsn-region="output-gallery"
@@ -645,25 +634,20 @@ export const BrandCockpit: React.FC = () => {
                     </Button>
                   </div>
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                    {brandMockups.slice(0, 12).map((m) => (
+                    {galleryItems.map((m) => (
                       <button
                         key={m._id}
                         onClick={() => navigate('/my-outputs')}
                         title={m.prompt}
-                        className={cn(tileCls, 'group aspect-square overflow-hidden')}
+                        className={cn(tileCls, 'aspect-square overflow-hidden')}
                       >
-                        {m.imageUrl ? (
-                          <img
-                            src={m.imageUrl}
-                            alt=""
-                            loading="lazy"
-                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center">
-                            <Wand2 size={18} className="text-muted-foreground" strokeWidth={1.2} />
-                          </div>
-                        )}
+                        <img
+                          src={m.imageUrl}
+                          alt=""
+                          loading="lazy"
+                          onError={() => setFailedThumbs((prev) => new Set(prev).add(m._id))}
+                          className="h-full w-full object-cover"
+                        />
                       </button>
                     ))}
                   </div>

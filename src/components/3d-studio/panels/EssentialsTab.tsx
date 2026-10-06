@@ -191,7 +191,9 @@ export const EssentialsTab: React.FC = React.memo(() => {
               value={store.shaderType}
               onChange={(v) => store.setShaderType(v as StoreState['shaderType'])}
             />
-            <p className="text-3xs text-neutral-500">Fine-tune shader parameters in the FX tab.</p>
+            <p className="text-3xs text-muted-foreground">
+              Fine-tune shader parameters in the FX tab.
+            </p>
           </div>
         )}
       </ToolPanelSection>

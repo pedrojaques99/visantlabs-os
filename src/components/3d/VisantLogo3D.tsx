@@ -399,8 +399,8 @@ export const VisantLogo3D: React.FC<VisantLogo3DProps> = ({
         <Suspense
           fallback={
             <Html center>
-              <div className="text-white text-2xs uppercase tracking-[0.1em] opacity-30 animate-pulse flex flex-col items-center gap-2 whitespace-nowrap">
-                <div className="w-4 h-[1px] bg-white/50" />
+              <div className="text-foreground text-2xs opacity-30 animate-pulse flex flex-col items-center gap-2 whitespace-nowrap">
+                <div className="w-4 h-[1px] bg-current opacity-50" />
                 LOADING SYSTEM
               </div>
             </Html>

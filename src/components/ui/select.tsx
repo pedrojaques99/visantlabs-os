@@ -176,17 +176,17 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
 
     const baseStyles =
       variant === 'node'
-        ? 'w-full px-3 py-2 bg-neutral-950/40 border border-neutral-800 rounded-md text-xs text-neutral-300'
-        : 'w-full px-3 py-2.5 bg-neutral-800 border border-neutral-800 rounded-md text-neutral-200 text-sm';
+        ? 'w-full px-3 py-2 bg-background/40 border border-border rounded-md text-xs text-foreground'
+        : 'w-full px-3 py-2.5 bg-muted border border-border rounded-md text-foreground text-sm';
 
-    const focusStyles = 'focus:outline-none focus:border-neutral-600';
+    const focusStyles = 'focus:outline-none focus:border-ring';
 
     const dropdownContent = (
       <div
         ref={dropdownRef}
         className={cn(
-          'bg-neutral-950/90 backdrop-blur-xl',
-          'border-node border-neutral-800/50 rounded-md',
+          'bg-background/90 backdrop-blur-xl',
+          'border-node border-border rounded-md',
           'shadow-2xl overflow-hidden',
           variant !== 'node' &&
             cn(
@@ -216,15 +216,15 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                 className={cn(
                   'px-2 py-1.5 cursor-pointer',
                   'text-2xs font-medium relative',
-                  'transition-all duration-150',
+                  'transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-150',
                   'flex items-center justify-start gap-2',
                   'border-l-2 border-transparent',
-                  'text-neutral-400',
-                  isFocused && 'bg-neutral-800/60 border-neutral-600 text-neutral-200',
-                  isSelected && 'bg-foreground/10 text-foreground border-l border-neutral-600',
+                  'text-muted-foreground',
+                  isFocused && 'bg-muted/60 border-ring text-foreground',
+                  isSelected && 'bg-accent text-foreground border-l border-ring',
                   !isSelected &&
                     !isFocused &&
-                    'hover:bg-neutral-800/40 hover:text-neutral-200 hover:border-neutral-700'
+                    'hover:bg-accent hover:text-foreground hover:border-border-hover'
                 )}
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0 pointer-events-none">
@@ -232,7 +232,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                     <span
                       className={cn(
                         'flex-shrink-0 transition-colors duration-150',
-                        isSelected ? 'text-foreground' : 'text-neutral-400'
+                        isSelected ? 'text-foreground' : 'text-muted-foreground'
                       )}
                     >
                       {option.icon}
@@ -241,13 +241,13 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                   <span className={cn('truncate', option.description && 'flex flex-col')}>
                     <span className="truncate">{option.label}</span>
                     {option.description && (
-                      <span className="text-2xs text-neutral-500 truncate font-normal leading-tight">
+                      <span className="text-2xs text-muted-foreground truncate font-normal leading-tight">
                         {option.description}
                       </span>
                     )}
                   </span>
                   {option.badge && (
-                    <span className="flex-shrink-0 px-1 py-px rounded text-2xs font-medium uppercase tracking-wider leading-none text-neutral-500">
+                    <span className="flex-shrink-0 px-1 py-px rounded text-2xs font-medium leading-none text-muted-foreground">
                       {option.badge === 'popular' ? 'top' : option.badge}
                     </span>
                   )}
@@ -257,7 +257,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
             );
           })}
         </ul>
-        {footer && <div className="border-t border-neutral-800/30">{footer}</div>}
+        {footer && <div className="border-t border-border">{footer}</div>}
       </div>
     );
 
@@ -271,9 +271,9 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
           className={cn(
             baseStyles,
             focusStyles,
-            'transition-all duration-200 appearance-none cursor-pointer',
+            'transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-200 appearance-none cursor-pointer',
             'flex items-center justify-start gap-2',
-            'hover:border-neutral-600/50',
+            'hover:border-border-hover',
             'disabled:cursor-not-allowed disabled:opacity-50',
             variant === 'node' ? 'node-interactive' : '',
             className
@@ -285,17 +285,17 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
         >
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {selectedOption?.icon && (
-              <span className="text-neutral-400 flex-shrink-0">{selectedOption.icon}</span>
+              <span className="text-muted-foreground flex-shrink-0">{selectedOption.icon}</span>
             )}
-            <span className={cn('truncate text-left', !selectedOption && 'text-neutral-500')}>
+            <span className={cn('truncate text-left', !selectedOption && 'text-muted-foreground')}>
               {loading ? (
-                <span className="inline-block w-20 h-4 rounded bg-neutral-700/50" />
+                <span className="inline-block w-20 h-4 rounded bg-muted/50" />
               ) : (
                 displayValue
               )}
             </span>
             {selectedOption?.badge && (
-              <span className="flex-shrink-0 px-1 py-px rounded text-2xs font-medium uppercase tracking-wider leading-none text-neutral-500">
+              <span className="flex-shrink-0 px-1 py-px rounded text-2xs font-medium leading-none text-muted-foreground">
                 {selectedOption.badge === 'popular' ? 'top' : selectedOption.badge}
               </span>
             )}
@@ -303,7 +303,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
           <ChevronDown
             size={14}
             className={cn(
-              'text-neutral-400 pointer-events-none flex-shrink-0 transition-transform duration-200',
+              'text-muted-foreground pointer-events-none flex-shrink-0 transition-transform duration-200',
               isOpen && 'rotate-180'
             )}
           />

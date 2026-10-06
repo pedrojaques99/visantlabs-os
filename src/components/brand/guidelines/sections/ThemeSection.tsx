@@ -27,10 +27,10 @@ function ContrastBadge({ fg, bg, label }: { fg: string; bg: string; label: strin
   const { normalAA } = checkWCAGCompliance(ratio);
   return (
     <span
-      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs font-mono uppercase tracking-wider ${
+      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs tabular-nums ${
         normalAA ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
       }`}
-      title={`${label}: ${ratio.toFixed(1)}:1 — ${normalAA ? 'WCAG AA ✓' : 'Low contrast'}`}
+      title={`${label}: ${ratio.toFixed(1)}:1, ${normalAA ? 'WCAG AA' : 'low contrast'}`}
     >
       {label} {ratio.toFixed(1)}:1
       {normalAA && <Check size={8} />}
@@ -41,16 +41,13 @@ function ContrastBadge({ fg, bg, label }: { fg: string; bg: string; label: strin
 function ThemePreview({ theme }: { theme: BrandColorTheme }) {
   return (
     <div
-      className="rounded-lg overflow-hidden border border-neutral-800 shadow-lg"
+      className="rounded-xl overflow-hidden border border-neutral-800 shadow-lg"
       style={{ background: theme.bg }}
     >
       <div className="p-4 space-y-2">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full" style={{ background: theme.primary }} />
-          <span
-            className="text-2xs uppercase tracking-widest opacity-60"
-            style={{ color: theme.text }}
-          >
+          <span className="text-2xs opacity-60" style={{ color: theme.text }}>
             {theme.name || 'Theme'}
           </span>
         </div>
@@ -140,9 +137,11 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
           size="sm"
           variant="ghost"
           onClick={addTheme}
-          className="h-6 px-2 text-2xs font-mono uppercase tracking-widest text-neutral-500 hover:text-white"
+          className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+          aria-label="New theme"
+          title="New theme"
         >
-          <Plus size={10} className="mr-1" /> Add
+          <Plus size={12} />
         </Button>
       }
     >
@@ -176,7 +175,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                       {ROLES.map((r) => (
                         <span
                           key={r}
-                          className="w-4 h-4 rounded-sm border border-white/10"
+                          className="w-4 h-4 rounded-md border border-border"
                           style={{ background: theme[r] }}
                           title={`${ROLE_LABELS[r]}: ${theme[r]}`}
                         />
@@ -216,11 +215,11 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                             value={theme.name}
                             onChange={(e) => updateTheme(theme.id, { name: e.target.value })}
                             placeholder="Theme name"
-                            className="h-7 text-xs bg-transparent border-white/10"
+                            className="h-7 text-xs bg-transparent border-border"
                           />
                           {ROLES.map((role) => (
                             <div key={role} className="flex items-center gap-2">
-                              <label className="text-2xs uppercase tracking-widest text-neutral-600 w-16 shrink-0">
+                              <label className="text-2xs text-muted-foreground w-16 shrink-0">
                                 {ROLE_LABELS[role]}
                               </label>
                               <div className="flex items-center gap-1.5 flex-1">
@@ -230,14 +229,14 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                                   onChange={(e) =>
                                     updateTheme(theme.id, { [role]: e.target.value })
                                   }
-                                  className="w-6 h-6 rounded cursor-pointer border border-white/10 bg-transparent [&::-webkit-color-swatch]:rounded [&::-webkit-color-swatch-wrapper]:p-0"
+                                  className="w-6 h-6 rounded cursor-pointer border border-border bg-transparent [&::-webkit-color-swatch]:rounded [&::-webkit-color-swatch-wrapper]:p-0"
                                 />
                                 <Input
                                   value={theme[role]}
                                   onChange={(e) =>
                                     updateTheme(theme.id, { [role]: e.target.value })
                                   }
-                                  className="h-6 text-2xs font-mono bg-transparent border-white/10 flex-1"
+                                  className="h-6 text-2xs font-mono bg-transparent border-border flex-1"
                                 />
                               </div>
                               {colorOptions.length > 0 && (
@@ -247,10 +246,10 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                                       key={c.hex}
                                       type="button"
                                       onClick={() => updateTheme(theme.id, { [role]: c.hex })}
-                                      className={`w-4 h-4 rounded-sm border transition-all ${
+                                      className={`w-4 h-4 rounded-md border transition-colors ${
                                         theme[role].toLowerCase() === c.hex.toLowerCase()
-                                          ? 'border-white scale-110'
-                                          : 'border-white/10 hover:border-white/30'
+                                          ? 'border-foreground ring-1 ring-foreground'
+                                          : 'border-border hover:border-ring'
                                       }`}
                                       style={{ background: c.hex }}
                                       title={c.label}

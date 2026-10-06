@@ -17,6 +17,7 @@ interface ShadowSectionProps {
 
 type ShadowType = 'outer' | 'inner' | 'glow';
 
+// EXCEÇÃO ao audit:design/hardcoded-hex-color: presets de DADO da marca (viram sombra salva no guideline), não cor de cromo.
 const DEFAULT_SHADOWS: Omit<BrandGuidelineShadow, 'id'>[] = [
   { name: 'Micro', x: 0, y: 2, blur: 4, spread: 0, color: '#000000', opacity: 0.15, type: 'outer' },
   { name: 'Soft', x: 6, y: 6, blur: 17, spread: 0, color: '#6d6d6d', opacity: 0.15, type: 'outer' },
@@ -139,8 +140,8 @@ export const ShadowSection: React.FC<ShadowSectionProps> = ({ guideline, onUpdat
                       className={cn(
                         'flex-1 h-6 rounded border text-2xs uppercase transition-[color,background-color,border-color,box-shadow]',
                         s.type === t
-                          ? 'border-white/20 bg-white/5 text-neutral-200'
-                          : 'border-neutral-800 text-neutral-600 hover:border-white/10'
+                          ? 'border-border-hover bg-muted text-foreground'
+                          : 'border-border text-muted-foreground hover:border-border-hover'
                       )}
                     >
                       {t}
@@ -168,7 +169,7 @@ export const ShadowSection: React.FC<ShadowSectionProps> = ({ guideline, onUpdat
                 <div className="flex items-center gap-2">
                   <div className="relative w-6 h-6 shrink-0">
                     <div
-                      className="w-full h-full rounded border border-white/10"
+                      className="w-full h-full rounded border border-border"
                       style={{ backgroundColor: s.color }}
                     />
                     <input

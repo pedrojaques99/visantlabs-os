@@ -206,32 +206,32 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
     {
       id: 'hand' as CanvasTool,
       icon: Hand,
-      label: t('canvasBottomToolbar.hand') || 'Hand',
-      tooltip: t('canvasBottomToolbar.handTooltip') || 'Pan tool (S)',
+      label: t('canvasBottomToolbar.hand'),
+      tooltip: t('canvasBottomToolbar.handTooltip'),
     },
     {
       id: 'select' as CanvasTool,
       icon: MousePointer2,
-      label: t('canvasBottomToolbar.select') || 'Select',
-      tooltip: t('canvasBottomToolbar.selectTooltip') || 'Selection tool (V)',
+      label: t('canvasBottomToolbar.select'),
+      tooltip: t('canvasBottomToolbar.selectTooltip'),
     },
     {
       id: 'draw' as CanvasTool,
       icon: Pencil,
-      label: t('canvasBottomToolbar.draw') || 'Draw',
-      tooltip: t('canvasBottomToolbar.drawTooltip') || 'Drawing tool (D)',
+      label: t('canvasBottomToolbar.draw'),
+      tooltip: t('canvasBottomToolbar.drawTooltip'),
     },
     {
       id: 'color' as CanvasTool,
       icon: Palette,
-      label: t('canvasBottomToolbar.color') || 'Color',
-      tooltip: t('canvasBottomToolbar.colorTooltip') || 'Color picker',
+      label: t('canvasBottomToolbar.color'),
+      tooltip: t('canvasBottomToolbar.colorTooltip'),
     },
     {
       id: 'type' as CanvasTool,
       icon: Type,
-      label: t('canvasBottomToolbar.type') || 'Type',
-      tooltip: t('canvasBottomToolbar.typeTooltip') || 'Text tool (T)',
+      label: t('canvasBottomToolbar.type'),
+      tooltip: t('canvasBottomToolbar.typeTooltip'),
     },
   ];
 
@@ -335,13 +335,13 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                         'w-full text-left px-3 py-2 rounded-md border transition-colors',
                         isLight ? 'hover:bg-neutral-200/50' : 'hover:bg-neutral-800/50',
                         fontFamily === font.value
-                          ? 'border-brand-cyan bg-brand-cyan/10'
+                          ? 'border-ring ring-1 ring-ring'
                           : isLight
                             ? 'border-neutral-300'
                             : 'border-neutral-700'
                       )}
                       style={{
-                        color: fontFamily === font.value ? 'var(--brand-cyan)' : textColors.primary,
+                        color: textColors.primary,
                         ...getFontPreviewStyle(font.value),
                       }}
                     >
@@ -374,7 +374,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                     className={cn(
                       'flex-1 h-10 rounded-md border transition-colors',
                       strokeColor === colorPalette.primary.brand
-                        ? 'border-brand-cyan'
+                        ? 'border-ring ring-1 ring-ring'
                         : isLight
                           ? 'border-neutral-300 hover:border-neutral-400'
                           : 'border-neutral-700 hover:border-neutral-600'
@@ -397,7 +397,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                     className={cn(
                       'w-8 h-10 rounded-md border transition-colors',
                       strokeColor === colorPalette.primary.black
-                        ? 'border-brand-cyan'
+                        ? 'border-ring ring-1 ring-ring'
                         : isLight
                           ? 'border-neutral-300 hover:border-neutral-400'
                           : 'border-neutral-700 hover:border-neutral-600'
@@ -420,7 +420,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                       className={cn(
                         'flex-1 h-8 rounded-md border transition-colors',
                         strokeColor === item.color
-                          ? 'border-brand-cyan'
+                          ? 'border-ring ring-1 ring-ring'
                           : isLight
                             ? 'border-neutral-300 hover:border-neutral-400'
                             : 'border-neutral-700 hover:border-neutral-600'
@@ -444,7 +444,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                       className={cn(
                         'flex-1 h-8 rounded-md border transition-colors',
                         strokeColor === item.color
-                          ? 'border-brand-cyan'
+                          ? 'border-ring ring-1 ring-ring'
                           : isLight
                             ? 'border-neutral-300 hover:border-neutral-400'
                             : 'border-neutral-700 hover:border-neutral-600'
@@ -468,7 +468,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                       className={cn(
                         'flex-1 h-8 rounded-md border transition-colors',
                         strokeColor === item.color
-                          ? 'border-brand-cyan'
+                          ? 'border-ring ring-1 ring-ring'
                           : isLight
                             ? 'border-neutral-300 hover:border-neutral-400'
                             : 'border-neutral-700 hover:border-neutral-600'
@@ -548,8 +548,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
             active={!isToolbarCollapsed}
             tooltip={
               isToolbarCollapsed
-                ? t('canvasToolbar.expandToolbar') || 'Expand Toolbar'
-                : t('canvasToolbar.collapseToolbar') || 'Collapse Toolbar'
+                ? t('canvasToolbar.expandToolbar')
+                : t('canvasToolbar.collapseToolbar')
             }
             ariaLabel={isToolbarCollapsed ? 'Expand Toolbar' : 'Collapse Toolbar'}
             onClick={onToggleToolbar}

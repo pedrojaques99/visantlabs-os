@@ -2,6 +2,7 @@ import React from 'react';
 import { ThumbsUp, Wrench, Clock } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export type ValidationState = 'pending' | 'approved' | 'needs_work';
 
@@ -17,24 +18,9 @@ interface ComponentPreviewCardProps {
 }
 
 const STATE_CONFIG = {
-  pending: {
-    icon: Clock,
-    label: 'Pending',
-    color: 'text-neutral-500',
-    bg: 'bg-neutral-800/50 border-neutral-800',
-  },
-  approved: {
-    icon: ThumbsUp,
-    label: 'Approved',
-    color: 'text-foreground',
-    bg: 'bg-brand-cyan/5 border-brand-cyan/20',
-  },
-  needs_work: {
-    icon: Wrench,
-    label: 'Needs work',
-    color: 'text-warning',
-    bg: 'bg-warning/5 border-warning/20',
-  },
+  pending: { icon: Clock, labelKey: 'brandReview.state.pending', color: 'text-muted-foreground' },
+  approved: { icon: ThumbsUp, labelKey: 'brandReview.state.approved', color: 'text-success' },
+  needs_work: { icon: Wrench, labelKey: 'brandReview.state.needsWork', color: 'text-warning' },
 };
 
 export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
@@ -47,6 +33,7 @@ export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
   children,
   className,
 }) => {
+  const { t } = useTranslation();
   const cfg = STATE_CONFIG[state];
   const StateIcon = cfg.icon;
 
@@ -55,62 +42,52 @@ export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
-      className={cn(
-        'rounded-2xl border overflow-hidden transition-colors duration-300',
-        state === 'approved'
-          ? 'border-brand-cyan/20 bg-brand-cyan/[0.02]'
-          : 'border-neutral-800 bg-white/[0.03]',
-        className
-      )}
+      className={cn('rounded-xl border border-border bg-muted/20 overflow-hidden', className)}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-800">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-2xs font-bold text-white truncate">{title}</p>
-            <div className={cn('flex items-center gap-1 px-1.5 py-0.5 rounded-md border', cfg.bg)}>
-              <StateIcon size={9} className={cfg.color} />
-              <span className={cn('text-2xs uppercase tracking-widest', cfg.color)}>
-                {cfg.label}
-              </span>
+            <p className="text-sm font-medium text-foreground truncate">{title}</p>
+            <div className="flex items-center gap-1 text-2xs text-muted-foreground">
+              <StateIcon size={10} className={cfg.color} />
+              {t(cfg.labelKey)}
             </div>
           </div>
-          {subtitle && (
-            <p className="text-2xs text-neutral-600 font-mono mt-0.5 truncate">{subtitle}</p>
-          )}
+          {subtitle && <p className="text-xs text-muted-foreground mt-0.5 truncate">{subtitle}</p>}
         </div>
       </div>
 
       {/* Visual Preview */}
-      <div className="p-4 bg-neutral-950/40 min-h-[80px]">{children}</div>
+      <div className="p-4 bg-background/40 min-h-[80px]">{children}</div>
 
       {/* Approval Buttons */}
-      <div className="flex items-center gap-2 px-4 py-3 border-t border-neutral-800">
+      <div className="flex items-center gap-2 px-4 py-3 border-t border-border">
         <button
           onClick={() => onApprove(id)}
           disabled={state === 'approved'}
           className={cn(
-            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-2xs font-mono uppercase tracking-wider transition-colors',
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs transition-colors',
             state === 'approved'
-              ? 'border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan cursor-default'
-              : 'border-success/20 bg-success/5 text-success hover:bg-success/15 hover:border-success/40'
+              ? 'border-border text-muted-foreground cursor-default'
+              : 'border-border text-foreground hover:border-ring'
           )}
         >
-          <ThumbsUp size={10} />
-          Looks good
+          <ThumbsUp size={12} />
+          {t('brandReview.approve')}
         </button>
         <button
           onClick={() => onNeedsWork(id)}
           disabled={state === 'approved'}
           className={cn(
-            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-2xs font-mono uppercase tracking-wider transition-colors',
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs transition-colors',
             state === 'approved'
-              ? 'border-neutral-800 text-neutral-700 cursor-default'
-              : 'border-destructive/20 bg-destructive/5 text-destructive hover:bg-destructive/15 hover:border-destructive/40'
+              ? 'border-border text-muted-foreground cursor-default'
+              : 'border-border text-muted-foreground hover:text-foreground hover:border-ring'
           )}
         >
-          <Wrench size={10} />
-          Needs work...
+          <Wrench size={12} />
+          {t('brandReview.needsWork')}
         </button>
       </div>
     </motion.div>

@@ -5,6 +5,7 @@ import { NodeLabel } from './node-label';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { toast } from 'sonner';
 import { copyToClipboard } from '@/utils/clipboard';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface SeedControlProps {
   seed?: number;
@@ -28,6 +29,7 @@ export const SeedControl: React.FC<SeedControlProps> = ({
   disabled = false,
   className,
 }) => {
+  const { t } = useTranslation();
   const [localSeed, setLocalSeed] = useState<string>(seed?.toString() || '');
 
   // Sync from parent
@@ -61,9 +63,9 @@ export const SeedControl: React.FC<SeedControlProps> = ({
   const handleCopy = useCallback(() => {
     if (seed !== undefined) {
       copyToClipboard(seed.toString());
-      toast.success('Seed copied');
+      toast.success(t('canvasNodes.seed.copied'));
     }
-  }, [seed]);
+  }, [seed, t]);
 
   const toggleLock = useCallback(() => {
     const newLocked = !seedLocked;
@@ -79,7 +81,7 @@ export const SeedControl: React.FC<SeedControlProps> = ({
 
   return (
     <div className={cn('space-y-1.5', className)}>
-      <NodeLabel className="mb-1 text-2xs">Seed</NodeLabel>
+      <NodeLabel className="mb-1 text-2xs">{t('canvasNodes.seed.label')}</NodeLabel>
       <div className="flex items-center gap-1.5">
         {/* Seed Input */}
         <input
@@ -87,7 +89,8 @@ export const SeedControl: React.FC<SeedControlProps> = ({
           inputMode="numeric"
           value={localSeed}
           onChange={handleInputChange}
-          placeholder={seedLocked ? '—' : 'Random'}
+          placeholder={seedLocked ? '' : t('canvasNodes.seed.random')}
+          aria-label={t('canvasNodes.seed.label')}
           disabled={disabled}
           className={cn(
             'flex-1 min-w-0 h-7 px-2 rounded-md text-xs font-mono bg-neutral-900/60 border-node border-neutral-700/40 text-neutral-300',
@@ -98,10 +101,11 @@ export const SeedControl: React.FC<SeedControlProps> = ({
         />
 
         {/* Randomize */}
-        <Tooltip content="Randomize seed">
+        <Tooltip content={t('canvasNodes.seed.randomize')}>
           <button
             type="button"
             onClick={handleRandomize}
+            aria-label={t('canvasNodes.seed.randomize')}
             disabled={disabled}
             className={cn(
               'shrink-0 h-7 w-7 flex items-center justify-center rounded-md',
@@ -116,19 +120,17 @@ export const SeedControl: React.FC<SeedControlProps> = ({
         </Tooltip>
 
         {/* Lock Toggle */}
-        <Tooltip
-          content={
-            seedLocked ? 'Unlock seed (randomize each generation)' : 'Lock seed (keep same seed)'
-          }
-        >
+        <Tooltip content={seedLocked ? t('canvasNodes.seed.unlock') : t('canvasNodes.seed.lock')}>
           <button
             type="button"
             onClick={toggleLock}
+            aria-label={seedLocked ? t('canvasNodes.seed.unlock') : t('canvasNodes.seed.lock')}
+            aria-pressed={seedLocked}
             disabled={disabled}
             className={cn(
               'shrink-0 h-7 w-7 flex items-center justify-center rounded-md transition-colors nodrag nopan',
               seedLocked
-                ? 'bg-foreground/10 border-node border-neutral-800 text-foreground'
+                ? 'bg-accent border-node border-neutral-800 text-foreground'
                 : 'bg-neutral-900/60 border-node border-neutral-700/40 text-neutral-500 hover:text-neutral-300 hover:border-neutral-600',
               disabled && 'opacity-50 cursor-not-allowed'
             )}
@@ -139,10 +141,11 @@ export const SeedControl: React.FC<SeedControlProps> = ({
 
         {/* Copy */}
         {seed !== undefined && (
-          <Tooltip content="Copy seed">
+          <Tooltip content={t('canvasNodes.seed.copy')}>
             <button
               type="button"
               onClick={handleCopy}
+              aria-label={t('canvasNodes.seed.copy')}
               disabled={disabled}
               className={cn(
                 'shrink-0 h-7 w-7 flex items-center justify-center rounded-md',

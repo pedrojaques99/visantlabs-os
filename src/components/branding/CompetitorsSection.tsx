@@ -126,11 +126,7 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
             >
               <div className="space-y-3">
                 <div>
-                  <label
-                    className={`block text-xs font-medium mb-1 ${
-                      theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                    }`}
-                  >
+                  <label className="block text-xs font-medium mb-1 text-muted-foreground">
                     Nome
                   </label>
                   <Input
@@ -145,11 +141,7 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
                   />
                 </div>
                 <div>
-                  <label
-                    className={`block text-xs font-medium mb-1 ${
-                      theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                    }`}
-                  >
+                  <label className="block text-xs font-medium mb-1 text-muted-foreground">
                     Link (opcional)
                   </label>
                   <Input
@@ -167,9 +159,7 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
               <Button
                 variant="ghost"
                 onClick={() => handleRemoveCompetitor(index)}
-                className={`absolute top-2 right-2 p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive ${
-                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                }`}
+                className="absolute top-2 right-2 p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive text-muted-foreground"
                 title="Remover concorrente"
               >
                 <X className="h-4 w-4" />
@@ -180,7 +170,7 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
         <Button
           variant="ghost"
           onClick={handleAddCompetitor}
-          className={`flex items-center gap-2 px-4 py-2 border hover:border-neutral-600/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-colors duration-300 ${
+          className={`flex items-center gap-2 px-4 py-2 border hover:border-neutral-600/50 hover:text-foreground rounded-xl text-sm transition-colors duration-300 ${
             theme === 'dark'
               ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
               : 'bg-neutral-100 border-neutral-300 text-neutral-800'
@@ -206,11 +196,7 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
         >
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <p
-                className={`text-sm font-manrope leading-relaxed ${
-                  theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
-                }`}
-              >
+              <p className="text-sm font-manrope leading-relaxed text-foreground">
                 {competitor.name}
               </p>
               {competitor.url && competitor.url.trim() && (
@@ -218,10 +204,10 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
                   href={formatUrl(competitor.url)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`flex items-center gap-1 mt-2 w-full min-w-0 text-xs font-mono transition-colors ${
+                  className={`flex items-center gap-1 mt-2 w-full min-w-0 text-xs transition-colors ${
                     theme === 'dark'
-                      ? 'text-brand-cyan hover:text-brand-cyan/80'
-                      : 'text-blue-600 hover:text-blue-700'
+                      ? 'text-neutral-400 hover:text-neutral-200'
+                      : 'text-neutral-600 hover:text-neutral-900'
                   }`}
                   onClick={(e) => e.stopPropagation()}
                 >

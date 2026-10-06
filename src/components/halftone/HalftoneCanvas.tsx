@@ -107,8 +107,8 @@ export const HalftoneCanvas = forwardRef<HalftoneCanvasHandle, HalftoneCanvasPro
 
     if (webglFailed) {
       return (
-        <div className="w-full h-full flex items-center justify-center bg-neutral-950">
-          <p className="text-neutral-500 text-2xs uppercase tracking-widest">
+        <div className="w-full h-full flex items-center justify-center bg-background">
+          <p className="text-muted-foreground text-2xs uppercase tracking-widest">
             WebGL not supported — please use a modern browser
           </p>
         </div>
@@ -119,7 +119,7 @@ export const HalftoneCanvas = forwardRef<HalftoneCanvasHandle, HalftoneCanvasPro
       <div
         ref={containerRef}
         className={cn(
-          'w-full h-full flex items-center justify-center overflow-hidden bg-neutral-950',
+          'w-full h-full flex items-center justify-center overflow-hidden bg-background',
           isPanning && 'cursor-grabbing'
         )}
         onDragOver={(e) => e.preventDefault()}

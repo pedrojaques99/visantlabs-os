@@ -151,12 +151,10 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
     <div className="space-y-6">
       {/* Basic Info */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-neutral-200 font-mono">Informações Básicas</h3>
+        <h3 className="text-lg font-medium text-foreground">Informações Básicas</h3>
 
         <div>
-          <label className="block text-xs text-neutral-400 mb-2 font-mono">
-            {t('budget.clientName')} *
-          </label>
+          <label className="block text-xs text-neutral-400 mb-2">{t('budget.clientName')} *</label>
           <FormInput
             ref={(el) => {
               fieldRefs.current['clientName'] = el;
@@ -174,9 +172,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs text-neutral-400 mb-2 font-mono">
-            {t('budget.projectName')} *
-          </label>
+          <label className="block text-xs text-neutral-400 mb-2">{t('budget.projectName')} *</label>
           <FormInput
             ref={(el) => {
               fieldRefs.current['projectName'] = el;
@@ -194,7 +190,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs text-neutral-400 mb-2 font-mono">
+          <label className="block text-xs text-neutral-400 mb-2">
             {t('budget.projectDescription')} *
           </label>
           <FormTextarea
@@ -232,9 +228,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
 
       {/* Observations */}
       <div>
-        <label className="block text-xs text-neutral-400 mb-2 font-mono">
-          {t('budget.observations')}
-        </label>
+        <label className="block text-xs text-neutral-400 mb-2">{t('budget.observations')}</label>
         <FormTextarea
           ref={(el) => {
             fieldRefs.current['observations'] = el;

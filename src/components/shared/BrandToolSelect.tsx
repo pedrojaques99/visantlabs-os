@@ -23,11 +23,11 @@ export const BrandToolSelect: React.FC<BrandToolSelectProps> = ({ value, onChang
 
   return (
     <div className={cn('flex items-center gap-1.5', className)}>
-      <Palette size={10} className="text-neutral-500 shrink-0" />
+      <Palette size={10} className="text-muted-foreground shrink-0" />
       <select
         value={value || ''}
         onChange={(e) => onChange(e.target.value || null)}
-        className="bg-transparent text-2xs text-neutral-400 hover:text-neutral-200 uppercase tracking-wider cursor-pointer border-none outline-none appearance-none pr-3"
+        className="bg-transparent text-2xs text-muted-foreground hover:text-foreground cursor-pointer border-none outline-none appearance-none pr-3"
         style={{ backgroundImage: 'none' }}
       >
         <option value="">No brand</option>

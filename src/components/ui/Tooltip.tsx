@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X } from '@/lib/ui/icons';
-import { useTheme } from '@/hooks/useTheme';
 
 interface TooltipProps {
   content: React.ReactNode;
@@ -17,7 +16,6 @@ export const Tooltip: React.FC<TooltipProps> = ({
   delay = 300,
   dismissible = false,
 }) => {
-  const { theme } = useTheme();
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
@@ -198,11 +196,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
       {isVisible && !isDismissed && (
         <div
           ref={tooltipRef}
-          className={`fixed z-50 px-2.5 py-1.5 text-xs font-mono backdrop-blur-sm rounded-md shadow-lg pointer-events-auto animate-fade-in ${
-            theme === 'dark'
-              ? 'text-neutral-300 bg-neutral-900/70 border border-neutral-800/40'
-              : 'text-neutral-700 bg-white/70 border border-neutral-200/40'
-          }`}
+          className={`fixed z-50 px-2.5 py-1.5 text-xs backdrop-blur-sm rounded-md shadow-lg pointer-events-auto animate-fade-in text-popover-foreground bg-popover/70 border border-border`}
           style={{
             top: `${tooltipPosition.top}px`,
             left: `${tooltipPosition.left}px`,
@@ -216,11 +210,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
             {dismissible && (
               <button
                 onClick={handleDismiss}
-                className={`flex-shrink-0 p-0.5 rounded hover:bg-opacity-40 transition-colors ${
-                  theme === 'dark'
-                    ? 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700'
-                    : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200'
-                }`}
+                className={`flex-shrink-0 p-0.5 rounded hover:bg-opacity-40 transition-colors text-muted-foreground hover:text-foreground hover:bg-accent`}
                 aria-label="Close tooltip"
               >
                 <X size={12} />
@@ -230,20 +220,12 @@ export const Tooltip: React.FC<TooltipProps> = ({
           <div
             className={`absolute w-0 h-0 border-4 ${
               position === 'top'
-                ? theme === 'dark'
-                  ? 'top-full left-1/2 -translate-x-1/2 border-t-neutral-900/70 border-r-transparent border-b-transparent border-l-transparent'
-                  : 'top-full left-1/2 -translate-x-1/2 border-t-white/70 border-r-transparent border-b-transparent border-l-transparent'
+                ? 'top-full left-1/2 -translate-x-1/2 border-t-popover/70 border-r-transparent border-b-transparent border-l-transparent'
                 : position === 'bottom'
-                  ? theme === 'dark'
-                    ? 'bottom-full left-1/2 -translate-x-1/2 border-b-neutral-900/70 border-r-transparent border-t-transparent border-l-transparent'
-                    : 'bottom-full left-1/2 -translate-x-1/2 border-b-white/70 border-r-transparent border-t-transparent border-l-transparent'
+                  ? 'bottom-full left-1/2 -translate-x-1/2 border-b-popover/70 border-r-transparent border-t-transparent border-l-transparent'
                   : position === 'left'
-                    ? theme === 'dark'
-                      ? 'left-full top-1/2 -translate-y-1/2 border-l-neutral-900/70 border-r-transparent border-t-transparent border-b-transparent'
-                      : 'left-full top-1/2 -translate-y-1/2 border-l-white/70 border-r-transparent border-t-transparent border-b-transparent'
-                    : theme === 'dark'
-                      ? 'right-full top-1/2 -translate-y-1/2 border-r-neutral-900/70 border-l-transparent border-t-transparent border-b-transparent'
-                      : 'right-full top-1/2 -translate-y-1/2 border-r-white/70 border-l-transparent border-t-transparent border-b-transparent'
+                    ? 'left-full top-1/2 -translate-y-1/2 border-l-popover/70 border-r-transparent border-t-transparent border-b-transparent'
+                    : 'right-full top-1/2 -translate-y-1/2 border-r-popover/70 border-l-transparent border-t-transparent border-b-transparent'
             }`}
           />
         </div>

@@ -14,7 +14,8 @@ import {
 import { branding, getGithubUrl } from '../config/branding';
 import { RepellantText } from '../components/RepellantText';
 import { motion } from 'framer-motion';
-import { ExternalLink, Github, ArrowUpRight } from '@/lib/ui/icons';
+import { ExternalLink, Github, ArrowUpRight, ArrowRight } from '@/lib/ui/icons';
+import { Thumb } from '../components/ui/Thumb';
 
 const TEAM = [
   {
@@ -96,14 +97,14 @@ export const AboutPage: React.FC = () => {
   return (
     <>
       <SEO
-        title={t('about.seo.title') || 'About — Visant Labs'}
-        description={t('about.seo.description') || 'Independent creative lab based in Brazil.'}
-        keywords={t('about.seo.keywords') || 'visant labs, about, design, Brazil'}
+        title={t('about.seo.title')}
+        description={t('about.seo.description')}
+        keywords={t('about.seo.keywords')}
       />
       <OrganizationSchema />
 
       <div
-        className="min-h-screen text-neutral-300 relative overflow-hidden"
+        className="min-h-screen text-foreground relative overflow-hidden"
         style={{
           background:
             'linear-gradient(180deg, oklch(0.10 0 0) 0%, oklch(0.145 0 0) 40%, oklch(0.13 0.015 198.6) 100%)',
@@ -129,15 +130,15 @@ export const AboutPage: React.FC = () => {
                 <BreadcrumbLink asChild>
                   <Link
                     to="/"
-                    className="text-neutral-500 hover:text-neutral-300 text-xs transition-colors"
+                    className="text-muted-foreground hover:text-foreground text-xs transition-colors"
                   >
-                    {t('common.home') || 'Home'}
+                    {t('common.home')}
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
-              <BreadcrumbSeparator className="text-neutral-800" />
+              <BreadcrumbSeparator className="text-muted-foreground" />
               <BreadcrumbItem>
-                <BreadcrumbPage className="text-neutral-400 text-xs">Info</BreadcrumbPage>
+                <BreadcrumbPage className="text-muted-foreground text-xs">Info</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </BreadcrumbWithBack>
@@ -149,15 +150,15 @@ export const AboutPage: React.FC = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4 }}
-                className="font-mono text-2xs uppercase tracking-widest text-neutral-700 mb-3"
+                className="text-xs text-muted-foreground mb-3"
               >
-                Brasil · São Paulo · {time}
+                São Paulo, Brasil <span className="ml-2 font-mono tabular-nums">{time}</span>
               </motion.p>
               <motion.h1
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.06, duration: 0.5, ease: EASE }}
-                className="text-3xl sm:text-4xl font-bold text-white tracking-tight leading-tight mb-4"
+                className="text-3xl sm:text-4xl font-semibold text-foreground tracking-tight leading-tight mb-4"
               >
                 Independent creative lab.
               </motion.h1>
@@ -165,9 +166,9 @@ export const AboutPage: React.FC = () => {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.14, duration: 0.4 }}
-                className="text-sm text-neutral-400 leading-relaxed max-w-sm"
+                className="text-sm text-muted-foreground leading-relaxed max-w-sm"
               >
-                We build the infrastructure that makes brand guidelines work — turning identity into
+                We build the infrastructure that makes brand guidelines work, turning identity into
                 structured context for every model, tool, and team.
               </motion.p>
             </div>
@@ -191,43 +192,40 @@ export const AboutPage: React.FC = () => {
           </div>
 
           {/* ── Team ─────────────────────────────────────────────────────── */}
-          <Section label={t('about.team') || 'Team'} delay={0}>
+          <Section label={t('about.teamTitle')} delay={0}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {TEAM.map((member, i) => (
-                <motion.div key={member.name} {...inView(i * 0.08)}>
+              {TEAM.map((member) => (
+                <motion.div key={member.name} {...inView()}>
                   <Link
                     to={member.profile}
-                    className="group flex items-start gap-4 p-4 rounded-xl border border-neutral-800 bg-white/[0.03] hover:bg-white/5 hover:border-white/[0.1] transition-[color,background-color,border-color,opacity,filter] duration-200"
+                    className="group flex items-start gap-4 p-4 rounded-xl border border-border bg-muted hover:bg-accent hover:border-border-hover transition-[color,background-color,border-color,opacity,filter] duration-200"
                     aria-label={member.name}
                   >
                     <div className="relative shrink-0">
-                      <img
+                      <Thumb
                         src={member.avatar}
                         alt={member.name}
-                        className="w-10 h-10 rounded-full object-cover grayscale opacity-60 group-hover:opacity-100 group-hover:grayscale-0 transition-[color,background-color,border-color,opacity,filter] duration-300"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
+                        className="w-10 h-10 rounded-full object-cover grayscale opacity-60 group-hover:opacity-100 group-hover:grayscale-0 transition-[opacity,filter] duration-300"
                       />
                       <span
-                        className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-neutral-950 ${
-                          member.status ? 'bg-success' : 'bg-neutral-700'
+                        className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-background ${
+                          member.status ? 'bg-success' : 'bg-muted-foreground'
                         }`}
                         aria-label={member.status ? 'online' : 'offline'}
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-neutral-200 group-hover:text-white transition-colors truncate">
+                      <p className="text-sm font-medium text-foreground transition-colors truncate">
                         {member.name}
                       </p>
-                      <p className="text-xs text-neutral-500 mt-0.5">{member.role}</p>
-                      <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed">
+                      <p className="text-xs text-muted-foreground mt-0.5">{member.role}</p>
+                      <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
                         {member.bio}
                       </p>
                     </div>
                     <ArrowUpRight
                       size={14}
-                      className="text-neutral-700 group-hover:text-neutral-400 transition-colors shrink-0 mt-0.5"
+                      className="text-muted-foreground group-hover:text-foreground transition-colors shrink-0 mt-0.5"
                     />
                   </Link>
                 </motion.div>
@@ -238,27 +236,25 @@ export const AboutPage: React.FC = () => {
           {/* ── Featured work ─────────────────────────────────────────────── */}
           <Section label="What we build" delay={0}>
             <div className="grid grid-cols-2 gap-3">
-              {FEATURED_TOOLS.map((tool, i) => (
-                <motion.div key={tool.label} {...inView(i * 0.06)}>
+              {FEATURED_TOOLS.map((tool) => (
+                <motion.div key={tool.label} {...inView()}>
                   <Link
                     to={tool.href}
-                    className="group flex flex-col rounded-xl border border-neutral-800 bg-white/[0.03] hover:bg-white/5 hover:border-white/[0.1] overflow-hidden transition-all duration-200"
+                    className="group flex flex-col rounded-xl border border-border bg-muted hover:bg-accent hover:border-border-hover overflow-hidden transition-colors duration-200"
                   >
-                    <div className="aspect-video w-full overflow-hidden bg-neutral-900/50">
-                      <img
+                    <div className="aspect-video w-full overflow-hidden bg-muted">
+                      <Thumb
                         src={tool.image}
                         alt={tool.label}
-                        className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-500"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
+                        aspectRatio="16 / 9"
+                        className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-500"
                       />
                     </div>
                     <div className="p-3">
-                      <p className="text-xs font-semibold text-neutral-200 group-hover:text-white transition-colors">
+                      <p className="text-xs font-medium text-foreground transition-colors">
                         {tool.label}
                       </p>
-                      <p className="text-2xs text-neutral-500 mt-0.5 leading-relaxed">
+                      <p className="text-2xs text-muted-foreground mt-0.5 leading-relaxed">
                         {tool.description}
                       </p>
                     </div>
@@ -269,27 +265,24 @@ export const AboutPage: React.FC = () => {
           </Section>
 
           {/* ── Links ────────────────────────────────────────────────────── */}
-          <Section label={t('about.links.title') || 'Links'} delay={0}>
+          <Section label={t('about.links.title')} delay={0}>
             <div className="flex flex-col gap-0">
-              {LINKS.filter((l) => l.href).map((l, i) => (
-                <motion.div key={l.label} {...inView(i * 0.04)}>
+              {LINKS.filter((l) => l.href).map((l) => (
+                <motion.div key={l.label} {...inView()}>
                   <a
                     href={l.href!}
                     target={l.external ? '_blank' : undefined}
                     rel={l.external ? 'noopener noreferrer' : undefined}
-                    className="flex items-center gap-3 py-2.5 border-b border-neutral-800 group transition-colors last:border-0"
+                    className="flex items-center gap-3 py-2.5 border-b border-border group transition-colors last:border-0"
                     aria-label={l.label}
                   >
-                    <span className="text-neutral-700 group-hover:text-neutral-400 transition-colors text-sm">
-                      ›
-                    </span>
-                    <span className="font-mono text-2xs text-neutral-500 group-hover:text-neutral-200 transition-colors tracking-wider flex-1">
+                    <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors flex-1">
                       {l.label}
                     </span>
                     {l.external ? (
                       <ExternalLink
                         size={10}
-                        className="text-neutral-700 group-hover:text-neutral-500 transition-colors shrink-0"
+                        className="text-muted-foreground group-hover:text-foreground transition-colors shrink-0"
                       />
                     ) : null}
                   </a>
@@ -301,26 +294,27 @@ export const AboutPage: React.FC = () => {
           {/* ── Footer ───────────────────────────────────────────────────── */}
           <motion.div
             {...inView(0)}
-            className="mt-10 pt-6 border-t border-neutral-800 flex items-center justify-between"
+            className="mt-10 pt-6 border-t border-border flex items-center justify-between"
           >
-            <span className="text-xs text-neutral-500">
-              {t('about.openSource.description') || 'Open source'}
+            <span className="text-xs text-muted-foreground">
+              {t('about.openSource.description')}
             </span>
             <div className="flex items-center gap-4">
               <a
                 href={getGithubUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-xs text-neutral-500 hover:text-neutral-200 transition-colors"
+                className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Github size={12} />
                 GitHub
               </a>
               <Link
                 to="/apps"
-                className="font-mono text-2xs text-neutral-500 hover:text-neutral-200 transition-colors"
+                className="flex items-center gap-1 font-mono text-2xs text-muted-foreground hover:text-foreground transition-colors"
               >
-                /apps →
+                /apps
+                <ArrowRight size={10} />
               </Link>
             </div>
           </motion.div>
@@ -333,7 +327,7 @@ export const AboutPage: React.FC = () => {
           aria-hidden
         >
           <RepellantText
-            className="text-[20vw] font-bold leading-none tracking-tighter whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-b from-white/5 to-white/[0.03]"
+            className="text-[20vw] font-semibold leading-none tracking-tighter whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-b from-foreground/5 to-foreground/[0.03]"
             style={{ pointerEvents: 'auto' }}
           >
             VISANT
@@ -357,7 +351,7 @@ const Section: React.FC<{ label: string; delay: number; children: React.ReactNod
     className="mb-12"
     aria-label={label}
   >
-    <p className="font-mono text-2xs uppercase tracking-widest text-neutral-700 mb-4">{label}</p>
+    <p className="text-xs font-medium text-muted-foreground mb-4">{label}</p>
     {children}
   </motion.section>
 );

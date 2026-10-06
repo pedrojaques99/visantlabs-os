@@ -209,7 +209,7 @@ export function DataTable<TData, TValue>({
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         {title && (
-          <div className="flex items-center gap-3 text-neutral-300 font-mono">
+          <div className="flex items-center gap-3 text-neutral-300">
             {icon}
             <h2 className="text-xl font-semibold">{title}</h2>
           </div>
@@ -296,10 +296,7 @@ export function DataTable<TData, TValue>({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center text-neutral-500 font-mono"
-                  >
+                  <TableCell colSpan={columns.length} className="h-24 text-center text-neutral-500">
                     No results.
                   </TableCell>
                 </TableRow>

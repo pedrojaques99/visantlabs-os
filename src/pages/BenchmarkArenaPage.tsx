@@ -33,6 +33,7 @@ import {
   type SSEResultEvent,
 } from '../services/benchmarkApi';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Thumb } from '@/components/ui/Thumb';
 
 const TIER_CONFIG: Record<BenchmarkTier, { label: string; color: string; description: string }> = {
   flagship: {
@@ -42,7 +43,7 @@ const TIER_CONFIG: Record<BenchmarkTier, { label: string; color: string; descrip
   },
   balanced: {
     label: 'Balanced',
-    color: 'text-blue-400 border-blue-400/20',
+    color: 'text-foreground border-chart-1/40',
     description: 'Quality/cost sweet spot',
   },
   fast: {
@@ -52,18 +53,18 @@ const TIER_CONFIG: Record<BenchmarkTier, { label: string; color: string; descrip
   },
   legacy: {
     label: 'Legacy',
-    color: 'text-white/30 border-white/10',
+    color: 'text-muted-foreground border-border',
     description: 'Previous generation',
   },
 };
 
 const PROVIDER_COLORS: Record<string, string> = {
   openai: 'bg-success/10 text-success',
-  gemini: 'bg-blue-500/10 text-blue-400',
-  imagen: 'bg-purple-500/10 text-purple-400',
-  seedream: 'bg-orange-500/10 text-orange-400',
-  ideogram: 'bg-pink-500/10 text-pink-400',
-  reve: 'bg-brand-cyan/10 text-brand-cyan',
+  gemini: 'bg-chart-1/15 text-foreground',
+  imagen: 'bg-chart-4/15 text-foreground',
+  seedream: 'bg-chart-3/15 text-foreground',
+  ideogram: 'bg-chart-5/15 text-foreground',
+  reve: 'bg-chart-2/15 text-foreground',
 };
 
 // ─── Run Tab ─────────────────────────────────────────────────────────────────
@@ -113,7 +114,7 @@ const RunBenchmark: React.FC = () => {
     (modelId: string) => {
       const model = models.find((m) => m.id === modelId);
       if (model && !model.available) {
-        toast.error(`${model.label} — API key not configured`);
+        toast.error(`${model.label}: API key not configured`);
         return;
       }
       setSelectedModels((prev) => {
@@ -271,7 +272,7 @@ const RunBenchmark: React.FC = () => {
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="Describe the image you want to compare across models..."
-          className="w-full bg-transparent border border-white/10 rounded-lg p-3 text-sm text-white/90 placeholder:text-white/30 resize-none focus:outline-none focus:border-white/20 min-h-[80px]"
+          className="w-full bg-transparent border border-border rounded-xl p-3 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-border-hover min-h-[80px]"
           rows={3}
           disabled={isStreaming}
         />
@@ -289,9 +290,9 @@ const RunBenchmark: React.FC = () => {
               onClick={() => selectTier(tier)}
               disabled={isStreaming}
               className={cn(
-                'px-3 py-1.5 rounded-full border text-2xs font-mono uppercase tracking-wider transition-[color,background-color,border-color,opacity]',
+                'px-3 py-1.5 rounded-full border text-xs transition-[color,background-color,border-color,opacity]',
                 cfg.color,
-                'hover:bg-white/5 disabled:opacity-40'
+                'hover:bg-accent disabled:opacity-40'
               )}
             >
               {cfg.label} ({count})
@@ -322,7 +323,7 @@ const RunBenchmark: React.FC = () => {
                   <span className={cn('text-2xs font-medium', cfg.color.split(' ')[0])}>
                     {cfg.label}
                   </span>
-                  <span className="text-2xs text-white/20">{cfg.description}</span>
+                  <span className="text-2xs text-muted-foreground">{cfg.description}</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                   {tierModels.map((model) => {
@@ -333,11 +334,11 @@ const RunBenchmark: React.FC = () => {
                         onClick={() => toggleModel(model.id)}
                         disabled={isStreaming || (!model.available && !isSelected)}
                         className={cn(
-                          'relative flex flex-col items-start p-3 rounded-lg border text-left transition-[color,background-color,border-color,opacity]',
+                          'relative flex flex-col items-start p-3 rounded-xl border text-left transition-[color,background-color,border-color,opacity]',
                           !model.available && 'opacity-30 cursor-not-allowed',
                           isSelected
-                            ? 'border-white/30 bg-white/5'
-                            : 'border-neutral-800 bg-white/[0.03] hover:border-white/15',
+                            ? 'border-ring bg-accent'
+                            : 'border-border hover:border-border-hover',
                           isStreaming && 'pointer-events-none'
                         )}
                       >
@@ -347,27 +348,29 @@ const RunBenchmark: React.FC = () => {
                           </div>
                         )}
                         <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="text-xs font-medium text-white/80 leading-tight">
+                          <span className="text-xs font-medium text-foreground leading-tight">
                             {model.label}
                           </span>
                           <span
                             className={cn(
                               'text-2xs px-1.5 py-0.5 rounded-full',
-                              PROVIDER_COLORS[model.provider] || 'bg-white/5 text-white/40'
+                              PROVIDER_COLORS[model.provider] || 'bg-muted text-muted-foreground'
                             )}
                           >
                             {model.provider}
                           </span>
                         </div>
-                        <span className="text-2xs text-white/30 line-clamp-1">
+                        <span className="text-2xs text-muted-foreground line-clamp-1">
                           {model.description}
                         </span>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-2xs text-white/20">{model.creditsCost1K} cr</span>
+                          <span className="text-2xs text-muted-foreground">
+                            {model.creditsCost1K} cr
+                          </span>
                           {!model.available && (
                             <span className="text-2xs text-destructive/50">no key</span>
                           )}
-                          <span className="text-2xs text-white/15">{model.released}</span>
+                          <span className="text-2xs text-muted-foreground">{model.released}</span>
                         </div>
                       </button>
                     );
@@ -392,8 +395,8 @@ const RunBenchmark: React.FC = () => {
                   className={cn(
                     'px-3 py-1.5 rounded text-xs font-mono transition-colors',
                     resolution === r
-                      ? 'bg-white/10 text-white'
-                      : 'bg-white/[0.03] text-white/40 hover:text-white/60'
+                      ? 'bg-accent text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
                   {r}
@@ -411,8 +414,8 @@ const RunBenchmark: React.FC = () => {
                   className={cn(
                     'px-3 py-1.5 rounded text-xs font-mono transition-colors',
                     aspectRatio === ar
-                      ? 'bg-white/10 text-white'
-                      : 'bg-white/[0.03] text-white/40 hover:text-white/60'
+                      ? 'bg-accent text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
                   {ar}
@@ -426,7 +429,7 @@ const RunBenchmark: React.FC = () => {
       {/* Run Button */}
       {!isStreaming && !streamingResults.length && (
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-2xs text-white/30">
+          <div className="flex items-center gap-2 text-2xs text-muted-foreground">
             <CreditCard className="w-3.5 h-3.5" />
             <span>Vote after to get 50% credits back</span>
           </div>
@@ -453,12 +456,12 @@ const RunBenchmark: React.FC = () => {
             <GlassPanel className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-white/60 animate-pulse" />
-                  <span className="text-xs text-white/60">
+                  <Sparkles className="w-4 h-4 text-muted-foreground animate-pulse" />
+                  <span className="text-xs text-muted-foreground">
                     Generating {streamingResults.length}/{selectedModels.size}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-2xs text-white/30">
+                <div className="flex items-center gap-2 text-2xs text-muted-foreground">
                   <Timer className="w-3 h-3" />
                   {Array.from(generatingModels).map((m) => {
                     const meta = models.find((mm) => mm.id === m);
@@ -471,9 +474,9 @@ const RunBenchmark: React.FC = () => {
                   })}
                 </div>
               </div>
-              <div className="w-full bg-white/5 rounded-full h-1">
+              <div className="w-full bg-muted rounded-full h-1">
                 <motion.div
-                  className="bg-white/50 h-1 rounded-full"
+                  className="bg-muted-foreground h-1 rounded-full"
                   initial={{ width: 0 }}
                   animate={{ width: `${(streamingResults.length / selectedModels.size) * 100}%` }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -510,17 +513,17 @@ const RunBenchmark: React.FC = () => {
                       className={cn(
                         'overflow-hidden transition-colors',
                         isWinner && 'ring-1 ring-warning/30',
-                        result.isNew && 'ring-1 ring-brand-cyan/40'
+                        result.isNew && 'ring-1 ring-ring'
                       )}
                     >
                       {hasImage ? (
                         <motion.div
-                          className="relative aspect-square bg-black/20"
+                          className="relative aspect-square bg-muted"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ duration: 0.5 }}
                         >
-                          <img
+                          <Thumb
                             src={result.imageUrl}
                             alt={`${result.label} result`}
                             className="w-full h-full object-cover"
@@ -528,7 +531,7 @@ const RunBenchmark: React.FC = () => {
                           />
                           {isWinner && (
                             <div className="absolute top-2 left-2">
-                              <Badge className="bg-warning/90 text-black text-2xs gap-1">
+                              <Badge className="bg-warning/90 text-warning-foreground text-2xs gap-1">
                                 <Crown className="w-3 h-3" /> Winner
                               </Badge>
                             </div>
@@ -568,22 +571,26 @@ const RunBenchmark: React.FC = () => {
 
                       <div className="p-3">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-medium text-white/80">{result.label}</span>
+                          <span className="text-xs font-medium text-foreground">
+                            {result.label}
+                          </span>
                           <span
                             className={cn(
                               'text-2xs px-1.5 py-0.5 rounded-full',
-                              PROVIDER_COLORS[result.provider] || 'bg-white/5 text-white/40'
+                              PROVIDER_COLORS[result.provider] || 'bg-muted text-muted-foreground'
                             )}
                           >
                             {result.provider}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-2xs text-white/30 flex items-center gap-1">
+                          <span className="text-2xs text-muted-foreground flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {result.durationMs ? `${(result.durationMs / 1000).toFixed(1)}s` : '—'}
                           </span>
-                          <span className="text-2xs text-white/30">{result.creditsCost} cr</span>
+                          <span className="text-2xs text-muted-foreground">
+                            {result.creditsCost} cr
+                          </span>
                         </div>
 
                         {streamComplete && !hasVoted && hasImage && !isWinner && (
@@ -606,7 +613,7 @@ const RunBenchmark: React.FC = () => {
 
           {/* Vote CTA */}
           {streamComplete && !hasVoted && (
-            <div className="text-center text-2xs text-white/30">
+            <div className="text-center text-2xs text-muted-foreground">
               <Zap className="w-3.5 h-3.5 inline mr-1" />
               Vote for the best result to get 50% of your credits back (
               {Math.floor(totalCharged / 2)} cr)
@@ -703,7 +710,7 @@ const BenchmarkGallery: React.FC = () => {
           variant="ghost"
           size="sm"
           onClick={() => setSelectedBenchmark(null)}
-          className="text-xs text-white/40"
+          className="text-xs text-muted-foreground"
         >
           &larr; Back to Gallery
         </Button>
@@ -715,7 +722,7 @@ const BenchmarkGallery: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-white/30" />
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -723,8 +730,8 @@ const BenchmarkGallery: React.FC = () => {
   if (items.length === 0) {
     return (
       <GlassPanel className="p-10 text-center">
-        <Trophy className="w-8 h-8 mx-auto mb-3 text-white/20" />
-        <p className="text-sm text-white/40">No benchmarks yet. Run the first one!</p>
+        <Trophy className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">No benchmarks yet. Run the first one!</p>
       </GlassPanel>
     );
   }
@@ -732,7 +739,7 @@ const BenchmarkGallery: React.FC = () => {
   if (loadingBenchmark) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-white/30" />
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -741,20 +748,15 @@ const BenchmarkGallery: React.FC = () => {
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map((item) => (
-          <motion.div
-            key={item.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileHover={{ y: -2 }}
-          >
+          <motion.div key={item.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
             <GlassPanel
-              className="overflow-hidden cursor-pointer hover:border-white/15 transition-colors"
+              className="overflow-hidden cursor-pointer hover:border-border-hover transition-colors"
               onClick={() => openBenchmark(item.id)}
             >
-              <div className="grid grid-cols-2 gap-0.5 aspect-square bg-black/20">
+              <div className="grid grid-cols-2 gap-0.5 aspect-square bg-muted">
                 {item.thumbnails.slice(0, 4).map((t, i) => (
                   <div key={i} className="relative overflow-hidden">
-                    <img
+                    <Thumb
                       src={t.imageUrl}
                       alt={t.model}
                       className="w-full h-full object-cover"
@@ -769,10 +771,12 @@ const BenchmarkGallery: React.FC = () => {
                 ))}
               </div>
               <div className="p-3">
-                <p className="text-xs text-white/70 line-clamp-1 mb-1">{item.prompt}</p>
+                <p className="text-xs text-muted-foreground line-clamp-1 mb-1">{item.prompt}</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-2xs text-white/30">{item.models.length} models</span>
+                    <span className="text-2xs text-muted-foreground">
+                      {item.models.length} models
+                    </span>
                     {item.voted && (
                       <Badge
                         variant="outline"
@@ -782,12 +786,14 @@ const BenchmarkGallery: React.FC = () => {
                       </Badge>
                     )}
                   </div>
-                  <span className="flex items-center gap-0.5 text-2xs text-white/20">
+                  <span className="flex items-center gap-0.5 text-2xs text-muted-foreground">
                     <Eye className="w-3 h-3" /> {item.viewCount}
                   </span>
                 </div>
                 {item.user && (
-                  <p className="text-2xs text-white/20 mt-1">by {item.user.name || 'anonymous'}</p>
+                  <p className="text-2xs text-muted-foreground mt-1">
+                    by {item.user.name || 'anonymous'}
+                  </p>
                 )}
               </div>
             </GlassPanel>
@@ -806,7 +812,7 @@ const BenchmarkGallery: React.FC = () => {
           >
             Previous
           </Button>
-          <span className="text-xs text-white/40">
+          <span className="text-xs text-muted-foreground">
             {page} / {totalPages}
           </span>
           <Button
@@ -839,9 +845,11 @@ const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<stri
         <div className="flex items-start justify-between">
           <div>
             <MicroTitle className="mb-1">Benchmark Results</MicroTitle>
-            <p className="text-sm text-white/60 max-w-lg line-clamp-2">{benchmark.prompt}</p>
+            <p className="text-sm text-muted-foreground max-w-lg line-clamp-2">
+              {benchmark.prompt}
+            </p>
           </div>
-          <div className="flex items-center gap-3 text-2xs text-white/40">
+          <div className="flex items-center gap-3 text-2xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <Eye className="w-3 h-3" /> {benchmark.viewCount}
             </span>
@@ -874,8 +882,8 @@ const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<stri
               key={result.model}
               className={cn('overflow-hidden', isWinner && 'ring-1 ring-warning/30')}
             >
-              <div className="relative aspect-square bg-black/20">
-                <img
+              <div className="relative aspect-square bg-muted">
+                <Thumb
                   src={result.imageUrl}
                   alt={result.model}
                   className="w-full h-full object-cover"
@@ -883,7 +891,7 @@ const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<stri
                 />
                 {isWinner && (
                   <div className="absolute top-2 left-2">
-                    <Badge className="bg-warning/90 text-black text-2xs gap-1">
+                    <Badge className="bg-warning/90 text-warning-foreground text-2xs gap-1">
                       <Crown className="w-3 h-3" /> Winner
                     </Badge>
                   </div>
@@ -891,24 +899,24 @@ const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<stri
               </div>
               <div className="p-3">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium text-white/80">
+                  <span className="text-xs font-medium text-foreground">
                     {getLabel(result.model)}
                   </span>
                   <span
                     className={cn(
                       'text-2xs px-1.5 py-0.5 rounded-full',
-                      PROVIDER_COLORS[result.provider] || 'bg-white/5 text-white/40'
+                      PROVIDER_COLORS[result.provider] || 'bg-muted text-muted-foreground'
                     )}
                   >
                     {result.provider}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-2xs text-white/30 flex items-center gap-1">
+                  <span className="text-2xs text-muted-foreground flex items-center gap-1">
                     <Clock className="w-3 h-3" />{' '}
                     {result.durationMs ? `${(result.durationMs / 1000).toFixed(1)}s` : '—'}
                   </span>
-                  <span className="text-2xs text-white/30">{result.creditsCost} cr</span>
+                  <span className="text-2xs text-muted-foreground">{result.creditsCost} cr</span>
                 </div>
               </div>
             </GlassPanel>
@@ -928,7 +936,7 @@ const BenchmarkArenaPage: React.FC = () => {
   return (
     <PageShell
       pageId="benchmark-arena"
-      seoTitle="Benchmark Arena — Visant Labs"
+      seoTitle="Benchmark Arena"
       seoDescription="Compare AI image models side-by-side. Test prompts across Gemini, OpenAI, Seedream, Imagen, Ideogram, and REVE."
       title="Benchmark Arena"
       microTitle="Labs // Arena"

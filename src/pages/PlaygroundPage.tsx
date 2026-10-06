@@ -68,6 +68,10 @@ import { useResizable } from '@/hooks/useResizable';
 import { fileToBase64 } from '@/utils/fileUtils';
 import { ImageIcon, FileText, RefreshCw, Globe, Link2, Check, ChevronDown } from '@/lib/ui/icons';
 import { MarkdownRenderer } from '@/utils/markdownRenderer';
+import { useTranslation } from '@/hooks/useTranslation';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { DropOverlay } from '@/components/ui/DropOverlay';
+import { ArrowRight } from '@/lib/ui/icons';
 
 const SandpackPreview = React.lazy(() =>
   import('@codesandbox/sandpack-react').then((m) => ({
@@ -97,59 +101,22 @@ const SandpackPreview = React.lazy(() =>
 );
 
 const SUGGESTIONS = [
-  {
-    label: 'Brand Color Palette',
-    prompt: 'A tool to extract and display color palette from any image, with export options',
-    description: 'Extract colors from any image with export options',
-  },
-  {
-    label: 'Mockup Machine',
-    prompt:
-      'A mockup generator where I select scene types and generate product mockups from my brand',
-    description: 'Generate product mockups from your brand',
-  },
-  {
-    label: 'Naming Generator',
-    prompt:
-      'A brand naming brainstorm tool with context input, style selector, and multiple suggestions',
-    description: 'Brainstorm brand names with style controls',
-  },
-  {
-    label: 'Social Post Creator',
-    prompt:
-      'A social media post template creator with size presets, text overlay, and image generation',
-    description: 'Create social media posts with templates',
-  },
-  {
-    label: 'Compliance Checker',
-    prompt: 'Upload a design and check it against brand guidelines for compliance scoring',
-    description: 'Check designs against brand guidelines',
-  },
-  {
-    label: 'Logo Tester',
-    prompt: 'A tool to test my logo across different mockup scenarios side by side',
-    description: 'Test your logo across mockup scenarios',
-  },
-  {
-    label: 'Typography Pairing',
-    prompt:
-      'A typography pairing lab where I pick two Google Fonts, preview heading + body combinations at different sizes, adjust weight and line-height with sliders, see light and dark previews side by side, and copy the CSS snippet',
-    description: 'Test font pairings with live preview and CSS export',
-  },
-  {
-    label: 'Brand Scorecard',
-    prompt:
-      'A brand audit scorecard dashboard that loads my brand guideline and shows completeness metrics for colors, typography, voice, imagery, and logos as a pie chart, plus a bar chart of asset counts per category, with a compliance score metric card and tips for improvement in a collapsible section',
-    description: 'Audit your brand guideline completeness with charts',
-  },
-];
+  'palette',
+  'mockup',
+  'naming',
+  'social',
+  'compliance',
+  'logo',
+  'typography',
+  'scorecard',
+] as const;
 
 // ─── Helpers ────────────────────────────────────────────────────────────
-function getGreeting(): string {
+function getGreetingKey(): string {
   const h = new Date().getHours();
-  if (h < 12) return 'Good morning';
-  if (h < 18) return 'Good afternoon';
-  return 'Good evening';
+  if (h < 12) return 'playground.greeting.morning';
+  if (h < 18) return 'playground.greeting.afternoon';
+  return 'playground.greeting.evening';
 }
 
 const FADE_INITIAL = { opacity: 0, y: 8 } as const;
@@ -171,19 +138,23 @@ class RendererErrorBoundary extends React.Component<
   }
   render() {
     if (this.state.error) {
-      return (
-        <div className="h-full flex flex-col items-center justify-center gap-3 text-neutral-500">
-          <AlertTriangle className="w-6 h-6 text-warning/60" />
-          <p className="text-2xs font-mono">Render error — try regenerating</p>
-          <p className="text-2xs text-neutral-600 max-w-sm text-center">
-            {this.state.error.message}
-          </p>
-        </div>
-      );
+      return <RenderErrorFallback message={this.state.error.message} />;
     }
     return this.props.children;
   }
 }
+
+const RenderErrorFallback: React.FC<{ message: string }> = ({ message }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="h-full flex flex-col items-center justify-center gap-3 text-muted-foreground">
+      <AlertTriangle className="w-6 h-6 text-warning/60" />
+      <p className="text-xs">{t('playground.renderError')}</p>
+      {/* EXCEÇÃO ao ruido-scan/mono: mensagem de erro do renderer é texto técnico */}
+      <p className="text-2xs font-mono text-muted-foreground max-w-sm text-center">{message}</p>
+    </div>
+  );
+};
 
 // ─── Inner renderer (needs StateProvider context) ───────────────────────
 const PlaygroundRenderer: React.FC<{ spec: Spec }> = ({ spec }) => {
@@ -218,6 +189,7 @@ const PlaygroundRenderer: React.FC<{ spec: Spec }> = ({ spec }) => {
 
 // ─── Spec JSON Editor ───────────────────────────────────────────────────
 const SpecEditor: React.FC<{ spec: Spec; onUpdate: (s: Spec) => void }> = ({ spec, onUpdate }) => {
+  const { t } = useTranslation();
   const [text, setText] = useState(JSON.stringify(spec, null, 2));
   const [error, setError] = useState<string | null>(null);
 
@@ -233,10 +205,10 @@ const SpecEditor: React.FC<{ spec: Spec; onUpdate: (s: Spec) => void }> = ({ spe
         setError(null);
         onUpdate(parsed as Spec);
       } else {
-        setError('Missing "root" or "elements"');
+        setError(t('playground.specMissingRoot'));
       }
     } catch {
-      setError('Invalid JSON');
+      setError(t('playground.specInvalidJson'));
     }
   };
 
@@ -250,7 +222,7 @@ const SpecEditor: React.FC<{ spec: Spec; onUpdate: (s: Spec) => void }> = ({ spe
       <textarea
         value={text}
         onChange={(e) => handleChange(e.target.value)}
-        className="flex-1 w-full p-4 text-2xs font-mono text-neutral-400 bg-transparent resize-none focus:outline-none leading-relaxed"
+        className="flex-1 w-full p-4 text-2xs font-mono text-muted-foreground bg-transparent resize-none focus:outline-none leading-relaxed"
         spellCheck={false}
       />
     </div>
@@ -286,20 +258,26 @@ const SuggestionPills: React.FC<{
   size?: 'sm' | 'md';
   onSelect: (prompt: string) => void;
 }> = ({ suggestions, count, size = 'md', onSelect }) => {
+  const { t } = useTranslation();
   const items = count ? suggestions.slice(0, count) : suggestions;
   const cls =
     size === 'sm'
-      ? 'px-2 py-1 text-2xs border-neutral-800/60 text-neutral-600 hover:border-neutral-700 hover:text-neutral-300'
-      : 'px-3 py-1.5 text-xs border-neutral-800/60 text-neutral-500 hover:border-neutral-600 hover:text-neutral-200 hover:bg-white/[0.03]';
+      ? 'px-2 py-1 text-2xs border-border text-muted-foreground hover:border-border-hover hover:text-foreground'
+      : 'px-3 py-1.5 text-xs border-border text-muted-foreground hover:border-border-hover hover:text-foreground hover:bg-accent';
   return (
     <div className="flex flex-wrap justify-center gap-2">
-      {items.map((s) => (
-        <Tooltip key={s.label} content={s.description} position="bottom" delay={400}>
+      {items.map((key) => (
+        <Tooltip
+          key={key}
+          content={t(`playground.suggestions.${key}.description`)}
+          position="bottom"
+          delay={400}
+        >
           <button
-            onClick={() => onSelect(s.prompt)}
-            className={cn('rounded-full border transition-all duration-150', cls)}
+            onClick={() => onSelect(t(`playground.suggestions.${key}.prompt`))}
+            className={cn('rounded-full border transition-colors duration-150', cls)}
           >
-            {s.label}
+            {t(`playground.suggestions.${key}.label`)}
           </button>
         </Tooltip>
       ))}
@@ -316,57 +294,60 @@ const ChatMessages: React.FC<{
   chatEndRef: React.RefObject<HTMLDivElement | null>;
   onRetry?: (prompt: string) => void;
   className?: string;
-}> = ({ messages, isGenerating, statusMessage, chatEndRef, onRetry, className }) => (
-  <div className={className}>
-    {messages.map((msg, i) => (
-      <div
-        key={i}
-        className={cn(
-          'text-xs leading-relaxed',
-          msg.role === 'user' ? 'text-neutral-400' : 'text-neutral-300'
-        )}
-      >
-        <span className="font-mono text-neutral-700 mr-1.5 select-none">
-          {msg.role === 'user' ? '›' : '◆'}
-        </span>
-        {msg.role === 'assistant' ? (
-          <span className="prose-xs">
-            <MarkdownRenderer content={msg.content} />
-          </span>
-        ) : (
-          msg.content
-        )}
-      </div>
-    ))}
-    {!isGenerating &&
-      messages.length > 0 &&
-      messages[messages.length - 1]?.role === 'assistant' &&
-      messages[messages.length - 1]?.content?.includes('failed') &&
-      onRetry && (
-        <button
-          onClick={() => {
-            const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user');
-            if (lastUserMsg) onRetry(lastUserMsg.content);
-          }}
-          className="flex items-center gap-1.5 text-2xs text-neutral-500 hover:text-neutral-300 transition-colors mt-1"
+}> = ({ messages, isGenerating, statusMessage, chatEndRef, onRetry, className }) => {
+  const { t } = useTranslation();
+  return (
+    <div className={className}>
+      {messages.map((msg, i) => (
+        <div
+          key={i}
+          className={cn(
+            'text-xs leading-relaxed',
+            msg.role === 'user' ? 'text-muted-foreground' : 'text-foreground'
+          )}
         >
-          <RefreshCw size={10} />
-          Retry
-        </button>
-      )}
-    {isGenerating && <PremiumGlitchLoader steps={statusMessage ? [statusMessage] : undefined} />}
-    <div ref={chatEndRef} />
-  </div>
-);
+          <span className="font-mono text-muted-foreground mr-1.5 select-none">
+            {msg.role === 'user' ? '›' : '◆'}
+          </span>
+          {msg.role === 'assistant' ? (
+            <span className="prose-xs">
+              <MarkdownRenderer content={msg.content} />
+            </span>
+          ) : (
+            msg.content
+          )}
+        </div>
+      ))}
+      {!isGenerating &&
+        messages.length > 0 &&
+        messages[messages.length - 1]?.role === 'assistant' &&
+        messages[messages.length - 1]?.content?.includes('failed') &&
+        onRetry && (
+          <button
+            onClick={() => {
+              const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user');
+              if (lastUserMsg) onRetry(lastUserMsg.content);
+            }}
+            className="flex items-center gap-1.5 text-2xs text-muted-foreground hover:text-foreground transition-colors mt-1"
+          >
+            <RefreshCw size={10} />
+            {t('common.retry')}
+          </button>
+        )}
+      {isGenerating && <PremiumGlitchLoader steps={statusMessage ? [statusMessage] : undefined} />}
+      <div ref={chatEndRef} />
+    </div>
+  );
+};
 
 const GeneratingState: React.FC<{ message: string; elapsed?: number }> = ({ message, elapsed }) => (
   <div className="h-full flex items-center justify-center">
     <div className="text-center space-y-6">
       <PremiumGlitchLoader />
       <div className="space-y-1">
-        {message && <p className="text-2xs text-neutral-600 font-mono">{message}</p>}
+        {message && <p className="text-xs text-muted-foreground">{message}</p>}
         {elapsed != null && elapsed > 0 && (
-          <p className="text-2xs text-neutral-700 font-mono">{elapsed}s</p>
+          <p className="text-2xs text-muted-foreground font-mono tabular-nums">{elapsed}s</p>
         )}
       </div>
     </div>
@@ -383,22 +364,22 @@ const SidebarDisclosure: React.FC<{
 }> = ({ label, badge, defaultOpen = false, className, children }) => {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className={cn('border-b border-white/10', className)}>
+    <div className={cn('border-b border-border', className)}>
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-3 py-2 hover:bg-white/[0.03] transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2 hover:bg-accent transition-colors"
       >
-        <span className="text-2xs font-medium text-neutral-500">{label}</span>
+        <span className="text-2xs font-medium text-muted-foreground">{label}</span>
         <div className="flex items-center gap-1.5">
           {badge && (
-            <span className="text-2xs font-mono text-neutral-700 bg-neutral-800/50 px-1.5 py-0.5 rounded-full">
+            <span className="text-2xs font-mono text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded-full">
               {badge}
             </span>
           )}
           <ChevronDown
             size={12}
             className={cn(
-              'text-neutral-600 transition-transform duration-200',
+              'text-muted-foreground transition-transform duration-200',
               open && 'rotate-180'
             )}
           />
@@ -415,6 +396,7 @@ type ViewTab = 'preview' | 'spec' | 'code';
 // ─── Main Page ──────────────────────────────────────────────────────────
 export const PlaygroundPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { slug } = useParams();
   const isMobile = useIsMobile();
   const { user } = useLayout();
@@ -467,10 +449,10 @@ export const PlaygroundPage: React.FC = () => {
   });
 
   const greeting = useMemo(() => {
-    const base = getGreeting();
+    const base = t(getGreetingKey());
     const firstName = user?.name?.split(' ')[0];
     return firstName ? `${base}, ${firstName}` : base;
-  }, [user?.name]);
+  }, [user?.name, t]);
 
   // Image paste handler
   usePasteImage(
@@ -562,7 +544,7 @@ export const PlaygroundPage: React.FC = () => {
         setIsPublished(miniApp.isPublished);
       })
       .catch(() => {
-        toast.error('Could not load this miniapp.');
+        toast.error(t('playground.loadFailed'));
       });
   }, [slug]);
 
@@ -596,9 +578,10 @@ export const PlaygroundPage: React.FC = () => {
         {
           role: 'user',
           content: currentFiles.length
-            ? `${finalPrompt} [${currentFiles.length} file${
-                currentFiles.length > 1 ? 's' : ''
-              } attached]`
+            ? `${finalPrompt} [${t(
+                currentFiles.length > 1 ? 'playground.filesAttached' : 'playground.fileAttached',
+                { count: currentFiles.length }
+              )}]`
             : finalPrompt,
         },
       ]);
@@ -653,7 +636,7 @@ export const PlaygroundPage: React.FC = () => {
             ...prev,
             {
               role: 'assistant',
-              content: isIteration ? `Updated: ${title}` : `Created: ${title}`,
+              content: t(isIteration ? 'playground.updated' : 'playground.created', { title }),
             },
           ]);
 
@@ -684,11 +667,11 @@ export const PlaygroundPage: React.FC = () => {
             }
           } catch (saveErr: any) {
             console.error('[playground] auto-save failed:', saveErr);
-            toast.error('Failed to auto-save — use ⌘S to save manually');
+            toast.error(t('playground.autoSaveFailed'));
           }
         }
       } catch (err: any) {
-        const msg = err?.message || 'Something went wrong.';
+        const msg = err?.message || t('playground.genericError');
         setChatHistory((prev) => [...prev, { role: 'assistant', content: msg }]);
         toast.error(msg);
       } finally {
@@ -726,9 +709,9 @@ export const PlaygroundPage: React.FC = () => {
         await deleteMiniApp(id);
         refetchMiniApps();
         if (miniAppId === id) handleReset();
-        toast.success('Deleted');
+        toast.success(t('playground.deleted'));
       } catch {
-        toast.error('Failed to delete');
+        toast.error(t('playground.deleteFailed'));
       }
     },
     [miniAppId, refetchMiniApps, handleReset]
@@ -768,9 +751,9 @@ export const PlaygroundPage: React.FC = () => {
       });
       setMiniAppId(result.miniApp.id);
       refetchMiniApps();
-      toast.success(thumbnail ? 'Saved with thumbnail!' : 'Saved!');
+      toast.success(t('playground.saved'));
     } catch {
-      toast.error('Failed to save');
+      toast.error(t('playground.saveFailed'));
     }
   }, [spec, meta, activeTab, refetchMiniApps]);
 
@@ -779,9 +762,9 @@ export const PlaygroundPage: React.FC = () => {
     try {
       await publishMiniApp(miniAppId);
       setIsPublished(true);
-      toast.success('Published to community!');
+      toast.success(t('playground.published'));
     } catch {
-      toast.error('Failed to publish');
+      toast.error(t('playground.publishFailed'));
     }
   }, [miniAppId]);
 
@@ -791,10 +774,10 @@ export const PlaygroundPage: React.FC = () => {
       const { shareUrl } = await shareMiniApp(miniAppId);
       await navigator.clipboard.writeText(shareUrl);
       setCopiedShare(true);
-      toast.success('Share link copied!');
+      toast.success(t('playground.shareCopied'));
       setTimeout(() => setCopiedShare(false), 2000);
     } catch {
-      toast.error('Failed to generate share link');
+      toast.error(t('playground.shareFailed'));
     }
   }, [miniAppId]);
 
@@ -849,17 +832,18 @@ export const PlaygroundPage: React.FC = () => {
       {attachedFiles.map((file, i) => (
         <div
           key={`${file.name}-${i}`}
-          className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-2xs text-neutral-400 group/chip"
+          className="flex items-center gap-1.5 px-2 py-1 rounded-xl bg-muted border border-border text-2xs text-muted-foreground group/chip"
         >
           {file.type.startsWith('image/') ? (
-            <ImageIcon size={12} className="text-neutral-400" />
+            <ImageIcon size={12} className="text-muted-foreground" />
           ) : (
-            <FileText size={12} className="text-neutral-500" />
+            <FileText size={12} className="text-muted-foreground" />
           )}
           <span className="truncate max-w-[100px]">{file.name}</span>
           <button
             onClick={() => removeAttachedFile(i)}
-            className="opacity-0 group-hover/chip:opacity-100 transition-opacity text-neutral-500 hover:text-destructive"
+            aria-label={t('playground.removeFile')}
+            className="opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/chip:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
           >
             <X size={10} />
           </button>
@@ -884,7 +868,7 @@ export const PlaygroundPage: React.FC = () => {
         onChange={setPrompt}
         onSend={() => handleGenerate()}
         isLoading={isGenerating}
-        placeholder={spec ? 'Describe a change...' : 'Describe your mini-app...'}
+        placeholder={spec ? t('playground.describeChange') : t('playground.describeApp')}
         selectedModel={selectedModel}
         onModelChange={(m) => setSelectedModel(m)}
         showModelSelector
@@ -911,23 +895,23 @@ export const PlaygroundPage: React.FC = () => {
 
   // ─── Sidebar Content ──────────────────────────────────────────────────
   const sidebarContent = (
-    <div className="h-full flex flex-col bg-neutral-950/80">
+    <div className="h-full flex flex-col bg-background/80">
       {/* New + Brand selector row */}
       <div className="shrink-0 p-3 space-y-2">
         <Tooltip
           content={
             <span>
-              New miniapp <kbd className="ml-1 text-2xs opacity-60">⌘N</kbd>
+              {t('playground.newApp')} <kbd className="ml-1 text-2xs opacity-60">⌘N</kbd>
             </span>
           }
           position="right"
         >
           <button
             onClick={handleNewSession}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-neutral-300 hover:bg-white/5 hover:text-neutral-100 transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-foreground hover:bg-accent hover:text-foreground transition-colors"
           >
             <Plus size={14} className="opacity-50" />
-            <span>New miniapp</span>
+            <span>{t('playground.newApp')}</span>
           </button>
         </Tooltip>
 
@@ -941,15 +925,16 @@ export const PlaygroundPage: React.FC = () => {
             }))}
             value={selectedBrandId}
             onChange={setSelectedBrandId}
-            placeholder="Brand context"
+            placeholder={t('playground.brandContext')}
             className="text-xs"
             variant="node"
           />
           {selectedBrandId && (
             <button
               onClick={() => setSelectedBrandId('')}
-              className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded opacity-0 group-hover/brand:opacity-100 transition-opacity bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 z-10"
-              title="Disconnect brand"
+              className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/brand:opacity-100 focus-visible:opacity-100 transition-opacity bg-muted hover:bg-accent text-muted-foreground hover:text-foreground z-10"
+              title={t('playground.disconnectBrand')}
+              aria-label={t('playground.disconnectBrand')}
             >
               <X size={12} />
             </button>
@@ -961,7 +946,7 @@ export const PlaygroundPage: React.FC = () => {
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
         {/* ─ RECENT ─ collapsible */}
         <SidebarDisclosure
-          label="Recent"
+          label={t('common.recent')}
           badge={myMiniApps.length > 0 ? String(myMiniApps.length) : undefined}
           defaultOpen
         >
@@ -970,7 +955,7 @@ export const PlaygroundPage: React.FC = () => {
               <SidebarSkeleton />
             ) : myMiniApps.length === 0 ? (
               <div className="px-3 py-3 text-center">
-                <p className="text-2xs text-neutral-600">No miniapps yet</p>
+                <p className="text-2xs text-muted-foreground">{t('playground.noApps')}</p>
               </div>
             ) : (
               <div className="space-y-px">
@@ -982,10 +967,10 @@ export const PlaygroundPage: React.FC = () => {
                     tabIndex={0}
                     onKeyDown={(e) => e.key === 'Enter' && handleLoadMiniApp(app)}
                     className={cn(
-                      'w-full text-left px-3 py-2 rounded-lg text-sm transition-colors group cursor-pointer',
+                      'w-full text-left px-3 py-2 rounded-xl text-sm transition-colors group cursor-pointer',
                       miniAppId === app.id
-                        ? 'bg-white/8 text-neutral-100'
-                        : 'text-neutral-400 hover:bg-white/[0.03] hover:text-neutral-200'
+                        ? 'bg-muted text-foreground'
+                        : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                     )}
                   >
                     <div className="flex items-center gap-2 overflow-hidden">
@@ -994,14 +979,17 @@ export const PlaygroundPage: React.FC = () => {
                       </span>
                       <button
                         onClick={(e) => handleDeleteMiniApp(app.id, e)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded shrink-0"
-                        aria-label="Delete"
+                        className={cn(hoverReveal, 'p-0.5 rounded shrink-0')}
+                        aria-label={t('common.delete')}
                       >
-                        <Trash2 size={11} className="text-neutral-600 hover:text-destructive" />
+                        <Trash2
+                          size={11}
+                          className="text-muted-foreground hover:text-destructive"
+                        />
                       </button>
                     </div>
                     {app.updatedAt && (
-                      <span className="text-2xs text-neutral-600 mt-0.5 block">
+                      <span className="text-2xs text-muted-foreground mt-0.5 block">
                         {relativeTime(app.updatedAt)}
                       </span>
                     )}
@@ -1015,7 +1003,7 @@ export const PlaygroundPage: React.FC = () => {
         {/* ─ CHAT ─ collapsible, takes remaining space */}
         {spec && (
           <SidebarDisclosure
-            label="Chat"
+            label={t('playground.chat')}
             badge={chatHistory.length > 0 ? String(chatHistory.length) : undefined}
             defaultOpen
             className="flex-1 min-h-0 flex flex-col"
@@ -1035,7 +1023,7 @@ export const PlaygroundPage: React.FC = () => {
       </div>
 
       {/* Input always at bottom */}
-      <div className="shrink-0 border-t border-white/10 p-2 pb-3">{inputBar}</div>
+      <div className="shrink-0 border-t border-border p-2 pb-3">{inputBar}</div>
     </div>
   );
 
@@ -1052,7 +1040,7 @@ export const PlaygroundPage: React.FC = () => {
   ) : sidebarOpen ? (
     <>
       <aside
-        className="shrink-0 border-r border-white/10 overflow-hidden"
+        className="shrink-0 border-r border-border overflow-hidden"
         style={{ width: sidebarWidth }}
       >
         {sidebarContent}
@@ -1061,11 +1049,11 @@ export const PlaygroundPage: React.FC = () => {
         {...resizeHandleProps}
         role="separator"
         aria-orientation="vertical"
-        aria-label="Resize sidebar"
+        aria-label={t('playground.resizeSidebar')}
         style={{ touchAction: 'none' }}
-        className="group shrink-0 w-1.5 cursor-col-resize flex items-center justify-center hover:bg-neutral-800/30 transition-colors"
+        className="group shrink-0 w-1.5 cursor-col-resize flex items-center justify-center hover:bg-accent transition-colors"
       >
-        <GripVertical className="w-3 h-3 text-neutral-800 group-hover:text-neutral-600 transition-colors" />
+        <GripVertical className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-colors" />
       </div>
     </>
   ) : null;
@@ -1075,12 +1063,12 @@ export const PlaygroundPage: React.FC = () => {
   // =====================================================================
   if (isFullscreen && spec) {
     return (
-      <div className="fixed inset-0 z-50 bg-neutral-950">
+      <div className="fixed inset-0 z-50 bg-background">
         <div className="absolute top-3 right-3 z-10">
           <Tooltip
             content={
               <span>
-                Exit fullscreen <kbd className="ml-1 text-2xs opacity-60">Esc</kbd>
+                {t('playground.exitFullscreen')} <kbd className="ml-1 text-2xs opacity-60">Esc</kbd>
               </span>
             }
             position="bottom"
@@ -1089,10 +1077,10 @@ export const PlaygroundPage: React.FC = () => {
               variant="surface"
               size="xs"
               onClick={() => setIsFullscreen(false)}
-              className="gap-1.5 text-neutral-400 hover:text-neutral-200"
+              className="gap-1.5 text-muted-foreground hover:text-foreground"
             >
               <Minimize2 className="w-3 h-3" />
-              <span className="text-2xs">Exit</span>
+              <span className="text-2xs">{t('playground.exit')}</span>
             </Button>
           </Tooltip>
         </div>
@@ -1106,10 +1094,11 @@ export const PlaygroundPage: React.FC = () => {
   // =====================================================================
   if (!expertMode) {
     const topBar = (
-      <div className="shrink-0 flex items-center h-12 px-4 border-b border-white/10">
+      <div className="shrink-0 flex items-center h-12 px-4 border-b border-border">
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-1.5 -ml-1.5 rounded-md text-neutral-500 hover:text-neutral-300 transition-colors"
+          aria-label={sidebarOpen ? t('common.hidePanel') : t('common.showPanel')}
+          className="p-1.5 -ml-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors"
         >
           {sidebarOpen ? (
             <PanelLeftClose className="w-4 h-4" />
@@ -1117,26 +1106,26 @@ export const PlaygroundPage: React.FC = () => {
             <PanelLeftOpen className="w-4 h-4" />
           )}
         </button>
-        {appTitle && <span className="ml-3 text-sm text-neutral-300 truncate">{appTitle}</span>}
+        {appTitle && <span className="ml-3 text-sm text-foreground truncate">{appTitle}</span>}
         <div className="flex-1" />
         {spec && (
           <div className="flex items-center gap-1">
-            <Tooltip content="Reset" position="bottom">
+            <Tooltip content={t('common.reset')} position="bottom">
               <Button
                 variant="ghost"
                 size="xs"
                 onClick={handleReset}
-                className="text-neutral-500 hover:text-neutral-300"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <RotateCcw className="w-3 h-3" />
               </Button>
             </Tooltip>
-            <Tooltip content="Export JSON" position="bottom">
+            <Tooltip content={t('playground.exportJson')} position="bottom">
               <Button
                 variant="ghost"
                 size="xs"
                 onClick={() => downloadSpec(spec, appTitle || 'miniapp')}
-                className="text-neutral-500 hover:text-neutral-300"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <Download className="w-3 h-3" />
               </Button>
@@ -1144,7 +1133,7 @@ export const PlaygroundPage: React.FC = () => {
             <Tooltip
               content={
                 <span>
-                  Save <kbd className="ml-1 text-2xs opacity-60">⌘S</kbd>
+                  {t('common.save')} <kbd className="ml-1 text-2xs opacity-60">⌘S</kbd>
                 </span>
               }
               position="bottom"
@@ -1153,19 +1142,22 @@ export const PlaygroundPage: React.FC = () => {
                 variant="ghost"
                 size="xs"
                 onClick={handleSave}
-                className="text-neutral-500 hover:text-neutral-300"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <Save className="w-3 h-3" />
               </Button>
             </Tooltip>
             {miniAppId && (
               <>
-                <Tooltip content={copiedShare ? 'Copied!' : 'Copy share link'} position="bottom">
+                <Tooltip
+                  content={copiedShare ? t('playground.copied') : t('playground.copyShareLink')}
+                  position="bottom"
+                >
                   <Button
                     variant="ghost"
                     size="xs"
                     onClick={handleShare}
-                    className="text-neutral-500 hover:text-neutral-300"
+                    className="text-muted-foreground hover:text-foreground"
                   >
                     {copiedShare ? (
                       <Check className="w-3 h-3 text-success" />
@@ -1175,26 +1167,28 @@ export const PlaygroundPage: React.FC = () => {
                   </Button>
                 </Tooltip>
                 {!isPublished && (
-                  <Tooltip content="Publish to community" position="bottom">
+                  <Tooltip content={t('playground.publish')} position="bottom">
                     <Button
                       variant="ghost"
                       size="xs"
                       onClick={handlePublish}
-                      className="text-neutral-500 hover:text-brand-cyan"
+                      className="text-muted-foreground hover:text-foreground"
                     >
                       <Globe className="w-3 h-3" />
                     </Button>
                   </Tooltip>
                 )}
                 {isPublished && (
-                  <span className="text-2xs font-mono text-success/60 px-1">Published</span>
+                  <span className="text-2xs text-success/60 px-1">
+                    {t('playground.publishedBadge')}
+                  </span>
                 )}
               </>
             )}
             <Tooltip
               content={
                 <span>
-                  Fullscreen <kbd className="ml-1 text-2xs opacity-60">F</kbd>
+                  {t('playground.fullscreen')} <kbd className="ml-1 text-2xs opacity-60">F</kbd>
                 </span>
               }
               position="bottom"
@@ -1203,13 +1197,13 @@ export const PlaygroundPage: React.FC = () => {
                 variant="ghost"
                 size="xs"
                 onClick={() => setIsFullscreen(true)}
-                className="text-neutral-500 hover:text-neutral-300"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <Maximize2 className="w-3 h-3" />
               </Button>
             </Tooltip>
-            <div className="w-px h-4 bg-neutral-800 mx-1" />
-            <Tooltip content="Expert mode" position="bottom">
+            <div className="w-px h-4 bg-border mx-1" />
+            <Tooltip content={t('playground.expertMode')} position="bottom">
               <Button
                 variant="ghost"
                 size="xs"
@@ -1217,7 +1211,7 @@ export const PlaygroundPage: React.FC = () => {
                   setExpertMode(true);
                   setActiveTab('preview');
                 }}
-                className="text-neutral-500 hover:text-neutral-300"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <Settings className="w-3 h-3" />
               </Button>
@@ -1241,19 +1235,20 @@ export const PlaygroundPage: React.FC = () => {
             >
               <div className="max-w-lg w-full space-y-8">
                 <div className="text-center space-y-2">
-                  <h1 className="text-2xl font-semibold text-neutral-100 tracking-tight">
+                  <h1 className="text-2xl font-semibold text-foreground tracking-tight">
                     {greeting}
                   </h1>
-                  <p className="text-sm text-neutral-500">What would you like to build?</p>
+                  <p className="text-sm text-muted-foreground">{t('playground.emptyPrompt')}</p>
                 </div>
                 <GlassPanel className="p-3">{inputBar}</GlassPanel>
                 <SuggestionPills suggestions={SUGGESTIONS} onSelect={handleGenerate} />
                 <div className="text-center">
                   <button
                     onClick={() => navigate('/playground/explore')}
-                    className="text-xs text-neutral-600 hover:text-neutral-400 transition-colors"
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    explore community miniapps →
+                    {t('playground.exploreCommunity')}
+                    <ArrowRight size={12} />
                   </button>
                 </div>
               </div>
@@ -1285,15 +1280,15 @@ export const PlaygroundPage: React.FC = () => {
 
         {spec && !sidebarOpen && (
           <div className="absolute bottom-4 left-4 z-10">
-            <Tooltip content="Open chat panel" position="right">
+            <Tooltip content={t('playground.openChat')} position="right">
               <Button
                 variant="surface"
                 size="sm"
                 onClick={() => setSidebarOpen(true)}
-                className="gap-2 text-neutral-400 hover:text-neutral-200"
+                className="gap-2 text-muted-foreground hover:text-foreground"
               >
                 <MessageSquare size={14} />
-                <span className="text-xs">Chat</span>
+                <span className="text-xs">{t('playground.chat')}</span>
               </Button>
             </Tooltip>
           </div>
@@ -1304,7 +1299,7 @@ export const PlaygroundPage: React.FC = () => {
     return (
       <div
         className={cn(
-          'w-full flex overflow-hidden bg-neutral-950 relative',
+          'w-full flex overflow-hidden bg-background relative',
           inShell ? 'h-full' : 'h-[100dvh] pt-10 md:pt-14'
         )}
         onDragOver={handleDragOver}
@@ -1314,7 +1309,7 @@ export const PlaygroundPage: React.FC = () => {
         {resizableSidebar}
         {isMobile && sidebarOpen && (
           <div
-            className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-30 bg-background/80 backdrop-blur-sm"
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -1323,15 +1318,7 @@ export const PlaygroundPage: React.FC = () => {
           {mainContent}
         </div>
 
-        {/* Drag-drop overlay */}
-        {isDraggingOver && (
-          <div className="absolute inset-0 z-50 bg-brand-cyan/5 border-2 border-dashed border-brand-cyan/30 flex items-center justify-center pointer-events-none">
-            <div className="text-center space-y-2">
-              <ImageIcon className="w-8 h-8 text-brand-cyan/50 mx-auto" />
-              <p className="text-sm text-brand-cyan/60 font-mono">Drop images here</p>
-            </div>
-          </div>
-        )}
+        <DropOverlay visible={isDraggingOver} message={t('playground.dropImages')} />
       </div>
     );
   }
@@ -1341,10 +1328,11 @@ export const PlaygroundPage: React.FC = () => {
   // =====================================================================
   // Expert mode top bar
   const expertTopBar = (
-    <div className="shrink-0 flex items-center h-10 px-3 border-b border-white/10 gap-2">
+    <div className="shrink-0 flex items-center h-10 px-3 border-b border-border gap-2">
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="p-1 rounded-md text-neutral-500 hover:text-neutral-300 transition-colors"
+        aria-label={sidebarOpen ? t('common.hidePanel') : t('common.showPanel')}
+        className="p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors"
       >
         {sidebarOpen ? (
           <PanelLeftClose className="w-3.5 h-3.5" />
@@ -1352,24 +1340,34 @@ export const PlaygroundPage: React.FC = () => {
           <PanelLeftOpen className="w-3.5 h-3.5" />
         )}
       </button>
-      {appTitle && <span className="text-xs text-neutral-400 truncate">{appTitle}</span>}
+      {appTitle && <span className="text-xs text-muted-foreground truncate">{appTitle}</span>}
       <div className="flex-1" />
       <div className="flex items-center gap-1">
         {spec && (
           <>
-            <Button variant="ghost" size="xs" onClick={handleReset} className="text-neutral-500">
-              <RotateCcw className="w-3 h-3 mr-1" /> Reset
+            <Button
+              variant="ghost"
+              size="xs"
+              onClick={handleReset}
+              className="text-muted-foreground"
+            >
+              <RotateCcw className="w-3 h-3 mr-1" /> {t('common.reset')}
             </Button>
             <Button
               variant="ghost"
               size="xs"
               onClick={() => downloadSpec(spec, appTitle || 'miniapp')}
-              className="text-neutral-500"
+              className="text-muted-foreground"
             >
-              <Download className="w-3 h-3 mr-1" /> Export
+              <Download className="w-3 h-3 mr-1" /> {t('common.export')}
             </Button>
-            <Button variant="ghost" size="xs" onClick={handleSave} className="text-neutral-500">
-              <Save className="w-3 h-3 mr-1" /> Save
+            <Button
+              variant="ghost"
+              size="xs"
+              onClick={handleSave}
+              className="text-muted-foreground"
+            >
+              <Save className="w-3 h-3 mr-1" /> {t('common.save')}
             </Button>
             {miniAppId && (
               <>
@@ -1377,37 +1375,37 @@ export const PlaygroundPage: React.FC = () => {
                   variant="ghost"
                   size="xs"
                   onClick={handleShare}
-                  className="text-neutral-500"
+                  className="text-muted-foreground"
                 >
                   {copiedShare ? (
                     <Check className="w-3 h-3 mr-1 text-success" />
                   ) : (
                     <Link2 className="w-3 h-3 mr-1" />
                   )}
-                  Share
+                  {t('playground.share')}
                 </Button>
                 {!isPublished && (
                   <Button
                     variant="ghost"
                     size="xs"
                     onClick={handlePublish}
-                    className="text-neutral-500 hover:text-brand-cyan"
+                    className="text-muted-foreground hover:text-foreground"
                   >
-                    <Globe className="w-3 h-3 mr-1" /> Publish
+                    <Globe className="w-3 h-3 mr-1" /> {t('playground.publishShort')}
                   </Button>
                 )}
               </>
             )}
-            <div className="w-px h-4 bg-neutral-800 mx-1" />
+            <div className="w-px h-4 bg-border mx-1" />
           </>
         )}
         <Button
           variant="ghost"
           size="xs"
           onClick={() => setExpertMode(false)}
-          className="text-neutral-500 hover:text-brand-cyan"
+          className="text-muted-foreground hover:text-foreground"
         >
-          <Eye className="w-3 h-3 mr-1" /> Simple
+          <Eye className="w-3 h-3 mr-1" /> {t('playground.simpleMode')}
         </Button>
       </div>
     </div>
@@ -1417,7 +1415,7 @@ export const PlaygroundPage: React.FC = () => {
   const expertPreview = (
     <div className="flex-1 min-h-0 flex flex-col">
       {spec && (
-        <div className="shrink-0 flex items-center border-b border-white/10 px-2 h-9">
+        <div className="shrink-0 flex items-center border-b border-border px-2 h-9">
           {(['preview', 'spec', 'code'] as ViewTab[]).map((tab) => (
             <button
               key={tab}
@@ -1425,19 +1423,19 @@ export const PlaygroundPage: React.FC = () => {
               className={cn(
                 'px-3 py-1.5 text-2xs font-medium transition-colors border-b -mb-px',
                 activeTab === tab
-                  ? 'text-neutral-200 border-brand-cyan'
-                  : 'text-neutral-600 border-transparent hover:text-neutral-400'
+                  ? 'text-foreground border-brand-cyan'
+                  : 'text-muted-foreground border-transparent hover:text-foreground'
               )}
             >
               {tab === 'preview' && <Eye className="w-3 h-3 inline mr-1" />}
               {tab === 'spec' && <Code2 className="w-3 h-3 inline mr-1" />}
               {tab === 'code' && <FileCode className="w-3 h-3 inline mr-1" />}
-              {tab}
+              {t(`playground.tabs.${tab}`)}
             </button>
           ))}
           <div className="flex-1" />
-          <span className="text-2xs font-mono text-neutral-700">
-            {Object.keys(spec.elements || {}).length} elements
+          <span className="text-2xs text-muted-foreground tabular-nums">
+            {t('playground.elementCount', { count: Object.keys(spec.elements || {}).length })}
           </span>
         </div>
       )}
@@ -1452,7 +1450,7 @@ export const PlaygroundPage: React.FC = () => {
               transition={FADE_TRANSITION}
               className="h-full flex items-center justify-center"
             >
-              <p className="text-xs text-neutral-600">Your miniapp preview will appear here</p>
+              <p className="text-xs text-muted-foreground">{t('playground.previewEmpty')}</p>
             </motion.div>
           ) : isGenerating && !spec ? (
             <motion.div
@@ -1498,7 +1496,7 @@ export const PlaygroundPage: React.FC = () => {
 
   return (
     <div
-      className="h-[100dvh] w-full flex overflow-hidden bg-neutral-950 pt-10 md:pt-14 relative"
+      className="h-[100dvh] w-full flex overflow-hidden bg-background pt-10 md:pt-14 relative"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -1506,7 +1504,7 @@ export const PlaygroundPage: React.FC = () => {
       {resizableSidebar}
       {isMobile && sidebarOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-30 bg-background/80 backdrop-blur-sm"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -1515,14 +1513,7 @@ export const PlaygroundPage: React.FC = () => {
         {expertPreview}
       </div>
 
-      {isDraggingOver && (
-        <div className="absolute inset-0 z-50 bg-brand-cyan/5 border-2 border-dashed border-brand-cyan/30 flex items-center justify-center pointer-events-none">
-          <div className="text-center space-y-2">
-            <ImageIcon className="w-8 h-8 text-brand-cyan/50 mx-auto" />
-            <p className="text-sm text-brand-cyan/60 font-mono">Drop images here</p>
-          </div>
-        </div>
-      )}
+      <DropOverlay visible={isDraggingOver} message={t('playground.dropImages')} />
     </div>
   );
 };

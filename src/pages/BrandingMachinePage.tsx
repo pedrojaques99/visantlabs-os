@@ -11,6 +11,7 @@ import { brandingApi } from '../services/brandingApi';
 import { subscriptionService } from '../services/subscriptionService';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from '@/components/ui/button';
 import { useLayout } from '@/hooks/useLayout';
 import { useTheme } from '@/hooks/useTheme';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
@@ -129,7 +130,7 @@ export const BrandingMachinePage: React.FC = () => {
     setPrompt(`Nome da marca: ${s.name}\n\n${s.brief || ''}`.trim());
     // Limpa o state para não re-aplicar em navegações futuras
     navigate('/branding-machine', { replace: true, state: null });
-    toast.success(`"${s.name}" carregado — briefing do naming aplicado ao prompt.`);
+    toast.success(t('branding.machine.namingHandoffLoaded', { name: s.name }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -179,12 +180,10 @@ export const BrandingMachinePage: React.FC = () => {
       setBrandingData(migratedData);
       setUseVisantV2(isVisantV2(migratedData));
       setCurrentStep(10);
-      toast.success(t('branding.projectLoaded') || 'Project loaded successfully');
+      toast.success(t('branding.projectLoaded'));
     } catch (error: any) {
       console.error('Error loading project:', error);
-      toast.error(
-        error.message || t('branding.errors.failedToLoadProject') || 'Failed to load project'
-      );
+      toast.error(error.message || t('branding.errors.failedToLoadProject'));
       // Clear projectId from URL if loading failed
       navigate('/branding-machine', { replace: true });
       loadedProjectIdRef.current = null;
@@ -544,10 +543,8 @@ export const BrandingMachinePage: React.FC = () => {
           if (trackError.message === 'SUBSCRIPTION_REQUIRED' && !silent) {
             // Defer error handling to next event loop to avoid React hooks violations
             setTimeout(() => {
-              toast.error(t('branding.errors.insufficientCredits') || 'Insufficient credits', {
-                description:
-                  t('branding.errors.trackingFailedButContentGenerated') ||
-                  "Your content was generated successfully, but we couldn't update your credits. Please check your account.",
+              toast.error(t('branding.errors.insufficientCredits'), {
+                description: t('branding.errors.trackingFailedButContentGenerated'),
                 duration: 6000,
               });
               onCreditPackagesModalOpen();
@@ -555,13 +552,9 @@ export const BrandingMachinePage: React.FC = () => {
           } else if (!silent) {
             // Show friendly message for other tracking errors
             setTimeout(() => {
-              toast.info(
-                t('branding.errors.trackingFailedButContentGenerated') ||
-                  'Your content was generated successfully! There was a minor issue updating your credits, but your work is safe.',
-                {
-                  duration: 5000,
-                }
-              );
+              toast.info(t('branding.errors.trackingFailedButContentGenerated'), {
+                duration: 5000,
+              });
             }, 0);
           }
         }
@@ -889,25 +882,23 @@ export const BrandingMachinePage: React.FC = () => {
     // Honest result: report how many of the requested steps actually generated,
     // and never fold "still running elsewhere" into the success number.
     const total = stepsToGenerate.length;
-    // TODO(i18n): replace the literals below once these keys land in src/locales:
-    //   branding.generateAllPartial   ({succeeded}, {total}, {failed})
-    //   branding.generateAllNone      ({failed})
-    //   branding.generateAllSkipped   ({skipped})  — appended when skipped > 0
     const skippedNote =
-      skippedCount > 0 ? ` ${skippedCount} were already running and weren't counted.` : '';
+      skippedCount > 0 ? ` ${t('branding.generateAllSkipped', { skipped: skippedCount })}` : '';
     if (failedCount === 0 && skippedCount === 0) {
       toast.success(t('branding.allSectionsGeneratedSuccess'));
     } else if (succeededCount > 0) {
       toast.warning(
-        `Generated ${succeededCount} of ${total} sections — ${failedCount} failed.${skippedNote} Retry the highlighted ones.`
+        t('branding.partialGenerationWarning', {
+          succeeded: succeededCount,
+          total,
+          failed: failedCount,
+        }) + skippedNote
       );
     } else if (failedCount > 0) {
-      toast.error(
-        `Couldn't generate any sections (${failedCount} failed).${skippedNote} Please try again.`
-      );
+      toast.error(t('branding.allSectionsFailed', { failed: failedCount }) + skippedNote);
     } else {
       // Nothing succeeded, nothing failed: every requested step was already running.
-      toast.info(`All ${total} sections were already being generated. Nothing new was started.`);
+      toast.info(t('branding.generateAllAllSkipped', { total }));
     }
   };
 
@@ -1025,7 +1016,7 @@ export const BrandingMachinePage: React.FC = () => {
   }
 
   return (
-    <CanvasErrorBoundary fallbackMessage="Branding Machine crashed">
+    <CanvasErrorBoundary>
       <SEO
         title={t('branding.machine.branding_machine_com_ia')}
         description={t('branding.machine.crie_estratgias_completas_de_bran')}
@@ -1080,15 +1071,18 @@ export const BrandingMachinePage: React.FC = () => {
 
       {/* Floating Expert Chat Button */}
       {currentStep !== 0 && (
-        <button
+        <Button
+          variant="surface"
+          size="icon"
           onClick={() =>
             navigate(`/branding-expert${currentProjectId ? `?projectId=${currentProjectId}` : ''}`)
           }
-          className="fixed bottom-20 right-6 z-40 w-12 h-12 bg-brand-gradient text-white rounded-full shadow-lg hover:shadow-brand-cyan/20 transition-all hover:scale-110 active:scale-95 flex items-center justify-center group"
+          className="fixed bottom-20 right-6 z-40 rounded-full"
           title={t('branding.machine.falar_com_especialista')}
+          aria-label={t('branding.machine.falar_com_especialista')}
         >
-          <Diamond size={20} className="group-hover:rotate-12 transition-transform" />
-        </button>
+          <Diamond size={20} />
+        </Button>
       )}
     </CanvasErrorBoundary>
   );

@@ -34,26 +34,24 @@ export const BrandAvatar: React.FC<BrandAvatarProps> = ({
   const url = getBrandLogoUrl(brand, preference);
   const initial = getBrandInitial(brand);
   const roundedClass =
-    rounded === 'full' ? 'rounded-full' : rounded === 'sm' ? 'rounded-sm' : 'rounded-md';
+    rounded === 'full' ? 'rounded-full' : rounded === 'sm' ? 'rounded-md' : 'rounded-md';
 
   const base = cn(
     'shrink-0 flex items-center justify-center overflow-hidden',
-    'bg-neutral-800 text-neutral-300 border border-neutral-800',
+    'bg-muted text-muted-foreground border border-border',
     roundedClass,
     className
   );
 
   if (url && !errored) {
-    // Fundo escolhido pela marca. `bg-white/5` era um quase-preto pra todo
-    // mundo, e logo escuro sumia dentro dele: no grid, marca com wordmark preto
-    // virava um quadradinho vazio, indistinguível de asset quebrado.
-    // Sem base pra decidir, `smartBg` devolve null e o neutro de sempre fica.
+    // Fundo escolhido pela marca, pra logo escuro não sumir num fundo escuro.
+    // Sem base pra decidir, `smartBg` devolve null e fica o bg-muted da base.
     const smartBg = brandAvatarBg({ logos: brand?.logos, colors: brand?.colors, shownUrl: url });
     return (
       <img
         src={getProxiedUrl(url)}
         alt={brand?.identity?.name || ''}
-        className={cn(base, 'object-contain p-0.5', !smartBg && 'bg-white/5')}
+        className={cn(base, 'object-contain p-0.5')}
         style={{ width: size, height: size, backgroundColor: smartBg ?? undefined }}
         onError={() => setErrored(true)}
       />

@@ -15,6 +15,7 @@ import {
   Bot,
   Coins,
   Zap,
+  ArrowRight,
 } from '@/lib/ui/icons';
 import { SEO } from '../components/SEO';
 import { BreadcrumbWithBack } from '../components/ui/BreadcrumbWithBack';
@@ -270,7 +271,7 @@ export const DocsPage: React.FC = () => {
     let className = 'bg-muted text-muted-foreground';
     if (method === 'GET') className = 'bg-success/10 text-success border-success/20';
     if (method === 'POST') className = 'bg-warning/10 text-warning border-warning/20';
-    if (method === 'PUT') className = 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+    if (method === 'PUT') className = 'bg-chart-1/10 text-foreground border-chart-1/20';
     if (method === 'DELETE') className = 'bg-destructive/10 text-destructive border-destructive/20';
 
     return (
@@ -350,7 +351,7 @@ export const DocsPage: React.FC = () => {
   return (
     <>
       <SEO
-        title="Documentation - Visant Copilot"
+        title="Visant Copilot Documentation"
         description="API and Plugin documentation for Visant Copilot"
         keywords="documentation, API, MCP, Figma plugin, developers"
       />
@@ -415,7 +416,7 @@ export const DocsPage: React.FC = () => {
                     <Button
                       variant="brand"
                       onClick={handleCopyMarkdown}
-                      title="Copy this section as clean Markdown — ideal for pasting into LLM contexts"
+                      title="Copy this section as clean Markdown, ideal for pasting into LLM contexts"
                       className={cn(
                         'flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-redhatmono transition-colors duration-200 shrink-0',
                         copied
@@ -451,14 +452,12 @@ export const DocsPage: React.FC = () => {
                 )}
 
                 {/* Agent-first hint bar */}
-                <div className="mb-6 flex items-start gap-3 bg-brand-cyan/5 border border-brand-cyan/20 rounded-md px-4 py-3">
+                <div className="mb-6 flex items-start gap-3 bg-secondary/40 border border-border rounded-md px-4 py-3">
                   <FileText className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    <span className="text-foreground font-medium">LLM / Agent tip —</span> use the{' '}
-                    <span className="font-medium text-foreground">Copy as Markdown</span> button
-                    above to get the current section as clean, structured markdown. Paste it
-                    directly into your agent's context window or system prompt for accurate API
-                    usage.
+                    <span className="text-foreground font-medium">For agents:</span>{' '}
+                    <span className="font-medium text-foreground">Copy as Markdown</span> exports
+                    this section as clean markdown, ready for a context window or system prompt.
                   </p>
                 </div>
 
@@ -466,14 +465,14 @@ export const DocsPage: React.FC = () => {
                   <TabsContent value="overview" className="space-y-6 bg-transparent mt-0">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <Link to="/docs/getting-started" className="block">
-                        <Card className="h-full cursor-pointer hover:border-border-hover transition-all hover:-translate-y-1">
+                        <Card className="h-full cursor-pointer hover:border-border-hover transition-colors">
                           <CardHeader>
                             <Zap className="w-8 h-8 text-foreground mb-2" />
                             <CardTitle>Getting Started</CardTitle>
                           </CardHeader>
                           <CardContent>
                             <p className="text-muted-foreground text-sm">
-                              Step-by-step quickstart — authenticate and make your first API and MCP
+                              Step-by-step quickstart: authenticate and make your first API and MCP
                               calls with copy-paste code.
                             </p>
                           </CardContent>
@@ -481,7 +480,7 @@ export const DocsPage: React.FC = () => {
                       </Link>
 
                       <Card
-                        className="cursor-pointer hover:border-border-hover transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-border-hover transition-colors"
                         onClick={() => setActiveTab('api')}
                       >
                         <CardHeader>
@@ -496,7 +495,7 @@ export const DocsPage: React.FC = () => {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-border-hover transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-border-hover transition-colors"
                         onClick={() => setActiveTab('mcp')}
                       >
                         <CardHeader>
@@ -511,7 +510,7 @@ export const DocsPage: React.FC = () => {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-border-hover transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-border-hover transition-colors"
                         onClick={() => setActiveTab('plugin')}
                       >
                         <CardHeader>
@@ -526,7 +525,7 @@ export const DocsPage: React.FC = () => {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-border-hover transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-border-hover transition-colors"
                         onClick={() => setActiveTab('agents')}
                       >
                         <CardHeader>
@@ -541,7 +540,7 @@ export const DocsPage: React.FC = () => {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-border-hover transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-border-hover transition-colors"
                         onClick={() => setActiveTab('brand-guidelines')}
                       >
                         <CardHeader>
@@ -557,7 +556,7 @@ export const DocsPage: React.FC = () => {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-border-hover transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-border-hover transition-colors"
                         onClick={() => setActiveTab('canvas-api')}
                       >
                         <CardHeader>
@@ -566,14 +565,14 @@ export const DocsPage: React.FC = () => {
                         </CardHeader>
                         <CardContent>
                           <p className="text-muted-foreground text-sm">
-                            Programmatically create, edit, and manipulate canvas nodes and projects
-                            — for LLM agents and external tools.
+                            Programmatically create, edit, and manipulate canvas nodes and projects,
+                            for LLM agents and external tools.
                           </p>
                         </CardContent>
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-border-hover transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-border-hover transition-colors"
                         onClick={() => setActiveTab('pricing')}
                       >
                         <CardHeader>
@@ -604,7 +603,7 @@ export const DocsPage: React.FC = () => {
                             Authorization header.
                           </p>
                           <div className="bg-secondary/50 rounded-md p-4 border border-border space-y-2">
-                            <div className="text-xs font-redhatmono text-muted-foreground mb-2 uppercase tracking-wide">
+                            <div className="text-xs font-medium text-muted-foreground mb-2">
                               HTTP Header
                             </div>
                             <code className="text-foreground font-redhatmono text-sm block">
@@ -620,7 +619,7 @@ export const DocsPage: React.FC = () => {
                               href="/settings/api-keys"
                               className="text-foreground hover:underline"
                             >
-                              Settings → API Keys
+                              API Keys settings
                             </a>
                             . See the{' '}
                             <Button
@@ -648,7 +647,7 @@ export const DocsPage: React.FC = () => {
 
                   <TabsContent value="api" className="space-y-10 mt-0">
                     <div>
-                      <h2 className="text-3xl font-semibold tracking-tight mb-2">
+                      <h2 className="text-3xl font-medium tracking-tight mb-2">
                         REST API Reference
                       </h2>
                       <p className="text-muted-foreground">
@@ -672,7 +671,7 @@ export const DocsPage: React.FC = () => {
 
                   <TabsContent value="mcp" className="space-y-8 mt-0">
                     <div>
-                      <h2 className="text-3xl font-semibold tracking-tight mb-2">MCP Tools</h2>
+                      <h2 className="text-3xl font-medium tracking-tight mb-2">MCP Tools</h2>
                       <p className="text-muted-foreground">
                         Integrate Visant Labs directly into AI agents via the Model Context
                         Protocol. Two servers available: <strong>Platform MCP</strong> (HTTP/SSE)
@@ -696,16 +695,16 @@ export const DocsPage: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="bg-secondary/40 border border-border rounded-md p-5">
                             <div className="flex items-center gap-2 mb-2">
-                              <Badge className="bg-white/5 text-neutral-400 border border-white/10 text-xs">
+                              <Badge className="bg-muted text-muted-foreground border border-border text-xs">
                                 HTTP/SSE
                               </Badge>
-                              <span className="font-semibold text-foreground text-sm">
+                              <span className="font-medium text-foreground text-sm">
                                 Platform MCP
                               </span>
                             </div>
                             <p className="text-muted-foreground text-xs mb-3">
                               Generate mockups, manage canvas projects, branding, budgets, and AI
-                              tools — all via your API key over SSE.
+                              tools, all via your API key over SSE.
                             </p>
                             <div className="space-y-1 text-xs text-muted-foreground">
                               <p>
@@ -720,19 +719,15 @@ export const DocsPage: React.FC = () => {
                                   Bearer visant_sk_xxx
                                 </code>
                               </p>
-                              <p>
-                                {platformToolCount > 0 ? platformToolCount : '—'} tools available
-                              </p>
+                              {platformToolCount > 0 && <p>{platformToolCount} tools available</p>}
                             </div>
                           </div>
                           <div className="bg-secondary/40 border border-border rounded-md p-5">
                             <div className="flex items-center gap-2 mb-2">
-                              <Badge className="bg-purple-500/20 text-purple-400 border border-purple-500/30 text-xs">
+                              <Badge className="bg-chart-4/20 text-foreground border border-chart-4/30 text-xs">
                                 stdio
                               </Badge>
-                              <span className="font-semibold text-foreground text-sm">
-                                Figma MCP
-                              </span>
+                              <span className="font-medium text-foreground text-sm">Figma MCP</span>
                             </div>
                             <p className="text-muted-foreground text-xs mb-3">
                               Create frames, rectangles, text, and send AI commands directly to the
@@ -774,13 +769,13 @@ export const DocsPage: React.FC = () => {
                                     href="/settings/api-keys"
                                     className="text-foreground underline"
                                   >
-                                    Settings → API Keys
+                                    API Keys settings
                                   </a>{' '}
-                                  → Create API Key. Select scopes:{' '}
+                                  and click Create API Key. Select scopes:{' '}
                                   <code className="font-redhatmono bg-secondary px-1 rounded">
                                     read write generate
                                   </code>
-                                  . Copy the key — shown only once.
+                                  . Copy the key, it is shown only once.
                                 </span>
                               ),
                             },
@@ -813,7 +808,7 @@ export const DocsPage: React.FC = () => {
                             },
                           ].map(({ n, title, desc }) => (
                             <div key={n} className="flex gap-3">
-                              <div className="w-6 h-6 rounded-full bg-brand-cyan/20 text-foreground flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
+                              <div className="w-6 h-6 rounded-full bg-secondary text-foreground flex items-center justify-center text-xs font-medium shrink-0 mt-0.5">
                                 {n}
                               </div>
                               <div>
@@ -826,7 +821,7 @@ export const DocsPage: React.FC = () => {
                         <Separator />
                         <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                           <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase">
-                            Quick test — curl
+                            Quick test with curl
                           </div>
                           <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`curl -X POST https://visantlabs.com/api/mcp \\
   -H "Content-Type: application/json" \\
@@ -999,13 +994,13 @@ const result = await client.callTool({
                           </p>
                           <p>
                             2. Select scopes:{' '}
-                            <Badge className="bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs mx-1">
+                            <Badge className="bg-chart-1/20 text-foreground border border-chart-1/30 text-xs mx-1">
                               read
                             </Badge>{' '}
                             <Badge className="bg-warning/20 text-warning border border-warning/30 text-xs mx-1">
                               write
                             </Badge>{' '}
-                            <Badge className="bg-purple-500/20 text-purple-400 border border-purple-500/30 text-xs mx-1">
+                            <Badge className="bg-chart-4/20 text-foreground border border-chart-4/30 text-xs mx-1">
                               generate
                             </Badge>
                           </p>
@@ -1025,7 +1020,7 @@ const result = await client.callTool({
 
                     {/* Figma MCP Tools */}
                     <div id="mcp-figma-tools">
-                      <h3 className="text-2xl font-semibold tracking-tight mb-2">
+                      <h3 className="text-2xl font-medium tracking-tight mb-2">
                         Figma MCP &mdash; Tool Reference
                       </h3>
                       <p className="text-muted-foreground mb-6 text-sm">
@@ -1047,7 +1042,7 @@ const result = await client.callTool({
                             <CardHeader className="border-b border-border/50 bg-secondary/20 pb-4">
                               <div className="flex items-center gap-3">
                                 <Code className="w-5 h-5 text-foreground" />
-                                <h3 className="text-xl font-redhatmono font-semibold text-foreground m-0">
+                                <h3 className="text-xl font-redhatmono font-medium text-foreground m-0">
                                   {tool.name}
                                 </h3>
                               </div>
@@ -1090,7 +1085,7 @@ const result = await client.callTool({
                                             </td>
                                             <td className="px-4 py-3">
                                               {tool.inputSchema.required?.includes(name) ? (
-                                                <span className="text-destructive text-xs font-semibold uppercase ">
+                                                <span className="text-destructive text-xs font-medium uppercase ">
                                                   Yes
                                                 </span>
                                               ) : (
@@ -1141,9 +1136,7 @@ const result = await client.callTool({
                         <div className="flex items-center gap-3">
                           <Puzzle className="h-8 w-8 text-foreground" />
                           <div>
-                            <CardTitle className="text-2xl">
-                              Figma Plugin — Visant Copilot
-                            </CardTitle>
+                            <CardTitle className="text-2xl">Figma Plugin: Visant Copilot</CardTitle>
                             <CardDescription>
                               AI-powered design assistant that creates, edits, and organizes Figma
                               nodes from natural language.
@@ -1187,7 +1180,7 @@ const result = await client.callTool({
                           <Terminal className="w-5 h-5 text-foreground" /> AI Chat
                         </CardTitle>
                         <CardDescription>
-                          Describe what you want in natural language — the AI creates, edits, and
+                          Describe what you want in natural language. The AI creates, edits, and
                           organizes Figma nodes automatically.
                         </CardDescription>
                       </CardHeader>
@@ -1196,7 +1189,7 @@ const result = await client.callTool({
                           {[
                             [
                               '@mentions',
-                              'Type @ to reference layers, components, or variables by name. The AI resolves them to real node IDs.',
+                              'Type @ to reference layers, components, or variables by name. The AI resolves them to node IDs.',
                             ],
                             [
                               'Multimodal input',
@@ -1213,7 +1206,7 @@ const result = await client.callTool({
                             ],
                             [
                               'Copy & select',
-                              'Hover any message bubble for a copy button; text is fully selectable.',
+                              'Hover any message bubble for a copy button. Text is fully selectable.',
                             ],
                           ].map(([title, desc]) => (
                             <li key={title} className="flex items-start gap-3">
@@ -1290,7 +1283,7 @@ const result = await client.callTool({
                           },
                           {
                             label: 'Advanced',
-                            color: 'text-purple-400',
+                            color: 'text-foreground',
                             ops: [
                               'CREATE_COMPONENT',
                               'CREATE_SVG',
@@ -1302,9 +1295,7 @@ const result = await client.callTool({
                           },
                         ].map((cat) => (
                           <div key={cat.label}>
-                            <h4 className={`text-sm font-semibold mb-2 ${cat.color}`}>
-                              {cat.label}
-                            </h4>
+                            <h4 className={`text-sm font-medium mb-2 ${cat.color}`}>{cat.label}</h4>
                             <div className="flex flex-wrap gap-1.5">
                               {cat.ops.map((op) => (
                                 <Badge
@@ -1337,7 +1328,7 @@ const result = await client.callTool({
                           <li>
                             The last selected brand{' '}
                             <strong className="text-foreground">persists across sessions</strong>{' '}
-                            via Figma pluginData — no need to re-select each time.
+                            via Figma pluginData, so there is no need to re-select each time.
                           </li>
                           <li>
                             Brand context is sent alongside the user prompt to the server, ensuring
@@ -1383,17 +1374,16 @@ const result = await client.callTool({
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div>
-                          <h4 className="text-sm font-semibold text-foreground mb-2">
-                            Architecture
-                          </h4>
+                          <h4 className="text-sm font-medium text-foreground mb-2">Architecture</h4>
                           <div className="bg-secondary/60 rounded p-4 font-redhatmono text-xs text-foreground">
+                            {/* EXCEÇÃO ao ruido-scan/seta-glifo: diagrama ASCII dentro de <pre>, é texto de código e não navegação. */}
                             <pre className="whitespace-pre">{`Figma Sandbox (code.ts) ⇄ UI iframe (React) ─fetch─▶ POST /api/plugin (Gemini)
                        ◀── APPLY_OPERATIONS ──────────`}</pre>
                           </div>
                         </div>
                         <Separator />
                         <div>
-                          <h4 className="text-sm font-semibold text-foreground mb-2">
+                          <h4 className="text-sm font-medium text-foreground mb-2">
                             POST /api/plugin
                           </h4>
                           <p className="text-muted-foreground text-sm mb-3">
@@ -1407,7 +1397,7 @@ const result = await client.callTool({
                         </div>
                         <Separator />
                         <div>
-                          <h4 className="text-sm font-semibold text-foreground mb-2">
+                          <h4 className="text-sm font-medium text-foreground mb-2">
                             Operation JSON Format
                           </h4>
                           <div className="bg-secondary/60 rounded p-4 font-redhatmono text-xs text-foreground">
@@ -1434,7 +1424,7 @@ const result = await client.callTool({
                   </TabsContent>
                   <TabsContent value="figma-nodes" className="space-y-8 mt-0">
                     <div>
-                      <h2 className="text-3xl font-semibold tracking-tight mb-2">
+                      <h2 className="text-3xl font-medium tracking-tight mb-2">
                         Figma Node JSON Spec
                       </h2>
                       <p className="text-muted-foreground">
@@ -1456,6 +1446,7 @@ const result = await client.callTool({
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="bg-secondary/30 rounded-md border border-border p-4">
+                          {/* EXCEÇÃO ao ruido-scan/seta-glifo: pipeline em <pre> de código, é texto e não navegação. */}
                           <pre className="text-sm font-redhatmono text-foreground m-0">{`JSON spec  →  buildNode(spec, parent)  →  Figma nodes
 
 1. Define the layout tree in JSON (NodeSpec)
@@ -1490,7 +1481,7 @@ const result = await client.callTool({
                               key={n.type}
                               className="bg-card border border-border rounded-md p-3"
                             >
-                              <code className="text-foreground font-redhatmono font-semibold text-sm">
+                              <code className="text-foreground font-redhatmono font-medium text-sm">
                                 {n.type}
                               </code>
                               <p className="text-muted-foreground text-xs mt-1">{n.desc}</p>
@@ -1506,7 +1497,7 @@ const result = await client.callTool({
                     {/* NodeSpec Reference */}
                     <Card id="fn-nodespec">
                       <CardHeader>
-                        <CardTitle>NodeSpec — Full Property Reference</CardTitle>
+                        <CardTitle>NodeSpec: Full Property Reference</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="border border-border rounded-md overflow-hidden">
@@ -1527,9 +1518,9 @@ const result = await client.callTool({
                                 [
                                   'type',
                                   'string',
-                                  "'FRAME' | 'RECTANGLE' | 'ELLIPSE' | 'TEXT' — required",
+                                  "'FRAME' | 'RECTANGLE' | 'ELLIPSE' | 'TEXT' (required)",
                                 ],
-                                ['name', 'string', 'Layer name — required'],
+                                ['name', 'string', 'Layer name (required)'],
                                 [
                                   'width / height',
                                   'number',
@@ -1543,7 +1534,7 @@ const result = await client.callTool({
                                 ['strokes', 'FillSpec[]', 'Stroke paints (same format as fills)'],
                                 ['strokeWeight', 'number', 'Stroke width in pixels'],
                                 ['cornerRadius', 'number', 'Rounded corners in pixels'],
-                                ['opacity', 'number', '0–1'],
+                                ['opacity', 'number', '0 to 1'],
                                 [
                                   'effects',
                                   'EffectSpec[]',
@@ -1552,7 +1543,7 @@ const result = await client.callTool({
                                 [
                                   'layoutMode',
                                   'string',
-                                  "'NONE' | 'HORIZONTAL' | 'VERTICAL' — FRAME only",
+                                  "'NONE' | 'HORIZONTAL' | 'VERTICAL' (FRAME only)",
                                 ],
                                 [
                                   'primaryAxisAlignItems',
@@ -1567,26 +1558,26 @@ const result = await client.callTool({
                                 [
                                   'paddingTop/Bottom/Left/Right',
                                   'number',
-                                  'Inner spacing — auto-layout frames only',
+                                  'Inner spacing, auto-layout frames only',
                                 ],
                                 ['itemSpacing', 'number', 'Gap between children in auto-layout'],
                                 [
                                   'layoutSizingHorizontal',
                                   'string',
-                                  "'FIXED' | 'FILL' | 'HUG' — set AFTER appendChild",
+                                  "'FIXED' | 'FILL' | 'HUG'. Set AFTER appendChild",
                                 ],
                                 [
                                   'layoutSizingVertical',
                                   'string',
-                                  "'FIXED' | 'FILL' | 'HUG' — set AFTER appendChild",
+                                  "'FIXED' | 'FILL' | 'HUG'. Set AFTER appendChild",
                                 ],
                                 ['clipsContent', 'boolean', 'Clip children outside frame bounds'],
-                                ['characters', 'string', 'Text content — TEXT only'],
-                                ['fontSize', 'number', 'Font size in px — TEXT only'],
+                                ['characters', 'string', 'Text content (TEXT only)'],
+                                ['fontSize', 'number', 'Font size in px (TEXT only)'],
                                 [
                                   'fontName',
                                   'object',
-                                  '{ family: string, style: string } — must be loaded first',
+                                  '{ family: string, style: string }. Must be loaded first',
                                 ],
                                 [
                                   'textAlignHorizontal',
@@ -1603,7 +1594,7 @@ const result = await client.callTool({
                                   'object',
                                   "{ unit: 'AUTO' | 'PERCENT' | 'PIXELS', value?: number }",
                                 ],
-                                ['children', 'NodeSpec[]', 'Nested nodes — FRAME only'],
+                                ['children', 'NodeSpec[]', 'Nested nodes (FRAME only)'],
                               ].map(([prop, type, notes]) => (
                                 <tr key={prop} className="bg-card">
                                   <td className="px-4 py-2.5 font-redhatmono text-foreground text-xs">
@@ -1702,8 +1693,8 @@ const result = await client.callTool({
                             <tbody className="divide-y divide-border">
                               {[
                                 [
-                                  'Colors are 0–1 floats',
-                                  '{ r: 1, g: 0, b: 0 } = red. Never use 0–255 integers.',
+                                  'Colors are 0 to 1 floats',
+                                  '{ r: 1, g: 0, b: 0 } = red. Never use 0 to 255 integers.',
                                 ],
                                 [
                                   'Use resize(), not width=',
@@ -1719,11 +1710,11 @@ const result = await client.callTool({
                                 ],
                                 [
                                   'fontName.style must be exact',
-                                  "{ family: 'Inter', style: 'SemiBold' } — not 'Semi Bold'. Check Figma's font list.",
+                                  "{ family: 'Inter', style: 'SemiBold' }, not 'Semi Bold'. Check Figma's font list.",
                                 ],
                                 [
                                   'lineHeight AUTO has no value',
-                                  "{ unit: 'AUTO' } — omit the value field entirely.",
+                                  "{ unit: 'AUTO' }. Omit the value field entirely.",
                                 ],
                                 [
                                   'FILL requires auto-layout parent',
@@ -1735,7 +1726,7 @@ const result = await client.callTool({
                                 ],
                               ].map(([rule, detail]) => (
                                 <tr key={rule} className="bg-card">
-                                  <td className="px-4 py-3 font-redhatmono text-foreground text-xs font-semibold">
+                                  <td className="px-4 py-3 font-redhatmono text-foreground text-xs font-medium">
                                     {rule}
                                   </td>
                                   <td className="px-4 py-3 text-muted-foreground text-sm">
@@ -1752,7 +1743,7 @@ const result = await client.callTool({
                     {/* Renderer */}
                     <Card id="fn-renderer">
                       <CardHeader>
-                        <CardTitle>Renderer — render.ts</CardTitle>
+                        <CardTitle>Renderer: render.ts</CardTitle>
                         <CardDescription>
                           Plugin-side utility that converts a NodeSpec tree into Figma nodes.
                         </CardDescription>
@@ -1774,11 +1765,11 @@ const result = await client.callTool({
                             },
                             {
                               fn: 'createFromSpec(spec)',
-                              desc: 'Entry point. Collects fonts → loads them in parallel → builds tree → centers viewport.',
+                              desc: 'Entry point. Collects fonts, loads them in parallel, builds the tree and centers the viewport.',
                             },
                           ].map(({ fn, desc }) => (
                             <div key={fn} className="bg-card border border-border rounded-md p-4">
-                              <code className="text-foreground font-redhatmono text-xs font-semibold block mb-2">
+                              <code className="text-foreground font-redhatmono text-xs font-medium block mb-2">
                                 {fn}
                               </code>
                               <p className="text-muted-foreground text-sm">{desc}</p>
@@ -1787,7 +1778,7 @@ const result = await client.callTool({
                         </div>
                         <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                           <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">
-                            plugin/src/code.ts — Usage
+                            plugin/src/code.ts usage
                           </div>
                           <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`import { createFromSpec } from './render'
 import spec from './social-media-spec.json'
@@ -1806,7 +1797,7 @@ figma.ui.onmessage = async (msg) => {
                     {/* Social Media Example */}
                     <Card id="fn-social">
                       <CardHeader>
-                        <CardTitle>Social Media Post — Instagram 1080x1080</CardTitle>
+                        <CardTitle>Social Media Post: Instagram 1080x1080</CardTitle>
                         <CardDescription>
                           Complete JSON spec for a dark-theme Instagram post with header, content
                           image, caption, and footer.
@@ -1832,8 +1823,8 @@ figma.ui.onmessage = async (msg) => {
 │   └── Hashtags            (TEXT, Inter Regular 22, blue #738CFF)
 └── Footer                  (FRAME, HORIZONTAL, SPACE_BETWEEN, padding H:32 V:16)
     ├── ActionsLeft         (FRAME, HORIZONTAL, gap:24)
-    │   ├── LikeAction      (FRAME, HORIZONTAL, gap:8 → "♥" + "4,291")
-    │   └── CommentAction   (FRAME, HORIZONTAL, gap:8 → "💬" + "318")
+    │   ├── LikeAction      (FRAME, HORIZONTAL, gap:8, "♥" + "4,291")
+    │   └── CommentAction   (FRAME, HORIZONTAL, gap:8, "💬" + "318")
     └── SaveIcon            (TEXT, "🔖")`}</pre>
                           </div>
                         </div>
@@ -1861,7 +1852,7 @@ figma.ui.onmessage = async (msg) => {
                                     'HUG',
                                     'Stretches to root, height from content',
                                   ],
-                                  ['Avatar', '72', '72', 'FIXED — ellipse uses resize()'],
+                                  ['Avatar', '72', '72', 'FIXED, ellipse uses resize()'],
                                   ['ProfileInfo', 'FILL', 'HUG', 'Expands to fill header'],
                                   ['ContentImage', 'FILL', '680', 'Fixed height, fills width'],
                                   ['Caption text', 'FILL', 'HUG', 'Wraps to parent width'],
@@ -1928,11 +1919,11 @@ figma.ui.onmessage = async (msg) => {
                           <p className="text-warning text-sm font-medium mb-1">Related files</p>
                           <div className="space-y-1">
                             {[
-                              ['plugin/src/render.ts', 'NodeSpec renderer — createFromSpec()'],
+                              ['plugin/src/render.ts', 'NodeSpec renderer, createFromSpec()'],
                               ['docs/FIGMA_NODE_JSON_SPEC.md', 'Full spec reference (markdown)'],
                               ['docs/DESIGN_SYSTEM_JSON_SPEC.md', 'Design token import spec'],
                               ['server/routes/plugin.ts', 'LLM prompt + operation generation'],
-                              ['plugin/src/code.ts', 'Figma sandbox — executes operations'],
+                              ['plugin/src/code.ts', 'Figma sandbox that executes operations'],
                             ].map(([file, desc]) => (
                               <div key={file} className="flex gap-3 items-start">
                                 <code className="text-foreground font-redhatmono text-xs shrink-0">
@@ -1949,7 +1940,7 @@ figma.ui.onmessage = async (msg) => {
 
                   <TabsContent value="canvas-api" className="space-y-8 mt-0">
                     <div>
-                      <h2 className="text-3xl font-semibold tracking-tight mb-2">Canvas API</h2>
+                      <h2 className="text-3xl font-medium tracking-tight mb-2">Canvas API</h2>
                       <p className="text-muted-foreground">
                         REST API for programmatic creation, editing, and manipulation of canvas
                         projects and their nodes. Designed for LLM agents and external integrations.
@@ -1963,7 +1954,7 @@ figma.ui.onmessage = async (msg) => {
                           <Workflow className="w-5 h-5 text-foreground" /> How It Works
                         </CardTitle>
                         <CardDescription>
-                          The canvas is a React Flow graph — a list of nodes and edges stored in a
+                          The canvas is a React Flow graph: a list of nodes and edges stored in a
                           project. All mutations go through the project-level PUT endpoint.
                         </CardDescription>
                       </CardHeader>
@@ -1996,7 +1987,7 @@ figma.ui.onmessage = async (msg) => {
                           ))}
                         </div>
                         <div className="bg-secondary/30 rounded-md border border-border p-4">
-                          <div className="text-xs font-redhatmono text-muted-foreground mb-2 uppercase tracking-wide">
+                          <div className="text-xs font-medium text-muted-foreground mb-2">
                             Base URL
                           </div>
                           <code className="text-foreground font-redhatmono text-sm">
@@ -2004,7 +1995,7 @@ figma.ui.onmessage = async (msg) => {
                           </code>
                         </div>
                         <div className="bg-secondary/30 rounded-md border border-border p-4">
-                          <div className="text-xs font-redhatmono text-muted-foreground mb-2 uppercase tracking-wide">
+                          <div className="text-xs font-medium text-muted-foreground mb-2">
                             Key Design Note
                           </div>
                           <p className="text-sm text-muted-foreground">
@@ -2035,7 +2026,7 @@ Content-Type: application/json`}</pre>
                         </div>
                         <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                           <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">
-                            Obtain Token — POST /api/auth/login
+                            Obtain token: POST /api/auth/login
                           </div>
                           <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`// Request
 { "email": "user@example.com", "password": "..." }
@@ -2122,7 +2113,7 @@ Content-Type: application/json`}</pre>
                                 className={cn('font-redhatmono uppercase', {
                                   'bg-success/10 text-success border-success/20': method === 'GET',
                                   'bg-warning/10 text-warning border-warning/20': method === 'POST',
-                                  'bg-blue-500/10 text-blue-500 border-blue-500/20':
+                                  'bg-chart-1/10 text-foreground border-chart-1/20':
                                     method === 'PUT',
                                   'bg-destructive/10 text-destructive border-destructive/20':
                                     method === 'DELETE',
@@ -2219,7 +2210,7 @@ Content-Type: application/json`}</pre>
                                 ],
                                 [
                                   'output',
-                                  'Result viewer — receives from flow nodes',
+                                  'Result viewer that receives from flow nodes',
                                   'resultImageUrl, resultVideoUrl, sourceNodeId',
                                 ],
                                 [
@@ -2301,7 +2292,7 @@ Content-Type: application/json`}</pre>
                                 ],
                                 [
                                   'brandCore',
-                                  'Brand catalyst — generates visual prompts',
+                                  'Brand catalyst that generates visual prompts',
                                   'connectedLogo, connectedPdf, visualPrompts, brandIdentity',
                                 ],
                                 [
@@ -2338,7 +2329,7 @@ Content-Type: application/json`}</pre>
 
                         <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                           <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">
-                            Example — Creating a Prompt Node
+                            Example: creating a Prompt Node
                           </div>
                           <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
   "id": "prompt-1",
@@ -2356,7 +2347,7 @@ Content-Type: application/json`}</pre>
 
                         <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                           <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">
-                            Example — Text Node connected to Prompt Node
+                            Example: Text Node connected to Prompt Node
                           </div>
                           <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`// Text Node
 {
@@ -2421,63 +2412,80 @@ Content-Type: application/json`}</pre>
                             <tbody className="divide-y divide-border">
                               {[
                                 [
-                                  'image → merge',
+                                  'image',
+                                  'merge',
                                   'output',
                                   'input-1 / input-2',
                                   'Feeds source image into merge generation',
                                 ],
                                 [
-                                  'prompt → output',
+                                  'prompt',
+                                  'output',
                                   'output',
                                   'input',
                                   'Generated image flows to output display',
                                 ],
                                 [
-                                  'text → prompt',
+                                  'text',
+                                  'prompt',
                                   'output',
                                   'text-input',
                                   'Text node content syncs to prompt',
                                 ],
                                 [
-                                  'logo → brandCore',
+                                  'logo',
+                                  'brandCore',
                                   'output',
                                   'logo-input',
                                   'Logo base64 fed to brand core',
                                 ],
                                 [
-                                  'pdf → brandCore',
+                                  'pdf',
+                                  'brandCore',
                                   'output',
                                   'identity-input',
                                   'PDF identity guide fed to brand core',
                                 ],
                                 [
-                                  'brandCore → mockup',
+                                  'brandCore',
+                                  'mockup',
                                   'output',
                                   'brand-input',
                                   'Brand prompts and colors fed to mockup',
                                 ],
                                 [
-                                  'image → colorExtractor',
+                                  'image',
+                                  'colorExtractor',
                                   'output',
                                   'input',
                                   'Image fed to color extraction',
                                 ],
                                 [
-                                  'strategy → brandCore',
+                                  'strategy',
+                                  'brandCore',
                                   'output',
                                   'strategy-input',
                                   'Strategy data consolidated in brand core',
                                 ],
                                 [
-                                  'image/prompt → chat',
+                                  'image/prompt',
+                                  'chat',
                                   'output',
                                   'input-1..input-4',
                                   'Visual context provided to chat node',
                                 ],
-                              ].map(([conn, src, tgt, effect]) => (
-                                <tr key={conn} className="bg-card">
+                              ].map(([from, to, src, tgt, effect]) => (
+                                <tr key={`${from}-${to}`} className="bg-card">
                                   <td className="px-4 py-2.5 font-redhatmono text-foreground text-xs">
-                                    {conn}
+                                    <span className="inline-flex items-center gap-1.5">
+                                      {from}
+                                      <ArrowRight
+                                        size={12}
+                                        aria-label="to"
+                                        className="text-muted-foreground"
+                                      />
+                                      {to}
+                                    </span>
                                   </td>
                                   <td className="px-4 py-2.5 text-muted-foreground text-xs font-redhatmono">
                                     {src}
@@ -2496,7 +2504,7 @@ Content-Type: application/json`}</pre>
 
                         <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                           <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">
-                            Example — Prompt → Output flow
+                            Example: Prompt to Output flow
                           </div>
                           <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`"edges": [
   {
@@ -2542,7 +2550,7 @@ Content-Type: application/json`}</pre>
                             method: 'POST',
                             path: '/api/canvas/video/upload',
                             summary:
-                              'Upload a video (base64) to R2. No compression applied — original quality preserved.',
+                              'Upload a video (base64) to R2. No compression applied, original quality preserved.',
                             request: `{ "videoBase64": "data:video/mp4;base64,...", "canvasId": "abc123", "nodeId": "node-1" }`,
                             response: `{ "videoUrl": "https://r2.example.com/canvas/abc123/node-1-xxx.mp4" }`,
                           },
@@ -2636,7 +2644,7 @@ Content-Type: application/json`}</pre>
                             method: 'GET',
                             path: '/api/canvas/shared/:shareId',
                             summary: 'Fetch a publicly shared project. No authentication required.',
-                            request: `No body — shareId in path`,
+                            request: `No body, shareId in path`,
                             response: `{ "project": { "_id": "...", "name": "...", "nodes": [...], "edges": [...] } }`,
                           },
                           {
@@ -2651,7 +2659,7 @@ Content-Type: application/json`}</pre>
                             method: 'DELETE',
                             path: '/api/canvas/:id/share',
                             summary:
-                              'Disable sharing — removes shareId and revokes all collaboration access.',
+                              'Disable sharing. Removes shareId and revokes all collaboration access.',
                             request: `No body`,
                             response: `{ "success": true }`,
                           },
@@ -2666,7 +2674,7 @@ Content-Type: application/json`}</pre>
                                 className={cn('font-redhatmono uppercase', {
                                   'bg-success/10 text-success border-success/20': method === 'GET',
                                   'bg-warning/10 text-warning border-warning/20': method === 'POST',
-                                  'bg-blue-500/10 text-blue-500 border-blue-500/20':
+                                  'bg-chart-1/10 text-foreground border-chart-1/20':
                                     method === 'PUT',
                                   'bg-destructive/10 text-destructive border-destructive/20':
                                     method === 'DELETE',
@@ -2716,7 +2724,7 @@ Content-Type: application/json`}</pre>
                       <CardContent className="space-y-6">
                         <div>
                           <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">
-                            Workflow A — Create a canvas with a prompt node and read the result
+                            Workflow A: create a canvas with a prompt node and read the result
                           </h4>
                           <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">
@@ -2767,7 +2775,7 @@ console.log("Generated image:", imageUrl);`}</pre>
 
                         <div>
                           <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">
-                            Workflow B — Add a node to an existing project
+                            Workflow B: add a node to an existing project
                           </h4>
                           <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">
@@ -2798,7 +2806,7 @@ await fetch(\`\${BASE}/canvas/\${projectId}\`, {
 
                         <div>
                           <h4 className="font-redhatmono text-xs uppercase text-muted-foreground mb-3">
-                            Workflow C — Upload an image and set it in an image node
+                            Workflow C: upload an image and set it in an image node
                           </h4>
                           <div className="bg-secondary/30 rounded-md border border-border overflow-hidden">
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase ">
@@ -2850,20 +2858,21 @@ await fetch(\`\${BASE}/canvas/\${projectId}\`, {
                               <strong className="text-foreground">
                                 Always PUT the full nodes array
                               </strong>{' '}
-                              — there is no PATCH for individual nodes.
+                              because there is no PATCH for individual nodes.
                             </li>
                             <li>
                               •{' '}
                               <strong className="text-foreground">
                                 Prefer R2 URLs over base64
                               </strong>{' '}
-                              — base64 in nodes expires after 7 days and increases payload size.
+                              because base64 in nodes expires after 7 days and increases payload
+                              size.
                             </li>
                             <li>
                               • <strong className="text-foreground">Result images are async</strong>{' '}
-                              — generation happens in the browser. The API stores whatever state the
-                              frontend last saved. Poll or listen to get updated results after
-                              generation.
+                              because generation happens in the browser. The API stores whatever
+                              state the frontend last saved. Poll or listen to get updated results
+                              after generation.
                             </li>
                             <li>
                               • <strong className="text-foreground">Max 10,000 nodes</strong> per
@@ -3027,7 +3036,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                           </div>
                         </div>
 
-                        <div className="bg-card border border-brand-cyan/20 rounded-md p-4">
+                        <div className="bg-card border border-border rounded-md p-4">
                           <p className="text-foreground text-sm font-medium mb-2">
                             UI Entry Points
                           </p>
@@ -3035,13 +3044,13 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                             <li>
                               •{' '}
                               <strong className="text-foreground">
-                                Canvas header → Download dropdown
+                                Download dropdown in the canvas header
                               </strong>{' '}
-                              — "Exportar como JSON" / "Importar de JSON" buttons.
+                              with the "Exportar como JSON" and "Importar de JSON" buttons.
                             </li>
                             <li>
-                              • <strong className="text-foreground">Projects listing page</strong> —
-                              "Import from JSON" button next to "New Project".
+                              • <strong className="text-foreground">Projects listing page</strong>,
+                              with the "Import from JSON" button next to "New Project".
                             </li>
                             <li>
                               • On export, base64 blobs are stripped; only R2{' '}
@@ -3055,7 +3064,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                               <strong className="text-foreground">
                                 new project is always created
                               </strong>{' '}
-                              — it never overwrites an existing one.
+                              and it never overwrites an existing one.
                             </li>
                           </ul>
                         </div>
@@ -3080,7 +3089,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                       <CardContent className="space-y-6">
                         <div id="bg-overview" className="scroll-mt-20">
                           <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-                            Brand Guidelines are more than static documents — they are{' '}
+                            Brand Guidelines are more than static documents. They are{' '}
                             <strong className="text-foreground">identity vaults</strong> that
                             provide structured context for AI generation. By connecting a guideline
                             to a prompt or canvas, you ensure the AI maintains visual consistency
@@ -3091,7 +3100,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                         <Separator />
 
                         <div id="bg-rest" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             REST Endpoints
                           </h3>
                           <div className="bg-secondary/40 border border-border rounded-md p-4">
@@ -3111,7 +3120,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                                 </span>
                               </p>
                               <p className="flex justify-between border-b border-border/30 pb-1.5">
-                                <span className="text-blue-400">POST</span>{' '}
+                                <span className="text-warning">POST</span>{' '}
                                 <span className="text-foreground">/api/brand-guidelines</span>{' '}
                                 <span className="text-muted-foreground">
                                   Create new identity vault
@@ -3138,10 +3147,9 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                         <Separator />
 
                         <div id="bg-schema" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
-                            Data Schema
-                          </h3>
+                          <h3 className="text-lg font-medium text-foreground mb-3">Data Schema</h3>
                           <div className="bg-secondary/60 rounded p-4 font-redhatmono text-xs overflow-x-auto text-foreground">
+                            {/* EXCEÇÃO ao audit:design/hardcoded-hex-color: payload de exemplo da API, o hex é dado do JSON e não cor de UI. */}
                             <pre className="whitespace-pre">{`{
   "identity": { "name": "Brand", "tagline": "...", "description": "Story..." },
   "colors": [{ "hex": "#00E5CC", "name": "Primary", "role": "primary" }],
@@ -3159,7 +3167,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                         <Separator />
 
                         <div id="bg-sharing" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Public Sharing
                           </h3>
                           <p className="text-muted-foreground text-sm mb-4">
@@ -3170,25 +3178,25 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                           <div className="bg-secondary/40 border border-border rounded-md p-4">
                             <div className="font-redhatmono text-xs space-y-2">
                               <p>
-                                <span className="text-blue-400">POST</span>{' '}
+                                <span className="text-warning">POST</span>{' '}
                                 <span className="text-foreground">
                                   /api/brand-guidelines/:id/share
                                 </span>{' '}
-                                <span className="text-muted-foreground">— Enable sharing</span>
+                                <span className="text-muted-foreground">Enable sharing</span>
                               </p>
                               <p>
                                 <span className="text-success">GET</span>{' '}
                                 <span className="text-foreground">
                                   /api/brand-guidelines/public/:slug
                                 </span>{' '}
-                                <span className="text-muted-foreground">— Read public data</span>
+                                <span className="text-muted-foreground">Read public data</span>
                               </p>
                               <p>
                                 <span className="text-destructive">DELETE</span>{' '}
                                 <span className="text-foreground">
                                   /api/brand-guidelines/:id/share
                                 </span>{' '}
-                                <span className="text-muted-foreground">— Disable sharing</span>
+                                <span className="text-muted-foreground">Disable sharing</span>
                               </p>
                             </div>
                           </div>
@@ -3197,7 +3205,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                         <Separator />
 
                         <div id="bg-context" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             LLM Context Endpoint
                           </h3>
                           <p className="text-muted-foreground text-sm mb-4">
@@ -3240,41 +3248,37 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                       </CardHeader>
                       <CardContent className="space-y-6">
                         <div id="ag-overview" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">Overview</h3>
+                          <h3 className="text-lg font-medium text-foreground mb-3">Overview</h3>
                           <p className="text-muted-foreground text-sm leading-relaxed mb-4">
                             Visant Labs provides three ways for AI agents to interact with the
                             platform:
                           </p>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="bg-secondary/40 border border-border rounded-md p-4">
-                              <p className="text-foreground font-semibold text-sm mb-1">
-                                Discovery
-                              </p>
+                              <p className="text-foreground font-medium text-sm mb-1">Discovery</p>
                               <div className="space-y-1.5">
                                 <p className="text-muted-foreground text-xs">
                                   <code className="font-redhatmono bg-secondary px-1 rounded text-2xs">
                                     api.visantlabs.com/llms.txt
                                   </code>{' '}
-                                  — Concise overview
+                                  Concise overview
                                 </p>
                                 <p className="text-muted-foreground text-xs">
                                   <code className="font-redhatmono bg-secondary px-1 rounded text-2xs">
                                     api.visantlabs.com/llms-full.txt
                                   </code>{' '}
-                                  — Full platform reference
+                                  Full platform reference
                                 </p>
                                 <p className="text-muted-foreground text-xs">
                                   <code className="font-redhatmono bg-secondary px-1 rounded text-2xs">
                                     api.visantlabs.com/api/docs/api/spec
                                   </code>{' '}
-                                  — OpenAPI JSON
+                                  OpenAPI JSON
                                 </p>
                               </div>
                             </div>
                             <div className="bg-secondary/40 border border-border rounded-md p-4">
-                              <p className="text-foreground font-semibold text-sm mb-1">
-                                MCP Tools
-                              </p>
+                              <p className="text-foreground font-medium text-sm mb-1">MCP Tools</p>
                               <p className="text-muted-foreground text-xs">
                                 Connect via SSE to{' '}
                                 <code className="font-redhatmono bg-secondary px-1 rounded">
@@ -3284,7 +3288,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                               </p>
                             </div>
                             <div className="bg-secondary/40 border border-border rounded-md p-4">
-                              <p className="text-foreground font-semibold text-sm mb-1">REST API</p>
+                              <p className="text-foreground font-medium text-sm mb-1">REST API</p>
                               <p className="text-muted-foreground text-xs">
                                 Full HTTP API with JSON responses for all platform features
                               </p>
@@ -3295,7 +3299,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="ag-auth" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Authentication
                           </h3>
                           <p className="text-muted-foreground text-sm mb-3">
@@ -3304,7 +3308,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                               href="/settings/api-keys"
                               className="text-foreground hover:underline"
                             >
-                              Settings → API Keys
+                              API Keys settings
                             </a>
                             .
                           </p>
@@ -3321,7 +3325,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="ag-mcp" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             MCP Connection
                           </h3>
                           <div className="bg-secondary/60 border border-border rounded-md p-4 font-redhatmono text-sm space-y-2">
@@ -3333,7 +3337,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="ag-tools" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Available MCP Tools
                             {platformToolCount > 0 && (
                               <span className="text-muted-foreground text-sm font-normal ml-2">
@@ -3363,7 +3367,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                               };
                               return Object.entries(categories).map(([cat, tools]) => (
                                 <div key={cat} className="mb-4">
-                                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 px-1">
+                                  <p className="text-xs font-medium text-muted-foreground mb-1.5 px-1">
                                     {categoryLabels[cat] ?? cat}
                                   </p>
                                   <div className="overflow-x-auto border border-border rounded-md">
@@ -3382,7 +3386,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                                                 className={
                                                   tool['x-cost'] === 'free'
                                                     ? 'bg-success/20 text-success text-xs'
-                                                    : 'bg-purple-500/20 text-purple-400 text-xs'
+                                                    : 'bg-chart-4/20 text-foreground text-xs'
                                                 }
                                               >
                                                 {tool['x-cost'] === 'free' ? 'Free' : 'Credits'}
@@ -3412,7 +3416,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         </div>
 
                         <div id="ag-brand-guidelines" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Brand Guidelines API
                           </h3>
                           <p className="text-muted-foreground text-sm mb-3">
@@ -3442,7 +3446,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="ag-credits" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Credits & Limits
                           </h3>
                           <p className="text-muted-foreground text-sm mb-3">
@@ -3458,15 +3462,13 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="ag-example" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
-                            Example Flow
-                          </h3>
+                          <h3 className="text-lg font-medium text-foreground mb-3">Example Flow</h3>
                           <div className="space-y-3 text-sm">
                             {[
                               {
                                 step: '1',
                                 title: 'Get an API key',
-                                desc: 'Settings → API Keys → Create with "read" + "generate" scopes',
+                                desc: 'In API Keys settings, create a key with "read" and "generate" scopes',
                               },
                               {
                                 step: '2',
@@ -3476,7 +3478,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                               {
                                 step: '3',
                                 title: 'Load brand context',
-                                desc: 'Call brand-guidelines-get → colors, typography, logos, strategy, voice',
+                                desc: 'Call brand-guidelines-get to load colors, typography, logos, strategy and voice',
                               },
                               {
                                 step: '4',
@@ -3486,7 +3488,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                               {
                                 step: '5',
                                 title: 'Build prompts',
-                                desc: 'ai-generate-smart-prompt per concept — brand context injected automatically',
+                                desc: 'ai-generate-smart-prompt per concept, brand context injected automatically',
                               },
                               {
                                 step: '6',
@@ -3498,7 +3500,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                                 key={step}
                                 className="flex items-start gap-3 bg-secondary/40 border border-border rounded-md p-3"
                               >
-                                <span className="bg-brand-cyan/20 text-foreground text-xs font-bold px-2 py-1 rounded shrink-0">
+                                <span className="bg-secondary text-foreground text-xs font-medium px-2 py-1 rounded shrink-0">
                                   {step}
                                 </span>
                                 <div>
@@ -3518,17 +3520,12 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                       <CardHeader>
                         <div className="flex items-center gap-3">
                           <Coins className="h-8 w-8 text-foreground" />
-                          <div>
-                            <CardTitle className="text-2xl">Pricing & Credits</CardTitle>
-                            <CardDescription>
-                              Transparent pricing based on official Google API costs
-                            </CardDescription>
-                          </div>
+                          <CardTitle className="text-2xl">Pricing & Credits</CardTitle>
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-6">
                         <div id="pr-google" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Official Google API Pricing
                           </h3>
                           <p className="text-muted-foreground text-sm mb-4">
@@ -3544,7 +3541,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                             . Updated March 2026.
                           </p>
 
-                          <h4 className="text-sm font-semibold text-foreground mb-2">
+                          <h4 className="text-sm font-medium text-foreground mb-2">
                             Image Generation
                           </h4>
                           <div className="overflow-x-auto mb-4">
@@ -3596,7 +3593,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                             </table>
                           </div>
 
-                          <h4 className="text-sm font-semibold text-foreground mb-2">
+                          <h4 className="text-sm font-medium text-foreground mb-2">
                             Video Generation (Veo 3.1)
                           </h4>
                           <div className="overflow-x-auto">
@@ -3642,7 +3639,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="pr-credits" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Visant Credit System
                           </h3>
                           <p className="text-muted-foreground text-sm mb-4">
@@ -3652,7 +3649,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                              <h4 className="text-sm font-semibold text-foreground mb-2">
+                              <h4 className="text-sm font-medium text-foreground mb-2">
                                 Image Generation
                               </h4>
                               <div className="space-y-1.5 text-sm">
@@ -3674,7 +3671,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                               </div>
                             </div>
                             <div>
-                              <h4 className="text-sm font-semibold text-foreground mb-2">
+                              <h4 className="text-sm font-medium text-foreground mb-2">
                                 Video Generation
                               </h4>
                               <div className="space-y-1.5 text-sm">
@@ -3694,7 +3691,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                                     </div>
                                   ))}
                               </div>
-                              <h4 className="text-sm font-semibold text-foreground mt-4 mb-2">
+                              <h4 className="text-sm font-medium text-foreground mt-4 mb-2">
                                 Other Operations
                               </h4>
                               <div className="space-y-1.5 text-sm">
@@ -3733,7 +3730,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="pr-packages" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Credit Packages
                           </h3>
                           <p className="text-muted-foreground text-sm mb-4">
@@ -3779,10 +3776,10 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="pr-byok" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             BYOK (Bring Your Own Key)
                           </h3>
-                          <div className="bg-brand-cyan/10 border border-brand-cyan/30 rounded-md p-4">
+                          <div className="bg-secondary/40 border border-border rounded-md p-4">
                             <p className="text-sm text-foreground mb-2">
                               <strong>Coming Soon:</strong> Use your own Google AI API key for
                               unlimited generations.
@@ -3798,7 +3795,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                         <Separator />
 
                         <div id="pr-transparency" className="scroll-mt-20">
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="text-lg font-medium text-foreground mb-3">
                             Build in Public
                           </h3>
                           <p className="text-muted-foreground text-sm mb-3">
@@ -3811,13 +3808,13 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                                 <strong className="text-foreground">
                                   Derived from official sources
                                 </strong>{' '}
-                                — Google's published API pricing
+                                from Google's published API pricing
                               </span>
                             </div>
                             <div className="flex items-start gap-2 bg-secondary/40 border border-border rounded-md p-3">
                               <span className="text-foreground">2.</span>
                               <span className="text-muted-foreground">
-                                <strong className="text-foreground">Open in our codebase</strong> —{' '}
+                                <strong className="text-foreground">Open in our codebase</strong>:{' '}
                                 <code className="font-redhatmono bg-secondary px-1 rounded text-xs">
                                   src/utils/pricing.ts
                                 </code>
@@ -3833,7 +3830,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                                 <strong className="text-foreground">
                                   Updated when Google updates
                                 </strong>{' '}
-                                — We track official pricing changes
+                                as we track official pricing changes
                               </span>
                             </div>
                           </div>

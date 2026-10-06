@@ -129,7 +129,7 @@ const BentoCard = ({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
       className={cn(
-        'group relative flex flex-col gap-4 p-4 rounded-lg bg-white/[0.01] border border-white/[0.05] hover:border-white/[0.1] transition-colors overflow-hidden',
+        'group relative flex flex-col gap-4 p-4 rounded-xl bg-white/[0.01] border border-white/[0.05] hover:border-white/[0.1] transition-colors overflow-hidden',
         viewMode === 'bento' ? SPANS[format.id] : 'col-span-full'
       )}
     >
@@ -138,15 +138,11 @@ const BentoCard = ({
           <div className="p-1.5 rounded-md bg-white/[0.01] text-neutral-700 group-hover:text-neutral-500 transition-colors">
             <Icon size={12} strokeWidth={1.5} />
           </div>
-          <span className="text-3xs uppercase tracking-[0.2em] text-neutral-700 group-hover:text-neutral-600 transition-colors">
-            {format.label}
-          </span>
+          <span className="text-xs text-muted-foreground">{format.label}</span>
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-3xs font-mono text-neutral-800 transition-colors">
-            {dimsLabel(format.id)}
-          </span>
+          <span className="text-2xs font-mono text-muted-foreground">{dimsLabel(format.id)}</span>
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowExport(!showExport)}
@@ -155,12 +151,12 @@ const BentoCard = ({
               {isExporting ? <GlitchLoader size={11} /> : <Download size={11} strokeWidth={1.5} />}
             </button>
             {showExport && (
-              <div className="absolute right-0 top-full mt-1 z-50 bg-neutral-900 border border-white/10 rounded-lg shadow-2xl overflow-hidden min-w-[80px]">
+              <div className="absolute right-0 top-full mt-1 z-50 bg-neutral-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden min-w-[80px]">
                 {EXPORT_FORMATS.map((f) => (
                   <button
                     key={f.id}
                     onClick={() => handleExport(f.id)}
-                    className="w-full text-left px-3 py-1.5 text-3xs font-mono uppercase tracking-widest text-neutral-500 hover:text-white hover:bg-white/[0.06] transition-colors"
+                    className="w-full text-left px-3 py-1.5 text-2xs font-mono text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                   >
                     {f.label}
                   </button>
@@ -181,7 +177,7 @@ const BentoCard = ({
       >
         <div
           className={cn(
-            'w-full transition-transform duration-700 ease-out group-hover:scale-[1.012]',
+            'w-full',
             viewMode === 'bento' &&
               (format.id === 'stories' || format.id === 'poster' || format.id === 'appstore') &&
               'max-w-[280px]',
@@ -264,7 +260,7 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span 
         <div className="flex flex-col items-center justify-center gap-3 py-12 px-6 text-center">
           <p className="text-xs text-neutral-500 max-w-[320px] leading-relaxed">
             Adicione cores, tipografia e um logo pra visualizar como sua marca aparece em criativos
-            reais. Sem chamada de IA — render local com seus tokens.
+            reais. Sem chamada de IA, render local com seus tokens.
           </p>
         </div>
       ) : (

@@ -58,7 +58,7 @@ export const CreatePage: React.FC = () => {
         useCreativeStore.temporal.getState().clear();
       })
       .catch((err: Error) => {
-        toast.error(err.message || 'Failed to load creative');
+        toast.error(err.message || t('createPage.loadFailed'));
         setParams({}, { replace: true });
         loadedRef.current = null;
       });
@@ -67,22 +67,23 @@ export const CreatePage: React.FC = () => {
   return (
     <PageShell
       pageId="creative-studio"
-      title={projectName || t('creative.studio.title') || 'Creative Studio'}
+      title={projectName || t('creative.projects.studio')}
       width="full"
       noBackground
-      seoTitle={`${projectName || 'Creative Studio'} | Visant Studio`}
-      seoDescription="Professional AI-driven design studio for brand-aware creative generation."
+      seoTitle={projectName || t('creative.projects.studio')}
+      seoDescription={t('createPage.seoDescription')}
       breadcrumb={[
-        { label: t('apps.home') || 'Home', to: '/' },
-        { label: 'Creative Projects', to: '/create/projects' },
-        { label: 'Creative Studio' },
+        { label: t('apps.home'), to: '/' },
+        { label: t('creative.projects.title'), to: '/create/projects' },
+        { label: t('creative.projects.studio') },
       ]}
       hideHeader
       // p-0 sozinho NÃO zera os paddings responsivos do PageShell
       // (sm:px-6 lg:px-8 sm:pt-8 sm:pb-16 vencem um p-0 base) → sobra 32px de
       // margem/topo e o rodapé corta. O Creative Studio é full-bleed e gere a
       // própria altura, então zeramos em todos os breakpoints.
-      contentClassName="p-0 sm:p-0 lg:p-0"
+      // `dark`: o Creative Studio é sempre escuro; escopa os tokens escuros na subárvore.
+      contentClassName="p-0 sm:p-0 lg:p-0 dark text-foreground"
     >
       <CreativeStudio />
     </PageShell>

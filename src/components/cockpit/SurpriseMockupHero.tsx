@@ -2,11 +2,11 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Zap, RefreshCw, ImageOff, Download, Bookmark, Check } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { MicroTitle } from '@/components/ui/MicroTitle';
 import { GeneratingImageCard } from '@/components/ui/GeneratingImageCard';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { cn } from '@/lib/utils';
 import { glassSurface } from '@/lib/ui/glass';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { useTranslation } from '@/hooks/useTranslation';
 import { downloadBlob } from '@/utils/clipboard';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
@@ -19,6 +19,7 @@ import {
   toBlob,
   type LoadedScene,
 } from '@/lib/mockup/sceneClient';
+import { Thumb } from '@/components/ui/Thumb';
 
 export interface MockupRecipe {
   psdFileName: string;
@@ -55,7 +56,8 @@ function aspectRatioOf(size: { w: number; h: number } | null): string {
  * in the browser from the brand's own asset over a commercial scene (Scene Package
  * engine, zero credits). "Surpreenda-me" advances to the next matched suggestion.
  * Recipes come from the deterministic matcher (`/mockup-suggestions`); the pixel
- * work happens here on the client. Sits as one cell in the cockpit bento.
+ * work happens here on the client. The host owns the frame and the title (the
+ * cockpit's collapsible "Mockups grátis" section); this renders only the feed.
  */
 export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
   brandId,
@@ -247,7 +249,7 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
         body: blob,
         headers: { 'Content-Type': 'image/png' },
       });
-      if (!put.ok) throw new Error(`upload falhou: ${put.status}`);
+      if (!put.ok) throw new Error(`upload failed: ${put.status}`);
       await mockupApi.save({
         imageUrl: finalUrl,
         prompt: `${current.faceName}, ${current.psdFileName}`,
@@ -260,7 +262,8 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
       setSavedKey(pairKey(current));
       toast.success(t('cockpit.surprise.savedToLibrary'));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('cockpit.surprise.saveFailed'));
+      console.warn('[surprise-mockup] save failed:', err);
+      toast.error(t('cockpit.surprise.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -291,15 +294,8 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
   }, [feedBroken, recipesError, reason, loadingRecipes, recipes.length, t]);
 
   return (
-    <section
-      data-vsn-region="surprise-mockups"
-      className={cn('rounded-2xl p-3 flex flex-col gap-2.5', glassSurface.panel, className)}
-    >
-      <div className="flex items-center justify-between gap-3">
-        <MicroTitle className="flex items-center gap-1.5">
-          <Zap className="size-3.5" />
-          {t('cockpit.surprise.title')}
-        </MicroTitle>
+    <div data-vsn-region="surprise-mockups" className={cn('flex flex-col gap-2.5', className)}>
+      <div className="flex items-center justify-end">
         <Button
           size="xs"
           variant="ghost"
@@ -319,8 +315,8 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
             glassSurface.tile
           )}
         >
-          <ImageOff className="size-6 opacity-40" />
-          <p className="text-sm opacity-70">{emptyCopy}</p>
+          <ImageOff className="size-6 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">{emptyCopy}</p>
           {/* Beco sem saída → CTA: sem logo, o único render grátis fica vazio.
               Aqui o usuário adiciona um asset e o tile passa a produzir. */}
           {reason === 'no_assets' && onAddAsset && (
@@ -342,12 +338,16 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
             isLoading={busy || (!imgUrl && !renderError)}
             variant="tile"
             aspectRatio="4/3"
-            steps={['compondo', 'aplicando marca', 'renderizando']}
+            steps={[
+              t('cockpit.surprise.steps.composing'),
+              t('cockpit.surprise.steps.applyingBrand'),
+              t('cockpit.surprise.steps.rendering'),
+            ]}
           >
             {imgUrl && (
-              <img
+              <Thumb
                 src={imgUrl}
-                alt={`Mockup ${current?.faceName ?? ''}`}
+                alt={current?.faceName ?? ''}
                 className="w-full h-full object-cover rounded-xl"
               />
             )}
@@ -358,9 +358,9 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
             <div className="absolute inset-0 z-20 pointer-events-none flex items-end justify-center pb-3">
               <div
                 className={cn(
-                  'flex items-center gap-0.5 p-1 rounded-lg pointer-events-auto',
-                  'bg-neutral-950/80 backdrop-blur-xl border border-white/10 shadow-2xl',
-                  'opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300'
+                  'flex items-center gap-0.5 p-1 rounded-xl pointer-events-auto',
+                  glassSurface.panelStrong,
+                  hoverReveal
                 )}
               >
                 <Tooltip
@@ -371,7 +371,7 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
                     variant="action"
                     onClick={() => void save()}
                     disabled={saving || isSaved}
-                    className="w-8 h-8 p-1.5 hover:text-white hover:bg-white/10"
+                    className="w-8 h-8 p-1.5"
                     aria-label={t('common.save')}
                   >
                     {isSaved ? (
@@ -385,7 +385,7 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
                   <Button
                     variant="action"
                     onClick={download}
-                    className="w-8 h-8 p-1.5 hover:text-white hover:bg-white/10"
+                    className="w-8 h-8 p-1.5"
                     aria-label={t('common.download')}
                   >
                     <Download className="size-4" />
@@ -396,6 +396,6 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
           )}
         </div>
       )}
-    </section>
+    </div>
   );
 };

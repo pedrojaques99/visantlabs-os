@@ -63,7 +63,6 @@ export const ListSection: React.FC<ListSectionProps> = ({
               <Textarea
                 value={item}
                 onChange={(e) => handleItemChange(index, e.target.value)}
-                placeholder="Digite o item..."
                 className={`bg-transparent font-manrope text-sm min-h-[80px] pr-8 ${
                   theme === 'dark'
                     ? 'border-neutral-700/50 text-neutral-300'
@@ -73,9 +72,7 @@ export const ListSection: React.FC<ListSectionProps> = ({
               <Button
                 variant="ghost"
                 onClick={() => handleRemoveItem(index)}
-                className={`absolute top-2 right-2 p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive ${
-                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                }`}
+                className="absolute top-2 right-2 p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive text-muted-foreground"
                 title="Remover item"
               >
                 <X className="h-4 w-4" />
@@ -86,7 +83,7 @@ export const ListSection: React.FC<ListSectionProps> = ({
         <Button
           variant="ghost"
           onClick={handleAddItem}
-          className={`flex items-center gap-2 px-4 py-2 border hover:border-neutral-600/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-colors duration-300 ${
+          className={`flex items-center gap-2 px-4 py-2 border hover:border-neutral-600/50 hover:text-foreground rounded-xl text-sm transition-colors duration-300 ${
             theme === 'dark'
               ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
               : 'bg-neutral-100 border-neutral-300 text-neutral-800'
@@ -110,13 +107,7 @@ export const ListSection: React.FC<ListSectionProps> = ({
               : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'
           }`}
         >
-          <p
-            className={`text-sm font-manrope leading-relaxed ${
-              theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
-            }`}
-          >
-            {item}
-          </p>
+          <p className="text-sm font-manrope leading-relaxed text-foreground">{item}</p>
         </div>
       ))}
     </div>

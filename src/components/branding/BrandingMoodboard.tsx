@@ -245,20 +245,14 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                       onChange={(e) => handleNameChange(e.target.value)}
                       onKeyDown={handleNameKeyDown}
                       onFocus={(e) => e.target.select()}
-                      placeholder={t('branding.projectNamePlaceholder') || 'Nome do projeto'}
-                      className={`flex-1 text-xl md:text-2xl font-semibold font-manrope bg-transparent border-b-2 border-neutral-600/50 focus:border-neutral-600 focus:outline-none pb-1 transition-colors ${
-                        theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-                      }`}
+                      placeholder={t('branding.projectNamePlaceholder')}
+                      className="flex-1 text-xl md:text-2xl font-semibold font-manrope bg-transparent border-b-2 border-neutral-600/50 focus:border-neutral-600 focus:outline-none pb-1 transition-colors text-foreground"
                       autoFocus
                     />
                     <Button
                       variant="brand"
                       onClick={handleNameAccept}
-                      className={`p-1.5 rounded-md transition-colors ${
-                        theme === 'dark'
-                          ? 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan'
-                          : 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-foreground'
-                      }`}
+                      size="icon-sm"
                       title="Salvar (Enter)"
                     >
                       <Check className="h-4 w-4" />
@@ -281,9 +275,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                     {localProjectName ? (
                       <>
                         <h2
-                          className={`text-xl md:text-2xl font-semibold font-manrope cursor-pointer hover:text-brand-cyan transition-colors truncate ${
-                            theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
-                          }`}
+                          className="text-xl md:text-2xl font-semibold font-manrope cursor-pointer hover:text-foreground transition-colors truncate text-foreground"
                           onClick={() => setIsEditingName(true)}
                           title={localProjectName}
                         >
@@ -295,25 +287,18 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                           className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded ${
                             theme === 'dark' ? 'hover:bg-neutral-950/70' : 'hover:bg-neutral-200'
                           }`}
-                          title={t('branding.editProjectName') || 'Editar nome do projeto'}
+                          title={t('branding.editProjectName')}
                         >
-                          <Edit2
-                            className={`h-4 w-4 hover:text-brand-cyan ${
-                              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                            }`}
-                          />
+                          <Edit2 className="h-4 w-4 hover:text-foreground text-muted-foreground" />
                         </Button>
                       </>
                     ) : (
                       <Button
                         variant="ghost"
                         onClick={() => setIsEditingName(true)}
-                        className={`text-xl md:text-2xl font-semibold font-manrope hover:text-brand-cyan transition-colors ${
-                          theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
-                        }`}
+                        className="text-xl md:text-2xl font-semibold font-manrope hover:text-foreground transition-colors text-muted-foreground"
                       >
-                        {t('branding.projectNamePlaceholder') ||
-                          'Clique para adicionar nome do projeto'}
+                        {t('branding.projectNamePlaceholder')}
                       </Button>
                     )}
                   </div>
@@ -325,7 +310,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                     variant="ghost"
                     onClick={onGenerateAll}
                     disabled={generatingSteps.size > 0}
-                    className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:border-neutral-600/50 hover:text-brand-cyan ${
+                    className={`px-4 py-2 border rounded-xl text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:border-neutral-600/50 hover:text-foreground ${
                       theme === 'dark'
                         ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300 disabled:border-neutral-800/30 disabled:text-neutral-600'
                         : 'bg-neutral-100 border-neutral-300 text-neutral-800 disabled:border-neutral-200 disabled:text-neutral-400'
@@ -338,7 +323,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                 <Button
                   variant="ghost"
                   onClick={handleGeneratePDF}
-                  className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 hover:border-neutral-600/50 hover:text-brand-cyan ${
+                  className={`px-4 py-2 border rounded-xl text-sm transition-colors flex items-center gap-2 hover:border-neutral-600/50 hover:text-foreground ${
                     theme === 'dark'
                       ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
                       : 'bg-neutral-100 border-neutral-300 text-neutral-800'
@@ -347,16 +332,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                   <FileDown className="h-4 w-4" />
                   {t('branding.generatePDF')}
                 </Button>
-                <Button
-                  variant="brand"
-                  onClick={handleSave}
-                  disabled={isSaving || !hasContent(1)}
-                  className={`px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
-                    theme === 'dark'
-                      ? 'disabled:bg-neutral-700 disabled:text-neutral-500'
-                      : 'disabled:bg-neutral-300 disabled:text-neutral-400'
-                  }`}
-                >
+                <Button variant="brand" onClick={handleSave} disabled={isSaving || !hasContent(1)}>
                   <Save className="h-4 w-4" />
                   {isSaving ? t('branding.saving') : t('branding.saveProject')}
                 </Button>

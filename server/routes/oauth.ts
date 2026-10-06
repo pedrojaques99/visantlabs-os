@@ -1534,8 +1534,11 @@ router.get('/oauth/authorized-apps', async (req, res) => {
     });
 
     const clientIds = [...new Set(tokens.map((t) => t.clientId))];
+    // select só do que a lista usa: clientes antigos têm updatedAt null na base,
+    // e ler o documento inteiro estourava 500 na tela de apps conectados.
     const clients = await prisma.oAuthClient.findMany({
       where: { clientId: { in: clientIds } },
+      select: { clientId: true, clientName: true },
     });
     const clientMap = new Map(clients.map((c) => [c.clientId, c]));
 

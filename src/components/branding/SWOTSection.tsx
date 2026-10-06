@@ -87,7 +87,7 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
             : 'bg-neutral-100 border-neutral-300'
         }`}
       >
-        <h4 className={`font-semibold ${colorClass} mb-3 font-manrope text-base`}>{title}</h4>
+        <h4 className={`font-medium ${colorClass} mb-3 font-manrope text-base`}>{title}</h4>
         <div className="space-y-2">
           {items.map((item, index) => (
             <div key={index} className="relative">
@@ -96,7 +96,6 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
                   <Textarea
                     value={item}
                     onChange={(e) => handleItemChange(category, index, e.target.value)}
-                    placeholder="Digite o item..."
                     className={`bg-transparent font-manrope text-sm min-h-[60px] pr-8 flex-1 ${
                       theme === 'dark'
                         ? 'border-neutral-700/50 text-neutral-300'
@@ -106,22 +105,14 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
                   <Button
                     variant="ghost"
                     onClick={() => handleRemoveItem(category, index)}
-                    className={`p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive self-start mt-2 ${
-                      theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                    }`}
+                    className="p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive self-start mt-2 text-muted-foreground"
                     title="Remover item"
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
               ) : (
-                <div
-                  className={`text-sm font-manrope leading-relaxed ${
-                    theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
-                  }`}
-                >
-                  {item}
-                </div>
+                <div className="text-sm font-manrope leading-relaxed text-foreground">{item}</div>
               )}
             </div>
           ))}
@@ -129,7 +120,7 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
             <Button
               variant="ghost"
               onClick={() => handleAddItem(category)}
-              className={`flex items-center gap-2 px-3 py-2 border hover:border-neutral-600/50 hover:text-brand-cyan rounded-md text-xs font-mono transition-colors duration-300 mt-2 ${
+              className={`flex items-center gap-2 px-3 py-2 border hover:border-neutral-600/50 hover:text-foreground rounded-md text-xs transition-colors duration-300 mt-2 ${
                 theme === 'dark'
                   ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-400'
                   : 'bg-neutral-200 border-neutral-300 text-neutral-700'
@@ -148,28 +139,23 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {renderCategory(
         'strengths',
-        t('branding.strengths') || 'Strengths',
+        t('branding.strengths'),
         'text-success',
         'hover:border-success/30'
       )}
       {renderCategory(
         'weaknesses',
-        t('branding.weaknesses') || 'Weaknesses',
+        t('branding.weaknesses'),
         'text-destructive',
         'hover:border-destructive/30'
       )}
       {renderCategory(
         'opportunities',
-        t('branding.opportunities') || 'Opportunities',
-        'text-blue-400',
-        'hover:border-blue-400/30'
+        t('branding.opportunities'),
+        'text-chart-2',
+        'hover:border-chart-2/30'
       )}
-      {renderCategory(
-        'threats',
-        t('branding.threats') || 'Threats',
-        'text-orange-400',
-        'hover:border-orange-400/30'
-      )}
+      {renderCategory('threats', t('branding.threats'), 'text-warning', 'hover:border-warning/30')}
     </div>
   );
 };

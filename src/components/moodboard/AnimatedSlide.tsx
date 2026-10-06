@@ -28,6 +28,7 @@ export const AnimatedSlide: React.FC<AnimatedSlideProps> = ({
   });
 
   return (
+    // EXCEÇÃO ao audit:design/inline-background-color: fundo do vídeo renderizado pelo Remotion (saída), não cromo.
     <AbsoluteFill style={{ backgroundColor: '#000', overflow: 'hidden' }}>
       <Img
         src={imageUrl}

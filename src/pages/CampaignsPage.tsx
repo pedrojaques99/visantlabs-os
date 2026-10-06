@@ -17,6 +17,8 @@ import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
+import { Thumb } from '@/components/ui/Thumb';
+import { StatusBadge, type ItemStatus } from '@/components/shared/StatusBadge';
 import { useActiveBrand } from '@/contexts/ActiveBrandContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useCampaigns, useCampaign } from '@/hooks/queries/useCampaigns';
@@ -71,7 +73,7 @@ export const CampaignsPage: React.FC = () => {
           <button
             onClick={() => navigate(brandId ? `/create?brandId=${brandId}` : '/create')}
             title={t('campaigns.creative')}
-            className="shrink-0 flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-md text-xs text-neutral-400 border border-white/10 bg-neutral-900/50 hover:border-neutral-600 hover:text-neutral-200 transition-colors"
+            className="shrink-0 flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-md text-xs text-muted-foreground border border-border bg-card hover:border-border-hover hover:text-foreground transition-colors"
           >
             <Wand2 size={12} />
             <span className="hidden md:inline">{t('campaigns.creative')}</span>
@@ -98,14 +100,11 @@ export const CampaignsPage: React.FC = () => {
       ) : isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="rounded-xl border border-white/10 bg-neutral-900/30 overflow-hidden"
-            >
-              <div className="aspect-[4/3] bg-neutral-900 animate-pulse" />
-              <div className="p-3 space-y-2 border-t border-white/10">
-                <div className="h-2.5 w-32 bg-neutral-800 rounded animate-pulse" />
-                <div className="h-1.5 w-full bg-neutral-800 rounded animate-pulse" />
+            <div key={i} className="rounded-xl border border-border bg-card overflow-hidden">
+              <div className="aspect-[4/3] bg-muted animate-pulse" />
+              <div className="p-3 space-y-2 border-t border-border">
+                <div className="h-2.5 w-32 bg-muted rounded animate-pulse" />
+                <div className="h-1.5 w-full bg-muted rounded animate-pulse" />
               </div>
             </div>
           ))}
@@ -135,23 +134,14 @@ export const CampaignsPage: React.FC = () => {
   );
 };
 
-// Chaves de tradução ESCRITAS POR EXTENSO (não montadas em template): o scanner
-// de i18n bloqueia chave dinâmica que ele não consegue resolver estaticamente —
-// e é justamente esse tipo de chave que some de um locale sem ninguém notar.
-const STATUS_META: Record<CampaignSummary['status'], { color: string; labelKey: string }> = {
-  planning: { color: 'text-neutral-400', labelKey: 'campaigns.status.planning' },
-  generating: { color: 'text-neutral-300', labelKey: 'campaigns.status.generating' },
-  done: { color: 'text-success', labelKey: 'campaigns.status.done' },
-  error: { color: 'text-destructive', labelKey: 'campaigns.status.error' },
+// Status de campanha no vocabulário do StatusBadge compartilhado (SSoT de status).
+const CAMPAIGN_STATUS: Record<CampaignSummary['status'], ItemStatus> = {
+  planning: 'queued',
+  generating: 'processing',
+  done: 'done',
+  error: 'error',
 };
-
-function StatusBadge({ status }: { status: CampaignSummary['status'] }) {
-  const { t } = useTranslation();
-  const meta = STATUS_META[status] ?? STATUS_META.planning;
-  return (
-    <span className={cn('text-2xs font-mono tracking-wide', meta.color)}>{t(meta.labelKey)}</span>
-  );
-}
+const toItemStatus = (s: CampaignSummary['status']): ItemStatus => CAMPAIGN_STATUS[s] ?? 'queued';
 
 function CampaignCard({ c, onOpen }: { c: CampaignSummary; onOpen: () => void }) {
   const { t } = useTranslation();
@@ -159,40 +149,37 @@ function CampaignCard({ c, onOpen }: { c: CampaignSummary; onOpen: () => void })
   return (
     <button
       onClick={onOpen}
-      className="group text-left rounded-xl border border-white/10 bg-neutral-900/30 overflow-hidden hover:border-white/20 transition-colors"
+      className="text-left rounded-xl border border-border bg-card overflow-hidden hover:border-border-hover transition-colors"
     >
-      <div className="relative aspect-[4/3] bg-neutral-900 flex items-center justify-center overflow-hidden">
-        {c.coverImageUrl ? (
-          <img
-            src={c.coverImageUrl}
-            alt={c.name}
-            loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-          />
-        ) : (
-          <ImageOff size={20} className="text-neutral-700" />
-        )}
-        <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm border border-white/10">
-          <StatusBadge status={c.status} />
+      <div className="relative aspect-[4/3] bg-muted overflow-hidden">
+        <Thumb
+          src={c.coverImageUrl || undefined}
+          alt={c.name}
+          loading="lazy"
+          fallbackIcon={ImageOff}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-background/80 border border-border">
+          <StatusBadge status={toItemStatus(c.status)} />
         </div>
       </div>
-      <div className="p-3 space-y-2 border-t border-white/10">
-        <p className="text-xs text-neutral-200 truncate">{c.name}</p>
-        <div className="flex items-center justify-between text-2xs font-mono text-neutral-500">
+      <div className="p-3 space-y-2 border-t border-border">
+        <p className="text-xs text-foreground truncate">{c.name}</p>
+        <div className="flex items-center justify-between text-2xs text-muted-foreground">
           {c.totalCount ? (
-            <span>
+            <span className="tabular-nums">
               {c.completedCount}/{c.totalCount} {t('campaigns.ads')}
             </span>
           ) : (
-            <StatusBadge status={c.status} />
+            <span />
           )}
-          <span className="truncate ml-2">{c.formats.join(' · ')}</span>
+          <span className="truncate ml-2 font-mono">{c.formats.join(', ')}</span>
         </div>
-        <div className="h-1 rounded-full bg-neutral-800 overflow-hidden">
+        <div className="h-1 rounded-full bg-muted overflow-hidden">
           <div
             className={cn(
               'h-full transition-colors',
-              c.status === 'error' ? 'bg-destructive/70' : 'bg-neutral-500'
+              c.status === 'error' ? 'bg-destructive/70' : 'bg-muted-foreground'
             )}
             style={{ width: `${pct}%` }}
           />
@@ -215,13 +202,13 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
       actions={
         <div className="flex items-center gap-3">
           {campaign && campaign.totalCount ? (
-            <span className="text-xs text-neutral-500">
+            <span className="text-xs text-muted-foreground tabular-nums">
               {campaign.completedCount}/{campaign.totalCount}
             </span>
           ) : null}
           <button
             onClick={onBack}
-            className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             aria-label={t('campaigns.detail.backAria')}
           >
             <ArrowLeft size={14} />
@@ -232,7 +219,7 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
     >
       {isLoading ? (
         <div className="flex items-center justify-center py-24">
-          <Loader2 size={20} className="animate-spin text-neutral-600" />
+          <Loader2 size={20} className="animate-spin text-muted-foreground" />
         </div>
       ) : isError ? (
         <ErrorState
@@ -243,10 +230,10 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
       ) : results.length === 0 ? (
         <div className="flex items-center justify-center py-24">
           <GlassPanel padding="lg" className="max-w-md text-center">
-            <MicroTitle as="h3" className="text-neutral-300 mb-2">
+            <MicroTitle as="h3" className="text-foreground mb-2">
               {t('campaigns.detail.noResults')}
             </MicroTitle>
-            <p className="text-sm text-neutral-500">
+            <p className="text-sm text-muted-foreground">
               {campaign?.status === 'error'
                 ? campaign?.error || t('campaigns.detail.failed')
                 : t('campaigns.detail.stillGenerating')}
@@ -256,21 +243,16 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {results.map((r) => (
-            <div
-              key={r.index}
-              className="rounded-xl border border-white/10 bg-neutral-900/30 overflow-hidden"
-            >
-              <div className="relative aspect-square bg-neutral-900 flex items-center justify-center">
-                <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm border border-white/10">
-                  <span className="text-2xs font-mono text-neutral-300 tracking-wide">
-                    {r.adAngle}
-                  </span>
+            <div key={r.index} className="rounded-xl border border-border bg-card overflow-hidden">
+              <div className="relative aspect-square bg-muted flex items-center justify-center">
+                <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded bg-background/80 border border-border">
+                  <span className="text-2xs text-foreground">{r.adAngle}</span>
                 </div>
-                <div className="absolute top-2 right-2 z-10 px-1.5 py-0.5 rounded bg-black/50 border border-neutral-800">
-                  <span className="text-2xs font-mono text-neutral-500">{r.format}</span>
+                <div className="absolute top-2 right-2 z-10 px-1.5 py-0.5 rounded bg-background/80 border border-border">
+                  <span className="text-2xs font-mono text-muted-foreground">{r.format}</span>
                 </div>
                 {r.status === 'done' && r.imageUrl ? (
-                  <img
+                  <Thumb
                     src={r.imageUrl}
                     alt={r.adAngle}
                     loading="lazy"
@@ -279,20 +261,20 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
                 ) : r.status === 'error' ? (
                   <div className="flex flex-col items-center gap-2 px-4 text-center">
                     <AlertCircle size={20} className="text-destructive/60" />
-                    <span className="text-2xs font-mono text-destructive">{r.error}</span>
+                    <span className="text-2xs text-destructive">{r.error}</span>
                   </div>
                 ) : (
-                  <Loader2 size={22} className="animate-spin text-neutral-600" />
+                  <Loader2 size={22} className="animate-spin text-muted-foreground" />
                 )}
               </div>
               {r.status === 'done' && r.imageUrl && (
-                <div className="p-3 border-t border-white/10">
+                <div className="p-3 border-t border-border">
                   <a
                     href={r.imageUrl}
                     download={`campaign-${r.index}.png`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 px-2 py-1 w-fit rounded text-2xs font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-colors"
+                    className="flex items-center gap-1 px-2 py-1 w-fit rounded text-2xs text-muted-foreground hover:text-foreground border border-border hover:border-border-hover transition-colors"
                   >
                     <Download size={10} />
                     {t('campaigns.detail.download')}

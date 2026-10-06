@@ -24,9 +24,8 @@ export const sb = {
   /** Container com borda à direita (pane de lista ao lado do conteúdo). */
   containerBordered:
     'flex flex-col h-full bg-sidebar text-sidebar-foreground border-r border-sidebar-border overflow-y-auto',
-  /** Rótulo de seção (mono, uppercase, discreto). */
-  sectionLabel:
-    'px-2.5 py-1 text-2xs font-mono uppercase tracking-wider text-sidebar-foreground/50',
+  /** Rótulo de seção (discreto, sem mono: é copy, não dado técnico). */
+  sectionLabel: 'px-2.5 py-1 text-xs font-medium text-sidebar-foreground/50',
   /** Item de navegação — estado ocioso. */
   item: 'w-full min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
   /** Item ativo (destino atual). */

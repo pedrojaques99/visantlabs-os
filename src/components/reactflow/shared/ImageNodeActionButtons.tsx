@@ -3,6 +3,7 @@ import { Maximize2, Heart, Download, FileText, Trash2, Palette, X, Scissors } fr
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { cn } from '@/lib/utils';
 import { NodeButton } from './node-button';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ImageNodeActionButtonsProps {
   // View button
@@ -77,8 +78,11 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
   onRemove,
   showRemove = false,
   translationKeyPrefix = 'canvasNodes.imageNode',
-  t = (key: string) => key,
 }) => {
+  const { t, tOr } = useTranslation();
+  // Prefixo do nó primeiro; sem a chave lá, cai no rótulo genérico do imageNode/shared.
+  const label = (key: string, fallbackKey: string) =>
+    tOr(`${translationKeyPrefix}.${key}`, t(fallbackKey));
   const handleClick = (e: React.MouseEvent, handler?: () => void) => {
     e.stopPropagation();
     handler?.();
@@ -95,7 +99,7 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           variant="ghost"
           onClick={(e) => handleClick(e, onView)}
           className="p-1"
-          title={t(`${translationKeyPrefix}.viewFullScreen`) || 'View full screen'}
+          title={label('viewFullScreen', 'canvasNodes.imageNode.viewFullScreen')}
           onMouseDown={handleMouseDown}
         >
           <Maximize2 size={12} strokeWidth={2} />
@@ -118,8 +122,8 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           className="p-1"
           title={
             isDownloading
-              ? t('canvasNodes.shared.downloading') || 'Downloading...'
-              : t(`${translationKeyPrefix}.downloadImage`) || 'Download image'
+              ? t('canvasNodes.shared.downloading')
+              : label('downloadImage', 'canvasNodes.imageNode.downloadImage')
           }
           onMouseDown={handleMouseDown}
         >
@@ -132,7 +136,7 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           variant="ghost"
           onClick={(e) => handleClick(e, onDelete)}
           className="p-1 !text-destructive !bg-destructive/10 hover:!bg-destructive/20"
-          title={t(`${translationKeyPrefix}.delete`) || 'Delete'}
+          title={label('delete', 'common.delete')}
           onMouseDown={handleMouseDown}
         >
           <Trash2 size={12} strokeWidth={2} />
@@ -145,7 +149,7 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           onClick={(e) => handleClick(e, onBrandKit)}
           disabled={brandKitDisabled}
           className="p-1"
-          title={t(`${translationKeyPrefix}.brandKit`) || 'Brand Kit'}
+          title={label('brandKit', 'canvasNodes.imageNode.brandKit')}
           onMouseDown={handleMouseDown}
         >
           <Palette size={12} strokeWidth={2} />
@@ -171,10 +175,10 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           className={cn('p-1', isLiked && !isSaving && 'text-foreground bg-brand-cyan/10')}
           title={
             isLiked
-              ? t(`${translationKeyPrefix}.removeFromFavorites`) || 'Remove from favorites'
+              ? label('removeFromFavorites', 'canvasNodes.imageNode.removeFromFavorites')
               : onSave
-                ? t(`${translationKeyPrefix}.saveToCollection`) || 'Save to collection'
-                : t(`${translationKeyPrefix}.addToFavorites`) || 'Add to favorites'
+                ? label('saveToCollection', 'canvasNodes.shared.saveToCollection')
+                : label('addToFavorites', 'canvasNodes.imageNode.addToFavorites')
           }
           onMouseDown={handleMouseDown}
         >
@@ -190,8 +194,8 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
         <NodeButton
           variant="ghost"
           onClick={(e) => handleClick(e, onEditImage)}
-          className="p-1 !text-brand-cyan !bg-brand-cyan/10 hover:!bg-brand-cyan/20"
-          title={t(`${translationKeyPrefix}.editImage`) || 'Edit Image'}
+          className="p-1"
+          title={label('editImage', 'canvasNodes.shared.editImage')}
           onMouseDown={handleMouseDown}
         >
           <Scissors size={12} strokeWidth={2} />
@@ -206,8 +210,8 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           className="p-1"
           title={
             isDescribing
-              ? t(`${translationKeyPrefix}.analyzingImage`) || 'Analyzing image...'
-              : t(`${translationKeyPrefix}.describeImageWithAI`) || 'Describe image with AI'
+              ? label('analyzingImage', 'canvasNodes.imageNode.analyzingImage')
+              : label('describeImageWithAI', 'canvasNodes.imageNode.describeImageWithAI')
           }
           onMouseDown={handleMouseDown}
         >
@@ -220,11 +224,7 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           variant="ghost"
           onClick={(e) => handleClick(e, onRemove)}
           className="p-1 !text-destructive !bg-destructive/10 hover:!bg-destructive/20"
-          title={
-            t(`${translationKeyPrefix}.removeLogo`) ||
-            t(`${translationKeyPrefix}.remove`) ||
-            'Remove'
-          }
+          title={label('removeLogo', 'canvasNodes.shared.remove')}
           onMouseDown={handleMouseDown}
         >
           <X size={12} strokeWidth={2} />

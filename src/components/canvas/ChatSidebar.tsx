@@ -25,6 +25,7 @@ import { fileToBase64 } from '@/utils/fileUtils';
 
 import { ChatMessage } from '../shared/chat/ChatMessage';
 import { ChatInput } from '../shared/chat/ChatInput';
+import { useRegisterChatPanel } from './chatPanelPresence';
 
 interface ChatSidebarProps {
   nodeData: ChatNodeData;
@@ -45,6 +46,7 @@ export const ChatSidebar = ({
   variant,
 }: ChatSidebarProps) => {
   const { t } = useTranslation();
+  useRegisterChatPanel(nodeId);
   const [inputMessage, setInputMessage] = useState('');
   const messagesAreaRef = useRef<HTMLDivElement>(null);
   const mediaInputRef = useRef<HTMLInputElement>(null);
@@ -121,7 +123,7 @@ export const ChatSidebar = ({
     if (onUpdateData) {
       onUpdateData(nodeId, { systemPrompt: systemPrompt.trim() || undefined });
       setShowSystemPromptEditor(false);
-      toast.success(t('canvasNodes.chatNode.systemPromptSaved') || 'System prompt saved', {
+      toast.success(t('canvasNodes.chatNode.systemPromptSaved'), {
         duration: 2000,
       });
     }
@@ -133,10 +135,7 @@ export const ChatSidebar = ({
       onUpdateData(nodeId, { systemPrompt: undefined });
       setSystemPrompt('');
       setShowSystemPromptEditor(false);
-      toast.success(
-        t('canvasNodes.chatNode.systemPromptReset') || 'System prompt reset to default',
-        { duration: 2000 }
-      );
+      toast.success(t('canvasNodes.chatNode.systemPromptReset'), { duration: 2000 });
     }
   }, [nodeId, onUpdateData, t]);
 
@@ -210,7 +209,7 @@ export const ChatSidebar = ({
       }
 
       if (!file.type.startsWith('image/')) {
-        toast.error(t('upload.unsupportedFileType') || 'Please select an image file', {
+        toast.error(t('upload.unsupportedFileType'), {
           duration: 3000,
         });
         return;
@@ -218,7 +217,7 @@ export const ChatSidebar = ({
 
       const MAX_FILE_SIZE = 10 * 1024 * 1024;
       if (file.size > MAX_FILE_SIZE) {
-        toast.error(t('upload.imageTooLarge') || 'File size exceeds 10MB limit', {
+        toast.error(t('upload.imageTooLarge'), {
           duration: 5000,
         });
         return;
@@ -230,7 +229,7 @@ export const ChatSidebar = ({
         if (nodeData.onAttachMedia) {
           const newNodeId = nodeData.onAttachMedia(nodeId, imageData.base64, imageData.mimeType);
           if (newNodeId) {
-            toast.success(t('canvasNodes.chatNode.mediaAttached') || 'Image node created!', {
+            toast.success(t('canvasNodes.chatNode.mediaAttached'), {
               duration: 2000,
             });
           }
@@ -247,7 +246,7 @@ export const ChatSidebar = ({
             true
           );
           if (newNodeId) {
-            toast.success(t('canvasNodes.chatNode.mediaAttached') || 'Image node created!', {
+            toast.success(t('canvasNodes.chatNode.mediaAttached'), {
               duration: 2000,
             });
           }
@@ -270,7 +269,9 @@ export const ChatSidebar = ({
         'relative',
         variant === 'embedded'
           ? 'border-none shadow-none bg-transparent'
-          : 'z-50 backdrop-blur-xl border-l border-neutral-800/50 shadow-2xl bg-neutral-950/70',
+          : // EXCEÇÃO ao ruido-scan/blur-em-card: painel lateral flutuante (z-50) sobre o canvas;
+            // o fundo é o board ao vivo, blur é de painel de topo, não de card no fluxo.
+            'z-50 backdrop-blur-xl border-l border-border shadow-2xl bg-background/70',
         'transition-[color,background-color,border-color,box-shadow,filter] duration-300 ease-out',
         'flex flex-col',
         'flex-shrink-0',
@@ -284,7 +285,7 @@ export const ChatSidebar = ({
     >
       <div className="flex flex-col h-full overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm min-w-0">
+        <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 min-w-0">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <div className="p-1.5 rounded-md bg-neutral-800/50 border border-neutral-700/40 shrink-0">
               <MessageSquare size={16} className="text-neutral-400" />
@@ -298,10 +299,10 @@ export const ChatSidebar = ({
               variant="ghost"
               onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
               className={cn(
-                'p-2 rounded-md border transition-all bg-neutral-900/60 border-neutral-700/40 text-neutral-400 hover:border-neutral-600/60 hover:text-neutral-200 hover:bg-neutral-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95',
-                showSystemPromptEditor && 'border-brand-cyan/50 text-foreground bg-brand-cyan/10'
+                'p-2 rounded-md border transition-[color,background-color,border-color,transform,box-shadow] bg-neutral-900/60 border-neutral-700/40 text-neutral-400 hover:border-neutral-600/60 hover:text-neutral-200 hover:bg-neutral-800/70 shadow-sm hover:shadow-md active:scale-95',
+                showSystemPromptEditor && 'border-ring bg-muted text-foreground'
               )}
-              title={t('canvasNodes.chatNode.systemPromptSettings') || 'System Prompt Settings'}
+              title={t('canvasNodes.chatNode.systemPromptSettings')}
             >
               <Settings2 size={14} />
             </Button>
@@ -310,10 +311,10 @@ export const ChatSidebar = ({
 
         {/* System Prompt Editor */}
         {showSystemPromptEditor && (
-          <div className="px-4 py-3 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/50 to-neutral-900/30 backdrop-blur-sm animate-in slide-in-from-top-1 duration-200">
+          <div className="px-4 py-3 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/50 to-neutral-900/30 animate-in slide-in-from-top-1 duration-200">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-neutral-300 font-semibold uppercase ">
-                {t('canvasNodes.chatNode.systemPrompt') || 'System Prompt (Agent Personality)'}
+              <label className="text-xs text-neutral-300 font-medium">
+                {t('canvasNodes.chatNode.systemPrompt')}
               </label>
               <div className="flex items-center gap-2">
                 {systemPrompt && (
@@ -322,38 +323,30 @@ export const ChatSidebar = ({
                     onClick={handleResetSystemPrompt}
                     className="text-xs px-2 py-1 rounded border border-neutral-600/40 text-neutral-400 hover:text-neutral-200 hover:border-neutral-500/60 transition-[color,background-color,border-color,filter]"
                   >
-                    {t('canvasNodes.chatNode.resetToDefault') || 'Reset to Default'}
+                    {t('canvasNodes.chatNode.resetToDefault')}
                   </Button>
                 )}
-                <Button
-                  variant="brand"
-                  onClick={handleSaveSystemPrompt}
-                  className="text-2xs px-2 py-1 rounded bg-brand-cyan/20 border border-brand-cyan/40 text-foreground hover:bg-brand-cyan/30 transition-colors"
-                >
-                  {t('common.save') || 'Save'}
+                <Button variant="primary" size="xs" onClick={handleSaveSystemPrompt}>
+                  {t('common.save')}
                 </Button>
               </div>
             </div>
             <Textarea
               value={systemPrompt}
               onChange={(e) => setSystemPrompt(e.target.value)}
-              placeholder={
-                t('canvasNodes.chatNode.systemPromptPlaceholder') ||
-                'Enter custom system prompt to personalize the agent personality. Leave empty to use default.'
-              }
-              className="resize-none bg-neutral-900/60 border-neutral-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm text-xs font-mono min-h-[120px] max-h-[300px]"
+              placeholder={t('canvasNodes.chatNode.systemPromptPlaceholder')}
+              className="resize-none bg-neutral-900/60 border-neutral-700/40 focus:border-ring focus:ring-1 focus:ring-ring text-xs font-mono min-h-[120px] max-h-[300px]"
               disabled={isLoading}
             />
             <MicroTitle className="text-xs mt-2 ">
               {' '}
-              {t('canvasNodes.chatNode.systemPromptHint') ||
-                'This prompt defines how the AI assistant behaves. Use it to customize tone, style, and expertise.'}{' '}
+              {t('canvasNodes.chatNode.systemPromptHint')}{' '}
             </MicroTitle>
           </div>
         )}
 
         {/* Credit Indicator */}
-        <div className="px-4 py-2.5 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/50 to-neutral-900/30 backdrop-blur-sm">
+        <div className="px-4 py-2.5 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/50 to-neutral-900/30">
           <div className="flex items-center justify-between text-xs mb-2">
             <span className="text-neutral-300 font-medium">
               {' '}
@@ -421,7 +414,7 @@ export const ChatSidebar = ({
           )}
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-muted/80 border-neutral-700/40 max-w-[85%] min-w-0 p-3.5 rounded-md backdrop-blur-sm shadow-sm flex items-center gap-2.5">
+              <div className="bg-muted/80 border-neutral-700/40 max-w-[85%] min-w-0 p-3.5 rounded-md shadow-sm flex items-center gap-2.5">
                 <GlitchLoader size={16} />
                 <span className="text-sm text-neutral-400">
                   {t('canvasNodes.chatNode.thinking')}
@@ -433,7 +426,7 @@ export const ChatSidebar = ({
 
         {/* Compact Context Preview at the bottom */}
         {hasContext && (
-          <div className="px-4 py-3 border-t border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm min-w-0">
+          <div className="px-4 py-3 border-t border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 min-w-0">
             <div className="flex items-center justify-between gap-4 min-w-0">
               <div className="flex items-center gap-3 overflow-x-auto py-0.5 min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 text-xs text-neutral-400 shrink-0 border-r border-neutral-700/40 pr-3 mr-1">
@@ -442,25 +435,25 @@ export const ChatSidebar = ({
                 </div>
 
                 {connectedImages.length > 0 && (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-neutral-800/50 border border-neutral-700/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-neutral-800/50 border border-neutral-700/30 rounded-full shrink-0 shadow-sm">
                     <ImageIcon size={11} className="text-neutral-400" />
-                    <MicroTitle className="text-xs text-neutral-300 font-bold">
+                    <MicroTitle className="text-xs text-neutral-300 font-medium">
                       {connectedImages.length}
                     </MicroTitle>
                   </div>
                 )}
                 {connectedText && (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-500/10 border border-purple-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
-                    <FileText size={11} className="text-purple-400" />
-                    <span className="text-xs text-purple-400 font-bold">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-neutral-800/50 border border-neutral-700/30 rounded-full shrink-0">
+                    <FileText size={11} className="text-neutral-400" />
+                    <span className="text-xs text-neutral-300 font-semibold tabular-nums">
                       {connectedText.length}
                     </span>
                   </div>
                 )}
                 {connectedStrategyData && (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-warning/10 border border-warning/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-warning/10 border border-warning/30 rounded-full shrink-0 shadow-sm">
                     <Target size={11} className="text-warning" />
-                    <span className="text-xs text-warning font-bold">
+                    <span className="text-xs text-warning font-medium">
                       {strategySections.length}
                     </span>
                   </div>
@@ -468,10 +461,11 @@ export const ChatSidebar = ({
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <Button
-                  variant="brand"
+                  variant="surface"
+                  size="xs"
                   onClick={handleSuggestMockups}
                   disabled={isLoading}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/40 rounded-md text-2xs text-brand-cyan transition-all disabled:opacity-50 tracking-tighter backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
+                  className="gap-1.5 px-3"
                 >
                   <Diamond size={11} />
                   <span>{t('canvasNodes.chatNode.suggestMockups')}</span>
@@ -480,8 +474,10 @@ export const ChatSidebar = ({
                 <Button
                   variant="ghost"
                   onClick={() => setExpandedStrategy(!expandedStrategy)}
-                  className="p-1.5 text-neutral-500 hover:text-neutral-300 transition-all rounded-md hover:bg-neutral-800/50"
-                  title="Toggle details"
+                  className="p-1.5 text-neutral-500 hover:text-neutral-300 transition-colors rounded-md hover:bg-neutral-800/50"
+                  title={t('canvasChat.toggleDetails')}
+                  aria-label={t('canvasChat.toggleDetails')}
+                  aria-expanded={expandedStrategy}
                 >
                   {expandedStrategy ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
                 </Button>
@@ -492,7 +488,7 @@ export const ChatSidebar = ({
             {expandedStrategy && (
               <div className="mt-3 pt-3 border-t border-neutral-700/20 space-y-3 animate-in slide-in-from-bottom-1 duration-200">
                 {connectedImages.length > 0 && (
-                  <div className="bg-neutral-900/60 p-2 rounded-md border border-neutral-700/30 backdrop-blur-sm shadow-sm">
+                  <div className="bg-neutral-900/60 p-2 rounded-md border border-neutral-700/30 shadow-sm">
                     <ConnectedImagesDisplay
                       images={connectedImages}
                       label=""
@@ -505,8 +501,10 @@ export const ChatSidebar = ({
 
                 <div className="flex flex-col gap-2">
                   {connectedText && (
-                    <div className="text-2xs text-neutral-300 font-mono line-clamp-2 bg-purple-500/10 p-2 rounded-md border border-purple-500/20 backdrop-blur-sm">
-                      <span className="text-purple-400 mr-1.5 uppercase font-semibold">Text:</span>
+                    <div className="text-2xs text-neutral-300 line-clamp-2 bg-neutral-900/60 p-2 rounded-md border border-neutral-700/30">
+                      <span className="text-neutral-500 mr-1.5 font-medium">
+                        {t('canvasChat.connectedText')}
+                      </span>
                       {connectedText}
                     </div>
                   )}
@@ -515,7 +513,7 @@ export const ChatSidebar = ({
                       {strategySections.map((s, i) => (
                         <span
                           key={i}
-                          className="text-2xs px-2 py-1 bg-warning/10 text-warning border border-warning/30 rounded-md font-mono uppercase backdrop-blur-sm shadow-sm"
+                          className="text-2xs px-2 py-1 bg-warning/10 text-warning border border-warning/30 rounded-md"
                         >
                           {s}
                         </span>
@@ -529,7 +527,7 @@ export const ChatSidebar = ({
         )}
 
         {/* Input Area */}
-        <div className="p-4 border-t border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/40 backdrop-blur-sm relative z-10">
+        <div className="p-4 border-t border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/40 relative z-10">
           <Input
             ref={mediaInputRef}
             type="file"
@@ -542,6 +540,8 @@ export const ChatSidebar = ({
             onChange={setInputMessage}
             onSend={handleSend}
             isLoading={isLoading}
+            // EXCEÇÃO ao ruido-scan/porta-repetida: com este painel aberto o ChatNode do mesmo
+            // chat troca o campo dele por um aviso (useRegisterChatPanel); um campo só na tela.
             placeholder={
               hasContext
                 ? t('canvasNodes.chatNode.askAboutContext')

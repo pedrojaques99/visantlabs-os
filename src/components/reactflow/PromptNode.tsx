@@ -521,7 +521,7 @@ export const PromptNode = memo(
       >
         {selected && !dragging && (
           <NodeResizer
-            color="brand-cyan"
+            color="var(--brand-cyan)"
             isVisible={selected}
             minWidth={NODE_LAYOUT.MIN_WIDTH}
             minHeight={NODE_LAYOUT.MIN_HEIGHT}
@@ -538,7 +538,7 @@ export const PromptNode = memo(
           type="target"
           position={Position.Left}
           id="text-input"
-          label={t('canvasNodes.promptNode.textInput') || 'Text'}
+          label={t('canvasNodes.promptNode.textInput')}
           className="handle-text-inverted"
           handleType="text"
           style={{ top: `${NODE_LAYOUT.HANDLE_START_TOP}px` }}
@@ -551,7 +551,7 @@ export const PromptNode = memo(
             type="target"
             position={Position.Left}
             id="input-1"
-            label={`${t('canvasNodes.promptNode.imageInput') || 'Image'} 1`}
+            label={`${t('canvasNodes.promptNode.imageInput')} 1`}
             handleType="image"
             style={{ top: `${NODE_LAYOUT.HANDLE_START_TOP + NODE_LAYOUT.HANDLE_SPACING}px` }}
             isValidConnection={isValidConnection}
@@ -562,7 +562,7 @@ export const PromptNode = memo(
             type="target"
             position={Position.Left}
             id="input-2"
-            label={`${t('canvasNodes.promptNode.imageInput') || 'Image'} 2`}
+            label={`${t('canvasNodes.promptNode.imageInput')} 2`}
             handleType="image"
             style={{ top: `${NODE_LAYOUT.HANDLE_START_TOP + NODE_LAYOUT.HANDLE_SPACING * 2}px` }}
             isValidConnection={isValidConnection}
@@ -573,7 +573,7 @@ export const PromptNode = memo(
             type="target"
             position={Position.Left}
             id="input-3"
-            label={`${t('canvasNodes.promptNode.imageInput') || 'Image'} 3`}
+            label={`${t('canvasNodes.promptNode.imageInput')} 3`}
             handleType="image"
             style={{ top: `${NODE_LAYOUT.HANDLE_START_TOP + NODE_LAYOUT.HANDLE_SPACING * 3}px` }}
             isValidConnection={isValidConnection}
@@ -584,7 +584,7 @@ export const PromptNode = memo(
             type="target"
             position={Position.Left}
             id="input-4"
-            label={`${t('canvasNodes.promptNode.imageInput') || 'Image'} 4`}
+            label={`${t('canvasNodes.promptNode.imageInput')} 4`}
             handleType="image"
             style={{ top: `${NODE_LAYOUT.HANDLE_START_TOP + NODE_LAYOUT.HANDLE_SPACING * 4}px` }}
             isValidConnection={isValidConnection}
@@ -626,9 +626,9 @@ export const PromptNode = memo(
             >
               <div
                 className={cn(
-                  'flex items-center gap-2 px-2.5 py-1.5 rounded-lg border-node text-2xs font-mono transition-[color,background-color,border-color,box-shadow,opacity] duration-300',
+                  'flex items-center gap-2 px-2.5 py-1.5 rounded-xl border-node text-2xs font-mono transition-[color,background-color,border-color,box-shadow,opacity] duration-300',
                   isBrandActive
-                    ? 'bg-foreground/10 border-neutral-700 text-foreground shadow-[0_0_15px_rgba(255,255,255,0.05)]'
+                    ? 'bg-accent border-neutral-700 text-foreground shadow-[0_0_15px_rgba(255,255,255,0.05)]'
                     : 'bg-neutral-900/40 border-neutral-800/40 text-neutral-400 opacity-80'
                 )}
               >
@@ -640,21 +640,18 @@ export const PromptNode = memo(
                       'transition-colors'
                     )}
                   />
-                  {isBrandActive && (
-                    <div className="absolute -inset-0.5 rounded-full bg-brand-cyan/20 animate-ping pointer-events-none" />
-                  )}
                 </div>
-                <span className="text-2xs uppercase tracking-wider font-bold">
-                  {t('canvasNodes.promptNode.brandConnected') || 'Brand Guidelines'}
+                <span className="text-2xs font-medium">
+                  {t('canvasNodes.promptNode.brandConnected')}
                 </span>
                 <div className="flex items-center gap-1.5 ml-auto">
                   {connectedLogo && (
-                    <span className="px-1.5 py-0.5 bg-black/20 rounded border-node border-neutral-800 text-2xs">
+                    <span className="px-1.5 py-0.5 bg-muted rounded border-node border-neutral-800 text-2xs">
                       LOGO
                     </span>
                   )}
                   {connectedIdentity && (
-                    <span className="px-1.5 py-0.5 bg-black/20 rounded border-node border-neutral-800 text-2xs">
+                    <span className="px-1.5 py-0.5 bg-muted rounded border-node border-neutral-800 text-2xs">
                       IDENTITY
                     </span>
                   )}
@@ -667,7 +664,7 @@ export const PromptNode = memo(
         {/* Prompt Input */}
         <div className="node-margin">
           {hasTextNodeConnection && (
-            <div className="mb-1.5 text-2xs font-mono text-foreground/80 flex items-center gap-1">
+            <div className="mb-1.5 text-2xs font-mono text-foreground flex items-center gap-1">
               <span>•</span>
               <span>{t('canvasNodes.promptNode.connectedToTextNode')}</span>
             </div>
@@ -676,7 +673,7 @@ export const PromptNode = memo(
           {/* Prompt Functions Toolbar */}
           <div className="flex items-center justify-between mb-1.5 px-0.5">
             <div className="flex items-center gap-1.5">
-              <Tooltip content={t('canvasNodes.promptNode.loadPreset') || 'Load Preset'}>
+              <Tooltip content={t('canvasNodes.promptNode.loadPreset')}>
                 <NodeButton
                   variant="ghost"
                   size="xs"
@@ -692,7 +689,7 @@ export const PromptNode = memo(
               </Tooltip>
             </div>
 
-            <Tooltip content={t('canvasNodes.promptNode.savePrompt') || 'Save Prompt'}>
+            <Tooltip content={t('canvasNodes.promptNode.savePrompt')}>
               <NodeButton
                 variant="ghost"
                 size="xs"
@@ -722,7 +719,7 @@ export const PromptNode = memo(
             />
             {/* Prompt Suggestion Button */}
             {!hasTextNodeConnection && prompt.trim() && (
-              <Tooltip content={t('canvasNodes.promptNode.suggestPrompts') || 'Suggest AI Prompts'}>
+              <Tooltip content={t('canvasNodes.promptNode.suggestPrompts')}>
                 <NodeButton
                   variant="ghost"
                   size="xs"
@@ -755,10 +752,9 @@ export const PromptNode = memo(
                 exit={{ height: 0, opacity: 0 }}
                 className="mt-2 space-y-1.5 overflow-hidden"
               >
-                <div className="text-2xs font-mono text-foreground/80 mb-1.5 flex items-center gap-2">
+                <div className="text-2xs font-mono text-foreground mb-1.5 flex items-center gap-2">
                   <Diamond size={10} />
-                  {t('canvasNodes.promptNode.aiSuggestions') ||
-                    t('canvasNodes.promptNode.suggestions')}
+                  {t('canvasNodes.promptNode.aiSuggestions')}
                 </div>
                 {promptSuggestions.map((suggestion, index) => (
                   <NodeButton
@@ -880,9 +876,9 @@ export const PromptNode = memo(
 
         {/* Generate Image Button */}
         <Tooltip
-          content={`${
-            t('canvasNodes.promptNode.creditsRequired') || 'Costs'
-          } ${creditsRequired} ${t('canvasNodes.promptNode.credits')}`}
+          content={`${t(
+            'canvasNodes.promptNode.creditsRequired'
+          )} ${creditsRequired} ${t('canvasNodes.promptNode.credits')}`}
           delay={500}
         >
           <NodeButton
@@ -896,16 +892,16 @@ export const PromptNode = memo(
           >
             {isLoading ? (
               <div className="flex items-center justify-center gap-2">
-                <GlitchLoader size={14} color="brand-cyan" />
+                <GlitchLoader size={14} />
                 <span>{t('canvasNodes.promptNode.generating')}...</span>
               </div>
             ) : (
               <div className="flex items-center justify-center gap-2">
                 <ImageIcon size={14} className="group-hover/gen:rotate-12 transition-transform" />
-                <span className="font-semibold tracking-tight">
+                <span className="font-medium tracking-tight">
                   {t('canvasNodes.promptNode.generateImage')}
                 </span>
-                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-2xs text-foreground">
+                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-background/50 text-2xs text-foreground">
                   <Diamond size={10} className="opacity-70 fill-current" />
                   {creditsRequired}
                 </div>

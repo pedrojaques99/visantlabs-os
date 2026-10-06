@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown, ChevronUp, Sliders, Palette as PaletteIcon, X, Plus } from '@/lib/ui/icons';
+import {
+  ChevronDown,
+  ChevronUp,
+  Sliders,
+  Palette as PaletteIcon,
+  X,
+  Plus,
+  Check,
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { AdvancedOptions } from './AdvancedOptions';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -125,9 +133,12 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
     label: string;
     className?: string;
   }) => (
-    <div
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={value}
       className={cn(
-        `flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer border transition-colors duration-200 ${className}`,
+        `flex items-center gap-2 px-2 py-1.5 rounded-md border text-left transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${className}`,
         theme === 'dark'
           ? 'bg-neutral-800/40 border-neutral-700/40 hover:bg-neutral-800/60'
           : 'bg-neutral-100 border-neutral-200 hover:bg-neutral-200'
@@ -144,34 +155,12 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
               : 'bg-white border-neutral-400'
         )}
       >
-        {value && (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="10"
-            height="10"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-black"
-          >
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        )}
+        {value && <Check size={10} weight="bold" className="text-black" />}
       </div>
       <SkeletonText loading={isGenerating} className="min-w-0">
-        <label
-          className={cn(
-            'text-2xs font-mono select-none cursor-pointer',
-            theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-          )}
-        >
-          {label}
-        </label>
+        <span className={cn('text-2xs select-none', 'text-muted-foreground')}>{label}</span>
       </SkeletonText>
-    </div>
+    </button>
   );
 
   // Integrate with external color palettes (branding)
@@ -251,32 +240,17 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
         <AdvancedOptions {...advancedOptionsProps} isGenerating={isGenerating} />
 
         {/* Color Palette Panel (collapsible) */}
-        <div
-          className={`mt-2 rounded-xl border transition-colors duration-200 overflow-hidden ${
-            theme === 'dark'
-              ? 'bg-neutral-900/30 border-neutral-800'
-              : 'bg-white/50 border-neutral-200'
-          }`}
-        >
+        <div className="mt-2 rounded-xl border transition-colors duration-200 overflow-hidden bg-card border-border">
           <Button
             variant="ghost"
             onClick={() => setIsColorPaletteExpanded(!isColorPaletteExpanded)}
-            className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${
-              theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
-            }`}
+            className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${'hover:bg-accent'}`}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <PaletteIcon
-                size={14}
-                className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
-              />
+              <PaletteIcon size={14} className="text-muted-foreground" />
               <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
                 <SkeletonText loading={isGenerating}>
-                  <span
-                    className={`text-2xs ${
-                      theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-                    }`}
-                  >
+                  <span className={`text-2xs ${'text-muted-foreground'}`}>
                     {t('mockup.colorPalette')}
                   </span>
                 </SkeletonText>
@@ -290,7 +264,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
             <div className="flex items-center gap-2 flex-shrink-0">
               <SkeletonText loading={isGenerating}>
                 <span
-                  className={`text-2xs font-mono ${
+                  className={`text-2xs ${
                     theme === 'dark' ? 'text-neutral-600' : 'text-neutral-500'
                   }`}
                 >
@@ -310,28 +284,27 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
               {/* Selected Colors */}
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {selectedColors.map((color) => (
-                  <div
+                  <button
+                    type="button"
                     key={color}
                     onClick={() => onRemoveColor(color)}
-                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border cursor-pointer transition-colors duration-200 text-2xs font-mono group ${
+                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border transition-colors duration-200 text-2xs font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                       theme === 'dark'
                         ? 'border-neutral-700/40 bg-neutral-900/60 text-neutral-300 hover:bg-neutral-800 hover:border-neutral-600'
                         : 'border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100 hover:border-neutral-400'
                     }`}
-                    title={`Click to remove: ${color}`}
+                    aria-label={t('mockup.removeColor', { color })}
                   >
                     <span
-                      className="w-3.5 h-3.5 rounded-full border border-white/10"
+                      className="w-3.5 h-3.5 rounded-full border border-border"
                       style={{ backgroundColor: color }}
                     />
                     <span className="truncate max-w-[72px]">{color}</span>
                     <X
                       size={10}
-                      className={`opacity-0 group-hover:opacity-100 transition-opacity ${
-                        theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
-                      }`}
+                      className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}
                     />
-                  </div>
+                  </button>
                 ))}
 
                 {/* Suggested Colors */}
@@ -350,12 +323,12 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                           onAddColor();
                         }
                       }}
-                      className={`w-4 h-4 rounded-full border cursor-pointer transition-all duration-200 ${
+                      className={`w-4 h-4 rounded-full border cursor-pointer transition-[color,background-color,border-color,opacity,transform,filter] duration-200 ${
                         selectedColors.length >= 5
                           ? 'opacity-50 cursor-not-allowed'
                           : theme === 'dark'
-                            ? 'border-neutral-700/40 hover:border-neutral-500 hover:scale-110'
-                            : 'border-neutral-300 hover:border-neutral-400 hover:scale-110'
+                            ? 'border-neutral-700/40 hover:border-neutral-500'
+                            : 'border-neutral-300 hover:border-neutral-400'
                       }`}
                       style={{ backgroundColor: color }}
                       title={
@@ -387,10 +360,11 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                       onClick={() => colorPickerRef.current?.click()}
                       className={`flex items-center justify-center w-8 h-8 rounded-md border-2 border-dashed transition-colors duration-200 ${
                         theme === 'dark'
-                          ? 'border-neutral-700/40 text-neutral-400 hover:border-neutral-700 hover:text-brand-cyan hover:bg-neutral-800/50'
-                          : 'border-neutral-300 text-neutral-500 hover:border-neutral-700 hover:text-brand-cyan hover:bg-neutral-100'
+                          ? 'border-neutral-700/40 text-neutral-400 hover:border-neutral-700 hover:text-foreground hover:bg-neutral-800/50'
+                          : 'border-neutral-300 text-neutral-500 hover:border-neutral-700 hover:text-foreground hover:bg-neutral-100'
                       }`}
-                      title="Add new color"
+                      title={t('common.addColor')}
+                      aria-label={t('common.addColor')}
                     >
                       <Plus size={14} />
                     </Button>
@@ -417,7 +391,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
           <ToggleItem
             value={removeText}
             onChange={onRemoveTextChange}
-            label={t('mockup.removeText') || 'Remover texto'}
+            label={t('mockup.removeText')}
             className={'flex-1'}
           />
           <ToggleItem

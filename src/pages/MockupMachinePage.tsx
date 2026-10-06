@@ -100,8 +100,9 @@ function resolveModelLabel(model: string): string {
 }
 
 export const MockupMachinePage: React.FC = () => {
+  const { t } = useTranslation();
   return (
-    <CanvasErrorBoundary fallbackMessage="Mockup Machine crashed — your credits are safe">
+    <CanvasErrorBoundary fallbackMessage={t('mockup.crashed')}>
       <MockupProvider>
         <MockupMachinePageContent />
       </MockupProvider>
@@ -381,30 +382,13 @@ const MockupMachinePageContent: React.FC = () => {
     ]
   );
 
-  // Restore state from localStorage on mount (prioritize edit-mockup if exists)
+  // Restore state from localStorage on mount
   useEffect(() => {
     // Only restore once on mount
     if (hasRestoredStateRef.current) return;
     hasRestoredStateRef.current = true;
 
     try {
-      // First check for edit-mockup (has priority)
-      const editMockupData = localStorage.getItem('edit-mockup');
-      if (editMockupData) {
-        try {
-          const editData = JSON.parse(editMockupData);
-          // Handle edit-mockup (existing logic would go here if needed)
-          // For now, just remove it to avoid conflicts
-          localStorage.removeItem('edit-mockup');
-        } catch (error) {
-          // Invalid edit-mockup data, remove it
-          localStorage.removeItem('edit-mockup');
-        }
-        // Don't restore persisted state if edit-mockup exists
-        setIsRestoring(false);
-        return;
-      }
-
       // Try to restore persisted state
       const persistedState = loadMockupState();
       if (persistedState) {
@@ -417,8 +401,6 @@ const MockupMachinePageContent: React.FC = () => {
         setHasGenerated(persistedState.hasGenerated);
         // Force mockupCount to 1 as requested - Essentialist approach
         setMockupCount(1);
-
-        // Let all tag arrays initialize empty. Zumbi State prevented.
 
         // Let all tag arrays initialize empty. Zumbi State prevented.
 
@@ -793,7 +775,7 @@ const MockupMachinePageContent: React.FC = () => {
       basePrompt +=
         " When placing the design, ensure a comfortable safe area or 'breathing room' around it. The design must never touch or be clipped by the edges of the mockup surface (e.g., the edges of a business card or a book cover).";
       basePrompt +=
-        ' CRITICAL: Analyze the provided logo image and ensure proper contrast between the logo and the mockup substrate. If the logo is white, it must never be placed on a white substrate - use dark or colored substrates instead.';
+        ' CRITICAL: Analyze the provided logo image and ensure proper contrast between the logo and the mockup substrate. If the logo is white, it must never be placed on a white substrate. Use dark or colored substrates instead.';
     }
 
     if (withHuman) {
@@ -966,7 +948,7 @@ const MockupMachinePageContent: React.FC = () => {
       }
 
       if (isCompareMode && compareModels.length === 0) {
-        toast.error('Select at least one model to compare', { duration: 5000 });
+        toast.error(t('mockup.selectModelToCompare'), { duration: 5000 });
         return;
       }
 
@@ -1341,10 +1323,7 @@ const MockupMachinePageContent: React.FC = () => {
 
       // Require a design type before generating any prompt
       if (!designType || designType === 'blank') {
-        toast.error(
-          t('messages.selectDesignTypeFirst') ||
-            'Selecione o tipo (logo ou layout) antes de gerar o prompt.'
-        );
+        toast.error(t('messages.selectDesignTypeFirst'));
         return;
       }
 
@@ -1352,10 +1331,7 @@ const MockupMachinePageContent: React.FC = () => {
       const hasRefImagesForSmartPrompt = referenceImages.length > 0;
       const hasValidDesignSetup = designType && (uploadedImage || hasRefImagesForSmartPrompt);
       if (!hasValidDesignSetup) {
-        toast.error(
-          t('messages.completeSteps') ||
-            'Complete as etapas de configuração antes de gerar o prompt.'
-        );
+        toast.error(t('messages.completeSteps'));
         return;
       }
 
@@ -1367,7 +1343,7 @@ const MockupMachinePageContent: React.FC = () => {
         try {
           const userHasApiKey = await hasGeminiApiKey();
           if (userHasApiKey) {
-            toast.info('API do usuário está sendo usada', {
+            toast.info(t('mockup.userApiKeyInUse'), {
               duration: 3000,
             });
           }
@@ -2166,7 +2142,6 @@ const MockupMachinePageContent: React.FC = () => {
     resetControls();
     // Clear persisted state from localStorage
     clearMockupState();
-    localStorage.removeItem('edit-mockup');
   };
 
   const handleDesignTypeChange = (type: DesignType) => {
@@ -2417,12 +2392,9 @@ const MockupMachinePageContent: React.FC = () => {
   useEffect(() => {
     if (blocker.state === 'blocked') {
       setUnsavedDialogConfig({
-        message:
-          t('messages.unsavedChangesMessage') ||
-          'You have unsaved changes. Are you sure you want to discard them?',
+        message: t('messages.unsavedChangesMessage'),
         onConfirm: () => {
           clearMockupState();
-          localStorage.removeItem('edit-mockup');
           blocker.proceed();
         },
         onSaveAll: async () => {
@@ -3405,15 +3377,6 @@ Generate the new mockup image with the requested changes applied.`;
         keywords={t('mockup.seoKeywords')}
       />
 
-      {/* Marca demo ativa → lembrete persistente de trazer a marca real */}
-      <DemoBrandBanner brandId={selectedBrandGuideline} />
-
-      {/* Dynamic Background */}
-      <div className="fixed inset-0 z-0 pointer-events-none opacity-40">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,oklch(from var(--brand-cyan) l c h / 5%)_0%,transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,oklch(from var(--brand-cyan) l c h / 5%)_0%,transparent_50%)]" />
-      </div>
-
       <SoftwareApplicationSchema
         name="Mockup Machine"
         description={t('mockup.machine.gere_mockups_profissionais_com_inte')}
@@ -3427,20 +3390,22 @@ Generate the new mockup image with the requested changes applied.`;
       ) : (
         <div
           className={cn(
-            'h-full w-full bg-background overflow-hidden',
+            'h-full w-full bg-background overflow-hidden flex flex-col',
             !inShell && 'pt-12 md:pt-14'
           )}
         >
+          {/* Marca demo ativa: faixa em fluxo no topo da área de trabalho, abaixo do header */}
+          <DemoBrandBanner brandId={selectedBrandGuideline} />
           <div
             className={cn(
-              'flex h-full transition-all duration-300',
+              'flex flex-1 min-h-0',
               isSetupMode ? 'flex-col items-center justify-center p-4 md:p-8' : 'flex-row'
             )}
           >
             {/* Sidebar Orchestrator Container */}
             <div
               className={cn(
-                'z-30 transition-all duration-300 ease-in-out',
+                'z-30',
                 isSetupMode
                   ? 'w-full'
                   : [
@@ -3481,14 +3446,14 @@ Generate the new mockup image with the requested changes applied.`;
               <main
                 id="mockup-main-content"
                 className={cn(
-                  'flex-1 min-w-0 h-full relative overflow-hidden transition-all duration-300 flex flex-col',
-                  isSidebarCollapsed && 'lg:pl-16 shadow-[inset_20px_0_30px_-20px_rgba(0,0,0,0.3)]'
+                  'flex-1 min-w-0 h-full relative overflow-hidden flex flex-col',
+                  isSidebarCollapsed && 'lg:pl-16'
                 )}
               >
                 {/* Desktop Sidebar Toggle - Subtly docked to the sidebar edge near vertical center */}
                 <div
                   className={cn(
-                    'hidden lg:block absolute z-40 transition-all duration-300',
+                    'hidden lg:block absolute z-40 transition-[color,background-color,border-color,opacity,transform,filter] duration-300',
                     isSidebarCollapsed ? 'left-0 translate-x-3' : 'left-[-20px]'
                   )}
                   style={{ top: 'calc(50% - 20px)' }}
@@ -3497,13 +3462,11 @@ Generate the new mockup image with the requested changes applied.`;
                     variant="ghost"
                     onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                     size="icon"
-                    className="w-10 h-10 rounded-full bg-card border border-border hover:bg-muted text-muted-foreground hover:text-foreground shadow-2xl transition-all group"
-                    title={
-                      isSidebarCollapsed
-                        ? t('mockup.openSidebar') || 'Abrir barra lateral'
-                        : t('mockup.closeSidebar') || 'Fechar barra lateral'
+                    className="w-10 h-10 rounded-full bg-card border border-border hover:bg-muted text-muted-foreground hover:text-foreground shadow-2xl transition-[color,background-color,border-color,opacity,transform,filter] group"
+                    title={isSidebarCollapsed ? t('mockup.openSidebar') : t('mockup.closeSidebar')}
+                    aria-label={
+                      isSidebarCollapsed ? t('mockup.openSidebar') : t('mockup.closeSidebar')
                     }
-                    aria-label={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
                   >
                     {isSidebarCollapsed ? (
                       <PanelLeftOpen className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
@@ -3521,7 +3484,7 @@ Generate the new mockup image with the requested changes applied.`;
                       onClick={() => setIsSidebarVisibleMobile(false)}
                       size="icon"
                       className="w-10 h-10 rounded-full bg-card border-border text-muted-foreground hover:text-foreground shadow-xl"
-                      aria-label="Close sidebar"
+                      aria-label={t('mockup.closeSidebar')}
                     >
                       <Menu className="h-5 w-5 rotate-180" />
                     </Button>
@@ -3566,7 +3529,7 @@ Generate the new mockup image with the requested changes applied.`;
                   </div>
                 </div>
 
-                {/* Bottom Action Bar — fixed generation controls */}
+                {/* Bottom Action Bar: fixed generation controls */}
                 <div className="absolute bottom-0 left-0 right-0 z-30 px-4 pb-4 pt-2 pointer-events-none">
                   <div className="pointer-events-auto">
                     <SurpriseMeControl

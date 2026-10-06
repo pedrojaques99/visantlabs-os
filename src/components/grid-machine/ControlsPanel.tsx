@@ -230,8 +230,8 @@ export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, o
               className={cn(
                 'flex-1 py-2 rounded-md text-2xs uppercase tracking-wider transition-colors duration-200 border',
                 bgMode === mode
-                  ? 'bg-white/10 text-white border-white/20'
-                  : 'bg-neutral-900/50 text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'
+                  ? 'bg-accent text-foreground border-border-hover'
+                  : 'bg-muted text-muted-foreground border-border hover:bg-accent'
               )}
             >
               {mode}
@@ -276,7 +276,7 @@ export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, o
           <Button
             onClick={onExportPng}
             disabled={isExporting}
-            className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2"
+            className="flex-1 bg-foreground hover:bg-foreground/90 text-background font-medium h-9 text-xs gap-2"
           >
             <Download size={14} /> Export PNG
           </Button>
@@ -286,14 +286,14 @@ export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, o
           onClick={onExportSvg}
           disabled={isExporting}
           variant="ghost"
-          className="w-full text-neutral-400 hover:text-white h-9 text-xs gap-2"
+          className="w-full text-muted-foreground hover:text-foreground h-9 text-xs gap-2"
         >
           <FileCode size={14} /> Export SVG
         </Button>
         <Button
           variant="ghost"
           onClick={clear}
-          className="w-full text-neutral-600 hover:text-destructive h-8 text-xs gap-2"
+          className="w-full text-muted-foreground hover:text-destructive h-8 text-xs gap-2"
         >
           <Trash2 size={13} /> Clear
         </Button>
@@ -310,7 +310,7 @@ const ColorInput: React.FC<{ label: string; value: string; onChange: (v: string)
   onChange,
 }) => (
   <div className="space-y-1">
-    <span className="text-2xs uppercase tracking-widest text-neutral-500">{label}</span>
+    <span className="text-2xs uppercase tracking-widest text-muted-foreground">{label}</span>
     <InlineColorPicker value={value} onChange={onChange} label={label} />
   </div>
 );

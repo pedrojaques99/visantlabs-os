@@ -63,7 +63,7 @@ export const SEEDREAM_MODEL_CONFIG: Record<SeedreamModelId, SeedreamModelConfig>
   [SEEDREAM_MODELS.SD_5_LITE]: {
     label: 'Seedream 5 Lite',
     badge: 'latest' as const,
-    description: 'Newest — 2K/3K/4K, batch, multi-ref, png/jpeg',
+    description: 'Newest: 2K/3K/4K, batch, multi-ref, png/jpeg',
     maxRefImages: 14,
     requiresImage: false,
     supportsBatch: true,

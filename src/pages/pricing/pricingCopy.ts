@@ -1,10 +1,10 @@
 /**
- * Pricing v3 — copy bilíngue LOCAL (pt/en).
+ * Pricing v3: copy bilíngue LOCAL (pt/en).
  *
  * TODO: migrar pro src/locales/*.json quando as sessões paralelas liberarem os
  * arquivos. Mantido local de propósito: evita (1) a salada PT/EN da página v2 e
  * (2) colidir com outras sessões que estão editando os locales compartilhados
- * AO VIVO. Toda string visível da página sai daqui — nada hardcoded no JSX.
+ * AO VIVO. Toda string visível da página sai daqui, nada hardcoded no JSX.
  */
 import type { TierId } from './pricingTiers';
 
@@ -69,14 +69,14 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
     earlyAccess: 'Early access',
     launchLabel: 'preço de lançamento',
     launchNote: 'até segunda ordem',
-    byokBadge: 'BYOK · use sua chave, economize crédito',
+    byokBadge: 'BYOK: use sua chave e economize crédito',
     moreCreditsQuestion: 'Precisa de mais créditos?',
     moreCreditsCta: 'Comprar pacote avulso',
     tiers: {
       starter: {
         name: 'Starter',
         tagline: 'Pra experimentar e lançar a primeira marca.',
-        credits: '50 créditos/mês (resetam) · fair-use',
+        credits: '50 créditos/mês (resetam), fair-use',
         creditsOutcome: '≈ 50 mockups on-brand no modelo padrão',
         features: [
           '1 marca ativa',
@@ -90,12 +90,12 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
       pro: {
         name: 'Pro',
         tagline: 'Pra quem toca várias marcas em produção.',
-        credits: '500 créditos/mês (resetam) · fair-use',
+        credits: '500 créditos/mês (resetam), fair-use',
         creditsOutcome: '≈ 500 mockups on-brand no modelo padrão',
         features: [
           'Marcas ilimitadas',
           '20 GB de storage',
-          '5 seats — sem cobrar por seat',
+          '5 seats, sem cobrar por seat',
           'Copilot, MCP e API',
           'Experimentais: 3D, vídeo, playground',
         ],
@@ -135,14 +135,14 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
     earlyAccess: 'Early access',
     launchLabel: 'launch price',
     launchNote: 'until further notice',
-    byokBadge: 'BYOK · use your key, save credits',
+    byokBadge: 'BYOK: use your key and save credits',
     moreCreditsQuestion: 'Need more credits?',
     moreCreditsCta: 'Buy a credit pack',
     tiers: {
       starter: {
         name: 'Starter',
         tagline: 'To try it out and launch your first brand.',
-        credits: '50 credits/mo (reset) · fair-use',
+        credits: '50 credits/mo (reset), fair-use',
         creditsOutcome: '≈ 50 on-brand mockups on the default model',
         features: [
           '1 active brand',
@@ -156,12 +156,12 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
       pro: {
         name: 'Pro',
         tagline: 'For running several brands in production.',
-        credits: '500 credits/mo (reset) · fair-use',
+        credits: '500 credits/mo (reset), fair-use',
         creditsOutcome: '≈ 500 on-brand mockups on the default model',
         features: [
           'Unlimited brands',
           '20 GB storage',
-          '5 seats — no per-seat billing',
+          '5 seats, no per-seat billing',
           'Copilot, MCP and API',
           'Experimental: 3D, video, playground',
         ],

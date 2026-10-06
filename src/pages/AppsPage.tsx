@@ -21,17 +21,22 @@ import {
   X,
   LayoutGrid,
   Star,
+  History,
+  Eye,
+  EyeOff,
 } from '@/lib/ui/icons';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useLayout } from '@/hooks/useLayout';
-import { motion, AnimatePresence } from 'framer-motion';
 import { appsService, AppConfig } from '@/services/appsService';
 import { getLucideIcon } from '@/lib/ui/lucideIcon';
 import { usePinnedNav } from '@/hooks/usePinnedNav';
 import { FEATURE_COPILOT } from '@/config/featureFlags';
 import { AppEditDialog } from '@/components/AppEditDialog';
 import { Button } from '@/components/ui/button';
-import { MicroTitle } from '@/components/ui/MicroTitle';
+import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { MediaTile } from '@/components/ui/MediaTile';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { toast } from 'sonner';
 import { glassSurface } from '@/lib/ui/glass';
 import { useInAppShell } from '@/components/shell/InAppShellContext';
@@ -48,14 +53,18 @@ const getLastUsed = (): Record<string, number> => {
   }
 };
 const recordLastUsed = (appId: string) => {
-  const map = getLastUsed();
-  map[appId] = Date.now();
-  localStorage.setItem(LS_KEY, JSON.stringify(map));
+  try {
+    const map = getLastUsed();
+    map[appId] = Date.now();
+    localStorage.setItem(LS_KEY, JSON.stringify(map));
+  } catch {
+    // Storage bloqueado (aba privada): a ordem "recentes" só perde este clique.
+  }
 };
 
 // ─── Category Config ────────────────────────────────────────────────────────
-// Labels/descriptions live in i18n (apps.categories.<key>.*); here we only
-// map the stable key → icon. `admin` is appended conditionally.
+// Labels live in i18n (apps.categories.<key>.label); here we only map the
+// stable key → icon. `admin` is appended conditionally.
 
 type CategoryDef = { key: string; icon: typeof Crown };
 
@@ -76,46 +85,43 @@ const ADMIN_CATEGORY: CategoryDef = { key: 'admin', icon: ShieldCheck };
 // comunidade) colapsa sob um disclosure pra não diluir "pra que a Visant serve".
 const CORE_CATEGORY_KEYS = new Set(['pro', 'creative']);
 
-type AccessFilter = 'all' | 'free' | 'premium';
-
 const appId = (app: any): string => app.id || app.appId;
 
 // ─── Skeleton ───────────────────────────────────────────────────────────────
 
 function AppCardSkeleton() {
   return (
-    <div className="rounded-2xl overflow-hidden bg-white/[0.03] border border-neutral-800 animate-pulse">
-      <div className="aspect-[16/10] bg-neutral-800/20" />
-      <div className="p-5 space-y-3">
-        <div className="h-4 w-1/2 bg-neutral-800/30 rounded-full" />
-        <div className="h-3 w-4/5 bg-neutral-800/20 rounded-full" />
+    <div className="rounded-xl border border-border bg-card overflow-hidden animate-pulse">
+      <div className="aspect-[16/10] bg-muted" />
+      <div className="p-3 space-y-2">
+        <div className="h-3.5 w-1/2 bg-muted rounded-full" />
+        <div className="h-3 w-4/5 bg-muted rounded-full" />
       </div>
     </div>
   );
 }
 
-// ─── Unified App Card (featured = spanning variant) ─────────────────────────
+// ─── App Card ───────────────────────────────────────────────────────────────
 
 interface AppCardProps {
   app: any;
   isAdmin: boolean;
   hasAccess: boolean;
-  featured?: boolean;
   onOpen: (app: any) => void;
   onEdit: (app: any) => void;
+  onToggleHidden: (app: any) => void;
 }
 
-function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: AppCardProps) {
+function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit, onToggleHidden }: AppCardProps) {
   const { t } = useTranslation();
   const isComingSoon = app.badgeVariant === 'comingSoon';
   const isPremium = app.badgeVariant === 'premium' || app.badgeVariant === 'featured';
-  const isFree = app.badgeVariant === 'free' || app.free === true;
-  const isAlpha = app.alpha === true;
+  const locked = isPremium && !hasAccess;
   const isExternal = app.isExternal;
   const description = app.description || app.desc;
-  // Ícone lucide do app (AppConfig.icon, editável no admin) como fallback do
-  // thumbnail — em vez do genérico ImageIcon. Plano APP-SHELL P3.
-  const AppIcon = getLucideIcon(app.icon) ?? ImageIcon;
+  // Ícone real do app (AppConfig.icon, editável no admin) é o fallback da capa;
+  // app sem ícone mostra o próprio nome no tile quebrado.
+  const AppIcon = getLucideIcon(app.icon);
   // Fixar no rail (star estilo Figma).
   const { isPinned, toggle } = usePinnedNav();
   const pinId = app.appId || app.id;
@@ -125,181 +131,95 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
     toggle({ type: 'app', id: pinId, label: app.name, to: app.link, icon: app.icon });
   };
 
-  const handleImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    e.currentTarget.style.display = 'none';
-    const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
-    if (fallback) fallback.style.display = 'flex';
-  };
-
   return (
-    <motion.div
-      variants={{
-        hidden: { opacity: 0, y: 12, scale: 0.98 },
-        visible: {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
-        },
-      }}
-      role="button"
-      tabIndex={isComingSoon ? -1 : 0}
-      aria-label={app.name}
+    <MediaTile
+      layout="stacked"
+      aspectRatio={16 / 10}
+      src={app.thumbnail || undefined}
+      alt={app.name}
+      title={app.name}
+      subtitle={description}
+      subtitleLines={2}
+      fallbackIcon={AppIcon ?? undefined}
+      fallbackLabel={AppIcon ? undefined : app.name}
       onClick={() => onOpen(app)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onOpen(app);
-        }
-      }}
-      className={cn(
-        'group relative rounded-2xl overflow-hidden flex flex-col',
-        'bg-white/[0.03] border border-neutral-800',
-        'transition-all duration-300 outline-none cursor-pointer',
-        'hover:border-white/10 hover:bg-white/[0.035] hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20',
-        'focus-visible:ring-2 focus-visible:ring-brand-cyan/40',
-        // Featured não spanneia mais (grid uniforme): destaque vem da seção +
-        // badge, não de um card gigante escuro que sumia no fundo.
-        isComingSoon && 'opacity-30 grayscale pointer-events-none',
-        app.isHidden && 'border-warning/20 opacity-60'
-      )}
-    >
-      {app.isHidden && (
-        <div className="absolute top-0 right-0 z-50 bg-warning/90 text-black px-2.5 py-0.5 text-2xs font-semibold rounded-bl-xl">
-          {t('apps.hidden')}
-        </div>
-      )}
-
-      {/* Thumbnail — superfície levemente iluminada + separador embaixo para
-          definir a arte escura contra o card (contraste). Todos os controles de
-          overlay (star, lock, edit, Abrir) vivem AQUI dentro, no mesmo contexto
-          de empilhamento, pra os z-index serem coerentes (star não flutua mais
-          por cima do resto). */}
-      <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-b from-neutral-800/50 to-neutral-950/70 border-b border-white/5">
-        {app.thumbnail ? (
+      meta={
+        isAdmin &&
+        (app.isHidden || isComingSoon) && (
+          <Badge variant="neutral">{app.isHidden ? t('apps.hidden') : t('apps.badge.soon')}</Badge>
+        )
+      }
+      badge={
+        (pinned || locked || isExternal) && (
           <>
-            <img
-              src={app.thumbnail}
-              alt={app.name}
-              loading="lazy"
-              onError={handleImgError}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-            />
-            <div className="w-full h-full items-center justify-center text-neutral-800 hidden">
-              <AppIcon size={32} strokeWidth={1.2} />
-            </div>
+            {pinned && (
+              <Badge variant="neutral" className="px-1.5" aria-hidden>
+                <Star size={12} className="fill-current text-foreground" aria-hidden />
+              </Badge>
+            )}
+            {locked ? (
+              <Badge variant="neutral" className="gap-1" title={t('apps.requiresPro')}>
+                <Lock size={12} aria-hidden />
+                {t('apps.badge.pro')}
+              </Badge>
+            ) : isExternal ? (
+              <Badge variant="neutral" className="px-1.5">
+                <ExternalLink size={12} aria-hidden />
+              </Badge>
+            ) : null}
           </>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-neutral-700">
-            <AppIcon size={featured ? 40 : 32} strokeWidth={1.2} />
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/60 via-transparent to-transparent opacity-80" />
-
-        {/* Hover overlay (Abrir) — z-10, atrás dos botões de canto */}
-        <div className="absolute inset-0 z-10 flex items-center justify-center transition-[color,background-color,border-color,box-shadow,opacity,filter] duration-300 bg-neutral-950/40 backdrop-blur-[3px] opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100">
-          <span className="text-sm font-medium text-white px-5 py-2.5 rounded-xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center gap-2 shadow-lg">
-            {isExternal ? t('apps.launch') : t('apps.open')}
-            {isExternal ? <ExternalLink size={14} /> : <ChevronRight size={14} />}
-          </span>
-        </div>
-
-        {/* Favoritar/fixar (star estilo Figma) — top-left, aparece no hover ou
-            fica se fixado. Mesmo contexto de empilhamento dos outros controles. */}
-        <button
-          onClick={togglePin}
-          aria-label={pinned ? t('nav.unpin') : t('nav.pin')}
-          title={pinned ? t('nav.unpin') : t('nav.pin')}
-          className={cn(
-            'absolute top-3 left-3 z-20 p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 transition-[color,background-color,border-color,opacity,filter]',
-            pinned
-              ? 'opacity-100 text-brand-cyan'
-              : 'text-white/70 hover:text-white opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100'
-          )}
-        >
-          <Star size={12} className={pinned ? 'fill-brand-cyan' : ''} />
-        </button>
-
-        {/* Cluster top-right — edit (admin) + indicador de acesso, lado a lado
-            num flex pra nunca se sobreporem. */}
-        <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5">
+        )
+      }
+      actions={
+        <>
+          <Button
+            variant="surface"
+            size="icon-sm"
+            onClick={togglePin}
+            aria-pressed={pinned}
+            aria-label={pinned ? t('nav.unpin') : t('nav.pin')}
+            title={pinned ? t('nav.unpin') : t('nav.pin')}
+          >
+            <Star className={pinned ? 'fill-current' : undefined} />
+          </Button>
           {isAdmin && (
-            <button
+            <Button
+              variant="surface"
+              size="icon-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleHidden(app);
+              }}
+              aria-pressed={!!app.isHidden}
+              aria-label={app.isHidden ? t('apps.show') : t('apps.hide')}
+              title={app.isHidden ? t('apps.show') : t('apps.hide')}
+            >
+              {app.isHidden ? <Eye /> : <EyeOff />}
+            </Button>
+          )}
+          {isAdmin && (
+            <Button
+              variant="surface"
+              size="icon-sm"
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit(app);
               }}
               aria-label={t('apps.edit_app')}
-              className="p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-neutral-300 hover:text-white hover:scale-110 active:scale-95 transition-all opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100"
+              title={t('apps.edit_app')}
             >
-              <Edit3 size={12} />
-            </button>
+              <Edit3 />
+            </Button>
           )}
-          {isPremium && !hasAccess ? (
-            <div className="p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-neutral-300">
-              <Lock size={12} />
-            </div>
-          ) : isExternal ? (
-            <div className="p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-neutral-400">
-              <ExternalLink size={12} />
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      {/* Body */}
-      <div className="p-4 sm:p-5 flex-1 flex flex-col gap-2">
-        <div className="flex items-start justify-between gap-2">
-          <h3
-            className={cn(
-              'font-semibold text-neutral-100 group-hover:text-white transition-colors leading-snug',
-              featured ? 'text-base sm:text-lg' : 'text-base'
-            )}
-          >
-            {app.name}
-          </h3>
-          <div className="flex items-center gap-1.5 shrink-0">
-            {isComingSoon ? (
-              <span className="text-2xs font-medium px-2 py-0.5 rounded-full bg-white/5 text-neutral-600">
-                {t('apps.badge.soon')}
-              </span>
-            ) : isFree ? (
-              <span className="text-2xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success/80">
-                {t('apps.badge.free')}
-              </span>
-            ) : isPremium ? (
-              <span className="text-2xs font-medium px-2 py-0.5 rounded-full bg-brand-cyan/10 text-brand-cyan/80">
-                {t('apps.badge.pro')}
-              </span>
-            ) : null}
-            {isAlpha && (
-              <span className="text-2xs font-medium px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400/80 border border-violet-500/20">
-                {t('apps.badge.alpha')}
-              </span>
-            )}
-          </div>
-        </div>
-        <p
-          className={cn(
-            'text-neutral-500 leading-relaxed flex-1',
-            featured ? 'text-sm line-clamp-2 max-w-2xl' : 'text-sm line-clamp-2'
-          )}
-        >
-          {description}
-        </p>
-        {isPremium && !hasAccess && (
-          <span className="mt-1 inline-flex items-center gap-1 text-2xs text-neutral-600">
-            <Lock size={10} /> {t('apps.requiresPro')}
-          </span>
-        )}
-      </div>
-    </motion.div>
+        </>
+      }
+    />
   );
 }
 
-// ─── Category rail item (desktop sidebar) ───────────────────────────────────
+// ─── Category chip (rail fallback: mobile or collapsed rail) ────────────────
 
-interface RailItemProps {
+interface CategoryChipProps {
   icon: typeof Crown;
   label: string;
   count: number;
@@ -307,54 +227,21 @@ interface RailItemProps {
   onClick: () => void;
 }
 
-// ─── Category chip (mobile rail) ────────────────────────────────────────────
-
-function CategoryChip({ icon: Icon, label, count, active, onClick }: RailItemProps) {
+function CategoryChip({ icon: Icon, label, count, active, onClick }: CategoryChipProps) {
   return (
     <button
       onClick={onClick}
       className={cn(
         'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border transition-colors shrink-0',
         active
-          ? 'text-neutral-200 bg-white/5 border-white/10 font-medium'
-          : 'text-neutral-500 hover:text-neutral-300 border-transparent bg-white/[0.03]'
+          ? 'text-foreground bg-muted border-border font-medium'
+          : 'text-muted-foreground hover:text-foreground border-transparent bg-muted/40'
       )}
     >
       <Icon size={13} className="shrink-0" />
       {label}
-      <span className={cn('text-2xs', active ? 'text-neutral-400' : 'text-neutral-600')}>
-        {count}
-      </span>
+      <span className="text-2xs tabular-nums text-muted-foreground">{count}</span>
     </button>
-  );
-}
-
-// ─── Section header (category grids) ────────────────────────────────────────
-
-function SectionHeader({
-  icon: Icon,
-  label,
-  description,
-  count,
-}: {
-  icon: typeof Crown;
-  label: string;
-  description?: string;
-  count: number;
-}) {
-  return (
-    <div className="flex items-end justify-between gap-4 mb-5">
-      <div className="flex items-center gap-2.5">
-        <div className="p-2 rounded-xl bg-white/5 border border-neutral-800">
-          <Icon size={16} className="text-neutral-400" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold text-neutral-200">{label}</h2>
-          {description && <p className="text-xs text-neutral-600">{description}</p>}
-        </div>
-      </div>
-      <span className="text-xs text-neutral-700 pb-0.5 shrink-0 tabular-nums">{count}</span>
-    </div>
   );
 }
 
@@ -374,6 +261,7 @@ export const AppsPage: React.FC = () => {
   // toolbar (bug do "Ferramentas Pro" vazando sobre a busca).
   const inShell = useInAppShell();
   // Categorias viram L2 no rail (SSoT igual references/my-outputs) via RailSlot.
+  // O slot só existe com o rail expandido; sem ele, a página mostra os chips.
   const railSlot = useRailSlot()?.railSlot ?? null;
 
   const [apps, setApps] = useState<AppConfig[]>([]);
@@ -382,13 +270,11 @@ export const AppsPage: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [accessFilter, setAccessFilter] = useState<AccessFilter>('all');
   const [sortBy, setSortBy] = useState<'default' | 'name' | 'recent'>('default');
   // Cinto de utilidades colapsado por padrão (two-tier, RCD §3.3).
   const [showUtilities, setShowUtilities] = useState(false);
 
   const catLabel = useCallback((key: string) => t(`apps.categories.${key}.label`), [t]);
-  const catDesc = useCallback((key: string) => t(`apps.categories.${key}.description`), [t]);
 
   // ─── Static apps config ─────────────────────────────────────────────────
 
@@ -400,7 +286,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.mockupMachine.name'),
         desc: t('apps.mockupMachine.description'),
         link: '/mockupmachine',
-        badge: t('apps.badge.featured'),
         badgeVariant: 'featured',
         thumbnail: '/tools/mockup-machine.webp',
         category: 'pro',
@@ -411,7 +296,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.brandingMachine.name'),
         desc: t('apps.brandingMachine.description'),
         link: '/branding-machine',
-        badge: t('apps.badge.premium'),
         badgeVariant: 'premium',
         thumbnail: '/tools/branding-machine.webp',
         category: 'pro',
@@ -422,7 +306,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.brandGuidelines.name'),
         desc: t('apps.brandGuidelines.description'),
         link: '/brand-guidelines',
-        badge: t('apps.badge.premium'),
         badgeVariant: 'premium',
         thumbnail: '/tools/brand-guidelines.webp',
         category: 'pro',
@@ -433,7 +316,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.canvas.name'),
         desc: t('apps.canvas.description'),
         link: '/canvas',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         thumbnail: '/tools/canvas.webp',
         category: 'creative',
@@ -445,7 +327,6 @@ export const AppsPage: React.FC = () => {
         desc: t('apps.instagramExtractor.description'),
         link: '/extractor',
         thumbnail: '/tools/instagram-extractor.webp',
-        badge: t('apps.badge.new'),
         badgeVariant: 'premium',
         category: 'pro',
         free: false,
@@ -456,7 +337,6 @@ export const AppsPage: React.FC = () => {
         desc: t('apps.moodboardStudio.description'),
         link: '/moodboard',
         thumbnail: '/tools/moodboard-studio.webp',
-        badge: t('apps.badge.new'),
         badgeVariant: 'premium',
         category: 'pro',
         free: false,
@@ -466,7 +346,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.budgetMachine.name'),
         desc: t('apps.budgetMachine.description'),
         link: '/budget-machine',
-        badge: t('apps.badge.comingSoon'),
         badgeVariant: 'comingSoon',
         thumbnail: '/tools/budget-machine.webp',
         category: 'pro',
@@ -477,7 +356,7 @@ export const AppsPage: React.FC = () => {
         name: t('apps.contentStudio.name'),
         desc: t('apps.contentStudio.description'),
         link: '/content-studio',
-        badge: t('apps.badge.beta'),
+        thumbnail: '/tools/content-studio.webp',
         // Pago (category 'pro', free:false) — variant 'premium' pra NÃO renderizar o
         // badge verde "Grátis" (isFree deriva de badgeVariant==='free'); senão o card
         // promete grátis e o clique cai no paywall.
@@ -490,7 +369,7 @@ export const AppsPage: React.FC = () => {
         name: t('apps.namingMachine.name'),
         desc: t('apps.namingMachine.description'),
         link: '/naming',
-        badge: t('apps.badge.new'),
+        thumbnail: '/tools/naming-machine.webp',
         // Pago — variant 'premium' (não 'free') pra não mostrar badge verde enganoso.
         badgeVariant: 'premium',
         category: 'pro',
@@ -504,7 +383,6 @@ export const AppsPage: React.FC = () => {
         desc: t('apps.gridMachine.description'),
         link: '/grid-machine',
         thumbnail: '/tools/grid-machine.webp',
-        badge: t('apps.badge.new'),
         badgeVariant: 'free',
         category: 'creative',
         free: true,
@@ -515,7 +393,6 @@ export const AppsPage: React.FC = () => {
         desc: t('apps.studio3d.description'),
         link: '/3d-studio',
         thumbnail: '/tools/3d-studio.webp',
-        badge: t('apps.badge.new'),
         badgeVariant: 'free',
         category: 'creative',
         free: true,
@@ -527,7 +404,6 @@ export const AppsPage: React.FC = () => {
         desc: t('apps.imageLab.description'),
         link: '/image-lab',
         thumbnail: '/tools/cmyk-halftone.webp',
-        badge: t('apps.badge.new'),
         badgeVariant: 'free',
         category: 'creative',
         free: true,
@@ -539,7 +415,6 @@ export const AppsPage: React.FC = () => {
         desc: t('apps.asciiVortex.description'),
         link: 'https://vsn-labs.vercel.app/ascii-vortex',
         thumbnail: '/tools/ascii-vortex.webp',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         category: 'creative',
         isExternal: true,
@@ -551,7 +426,6 @@ export const AppsPage: React.FC = () => {
         desc: t('apps.gridPaint.description'),
         link: '/grid-paint',
         thumbnail: '/tools/gridpaint.webp',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         category: 'creative',
         free: true,
@@ -563,7 +437,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.imageCompressor.name'),
         desc: t('apps.imageCompressor.description'),
         link: '/compress',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         thumbnail: '/tools/compress.webp',
         category: 'image',
@@ -574,7 +447,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.bicubicUpscale.name'),
         desc: t('apps.bicubicUpscale.description'),
         link: '/upscale',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         thumbnail: '/tools/upscale.webp',
         category: 'image',
@@ -586,7 +458,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.backgroundRemover.name'),
         desc: t('apps.backgroundRemover.description'),
         link: '/remove-bg',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         thumbnail: '/tools/remove-bg.webp',
         category: 'image',
@@ -597,7 +468,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.watermark.name'),
         desc: t('apps.watermark.description'),
         link: '/watermark',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         thumbnail: '/tools/watermark.webp',
         category: 'image',
@@ -608,7 +478,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.visualSearch.name'),
         desc: t('apps.visualSearch.description'),
         link: '/visual-search',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         thumbnail: '/tools/visual-search.webp',
         category: 'image',
@@ -621,7 +490,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.fileConverter.name'),
         desc: t('apps.fileConverter.description'),
         link: '/converter',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         thumbnail: '/tools/file-converter.webp',
         category: 'converters',
@@ -632,7 +500,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.svgOptimizer.name'),
         desc: t('apps.svgOptimizer.description'),
         link: '/svg-optimizer',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         thumbnail: '/tools/svg-optimizer.webp',
         category: 'converters',
@@ -643,7 +510,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.colorConverter.name'),
         desc: t('apps.colorConverter.description'),
         link: '/color-converter',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         thumbnail: '/tools/color-converter.webp',
         category: 'converters',
@@ -655,7 +521,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.qrCode.name'),
         desc: t('apps.qrCode.description'),
         link: '/qrcode',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         thumbnail: '/tools/qrcode.webp',
         category: 'generators',
@@ -666,7 +531,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.faviconGenerator.name'),
         desc: t('apps.faviconGenerator.description'),
         link: '/favicon',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         thumbnail: '/tools/favicon.webp',
         category: 'generators',
@@ -677,7 +541,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.ogImage.name'),
         desc: t('apps.ogImage.description'),
         link: '/og-image',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         thumbnail: '/tools/og-image.webp',
         category: 'generators',
@@ -692,7 +555,6 @@ export const AppsPage: React.FC = () => {
         desc: t('apps.youtubeMixer.description'),
         link: 'https://vsn-labs.vercel.app/youtube-mixer',
         thumbnail: '/tools/youtube-mixer.webp',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         category: 'audio',
         isExternal: true,
@@ -704,7 +566,6 @@ export const AppsPage: React.FC = () => {
         desc: t('apps.ellipseAudio.description'),
         link: 'https://vsn-labs.vercel.app/elipse-audio-freq',
         thumbnail: '/tools/elipse-audio.webp',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         isExternal: true,
         free: true,
@@ -717,7 +578,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.colorfy.name'),
         desc: t('apps.colorfy.description'),
         link: 'https://gradient-machine.vercel.app/',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         thumbnail: '/tools/color-extractor.webp',
         category: 'community',
@@ -729,7 +589,6 @@ export const AppsPage: React.FC = () => {
         name: t('apps.halftoneMachine.name'),
         desc: t('apps.halftoneMachine.description'),
         link: 'https://pedrojaques99.github.io/halftone-machine/',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         thumbnail: '/tools/halftone-machine.webp',
         isExternal: true,
@@ -742,7 +601,6 @@ export const AppsPage: React.FC = () => {
         desc: t('apps.vsnLabs.description'),
         link: 'https://vsn-labs.vercel.app/',
         thumbnail: '/tools/vsn-labs.webp',
-        badge: t('apps.badge.free'),
         badgeVariant: 'free',
         category: 'community',
         isExternal: true,
@@ -754,7 +612,6 @@ export const AppsPage: React.FC = () => {
         desc: t('apps.labs.description'),
         link: '/labs',
         thumbnail: '/tools/labs.webp',
-        badge: t('apps.badge.new'),
         badgeVariant: 'free',
         category: 'community',
         free: true,
@@ -767,7 +624,6 @@ export const AppsPage: React.FC = () => {
         desc: t('apps.smartAnalyzer.description'),
         link: '/admin/smart-analyzer',
         thumbnail: '/tools/smart-analyzer.webp',
-        badge: t('apps.badge.admin'),
         badgeVariant: 'admin',
         category: 'admin',
         free: false,
@@ -787,51 +643,57 @@ export const AppsPage: React.FC = () => {
 
   // ─── Fetch & Sync ───────────────────────────────────────────────────────
 
-  const fetchApps = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const data = await appsService.getAll();
-      const dbAppIds = new Set(data.map((app) => app.appId));
+  // silent: recarrega depois de salvar no diálogo sem trocar a grade por skeleton.
+  const fetchApps = useCallback(
+    async (opts?: { silent?: boolean }) => {
+      if (!opts?.silent) setIsLoading(true);
+      try {
+        const data = await appsService.getAll();
+        const dbAppIds = new Set(data.map((app) => app.appId));
 
-      if (isAdmin) {
-        const missingApps = staticAppsData.filter((app) => !dbAppIds.has(app.id));
-        if (missingApps.length > 0) {
-          await appsService.seed(staticAppsData);
-          const syncedData = await appsService.getAll();
-          setApps(syncedData);
-          return;
+        if (isAdmin) {
+          const missingApps = staticAppsData.filter((app) => !dbAppIds.has(app.id));
+          if (missingApps.length > 0) {
+            await appsService.seed(staticAppsData);
+            const syncedData = await appsService.getAll();
+            setApps(syncedData);
+            return;
+          }
         }
+
+        const staticById = new Map(staticAppsData.map((a) => [a.id, a]));
+        const mergedDbApps = data.map((dbApp) => {
+          const s = staticById.get(dbApp.appId);
+          if (!s) return dbApp;
+          return {
+            ...dbApp,
+            name: s.name,
+            description: s.desc,
+            // A capa estática (print real da UI, gerada por scripts/capture-app-shots.mjs)
+            // vence: o banco guardava capas antigas que escondiam a UI atual. A do
+            // banco (AppEditDialog) só vale pra app sem capa no repo.
+            thumbnail: s.thumbnail || dbApp.thumbnail,
+            category: s.category,
+          };
+        });
+
+        const missingStaticApps = staticAppsData
+          .filter((app) => !dbAppIds.has(app.id))
+          .map((app) => ({ ...app, appId: app.id, description: app.desc })) as any[];
+
+        setApps(
+          data.length === 0 ? (staticAppsData as any) : [...mergedDbApps, ...missingStaticApps]
+        );
+      } catch (error) {
+        console.error('Error fetching apps:', error);
+        setApps(staticAppsData as any);
+        toast.error(t('apps.failed_to_load_apps_from_database_using'));
+      } finally {
+        setIsLoading(false);
       }
-
-      const staticById = new Map(staticAppsData.map((a) => [a.id, a]));
-      const mergedDbApps = data.map((dbApp) => {
-        const s = staticById.get(dbApp.appId);
-        if (!s) return dbApp;
-        return {
-          ...dbApp,
-          name: s.name,
-          description: s.desc,
-          badge: s.badge,
-          thumbnail: s.thumbnail,
-          category: s.category,
-        };
-      });
-
-      const missingStaticApps = staticAppsData
-        .filter((app) => !dbAppIds.has(app.id))
-        .map((app) => ({ ...app, appId: app.id, description: app.desc })) as any[];
-
-      setApps(
-        data.length === 0 ? (staticAppsData as any) : [...mergedDbApps, ...missingStaticApps]
-      );
-    } catch (error) {
-      console.error('Error fetching apps:', error);
-      setApps(staticAppsData as any);
-      toast.error(t('apps.failed_to_load_apps_from_database_using'));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isAdmin, staticAppsData, t]);
+    },
+    [isAdmin, staticAppsData, t]
+  );
 
   useEffect(() => {
     fetchApps();
@@ -839,7 +701,7 @@ export const AppsPage: React.FC = () => {
 
   // Copilot é flag-gated e fica FORA do staticAppsData de propósito: assim
   // nunca é seedado no DB de apps e a visibilidade/kill-switch segue só a
-  // flag. Injetado no topo para ancorar a faixa Featured em Pro Tools.
+  // flag. Capa = print real (/tools/copilot.webp); o ícone (Bot) é o fallback.
   const visibleApps = useMemo(() => {
     const withoutCopilot = apps.filter((a) => appId(a) !== 'copilot');
     if (!FEATURE_COPILOT) return withoutCopilot;
@@ -849,11 +711,11 @@ export const AppsPage: React.FC = () => {
         name: t('apps.copilot.name'),
         desc: t('apps.copilot.description'),
         link: '/copilot',
-        badge: t('apps.badge.premium'),
         // "featured" (como o Mockup Machine) navega até o preview travado do
         // /copilot em vez do modal — paywall que mostra o produto vende mais.
         badgeVariant: 'featured',
-        thumbnail: '/tools/mockup-machine.webp',
+        icon: 'Bot',
+        thumbnail: '/tools/copilot.webp',
         category: 'pro',
         free: false,
       } as any,
@@ -861,19 +723,20 @@ export const AppsPage: React.FC = () => {
     ];
   }, [apps, t]);
 
+  // Quem o usuário pode ver: oculto, admin-only e "em breve" só pro admin.
+  const isListed = useCallback(
+    (app: any) => isAdmin || (!app.isHidden && !app.adminOnly && app.badgeVariant !== 'comingSoon'),
+    [isAdmin]
+  );
+
   // ─── Filtered & Sorted ────────────────────────────────────────────────
 
   const filteredApps = useMemo(() => {
     const q = search.toLowerCase().trim();
 
     return visibleApps.filter((app) => {
-      if (app.isHidden && !isAdmin) return false;
-      if ((app as any).adminOnly && !isAdmin) return false;
+      if (!isListed(app)) return false;
       if (activeCategory && app.category !== activeCategory) return false;
-      if (accessFilter === 'free' && !(app as any).free && app.badgeVariant !== 'free')
-        return false;
-      if (accessFilter === 'premium' && ((app as any).free || app.badgeVariant === 'free'))
-        return false;
       if (q) {
         const name = (app.name || '').toLowerCase();
         const desc = (app.description || (app as any).desc || '').toLowerCase();
@@ -881,7 +744,7 @@ export const AppsPage: React.FC = () => {
       }
       return true;
     });
-  }, [visibleApps, isAdmin, search, activeCategory, accessFilter]);
+  }, [visibleApps, isListed, search, activeCategory]);
 
   const sortedApps = useMemo(() => {
     const sorted = [...filteredApps];
@@ -894,19 +757,38 @@ export const AppsPage: React.FC = () => {
     return sorted;
   }, [filteredApps, sortBy]);
 
-  // Category counts (always over the full visible set, ignoring filters).
+  // Category counts (always over the full listed set, ignoring filters).
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     visibleApps.forEach((app) => {
-      if (app.isHidden && !isAdmin) return;
-      if ((app as any).adminOnly && !isAdmin) return;
+      if (!isListed(app)) return;
       counts[app.category] = (counts[app.category] || 0) + 1;
     });
     return counts;
-  }, [visibleApps, isAdmin]);
+  }, [visibleApps, isListed]);
 
   const totalApps = Object.values(categoryCounts).reduce((a, b) => a + b, 0);
-  const hasActiveFilters = !!search || !!activeCategory || accessFilter !== 'all';
+  const hasActiveFilters = !!search || !!activeCategory;
+
+  // Uma única lista de categorias pra rail e chips; categoria vazia não aparece.
+  const categoryNav = useMemo(
+    () => [
+      { key: null as string | null, icon: LayoutGrid, label: t('apps.allApps'), count: totalApps },
+      ...categories
+        .filter((cat) => (categoryCounts[cat.key] || 0) > 0)
+        .map((cat) => ({
+          key: cat.key as string | null,
+          icon: cat.icon,
+          label: catLabel(cat.key),
+          count: categoryCounts[cat.key] || 0,
+        })),
+    ],
+    [categories, categoryCounts, totalApps, catLabel, t]
+  );
+  const isCategoryActive = (key: string | null) =>
+    key === null ? !activeCategory : activeCategory === key;
+  const selectCategory = (key: string | null) =>
+    setActiveCategory(key === null || activeCategory === key ? null : key);
 
   // Sectioned view: only on "All", no search, default sort.
   const showSections = !activeCategory && !search && sortBy === 'default';
@@ -916,7 +798,6 @@ export const AppsPage: React.FC = () => {
     return categories
       .map((cat) => ({
         key: cat.key,
-        icon: cat.icon,
         apps: sortedApps.filter((a) => a.category === cat.key),
       }))
       .filter((cat) => cat.apps.length > 0);
@@ -932,7 +813,7 @@ export const AppsPage: React.FC = () => {
     }
     const id = appId(app);
     if (id) recordLastUsed(id);
-    if (app.isExternal) window.open(app.link, '_blank');
+    if (app.isExternal) window.open(app.link, '_blank', 'noopener,noreferrer');
     else navigate(app.link);
   };
 
@@ -941,10 +822,35 @@ export const AppsPage: React.FC = () => {
     setIsDialogOpen(true);
   };
 
+  // Esconder/mostrar sem abrir o diálogo: muda na hora e desfaz se o servidor recusar.
+  const setHidden = useCallback(
+    async (app: any, isHidden: boolean) => {
+      const flip = (value: boolean) =>
+        setApps((prev) => prev.map((a) => (a.id === app.id ? { ...a, isHidden: value } : a)));
+      flip(isHidden);
+      try {
+        await appsService.update(app.id, { isHidden });
+        toast.success(isHidden ? t('apps.hiddenToast') : t('apps.shownToast'), {
+          action: { label: t('apps.undo'), onClick: () => void setHidden(app, !isHidden) },
+        });
+      } catch (error) {
+        console.error('Error toggling app visibility:', error);
+        flip(!isHidden);
+        toast.error(t('apps.visibilityFailed'));
+      }
+    },
+    [t]
+  );
+
+  const toggleHidden = (app: any) => {
+    // App que ainda não está no banco não tem id pra atualizar: cai no diálogo.
+    if (!app.appId) return startEdit(app);
+    void setHidden(app, !app.isHidden);
+  };
+
   const clearFilters = () => {
     setSearch('');
     setActiveCategory(null);
-    setAccessFilter('all');
   };
 
   const cardProps = {
@@ -952,7 +858,22 @@ export const AppsPage: React.FC = () => {
     hasAccess,
     onOpen: openApp,
     onEdit: startEdit,
+    onToggleHidden: toggleHidden,
   };
+
+  const renderSection = (section: { key: string; apps: any[] }) => (
+    <section key={section.key}>
+      <h2 className="text-lg font-medium text-foreground mb-4">{catLabel(section.key)}</h2>
+      <div className={GRID_CLASS}>
+        {section.apps.map((app) => (
+          <AppCard key={appId(app)} app={app} {...cardProps} />
+        ))}
+      </div>
+    </section>
+  );
+
+  const coreSections = sections.filter((s) => CORE_CATEGORY_KEYS.has(s.key));
+  const utilitySections = sections.filter((s) => !CORE_CATEGORY_KEYS.has(s.key));
 
   // ─── Render ───────────────────────────────────────────────────────────
 
@@ -974,7 +895,8 @@ export const AppsPage: React.FC = () => {
               setIsDialogOpen(true);
             }}
             variant="ghost"
-            className="h-9 px-4 gap-2 text-xs font-medium text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5 rounded-xl"
+            size="sm"
+            className="gap-2"
           >
             <Plus size={14} /> {t('apps.addApp')}
           </Button>
@@ -982,41 +904,17 @@ export const AppsPage: React.FC = () => {
       }
     >
       <div className="min-w-0">
-        {/* ─── Categorias → L2 no rail (SSoT igual references/my-outputs) ──────
-            A lista in-page de desktop virou portal pro rail drill-in. Mobile
-            mantém os chips (rail some no mobile). */}
+        {/* Categorias → L2 no rail (SSoT igual references/my-outputs). */}
         {railSlot &&
           createPortal(
             <nav className="space-y-0.5">
-              <p className="px-2.5 pb-1.5 text-2xs text-sidebar-foreground/50">
-                {t('apps.categoriesLabel')}
-              </p>
-              {[
-                {
-                  key: null as string | null,
-                  icon: LayoutGrid,
-                  label: t('apps.allApps'),
-                  count: totalApps,
-                },
-                ...categories
-                  .filter((cat) => (categoryCounts[cat.key] || 0) > 0 || cat.key === 'admin')
-                  .map((cat) => ({
-                    key: cat.key,
-                    icon: cat.icon,
-                    label: catLabel(cat.key),
-                    count: categoryCounts[cat.key] || 0,
-                  })),
-              ].map((item) => {
-                const active = item.key === null ? !activeCategory : activeCategory === item.key;
+              {categoryNav.map((item) => {
+                const active = isCategoryActive(item.key);
                 const Icon = item.icon;
                 return (
                   <button
                     key={item.key ?? 'all'}
-                    onClick={() =>
-                      setActiveCategory(
-                        item.key === null ? null : activeCategory === item.key ? null : item.key
-                      )
-                    }
+                    onClick={() => selectCategory(item.key)}
                     className={cn(
                       'flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors',
                       active
@@ -1036,269 +934,153 @@ export const AppsPage: React.FC = () => {
             railSlot
           )}
 
-        {/* ─── Main column ────────────────────────────────────────────── */}
-        <div className="min-w-0">
-          {/* Mobile category chips */}
-          <div className="lg:hidden -mx-4 sm:-mx-6 px-4 sm:px-6 mb-4 overflow-x-auto scrollbar-none">
-            <div className="flex items-center gap-2 w-max">
+        {/* Chips = fallback do rail. Sem slot (rail recolhido ou fora do shell)
+            aparecem sempre; com slot, só abaixo de md, onde o rail desktop some
+            (mesmo breakpoint do `md:flex` do AppSidebar). */}
+        <div
+          className={cn(
+            '-mx-4 sm:-mx-6 px-4 sm:px-6 mb-4 overflow-x-auto scrollbar-none',
+            railSlot && 'md:hidden'
+          )}
+        >
+          <div className="flex items-center gap-2 w-max">
+            {categoryNav.map((item) => (
               <CategoryChip
-                icon={LayoutGrid}
-                label={t('apps.allApps')}
-                count={totalApps}
-                active={!activeCategory}
-                onClick={() => setActiveCategory(null)}
+                key={item.key ?? 'all'}
+                icon={item.icon}
+                label={item.label}
+                count={item.count}
+                active={isCategoryActive(item.key)}
+                onClick={() => selectCategory(item.key)}
               />
-              {categories.map((cat) => {
-                const count = categoryCounts[cat.key] || 0;
-                if (count === 0 && cat.key !== 'admin') return null;
-                return (
-                  <CategoryChip
-                    key={cat.key}
-                    icon={cat.icon}
-                    label={catLabel(cat.key)}
-                    count={count}
-                    active={activeCategory === cat.key}
-                    onClick={() => setActiveCategory(activeCategory === cat.key ? null : cat.key)}
-                  />
-                );
-              })}
-            </div>
+            ))}
           </div>
+        </div>
 
-          {/* Sticky toolbar: search + access + sort */}
-          <div
-            className={cn(
-              'sticky z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-6 bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-800',
-              inShell ? 'top-0' : 'top-10 md:top-14'
-            )}
-          >
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search
-                  size={14}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none"
-                />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder={t('apps.searchPlaceholder')}
-                  className={cn(
-                    'w-full pl-9 pr-9 py-2 text-sm rounded-xl text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-white/15 focus:bg-white/5 transition-all',
-                    glassSurface.tile
-                  )}
-                />
-                {search && (
-                  <button
-                    onClick={() => setSearch('')}
-                    aria-label={t('apps.empty.clearFilters')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300 transition-colors"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
-
-              {/* Access segmented control */}
-              <div
+        {/* Sticky toolbar: search + sort */}
+        <div
+          className={cn(
+            'sticky z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-6 bg-background border-b border-border',
+            inShell ? 'top-0' : 'top-10 md:top-14'
+          )}
+        >
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+              />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t('apps.searchPlaceholder')}
                 className={cn(
-                  'hidden sm:flex items-center gap-0.5 p-0.5 rounded-xl shrink-0',
+                  'w-full pl-9 pr-9 py-2 text-sm rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring',
                   glassSurface.tile
                 )}
-              >
-                {(['all', 'free', 'premium'] as AccessFilter[]).map((key) => (
-                  <button
-                    key={key}
-                    onClick={() => setAccessFilter(key)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors',
-                      accessFilter === key
-                        ? 'bg-white/5 text-neutral-100 font-medium'
-                        : 'text-neutral-500 hover:text-neutral-300'
-                    )}
-                  >
-                    {t(`apps.access.${key}`)}
-                  </button>
-                ))}
-              </div>
-
-              <button
-                onClick={() =>
-                  setSortBy(
-                    sortBy === 'default' ? 'recent' : sortBy === 'recent' ? 'name' : 'default'
-                  )
-                }
-                title={
-                  sortBy === 'recent'
-                    ? t('apps.sort.hintRecent')
-                    : sortBy === 'name'
-                      ? t('apps.sort.hintName')
-                      : t('apps.sort.hintDefault')
-                }
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm border transition-colors shrink-0',
-                  sortBy !== 'default'
-                    ? 'border-white/10 text-neutral-200 bg-white/5'
-                    : 'border-neutral-800 text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]'
-                )}
-              >
-                <ArrowUpDown size={14} />
-                <span className="hidden sm:inline">
-                  {sortBy === 'recent'
-                    ? t('apps.sort.recent')
-                    : sortBy === 'name'
-                      ? t('apps.sort.name')
-                      : t('apps.sort.label')}
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* Content */}
-          {isLoading ? (
-            <div className="space-y-8">
-              <div className={GRID_CLASS}>
-                {Array.from({ length: 9 }).map((_, i) => (
-                  <AppCardSkeleton key={i} />
-                ))}
-              </div>
-            </div>
-          ) : sortedApps.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[40vh] gap-5 text-center py-20">
-              <div className={cn('p-5 rounded-2xl', glassSurface.panel)}>
-                <PackageOpen size={48} strokeWidth={1.2} className="text-neutral-700" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-xl font-semibold text-neutral-400">
-                  {search ? t('apps.empty.noResultsTitle') : t('apps.empty.noCategoryTitle')}
-                </h3>
-                <p className="text-sm text-neutral-600 max-w-sm">
-                  {search
-                    ? t('apps.empty.noResultsDesc', { query: search })
-                    : t('apps.empty.noCategoryDesc')}
-                </p>
-              </div>
-              {hasActiveFilters && (
+              />
+              {search && (
                 <button
-                  onClick={clearFilters}
-                  className="text-sm font-medium text-foreground hover:text-white transition-colors flex items-center gap-1.5 mt-2"
+                  onClick={() => setSearch('')}
+                  aria-label={t('apps.empty.clearFilters')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  <X size={14} /> {t('apps.empty.clearFilters')}
+                  <X size={14} />
                 </button>
               )}
             </div>
-          ) : (
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`${activeCategory}-${accessFilter}-${sortBy}-${search ? 'q' : ''}`}
-                variants={{
-                  hidden: { opacity: 0 },
-                  visible: { opacity: 1, transition: { staggerChildren: 0.03 } },
-                }}
-                initial="hidden"
-                animate="visible"
-                exit={{ opacity: 0, transition: { duration: 0.15 } }}
-                className="space-y-12"
-              >
-                {showSections ? (
-                  <>
-                    {/* Featured apps fundidos nas categorias (mantêm o badge Pro) —
-                        sem seção "Destaque" solitária deixando colunas vazias. */}
 
-                    {/* Core sections (brand-AI) — sempre abertas */}
-                    {sections
-                      .filter((s) => CORE_CATEGORY_KEYS.has(s.key))
-                      .map((section) => (
-                        <section key={section.key}>
-                          <SectionHeader
-                            icon={section.icon}
-                            label={catLabel(section.key)}
-                            description={catDesc(section.key)}
-                            count={section.apps.length}
-                          />
-                          <div className={GRID_CLASS}>
-                            {section.apps.map((app) => (
-                              <AppCard key={appId(app)} app={app} {...cardProps} />
-                            ))}
-                          </div>
-                        </section>
-                      ))}
-
-                    {/* Cinto de utilidades — colapsado por padrão (Swiss Knife Index) */}
-                    {(() => {
-                      const utility = sections.filter((s) => !CORE_CATEGORY_KEYS.has(s.key));
-                      const utilityCount = utility.reduce((n, s) => n + s.apps.length, 0);
-                      if (utility.length === 0) return null;
-                      return (
-                        <section className="border-t border-neutral-800 pt-8">
-                          <button
-                            type="button"
-                            onClick={() => setShowUtilities((v) => !v)}
-                            aria-expanded={showUtilities}
-                            className="group flex w-full items-center gap-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan/40 rounded-lg"
-                          >
-                            <LayoutGrid size={16} className="text-neutral-500" />
-                            <MicroTitle as="span" className="text-neutral-300">
-                              {t('apps.quickTools')}
-                            </MicroTitle>
-                            <span className="text-xs font-mono text-neutral-600 tabular-nums">
-                              {utilityCount}
-                            </span>
-                            <ChevronRight
-                              size={16}
-                              className={cn(
-                                'ml-auto text-neutral-500 transition-transform',
-                                showUtilities && 'rotate-90'
-                              )}
-                            />
-                          </button>
-                          {!showUtilities && (
-                            <p className="mt-2 text-sm text-neutral-600">
-                              {t('apps.quickToolsDesc')}
-                            </p>
-                          )}
-                          {showUtilities && (
-                            <div className="mt-8 space-y-12">
-                              {utility.map((section) => (
-                                <section key={section.key}>
-                                  <SectionHeader
-                                    icon={section.icon}
-                                    label={catLabel(section.key)}
-                                    description={catDesc(section.key)}
-                                    count={section.apps.length}
-                                  />
-                                  <div className={GRID_CLASS}>
-                                    {section.apps.map((app) => (
-                                      <AppCard key={appId(app)} app={app} {...cardProps} />
-                                    ))}
-                                  </div>
-                                </section>
-                              ))}
-                            </div>
-                          )}
-                        </section>
-                      );
-                    })()}
-                  </>
-                ) : (
-                  // Flat grid (category selected or searching)
-                  <div className={GRID_CLASS}>
-                    {sortedApps.map((app) => (
-                      <AppCard key={appId(app)} app={app} {...cardProps} />
-                    ))}
-                  </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
-          )}
+            <SegmentedControl
+              aria-label={t('apps.sort.label')}
+              size="sm"
+              className="shrink-0"
+              value={sortBy}
+              onChange={setSortBy}
+              options={[
+                {
+                  value: 'default',
+                  icon: LayoutGrid,
+                  'aria-label': t('apps.sort.default'),
+                  label: <span className="hidden sm:inline">{t('apps.sort.default')}</span>,
+                },
+                {
+                  value: 'recent',
+                  icon: History,
+                  'aria-label': t('apps.sort.hintRecent'),
+                  label: <span className="hidden sm:inline">{t('apps.sort.recent')}</span>,
+                },
+                {
+                  value: 'name',
+                  icon: ArrowUpDown,
+                  'aria-label': t('apps.sort.hintName'),
+                  label: <span className="hidden sm:inline">{t('apps.sort.name')}</span>,
+                },
+              ]}
+            />
+          </div>
         </div>
+
+        {/* Content */}
+        {isLoading ? (
+          <div className={GRID_CLASS}>
+            {Array.from({ length: 9 }).map((_, i) => (
+              <AppCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : sortedApps.length === 0 ? (
+          <EmptyState
+            icon={PackageOpen}
+            title={search ? t('apps.empty.noResultsTitle') : t('apps.empty.noCategoryTitle')}
+            description={
+              search
+                ? t('apps.empty.noResultsDesc', { query: search })
+                : t('apps.empty.noCategoryDesc')
+            }
+            actionLabel={hasActiveFilters ? t('apps.empty.clearFilters') : undefined}
+            onAction={hasActiveFilters ? clearFilters : undefined}
+          />
+        ) : showSections ? (
+          <div className="space-y-12">
+            {/* Core sections (brand-AI) — sempre abertas */}
+            {coreSections.map(renderSection)}
+
+            {/* Cinto de utilidades — colapsado por padrão (Swiss Knife Index) */}
+            {utilitySections.length > 0 && (
+              <section className="border-t border-border pt-8">
+                <button
+                  type="button"
+                  onClick={() => setShowUtilities((v) => !v)}
+                  aria-expanded={showUtilities}
+                  className="flex w-full items-center gap-2 text-left text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {t('apps.quickTools')}
+                  <ChevronRight
+                    size={16}
+                    className={cn('ml-auto transition-transform', showUtilities && 'rotate-90')}
+                  />
+                </button>
+                {showUtilities && (
+                  <div className="mt-8 space-y-12">{utilitySections.map(renderSection)}</div>
+                )}
+              </section>
+            )}
+          </div>
+        ) : (
+          // Flat grid (category selected or searching)
+          <div className={GRID_CLASS}>
+            {sortedApps.map((app) => (
+              <AppCard key={appId(app)} app={app} {...cardProps} />
+            ))}
+          </div>
+        )}
       </div>
 
       <AppEditDialog
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         app={editingApp}
-        onSaved={fetchApps}
+        onSaved={() => fetchApps({ silent: true })}
       />
     </PageShell>
   );

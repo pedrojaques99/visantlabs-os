@@ -26,6 +26,8 @@ import { NODE_LAYOUT } from '@/constants/nodeLayout';
 import { useBaseNode } from '@/hooks/canvas/useBaseNode';
 import { SendToButton } from '@/components/shared/SendToButton';
 
+import { Thumb } from '@/components/ui/Thumb';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const OutputNode = memo(
   ({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -326,7 +328,7 @@ export const OutputNode = memo(
       >
         {selected && !dragging && (
           <NodeResizer
-            color="brand-cyan"
+            color="var(--brand-cyan)"
             isVisible={selected}
             minWidth={NODE_LAYOUT.MIN_WIDTH}
             minHeight={NODE_LAYOUT.MIN_HEIGHT}
@@ -390,7 +392,7 @@ export const OutputNode = memo(
               className="relative flex items-center justify-center group/image"
               style={{ width: '100%', height: '100%' }}
             >
-              <img
+              <Thumb
                 src={
                   mediaUrl &&
                   (isSafeUrl(mediaUrl) ||
@@ -400,7 +402,7 @@ export const OutputNode = memo(
                     ? mediaUrl
                     : ''
                 }
-                alt="Output"
+                alt={t('canvasNodes.outputNode.title')}
                 className={cn(
                   'object-contain rounded-md node-image',
                   dragging ? 'node-image-dragging' : 'node-image-static'

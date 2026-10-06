@@ -155,7 +155,7 @@ export const PsdSceneRenderPage: React.FC = () => {
             PSD Scene Render (browser)
           </CardTitle>
           <CardDescription>
-            Render client-side via Scene Packages — escolha uma scene, suba a arte, veja o mockup na
+            Render client-side via Scene Packages. Escolha uma scene, suba a arte, veja o mockup na
             hora e baixe. Mesmo pipeline da Boxy (@visant/psd-engine).
           </CardDescription>
         </CardHeader>
@@ -216,7 +216,7 @@ export const PsdSceneRenderPage: React.FC = () => {
 
           <div
             ref={canvasHostRef}
-            className="flex min-h-[20rem] items-center justify-center overflow-hidden rounded-lg border border-border bg-muted/30"
+            className="flex min-h-[20rem] items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/30"
           >
             {!art && (
               <span className="text-sm text-muted-foreground">

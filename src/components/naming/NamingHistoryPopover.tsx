@@ -92,7 +92,7 @@ export const NamingHistoryPopover: React.FC<NamingHistoryPopoverProps> = ({
           'flex h-8 w-8 items-center justify-center rounded-full border transition-colors',
           open
             ? 'border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan'
-            : 'border-neutral-800 bg-white/[0.03] text-neutral-500 hover:border-white/10 hover:text-neutral-300'
+            : 'border-border bg-muted text-muted-foreground hover:border-border-hover hover:text-foreground'
         )}
       >
         <History size={14} />
@@ -112,13 +112,11 @@ export const NamingHistoryPopover: React.FC<NamingHistoryPopoverProps> = ({
               className="max-h-[70vh] gap-2 overflow-y-auto scrollbar-none bg-neutral-900/80 p-4 backdrop-blur-xl shadow-2xl shadow-black/40"
             >
               <div className="flex items-center justify-between">
-                <span className="text-2xs uppercase tracking-widest text-neutral-500">
-                  Sessões anteriores
-                </span>
+                <span className="text-2xs text-neutral-500">Sessões anteriores</span>
                 <button
                   type="button"
                   onClick={startNew}
-                  className="flex items-center gap-1 text-2xs text-neutral-500 transition-colors hover:text-brand-cyan"
+                  className="flex items-center gap-1 text-2xs text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <Plus size={11} /> nova
                 </button>
@@ -142,10 +140,10 @@ export const NamingHistoryPopover: React.FC<NamingHistoryPopoverProps> = ({
                       onClick={() => restore(s.id)}
                       onKeyDown={(e) => e.key === 'Enter' && restore(s.id)}
                       className={cn(
-                        'group flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 transition-colors',
+                        'group flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2 transition-colors',
                         s.id === currentId
                           ? 'border-brand-cyan/40 bg-brand-cyan/[0.06]'
-                          : 'border-neutral-800 hover:bg-white/[0.035]'
+                          : 'border-border hover:bg-accent'
                       )}
                     >
                       <span
@@ -156,9 +154,9 @@ export const NamingHistoryPopover: React.FC<NamingHistoryPopoverProps> = ({
                       />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm text-neutral-200">{s.name}</p>
-                        <p className="text-2xs text-neutral-600">
-                          {s.likedCount > 0 && `${s.likedCount} curtidos · `}
-                          {relativeTime(s.updatedAt)}
+                        <p className="flex gap-2 text-2xs text-neutral-600">
+                          {s.likedCount > 0 && <span>{s.likedCount} curtidos</span>}
+                          <span>{relativeTime(s.updatedAt)}</span>
                         </p>
                       </div>
                       <button

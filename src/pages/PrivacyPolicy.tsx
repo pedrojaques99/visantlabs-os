@@ -50,7 +50,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
       onClick={onClose}
     >
       <div
-        className="relative max-w-4xl w-full max-h-[90vh] bg-card border border-border rounded-md shadow-2xl p-6 md:p-8 my-8"
+        className="relative max-w-4xl w-full max-h-[90vh] bg-card border border-border rounded-md p-6 md:p-8 my-8"
         onClick={(e) => e.stopPropagation()}
       >
         <Button
@@ -63,10 +63,10 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
         </Button>
 
         <div className="pr-8">
-          <h1 className="text-2xl md:text-3xl font-semibold font-mono text-foreground mb-2  uppercase">
+          <h1 className="text-2xl md:text-3xl font-semibold text-foreground mb-2">
             {t('privacy.title')}
           </h1>
-          <p className="text-xs text-muted-foreground font-mono mb-8">
+          <p className="text-xs text-muted-foreground mb-8">
             {t('privacy.lastUpdated', {
               date: getCurrentLocale() === 'pt-BR' ? '18 de novembro de 2025' : 'November 18, 2025',
             })}
@@ -76,11 +76,11 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
             <p dangerouslySetInnerHTML={{ __html: t('privacy.overview') }} />
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.informationWeCollect.title')}
               </h2>
 
-              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
+              <h3 className="text-base font-medium text-foreground mt-4 mb-2">
                 {t('privacy.sections.informationWeCollect.accountInfo.title')}
               </h3>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
@@ -91,7 +91,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 )}
               </ul>
 
-              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
+              <h3 className="text-base font-medium text-foreground mt-4 mb-2">
                 {t('privacy.sections.informationWeCollect.paymentInfo.title')}
               </h3>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
@@ -102,7 +102,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 )}
               </ul>
 
-              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
+              <h3 className="text-base font-medium text-foreground mt-4 mb-2">
                 {t('privacy.sections.informationWeCollect.usageData.title')}
               </h3>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
@@ -113,7 +113,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 )}
               </ul>
 
-              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
+              <h3 className="text-base font-medium text-foreground mt-4 mb-2">
                 {t('privacy.sections.informationWeCollect.technicalData.title')}
               </h3>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
@@ -124,7 +124,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 )}
               </ul>
 
-              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
+              <h3 className="text-base font-medium text-foreground mt-4 mb-2">
                 {t('privacy.sections.informationWeCollect.googleAuth.title')}
               </h3>
               <p className="text-muted-foreground mb-2">
@@ -158,7 +158,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
             </div>
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.howWeUseData.title')}
               </h2>
               <p className="text-muted-foreground mb-3">
@@ -170,7 +170,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 ))}
               </ul>
 
-              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
+              <h3 className="text-base font-medium text-foreground mt-4 mb-2">
                 {t('privacy.sections.howWeUseData.googleAuth.title')}
               </h3>
               <p className="text-muted-foreground mb-2">
@@ -185,7 +185,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 {t('privacy.sections.howWeUseData.googleAuth.note')}
               </p>
 
-              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
+              <h3 className="text-base font-medium text-foreground mt-4 mb-2">
                 {t('privacy.sections.howWeUseData.aiTraining.title')}
               </h3>
               <p
@@ -197,14 +197,14 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
             </div>
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.dataSharing.title')}
               </h2>
               <p className="text-muted-foreground mb-3">
                 {t('privacy.sections.dataSharing.intro')}
               </p>
 
-              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
+              <h3 className="text-base font-medium text-foreground mt-4 mb-2">
                 {t('privacy.sections.dataSharing.serviceProviders.title')}
               </h3>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
@@ -218,7 +218,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 {t('privacy.sections.dataSharing.serviceProviders.note')}
               </p>
 
-              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
+              <h3 className="text-base font-medium text-foreground mt-4 mb-2">
                 {t('privacy.sections.dataSharing.googleData.title')}
               </h3>
               <p
@@ -236,7 +236,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 {t('privacy.sections.dataSharing.googleData.exception')}
               </p>
 
-              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
+              <h3 className="text-base font-medium text-foreground mt-4 mb-2">
                 {t('privacy.sections.dataSharing.legalObligations.title')}
               </h3>
               <p className="text-muted-foreground">
@@ -245,7 +245,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
             </div>
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.storageAndSecurity.title')}
               </h2>
               <p className="text-muted-foreground mb-3">
@@ -257,7 +257,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 ))}
               </ul>
 
-              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
+              <h3 className="text-base font-medium text-foreground mt-4 mb-2">
                 {t('privacy.sections.storageAndSecurity.googleAuth.title')}
               </h3>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
@@ -270,7 +270,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
             </div>
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.yourRights.title')}
               </h2>
               <p className="text-muted-foreground mb-3">{t('privacy.sections.yourRights.intro')}</p>
@@ -285,7 +285,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
             </div>
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.cookiesAndTracking.title')}
               </h2>
               <p className="text-muted-foreground mb-3">
@@ -297,7 +297,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 ))}
               </ul>
 
-              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
+              <h3 className="text-base font-medium text-foreground mt-4 mb-2">
                 {t('privacy.sections.cookiesAndTracking.googleAnalytics.title')}
               </h3>
               <p className="text-muted-foreground mb-2">
@@ -324,7 +324,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                             href="https://tools.google.com/dlpage/gaoptout"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-foreground hover:text-brand-cyan/80 underline"
+                            className="text-foreground underline underline-offset-2 hover:no-underline"
                           >
                             {t('privacy.policy.google_analytics_optout_browser_add')}
                           </a>
@@ -351,10 +351,10 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
             </div>
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.dataRetention.title')}
               </h2>
-              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
+              <h3 className="text-base font-medium text-foreground mt-4 mb-2">
                 {t('privacy.sections.dataRetention.general.title')}
               </h3>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4 mb-4">
@@ -363,7 +363,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 ))}
               </ul>
 
-              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
+              <h3 className="text-base font-medium text-foreground mt-4 mb-2">
                 {t('privacy.sections.dataRetention.googleAuth.title')}
               </h3>
               <p className="text-muted-foreground mb-2">
@@ -375,7 +375,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 ))}
               </ul>
 
-              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
+              <h3 className="text-base font-medium text-foreground mt-4 mb-2">
                 {t('privacy.sections.dataRetention.requestingDeletion.title')}
               </h3>
               <p className="text-muted-foreground mb-2">
@@ -390,7 +390,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                           {item.split('contato@visant.co')[0]}
                           <a
                             href="mailto:contato@visant.co"
-                            className="text-foreground hover:text-brand-cyan/80 underline"
+                            className="text-foreground underline underline-offset-2 hover:no-underline"
                           >
                             {t('privacy.policy.contatovisantco')}
                           </a>
@@ -406,7 +406,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                             href="https://myaccount.google.com/permissions"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-foreground hover:text-brand-cyan/80 underline"
+                            className="text-foreground underline underline-offset-2 hover:no-underline"
                           >
                             myaccount.google.com/permissions
                           </a>
@@ -429,14 +429,14 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
             </div>
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.changesToPolicy.title')}
               </h2>
               <p className="text-muted-foreground">{t('privacy.sections.changesToPolicy.note')}</p>
             </div>
 
             <div className="border-t border-border pt-6">
-              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
+              <h2 className="text-lg font-medium text-foreground mb-4">
                 {t('privacy.sections.contact.title')}
               </h2>
               <p
@@ -451,7 +451,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 {t('privacy.sections.contact.support').split('contato@visant.co')[0]}
                 <a
                   href="mailto:contato@visant.co"
-                  className="text-foreground hover:text-brand-cyan/80 underline"
+                  className="text-foreground underline underline-offset-2 hover:no-underline"
                 >
                   {t('privacy.policy.contatovisantco_2')}
                 </a>
@@ -460,9 +460,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
             </div>
 
             <div className="border-t border-border pt-6 mt-8">
-              <p className="text-xs text-muted-foreground font-mono ">
-                {t('privacy.sections.agreement')}
-              </p>
+              <p className="text-xs text-muted-foreground">{t('privacy.sections.agreement')}</p>
             </div>
           </div>
         </div>

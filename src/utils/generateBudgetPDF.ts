@@ -406,7 +406,7 @@ const generateVisantPDF = (data: BudgetData, t: (key: string) => string) => {
 
   // Project Title
   addText(
-    data.projectName || 'Projeto de Branding Completo - Logo, ID Visual e Extras',
+    data.projectName || 'Projeto de Branding Completo: logo, identidade visual e extras',
     margin,
     yPosition,
     18,

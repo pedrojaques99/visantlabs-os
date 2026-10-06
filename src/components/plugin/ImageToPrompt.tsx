@@ -110,7 +110,7 @@ export function ImageToPrompt() {
 
     const improvement = window.prompt(
       success
-        ? 'O que funcionou bem? (opcional - ajuda a melhorar)'
+        ? 'O que funcionou bem? (opcional, ajuda a melhorar)'
         : 'O que deu errado? (ex: barras empilhadas, cores erradas, faltou X)'
     );
 
@@ -146,7 +146,7 @@ export function ImageToPrompt() {
       <CardContent className="space-y-4">
         {/* Upload Area */}
         <div
-          className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
+          className="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
           onClick={() => fileInputRef.current?.click()}
           onPaste={handlePaste}
           tabIndex={0}
@@ -160,7 +160,7 @@ export function ImageToPrompt() {
           />
 
           {imagePreview ? (
-            <img src={imagePreview} alt="Preview" className="max-h-64 mx-auto rounded-lg" />
+            <img src={imagePreview} alt="Preview" className="max-h-64 mx-auto rounded-xl" />
           ) : (
             <div className="py-8">
               <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-2" />

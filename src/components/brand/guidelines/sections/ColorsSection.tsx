@@ -200,15 +200,13 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
       }
     >
       <div className="space-y-1.5 py-1">
-        {local.length === 0 && (
-          <p className="text-2xs text-neutral-700 py-2">No colors yet. Click + to add.</p>
-        )}
+        {local.length === 0 && <p className="text-2xs text-neutral-700 py-2">No colors yet.</p>}
         {local.map((c, i) => (
           <div key={i} className="flex items-center gap-3 group/color">
             {/* Color swatch + picker */}
-            <div className="relative w-8 h-8 shrink-0 cursor-pointer" title="Click to change color">
+            <div className="relative w-8 h-8 shrink-0 cursor-pointer">
               <div
-                className="w-full h-full rounded-md border border-white/10"
+                className="w-full h-full rounded-md border border-border"
                 style={{ backgroundColor: c.hex }}
               />
               <input
@@ -285,14 +283,14 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
               {contrastMatrix.map((pair, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-2 p-2 rounded-md bg-white/[0.03] border border-white/[0.03]"
+                  className="flex items-center gap-2 p-2 rounded-md bg-muted border border-border"
                 >
                   <div
-                    className="w-5 h-5 rounded border border-white/10 shrink-0"
+                    className="w-5 h-5 rounded border border-border shrink-0"
                     style={{ backgroundColor: pair.fg }}
                   />
                   <div
-                    className="w-5 h-5 rounded border border-white/10 shrink-0"
+                    className="w-5 h-5 rounded border border-border shrink-0"
                     style={{ backgroundColor: pair.bg }}
                   />
                   <span className="text-2xs font-mono text-neutral-400 flex-1 truncate">
@@ -302,11 +300,11 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                     {pair.ratio.toFixed(2)}:1
                   </span>
                   <span
-                    className={`text-2xs font-bold px-1.5 py-0.5 rounded ${
+                    className={`text-2xs font-medium px-1.5 py-0.5 rounded ${
                       pair.wcagAAA
                         ? 'bg-success/20 text-success'
                         : pair.wcagAA
-                          ? 'bg-white/10 text-neutral-300'
+                          ? 'bg-accent text-foreground'
                           : pair.largeAA
                             ? 'bg-warning/20 text-warning'
                             : 'bg-destructive/20 text-destructive'

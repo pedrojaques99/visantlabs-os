@@ -36,7 +36,7 @@ function resolveSourceToolId(source: AssetSource): string | undefined {
   if (getToolById(id)) return id;
   if (import.meta.env.DEV) {
     console.warn(
-      `[SendToButton] source "${source}" has no tool in toolRegistry — the origin ` +
+      `[SendToButton] source "${source}" has no tool in toolRegistry, so the origin ` +
         `tool will not be excluded from its own targets. Add it to SOURCE_TO_TOOL_ID.`
     );
   }
@@ -134,16 +134,16 @@ export const SendToButton: React.FC<SendToButtonProps> = ({
         )}
       >
         <Send size={12} strokeWidth={2} />
-        {variant === 'icon' && <span className="text-xs font-mono">{t('pipeline.sendTo')}</span>}
+        {variant === 'icon' && <span className="text-xs">{t('pipeline.sendTo')}</span>}
       </button>
 
       {open && (
-        <div className="absolute right-0 bottom-full mb-1 z-50 bg-neutral-900 border border-neutral-700/50 rounded-lg shadow-xl py-1 min-w-[160px] max-h-[240px] overflow-y-auto">
+        <div className="absolute right-0 bottom-full mb-1 z-50 bg-neutral-900 border border-neutral-700/50 rounded-xl shadow-xl py-1 min-w-[160px] max-h-[240px] overflow-y-auto">
           {targets.map((target) => (
             <button
               key={target.id}
               onClick={(e) => handleSend(e, target)}
-              className="w-full text-left px-3 py-1.5 text-xs font-mono text-neutral-300 hover:bg-neutral-800 hover:text-brand-cyan transition-colors flex items-center gap-2"
+              className="w-full text-left px-3 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 hover:text-foreground transition-colors flex items-center gap-2"
             >
               <target.icon size={12} className="shrink-0 opacity-60" />
               {toolLabel(target, t)}

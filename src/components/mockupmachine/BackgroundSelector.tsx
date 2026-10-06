@@ -50,17 +50,17 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
         variant="ghost"
         onClick={handleToggle}
         disabled={disabled}
-        className={`w-full flex items-center gap-2 px-4 py-2 bg-neutral-950/30 backdrop-blur-sm text-neutral-300 rounded-md border border-white/10 hover:border-white/20 hover:bg-white/5 hover:text-white transition-[color,background-color,border-color,opacity,filter] duration-200 ${
+        className={`w-full flex items-center gap-2 px-4 py-2 bg-neutral-950/30 text-neutral-300 rounded-md border border-border hover:border-border-hover hover:bg-accent hover:text-foreground transition-[color,background-color,border-color,opacity,filter] duration-200 ${
           disabled ? 'opacity-50 cursor-not-allowed' : ''
         } ${buttonClassName}`}
-        title="New Background"
-        aria-label="Select background environment"
+        title={t('mockup.newBackground')}
+        aria-label={t('mockup.newBackgroundAria')}
         aria-expanded={isExpanded}
       >
         <MapPin size={16} />
-        <span className="text-sm font-medium">New Background</span>
+        <span className="text-sm font-medium">{t('mockup.newBackground')}</span>
         {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-          <span className="text-xs font-mono text-foreground ml-auto mr-1 font-semibold">
+          <span className="text-xs font-mono text-foreground ml-auto mr-1 font-medium">
             {creditsPerOperation}
           </span>
         )}
@@ -75,7 +75,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
         <div
           className={`absolute ${
             openUpward ? 'bottom-full mb-2' : 'top-full mt-2'
-          } left-0 min-w-[240px] bg-neutral-950/90 backdrop-blur-md border border-white/10 rounded-md shadow-2xl shadow-black/50 z-50 p-2 animate-fade-in`}
+          } left-0 min-w-[240px] bg-neutral-950/90 backdrop-blur-md border border-border rounded-md shadow-2xl shadow-black/50 z-50 p-2 animate-fade-in`}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="grid grid-cols-2 gap-2">
@@ -84,7 +84,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
                 variant="ghost"
                 key={background}
                 onClick={(e) => handleBackgroundClick(background, e)}
-                className="px-3 py-2 text-xs font-medium text-neutral-300 bg-neutral-950/30 hover:bg-brand-cyan/20 hover:text-brand-cyan rounded-md border border-neutral-800 hover:border-neutral-600/30 transition-all duration-200 text-left"
+                className="px-3 py-2 text-xs font-medium text-neutral-300 bg-neutral-950/30 hover:bg-muted hover:text-foreground rounded-md border border-neutral-800 hover:border-neutral-600/30 transition-[color,background-color,border-color,opacity,transform,filter] duration-200 text-left"
                 title={`Change to ${background}`}
               >
                 {background}

@@ -60,8 +60,11 @@ export const NodeContainer: React.FC<NodeContainerProps> = ({
       onDoubleClick={handleDoubleClick}
       className={cn(
         // Keep all visual styles consistent during dragging
-        'border-node border-white/8 rounded-2xl relative node-container flex flex-col backdrop-blur-xl',
-        'min-w-[200px] h-fit rounded-2xl',
+        // EXCEÇÃO ao ruido-scan/blur-em-card: o nó flutua sobre o canvas e as arestas;
+        // o fundo do nó é translúcido (opacidade configurável), então o blur é o que
+        // esconde aresta/grade atrás dele. Os botões internos (node-button) NÃO têm blur.
+        'border-node border-border rounded-xl relative node-container flex flex-col backdrop-blur-xl',
+        'min-w-[200px] h-fit rounded-xl',
         // Default gap and space-y if not overridden
         'gap-[var(--node-gap)]',
         // Border color - maintain border even when dragging

@@ -72,10 +72,10 @@ export function useShellCommands(): ShellCommand[] {
       activeBrandId,
     };
 
-    const gotoLabel = t('command.goto') || 'Ir para';
-    const appsLabel = t('command.apps') || 'Apps';
-    const brandLabel = t('command.switchBrand') || 'Trocar marca';
-    const actionsLabel = t('command.actions') || 'Ações';
+    const gotoLabel = t('command.goto');
+    const appsLabel = t('command.apps');
+    const brandLabel = t('command.switchBrand');
+    const actionsLabel = t('command.actions');
 
     // ── Navegação ──────────────────────────────────────────────────────────
     const sectionCmds: ShellCommand[] = visibleSections(ctx).map((s) => {
@@ -142,7 +142,7 @@ export function useShellCommands(): ShellCommand[] {
         : [];
 
     // ── Ações ────────────────────────────────────────────────────────────────
-    const suffix = activeBrandName ? ` — ${activeBrandName}` : '';
+    const suffix = activeBrandName ? `: ${activeBrandName}` : '';
     const agentCmds: ShellCommand[] =
       FEATURE_COPILOT && activeBrandName
         ? [
@@ -163,17 +163,17 @@ export function useShellCommands(): ShellCommand[] {
     const settingCmds: ShellCommand[] = [
       {
         id: 'act:theme',
-        label: t('command.toggleTheme') || 'Trocar tema',
+        label: t('command.toggleTheme'),
         category: actionsLabel,
         icon: <SunMoon className="h-4 w-4" />,
         onClick: act('act:theme', toggleTheme),
       },
       {
         id: 'act:lang',
-        label: t('command.toggleLanguage') || 'Trocar idioma',
+        label: t('command.toggleLanguage'),
         category: actionsLabel,
         icon: <Languages className="h-4 w-4" />,
-        trailing: <span className="text-2xs uppercase text-neutral-500">{locale}</span>,
+        trailing: <span className="text-2xs uppercase text-muted-foreground">{locale}</span>,
         onClick: act('act:lang', () => setLocale(locale === 'pt-BR' ? 'en-US' : 'pt-BR')),
       },
     ];
@@ -187,14 +187,14 @@ export function useShellCommands(): ShellCommand[] {
       leafIndex.set(c.id, c);
     }
 
-    const recentLabel = t('command.recent') || 'Recentes';
+    const recentLabel = t('command.recent');
     const recentCmds: ShellCommand[] = recentIds
       .map((id) => leafIndex.get(id))
       .filter((c): c is ShellCommand => !!c)
       .slice(0, 4)
       .map((c) => ({ ...c, id: `recent:${c.id}`, category: recentLabel, hideOnSearch: true }));
 
-    const pinnedLabel = t('command.pinned') || 'Fixados';
+    const pinnedLabel = t('command.pinned');
     const pinnedCmds: ShellCommand[] = pinned.map((p) => {
       const Icon = p.type === 'app' ? (getLucideIcon(p.icon) ?? LayoutGrid) : undefined;
       return {

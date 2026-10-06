@@ -89,12 +89,12 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
       {/* 1. BRAND SELECTION */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800/50 flex items-center justify-center shadow-inner">
+          <div className="w-8 h-8 rounded-xl bg-neutral-900 border border-neutral-800/50 flex items-center justify-center shadow-inner">
             <Gem
               size={14}
               className={cn(
                 'transition-colors',
-                selectedBrandGuideline ? 'text-brand-cyan' : 'text-neutral-600'
+                selectedBrandGuideline ? 'text-foreground' : 'text-neutral-600'
               )}
             />
           </div>
@@ -109,19 +109,17 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
               <Diamond size={16} className="text-neutral-400" />
             </div>
-            <MicroTitle className="text-neutral-200">
-              {t('mockup.vibeSelect') || 'ESTILO DO MOCKUP'}
-            </MicroTitle>
+            <MicroTitle className="text-neutral-200">{t('mockup.vibeSelect')}</MicroTitle>
           </div>
           <button
             onClick={onSwitchToExpert}
-            className="flex items-center gap-1 group text-2xs text-neutral-600 hover:text-brand-cyan transition-colors uppercase tracking-widest"
+            className="flex items-center gap-1 text-xs text-neutral-500 hover:text-foreground transition-colors"
           >
-            {t('mockup.switchToExpert') || 'EXPERT'}
-            <ChevronRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
+            {t('mockup.switchToExpert')}
+            <ChevronRight size={10} />
           </button>
         </div>
         <div className="px-0.5">
@@ -138,12 +136,12 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
       <section className="space-y-4">
         <div className="flex items-center justify-between group/header">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
               <Diamond
                 size={16}
                 className={cn(
                   'transition-colors',
-                  showInstructions ? 'text-brand-cyan' : 'text-neutral-600'
+                  showInstructions ? 'text-foreground' : 'text-neutral-600'
                 )}
               />
             </div>
@@ -153,23 +151,22 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
                 showInstructions ? 'text-neutral-200' : 'text-neutral-500'
               )}
             >
-              {t('mockup.scenarioDetails') || 'DETALHES DO CENÁRIO'}
+              {t('mockup.scenarioDetails')}
             </MicroTitle>
           </div>
           <button
             onClick={() => setShowInstructions(!showInstructions)}
             className={cn(
-              'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300',
+              'w-8 h-8 rounded-xl flex items-center justify-center transition-colors',
               showInstructions
-                ? 'bg-brand-cyan/20 border border-brand-cyan/30 text-brand-cyan'
-                : 'bg-neutral-900 border border-neutral-800 text-neutral-600 hover:text-neutral-400 hover:border-white/10'
+                ? 'bg-brand-cyan/10 border border-brand-cyan/30 text-foreground'
+                : 'bg-neutral-900 border border-neutral-800 text-neutral-600 hover:text-neutral-400 hover:border-border-hover'
             )}
             title={showInstructions ? t('common.hide') : t('common.show')}
+            aria-label={showInstructions ? t('common.hide') : t('common.show')}
+            aria-pressed={showInstructions}
           >
-            <MessageSquareText
-              size={14}
-              className={cn('transition-transform duration-300', showInstructions && 'scale-110')}
-            />
+            <MessageSquareText size={14} />
           </button>
         </div>
 
@@ -185,12 +182,9 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
               <textarea
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
-                placeholder={
-                  t('mockup.scenarioPlaceholder') ||
-                  'Ex: No topo de uma montanha, iluminação de pôr do sol, estilo cinematográfico...'
-                }
+                placeholder={t('mockup.scenarioPlaceholder')}
                 className={cn(
-                  'w-full h-24 rounded-xl p-4 text-2xs font-mono text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 focus:bg-neutral-950/60 transition-colors resize-none',
+                  'w-full h-24 rounded-xl p-4 text-2xs text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 focus:bg-neutral-950/60 transition-colors resize-none',
                   glassSurface.tile
                 )}
               />
@@ -206,8 +200,8 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
 
       {/* Hint when actions are disabled */}
       {!isSurpriseMeActive && (!selectedVibeSegment || !selectedVibeStyle) && (
-        <p className="text-center text-2xs font-mono text-neutral-600 animate-fade-in">
-          {t('mockup.selectVibeHint') || 'Selecione um estilo acima para gerar'}
+        <p className="text-center text-2xs text-neutral-600 animate-fade-in">
+          {t('mockup.selectVibeHint')}
         </p>
       )}
     </div>

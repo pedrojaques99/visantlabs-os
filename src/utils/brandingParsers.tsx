@@ -95,14 +95,14 @@ export const getSectionInfo = (title: string): { icon: React.ReactNode; color: s
     lowerTitle.includes('análise de mercado') ||
     lowerTitle.includes('market analysis')
   ) {
-    return { icon: <BarChart3 className="h-5 w-5" />, color: 'text-blue-400' };
+    return { icon: <BarChart3 className="h-5 w-5" />, color: 'text-chart-1' };
   }
   if (
     lowerTitle.includes('público') ||
     lowerTitle.includes('target') ||
     lowerTitle.includes('audience')
   ) {
-    return { icon: <Users className="h-5 w-5" />, color: 'text-purple-400' };
+    return { icon: <Users className="h-5 w-5" />, color: 'text-chart-4' };
   }
   if (lowerTitle.includes('posicionamento') || lowerTitle.includes('positioning')) {
     return { icon: <Target className="h-5 w-5" />, color: 'text-success' };
@@ -111,16 +111,16 @@ export const getSectionInfo = (title: string): { icon: React.ReactNode; color: s
     return { icon: <Lightbulb className="h-5 w-5" />, color: 'text-warning' };
   }
   if (lowerTitle.includes('tendência') || lowerTitle.includes('trend')) {
-    return { icon: <TrendingUp className="h-5 w-5" />, color: 'text-brand-cyan' };
+    return { icon: <TrendingUp className="h-5 w-5" />, color: 'text-chart-2' };
   }
   if (lowerTitle.includes('demográfico') || lowerTitle.includes('demographic')) {
-    return { icon: <MapPin className="h-5 w-5" />, color: 'text-pink-400' };
+    return { icon: <MapPin className="h-5 w-5" />, color: 'text-chart-5' };
   }
   if (lowerTitle.includes('psicográfico') || lowerTitle.includes('psychographic')) {
     return { icon: <Heart className="h-5 w-5" />, color: 'text-destructive' };
   }
   if (lowerTitle.includes('comportamento') || lowerTitle.includes('behavior')) {
-    return { icon: <ShoppingBag className="h-5 w-5" />, color: 'text-orange-400' };
+    return { icon: <ShoppingBag className="h-5 w-5" />, color: 'text-chart-3' };
   }
   return { icon: <BarChart3 className="h-5 w-5" />, color: 'text-foreground' };
 };

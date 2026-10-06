@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
+import { MediaTile } from '../components/ui/MediaTile';
+import { EmptyState } from '../components/ui/EmptyState';
+import { ErrorState } from '../components/ui/ErrorState';
 import { canvasApi, type CanvasProject } from '../services/canvasApi';
 import { useLayout } from '@/hooks/useLayout';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
@@ -10,11 +13,9 @@ import { ConfirmationModal } from '../components/ConfirmationModal';
 import { toast } from 'sonner';
 import {
   FolderKanban,
-  Calendar,
-  Eye,
   Trash2,
+  Edit,
   Plus,
-  Pickaxe,
   FolderOpen,
   FileJson,
   Search,
@@ -81,7 +82,7 @@ const getProjectThumbnail = (project: CanvasProject): string | null => {
 };
 
 export const CanvasProjectsPage: React.FC = () => {
-  const { t, locale } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useLayout();
   const { hasAccess, isLoading: isLoadingAccess } = usePremiumAccess();
@@ -113,27 +114,35 @@ export const CanvasProjectsPage: React.FC = () => {
   // workflow — "mostrar workflows da comunidade" direto na página, sem modal.
   const [communityWorkflows, setCommunityWorkflows] = useState<CanvasWorkflow[]>([]);
   const [loadingCommunity, setLoadingCommunity] = useState(true);
+  // Falha no load não pode cair no "nenhum workflow publicado" (erro ≠ vazio).
+  const [communityError, setCommunityError] = useState(false);
+  const communityCancelledRef = useRef(false);
+
+  const loadCommunity = useCallback(async () => {
+    setLoadingCommunity(true);
+    setCommunityError(false);
+    try {
+      const data = await workflowApi.getPublic();
+      if (!communityCancelledRef.current) setCommunityWorkflows(data);
+    } catch (err) {
+      console.error('[CanvasProjects] community workflows load failed:', err);
+      if (!communityCancelledRef.current) setCommunityError(true);
+    } finally {
+      if (!communityCancelledRef.current) setLoadingCommunity(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const data = await workflowApi.getPublic();
-        if (!cancelled) setCommunityWorkflows(data);
-      } catch (err) {
-        console.error('[CanvasProjects] community workflows load failed:', err);
-      } finally {
-        if (!cancelled) setLoadingCommunity(false);
-      }
-    })();
+    communityCancelledRef.current = false;
+    loadCommunity();
     return () => {
-      cancelled = true;
+      communityCancelledRef.current = true;
     };
-  }, []);
+  }, [loadCommunity]);
 
   const handleCommunityLike = async (workflowId: string) => {
     if (!isAuthenticated) {
-      toast.error(t('workflows.errors.mustBeAuthenticated') || 'You must be logged in');
+      toast.error(t('workflows.errors.mustBeAuthenticated'));
       return;
     }
     try {
@@ -151,39 +160,36 @@ export const CanvasProjectsPage: React.FC = () => {
       );
     } catch (err) {
       console.error('Error toggling like:', err);
-      toast.error(t('workflows.errors.failedToToggleLike') || 'Failed to toggle like');
+      toast.error(t('workflows.errors.failedToToggleLike'));
     }
   };
 
   const handleCommunityDuplicate = async (workflowId: string) => {
     if (!isAuthenticated) {
-      toast.error(t('workflows.errors.mustBeAuthenticated') || 'You must be logged in');
+      toast.error(t('workflows.errors.mustBeAuthenticated'));
       return;
     }
     try {
       await workflowApi.duplicate(workflowId);
-      toast.success(t('workflows.messages.duplicated') || 'Workflow added to your library!');
+      toast.success(t('workflows.messages.duplicated'));
     } catch (err) {
       console.error('Error duplicating workflow:', err);
-      toast.error(t('workflows.errors.failedToDuplicate') || 'Failed to duplicate workflow');
+      toast.error(t('workflows.errors.failedToDuplicate'));
     }
   };
 
   const handleLoadWorkflow = async (workflow: CanvasWorkflow) => {
     try {
       if (!isAuthenticated) {
-        toast.error(t('workflows.errors.mustBeAuthenticated') || 'You must be logged in');
+        toast.error(t('workflows.errors.mustBeAuthenticated'));
         return;
       }
       const newProject = await canvasApi.save(workflow.name, workflow.nodes, workflow.edges);
-      toast.success(
-        t('workflows.messages.loaded', { name: workflow.name }) ||
-          `Workflow loaded: ${workflow.name}`
-      );
+      toast.success(t('workflows.messages.loaded', { name: workflow.name }));
       navigate(`/canvas/${newProject._id}`);
     } catch (error) {
       console.error('Failed to load workflow:', error);
-      toast.error(t('workflows.errors.failedToLoad') || 'Failed to load workflow');
+      toast.error(t('workflows.errors.failedToLoad'));
     }
   };
 
@@ -210,7 +216,7 @@ export const CanvasProjectsPage: React.FC = () => {
         // A failed load must not fall through to the "no projects yet" empty
         // state — that reads as "your account is empty" (silent-empty lie).
         setLoadError(true);
-        toast.error(t('canvas.failedToLoadProjects') || 'Failed to load canvas projects');
+        toast.error(t('canvas.failedToLoadProjects'));
       }
     } finally {
       isLoadingRef.current = false;
@@ -235,7 +241,7 @@ export const CanvasProjectsPage: React.FC = () => {
     if (project._id && project._id.trim() !== '') {
       navigate(`/canvas/${project._id}`);
     } else {
-      toast.error(t('canvas.invalidProjectId') || 'Invalid project ID');
+      toast.error(t('canvas.invalidProjectId'));
     }
   };
 
@@ -267,10 +273,10 @@ export const CanvasProjectsPage: React.FC = () => {
         navigate(`/canvas/${newProject._id}`);
       } catch (err: any) {
         console.error('JSON import failed:', err);
-        toast.error(err?.message || 'Failed to import JSON file.');
+        toast.error(t('canvas.import_failed', { error: err?.message || 'JSON' }));
       }
     },
-    [navigate]
+    [navigate, t]
   );
 
   const handleCreateNew = async () => {
@@ -280,7 +286,7 @@ export const CanvasProjectsPage: React.FC = () => {
       navigate(`/canvas/${newProject._id}`);
     } catch (error: any) {
       console.error('[CanvasProjects] Error creating project:', error);
-      toast.error(t('canvas.failedToCreateProject') || 'Failed to create new project');
+      toast.error(t('canvas.failedToCreateProject'));
     }
   };
 
@@ -296,10 +302,10 @@ export const CanvasProjectsPage: React.FC = () => {
     try {
       await canvasApi.delete(projectToDelete);
       setProjects((prev) => prev.filter((p) => p._id !== projectToDelete));
-      toast.success(t('canvas.projectDeletedSuccessfully') || 'Project deleted successfully');
+      toast.success(t('canvas.projectDeletedSuccessfully'));
     } catch (error: any) {
       console.error('Error deleting project:', error);
-      toast.error(t('canvas.failedToDeleteProject') || 'Failed to delete project');
+      toast.error(t('canvas.failedToDeleteProject'));
     } finally {
       setDeletingId(null);
       setProjectToDelete(null);
@@ -341,7 +347,7 @@ export const CanvasProjectsPage: React.FC = () => {
       toast.success(t('canvas.projectNameUpdated'), { duration: 1200 });
     } catch (error: any) {
       console.error('Error updating project name:', error);
-      toast.error(t('canvas.failedToUpdateProjectName') || 'Failed to update project name');
+      toast.error(t('canvas.failedToUpdateProjectName'));
     } finally {
       setEditingProjectId(null);
       setEditingName('');
@@ -399,14 +405,17 @@ export const CanvasProjectsPage: React.FC = () => {
       <Button
         variant="ghost"
         onClick={() => setShowWorkflowLibrary(true)}
-        title={t('workflows.importWorkflow') || 'Library'}
-        className="shrink-0 h-10 px-2 sm:px-3 hover:bg-neutral-900/40 text-neutral-400 hover:text-brand-cyan transition-colors rounded-md flex items-center gap-2 text-2xs font-bold uppercase tracking-widest"
+        className="shrink-0 px-2 sm:px-3 text-muted-foreground hover:text-foreground"
       >
         <FolderOpen className="h-4 w-4" />
-        <span>{t('workflows.importWorkflow') || 'Library'}</span>
+        <span>{t('workflows.importWorkflow')}</span>
       </Button>
 
-      <Button variant="toolbar" onClick={handleImportJsonClick} title="JSON" className="shrink-0">
+      <Button
+        variant="ghost"
+        onClick={handleImportJsonClick}
+        className="shrink-0 px-2 sm:px-3 text-muted-foreground hover:text-foreground"
+      >
         <FileJson className="h-4 w-4" />
         <span>JSON</span>
       </Button>
@@ -435,9 +444,9 @@ export const CanvasProjectsPage: React.FC = () => {
         <SearchBar
           value={searchQuery}
           onChange={setSearchQuery}
-          placeholder={t('canvas.searchProjects') || 'Buscar projetos...'}
+          placeholder={t('canvas.searchProjects')}
           iconSize={14}
-          className="h-10 bg-neutral-900/40 border-white/10 text-xs font-mono"
+          className="h-10 text-xs"
           containerClassName="min-w-0 flex-1 max-w-[8.5rem] sm:flex-initial sm:max-w-none sm:w-[180px] md:w-[140px] lg:w-[180px] xl:w-[200px]"
           autoFocus
           onBlur={() => {
@@ -447,15 +456,17 @@ export const CanvasProjectsPage: React.FC = () => {
       ) : (
         <Button
           variant="ghost"
+          size="icon"
           onClick={() => setShowSearch(true)}
-          className="shrink-0 p-1.5 sm:p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-neutral-900/40"
-          title={t('canvas.searchProjects') || 'Buscar projetos'}
+          className="shrink-0 text-muted-foreground hover:text-foreground"
+          title={t('canvas.searchProjects')}
+          aria-label={t('canvas.searchProjects')}
         >
           <Search size={18} />
         </Button>
       )}
 
-      <div className="h-6 w-[1px] bg-neutral-800/60 mx-1 hidden md:block" />
+      <div className="h-6 w-px bg-border mx-1 hidden md:block" />
 
       <div className="hidden xl:contents">{secondaryActions}</div>
 
@@ -465,15 +476,14 @@ export const CanvasProjectsPage: React.FC = () => {
           Sem label o botão é ícone + `title` — o padrão já validado no mobile,
           não um terceiro comportamento. */}
       <Button
-        variant="brand"
+        variant="primary"
         onClick={handleCreateNew}
-        title={t('canvas.newProject') || 'New Project'}
-        className="shrink-0 h-10 px-2 sm:px-6 md:px-2 lg:px-6 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-bold uppercase tracking-widest text-2xs rounded-md transition-all duration-300 hover:scale-[1.02] flex items-center gap-2"
+        title={t('canvas.newProject')}
+        aria-label={t('canvas.newProject')}
+        className="shrink-0 px-2 sm:px-4 md:px-2 lg:px-4"
       >
         <Plus className="h-4 w-4" />
-        <span className="hidden sm:inline md:hidden lg:inline">
-          {t('canvas.newProject') || 'New Project'}
-        </span>
+        <span className="hidden sm:inline md:hidden lg:inline">{t('canvas.newProject')}</span>
       </Button>
 
       <Input
@@ -490,29 +500,18 @@ export const CanvasProjectsPage: React.FC = () => {
     return (
       <PageShell
         pageId="canvas-projects-loading"
-        title={t('canvas.projects.title') || 'Projects'}
-        microTitle="Canvas // Workspace"
+        title={t('canvas.projects.title')}
         description={t('canvas.projects.manage_your_visual_canvas_projects')}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="bg-neutral-900 border border-neutral-800/60 rounded-md p-6 md:p-8"
-              style={{ animationDelay: `${i * 100}ms` }}
-            >
-              <SkeletonLoader height="12rem" className="w-full rounded-md mb-4" />
-              <div className="flex items-center gap-2 mb-2">
-                <SkeletonLoader height="1.25rem" className="w-5 rounded" />
-                <SkeletonLoader height="1.5rem" className="flex-1" />
+            <div key={i} className="overflow-hidden rounded-xl border border-border bg-card">
+              <div className="aspect-[16/10] w-full">
+                <SkeletonLoader height="100%" className="w-full rounded-none" />
               </div>
-              <div className="flex items-center gap-2 mb-4">
-                <SkeletonLoader height="0.875rem" className="w-3.5 rounded" />
-                <SkeletonLoader height="0.875rem" className="w-24" />
-              </div>
-              <div className="flex items-center gap-2">
-                <SkeletonLoader height="2.5rem" className="flex-1 rounded-md" />
-                <SkeletonLoader height="2.5rem" className="w-12 rounded-xl" />
+              <div className="p-3">
+                <SkeletonLoader height="0.875rem" className="w-2/3 mb-2" />
+                <SkeletonLoader height="0.75rem" className="w-24" />
               </div>
             </div>
           ))}
@@ -523,33 +522,26 @@ export const CanvasProjectsPage: React.FC = () => {
 
   if (!hasAccess) return null;
 
-  const countStr = (() => {
-    const count = filteredProjects.length;
-    const total = projects.length;
-    const isSingular = count === 1;
-    if (searchQuery.trim()) {
-      return locale === 'pt-BR'
-        ? `${count} de ${total} ${isSingular ? 'projeto' : 'projetos'} encontrados`
-        : `${count} of ${total} ${isSingular ? 'project' : 'projects'} found`;
-    } else {
-      return locale === 'pt-BR'
-        ? `Gerencie ${count} ${isSingular ? 'projeto' : 'projetos'}`
-        : `Manage ${count} ${isSingular ? 'project' : 'projects'}`;
-    }
-  })();
+  const countStr = searchQuery.trim()
+    ? t('canvas.projects.countFiltered', {
+        count: filteredProjects.length,
+        total: projects.length,
+      })
+    : projects.length === 1
+      ? t('canvas.projects.countOne')
+      : t('canvas.projects.countMany', { count: projects.length });
 
   return (
     <PageShell
       pageId="canvas-projects"
-      seoTitle={t('canvas.seoTitle') || 'Canvas Editor'}
-      seoDescription={t('canvas.seoDescription') || 'Editor visual baseado em fluxos.'}
-      title={t('canvas.projects.title') || 'Projects'}
-      microTitle="Canvas // Workspace"
+      seoTitle={t('canvas.seoTitle')}
+      seoDescription={t('canvas.seoDescription')}
+      title={t('canvas.projects.title')}
       description={countStr}
       breadcrumb={[
-        { label: t('apps.home') || 'Home', to: '/' },
-        { label: t('canvas.title') || 'Canvas', to: '/canvas' },
-        { label: t('canvas.projects.title') || 'Projects' },
+        { label: t('apps.home'), to: '/' },
+        { label: t('canvas.title'), to: '/canvas' },
+        { label: t('canvas.projects.title') },
       ]}
       actions={headerActions}
       noBackground
@@ -560,216 +552,125 @@ export const CanvasProjectsPage: React.FC = () => {
         <div className="flex xl:hidden items-center gap-2 mb-4">{secondaryActions}</div>
 
         {loadError && projects.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
-            <FolderKanban size={64} className="text-destructive/60 mb-4" strokeWidth={1} />
-            <h2 className="text-xl font-semibold font-mono uppercase text-neutral-400 mb-2">
-              {t('canvas.loadFailedTitle')?.toUpperCase() || 'COULD NOT LOAD PROJECTS'}
-            </h2>
-            <p className="text-sm text-neutral-500 font-mono mb-6">
-              {t('canvas.loadFailedBody') ||
-                'Something went wrong loading your projects. Your work is safe — try again.'}
-            </p>
-            <Button
-              variant="ghost"
-              onClick={loadProjects}
-              className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95"
-            >
-              {t('common.retry') || 'Try Again'}
-            </Button>
-          </div>
+          <ErrorState
+            title={t('canvas.loadFailedTitle')}
+            description={t('canvas.loadFailedBody')}
+            onRetry={loadProjects}
+          />
         ) : filteredProjects.length === 0 && projects.length > 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
-            <FolderKanban size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
-            <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
-              {t('canvas.noProjectsFound')?.toUpperCase() || 'NO PROJECTS FOUND'}
-            </h2>
-            <p className="text-sm text-neutral-600 font-mono mb-6">
-              {searchQuery.trim()
-                ? t('canvas.noProjectsMatchSearch') || 'No projects match your search query.'
-                : t('canvas.noProjectsForBrand') ||
-                  'No canvas projects are linked to the active brand.'}
-            </p>
-            {searchQuery.trim() ? (
-              <Button
-                variant="ghost"
-                onClick={() => setSearchQuery('')}
-                className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95"
-              >
-                {t('canvas.clearSearch') || 'Clear Search'}
-              </Button>
-            ) : (
-              // Sem busca ativa, "nenhum encontrado" não pode ser um beco sem
-              // saída — o dono desta marca ainda pode criar o primeiro projeto
-              // dela aqui, mesma ação do header.
-              <Button
-                variant="brand"
-                onClick={handleCreateNew}
-                className="px-6 py-3 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
-              >
-                <Pickaxe className="h-4 w-4" />
-                {t('canvas.createFirstProjectButton') || 'Create Your First Project'}
-              </Button>
-            )}
-          </div>
+          // Sem busca ativa, "nenhum encontrado" não pode ser um beco sem
+          // saída: o dono desta marca ainda pode criar o primeiro projeto dela.
+          <EmptyState
+            icon={FolderKanban}
+            title={t('canvas.noProjectsFound')}
+            description={
+              searchQuery.trim()
+                ? t('canvas.noProjectsMatchSearch')
+                : t('canvas.noProjectsForBrand')
+            }
+            actionLabel={
+              searchQuery.trim() ? t('common.clearSearch') : t('canvas.createFirstProjectButton')
+            }
+            onAction={searchQuery.trim() ? () => setSearchQuery('') : handleCreateNew}
+          />
         ) : projects.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
-            <FolderKanban size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
-            <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
-              {t('canvas.noProjectsYet')?.toUpperCase() || 'NO PROJECTS YET'}
-            </h2>
-            <p className="text-sm text-neutral-600 font-mono mb-6">
-              {t('canvas.createFirstProject') ||
-                'Create your first canvas project to start working with nodes.'}
-            </p>
-            <Button
-              variant="brand"
-              onClick={handleCreateNew}
-              className="px-6 py-3 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
-            >
-              <Pickaxe className="h-4 w-4" />
-              {t('canvas.createFirstProjectButton') || 'Create Your First Project'}
-            </Button>
-          </div>
+          <EmptyState
+            icon={FolderKanban}
+            title={t('canvas.noProjectsYet')}
+            description={t('canvas.createFirstProject')}
+            actionLabel={t('canvas.createFirstProjectButton')}
+            onAction={handleCreateNew}
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {filteredProjects.map((project) => {
-              const nodeCount = Array.isArray(project.nodes) ? project.nodes.length : 0;
-              const edgeCount = Array.isArray(project.edges) ? project.edges.length : 0;
               const thumbnail = getProjectThumbnail(project);
+              // `'Untitled'` is the literal the backend persists as the default
+              // project name: a sentinel, localized on RENDER only.
+              const displayName =
+                !project.name || project.name === 'Untitled' ? t('canvas.untitled') : project.name;
+              const isEditing = editingProjectId === project._id;
 
               return (
-                <div
+                <MediaTile
                   key={project._id}
-                  className="bg-neutral-900/40 backdrop-blur-sm border border-neutral-800/60 rounded-xl p-5 hover:border-neutral-700 transition-[color,background-color,border-color,box-shadow,filter] duration-500 group cursor-pointer overflow-hidden shadow-xl"
+                  src={thumbnail ?? undefined}
+                  alt={displayName}
+                  aspectRatio="16 / 10"
+                  fallbackIcon={FolderKanban}
+                  actionLabel={displayName}
                   onClick={() => {
-                    if (editingProjectId !== project._id) {
-                      handleView(project);
-                    }
+                    if (!isEditing) handleView(project);
                   }}
-                >
-                  <div className="relative w-full h-48 mb-6 rounded-lg overflow-hidden bg-neutral-900/50 border border-neutral-800/60">
-                    {thumbnail ? (
-                      <img
-                        src={thumbnail}
-                        alt={project.name || 'Project preview'}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
+                  title={displayName}
+                  editableTitle={
+                    isEditing ? (
+                      <Input
+                        ref={editingInputRef}
+                        type="text"
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        onBlur={() => handleNameEditSave(project._id)}
+                        onKeyDown={(e) => handleNameEditKeyDown(e, project._id)}
+                        aria-label={t('canvas.renameProject')}
+                        className="h-auto border-0 border-b border-ring bg-transparent px-1 py-0 text-sm font-medium text-foreground focus:outline-none"
                       />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <FolderKanban className="h-10 w-10 text-neutral-800" strokeWidth={1} />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        {editingProjectId === project._id ? (
-                          <Input
-                            ref={editingInputRef}
-                            type="text"
-                            value={editingName}
-                            onChange={(e) => setEditingName(e.target.value)}
-                            onBlur={() => handleNameEditSave(project._id)}
-                            onKeyDown={(e) => handleNameEditKeyDown(e, project._id)}
-                            onClick={(e) => e.stopPropagation()}
-                            className="flex-1 font-bold text-neutral-200 font-manrope text-lg bg-transparent border-b border-brand-cyan/40 focus:border-neutral-600 focus:outline-none px-1 h-auto py-0"
-                          />
-                        ) : (
-                          <h3
-                            className="font-bold text-neutral-200 font-manrope text-lg line-clamp-1 cursor-text group-hover:text-brand-cyan transition-colors"
-                            onClick={(e) => handleNameEditStart(project, e)}
-                            title={t('canvas.clickToEdit') || 'Click to edit'}
-                          >
-                            {/* `'Untitled'` is the literal the backend persists as the
-                                default project name — it is a sentinel, not user text,
-                                so it gets localized on RENDER only. `project.name` keeps
-                                the literal (rename/export still round-trip it). */}
-                            {!project.name || project.name === 'Untitled'
-                              ? t('canvas.untitled')
-                              : project.name}
-                          </h3>
-                        )}
-                      </div>
-                      <div
-                        className="flex items-center gap-2 text-2xs text-neutral-500 font-mono mb-4 uppercase tracking-widest"
-                        title={`${t('canvas.lastEdited')}: ${formatDate(
-                          project.updatedAt || project.createdAt
-                        )}`}
+                    ) : undefined
+                  }
+                  subtitle={
+                    <span
+                      title={`${t('canvas.lastEdited')}: ${formatDate(
+                        project.updatedAt || project.createdAt
+                      )}`}
+                    >
+                      {formatDate(project.updatedAt || project.createdAt)}
+                    </span>
+                  }
+                  actions={
+                    <>
+                      <Button
+                        variant="surface"
+                        size="icon-sm"
+                        onClick={(e) => handleNameEditStart(project, e)}
+                        aria-label={t('canvas.renameProject')}
+                        title={t('canvas.renameProject')}
                       >
-                        <Calendar className="h-3 w-3" />
-                        <span>{formatDate(project.updatedAt || project.createdAt)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4 text-2xs text-neutral-500 font-mono mb-6 uppercase tracking-widest opacity-60 min-h-[1.25rem]">
-                    {nodeCount > 0 && (
-                      <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800">
-                        {nodeCount} {nodeCount === 1 ? 'node' : 'nodes'}
-                      </span>
-                    )}
-                    {edgeCount > 0 && (
-                      <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800">
-                        {edgeCount} {edgeCount === 1 ? 'edge' : 'edges'}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleView(project);
-                      }}
-                      className="flex-1 h-10 bg-white/5 border border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/10 hover:text-brand-cyan rounded-lg text-xs font-bold uppercase tracking-wider text-neutral-400 transition-[color,background-color,border-color,opacity] duration-300 flex items-center justify-center gap-2"
-                    >
-                      <Eye className="h-4 w-4" />
-                      {t('canvas.open') || 'Open'}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={(e) => handleDeleteClick(project._id, e)}
-                      disabled={deletingId === project._id}
-                      className="w-10 h-10 bg-white/5 border border-white/10 hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive rounded-lg text-neutral-500 transition-[color,background-color,border-color,opacity] duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="icon-sm"
+                        onClick={(e) => handleDeleteClick(project._id, e)}
+                        disabled={deletingId === project._id}
+                        aria-label={t('canvas.deleteProject')}
+                        title={t('canvas.deleteProject')}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  }
+                />
               );
             })}
           </div>
         )}
       </div>
 
-      {/* ── Community workflows — link your brand, run a ready-made workflow ── */}
+      {/* Community workflows: link your brand, run a ready-made workflow */}
       <section
-        className="relative z-10 mt-16 pt-10 border-t border-neutral-800/60"
+        className="relative z-10 mt-16 pt-10 border-t border-border"
         data-vsn-region="community-workflows"
       >
         <div className="flex items-end justify-between gap-4 mb-6">
-          <div className="flex items-start gap-3 min-w-0">
-            <div className="p-2 rounded-lg bg-white/5 border border-white/10 shrink-0">
-              <Globe size={16} className="text-neutral-400" />
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-sm font-semibold text-neutral-200">
-                {t('canvas.community.title')}
-              </h2>
-              <p className="text-xs text-neutral-600 font-mono mt-0.5">
-                {t('canvas.community.subtitle')}
-              </p>
-            </div>
+          <div className="min-w-0">
+            <h2 className="text-sm font-medium text-foreground">{t('canvas.community.title')}</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">{t('canvas.community.subtitle')}</p>
           </div>
           <Button
             variant="ghost"
+            size="sm"
             onClick={() => setShowWorkflowLibrary(true)}
-            className="shrink-0 h-9 px-3 text-2xs font-bold uppercase tracking-widest text-neutral-500 hover:text-brand-cyan"
+            className="shrink-0 text-muted-foreground hover:text-foreground"
           >
             {t('canvas.community.viewAll')}
           </Button>
@@ -781,6 +682,8 @@ export const CanvasProjectsPage: React.FC = () => {
               <SkeletonLoader key={i} height="14rem" className="w-full rounded-md" />
             ))}
           </div>
+        ) : communityError ? (
+          <ErrorState onRetry={loadCommunity} className="py-10" />
         ) : communityWorkflows.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {communityWorkflows.slice(0, 8).map((workflow) => (
@@ -797,9 +700,9 @@ export const CanvasProjectsPage: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-12 text-center gap-2 rounded-xl border border-dashed border-neutral-800/60">
-            <Globe size={28} className="text-neutral-700" strokeWidth={1.2} />
-            <p className="text-xs text-neutral-600 font-mono">{t('canvas.community.empty')}</p>
+          <div className="flex flex-col items-center justify-center py-12 text-center gap-2 rounded-xl border border-dashed border-border">
+            <Globe size={28} className="text-muted-foreground" strokeWidth={1.2} />
+            <p className="text-xs text-muted-foreground">{t('canvas.community.empty')}</p>
           </div>
         )}
       </section>
@@ -824,13 +727,10 @@ export const CanvasProjectsPage: React.FC = () => {
           setProjectToDelete(null);
         }}
         onConfirm={handleDeleteConfirm}
-        title={t('canvas.deleteProject') || 'Delete Project'}
-        message={
-          t('canvas.deleteProjectMessage') ||
-          'Are you sure you want to delete this project? This action cannot be undone.'
-        }
-        confirmText={t('canvas.delete') || 'Delete'}
-        cancelText={t('common.cancel') || 'Cancel'}
+        title={t('canvas.deleteProject')}
+        message={t('canvas.deleteProjectMessage')}
+        confirmText={t('canvas.delete')}
+        cancelText={t('common.cancel')}
         variant="danger"
       />
 

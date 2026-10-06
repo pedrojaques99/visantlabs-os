@@ -138,8 +138,8 @@ const ScrubInput = React.memo<ScrubInputProps>(
     return (
       <div
         className={cn(
-          'group flex flex-col gap-1 rounded-md border border-neutral-800 bg-neutral-900/60',
-          'hover:border-neutral-700 focus-within:border-neutral-600 transition-colors',
+          'group flex flex-col gap-1 rounded-md border border-border bg-muted',
+          'hover:border-border-hover focus-within:border-ring transition-colors',
           'px-2 py-1.5',
           className
         )}
@@ -149,10 +149,12 @@ const ScrubInput = React.memo<ScrubInputProps>(
         title={hint}
       >
         <span
-          className="text-2xs font-mono text-neutral-500 uppercase tracking-widest cursor-ew-resize select-none truncate leading-none touch-none"
+          className="text-2xs text-muted-foreground cursor-ew-resize select-none truncate leading-none touch-none"
           onPointerDown={onScrubDown}
         >
-          {icon && <span className="inline-flex mr-1 align-middle text-neutral-600">{icon}</span>}
+          {icon && (
+            <span className="inline-flex mr-1 align-middle text-muted-foreground">{icon}</span>
+          )}
           {label}
         </span>
         <div className="flex items-center min-w-0">
@@ -164,12 +166,12 @@ const ScrubInput = React.memo<ScrubInputProps>(
               onChange={(e) => setDraft(e.target.value)}
               onBlur={commitEdit}
               onKeyDown={onKeyDown}
-              className="w-full bg-transparent text-xs font-mono text-white outline-none tabular-nums"
+              className="w-full bg-transparent text-xs font-mono text-foreground outline-none tabular-nums"
               autoFocus
             />
           ) : (
             <span
-              className="text-xs font-mono text-neutral-200 cursor-ew-resize select-none tabular-nums leading-none touch-none"
+              className="text-xs font-mono text-foreground cursor-ew-resize select-none tabular-nums leading-none touch-none"
               onPointerDown={onScrubDown}
               onDoubleClick={startEdit}
             >

@@ -843,7 +843,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
       >
         {/* Zoom controls - top right */}
         <div className="sticky top-0 z-40 mb-4 flex justify-end">
-          <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-neutral-300/50 rounded-md px-2 py-1.5 shadow-sm">
+          <div className="flex items-center gap-2 bg-popover/90 backdrop-blur-sm border border-border rounded-md px-2 py-1.5 shadow-sm">
             <Button
               variant="ghost"
               onClick={handleZoomOut}
@@ -853,7 +853,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
             >
               <ZoomOut size={16} className="text-neutral-700" />
             </Button>
-            <span className="text-xs font-mono text-neutral-700 px-2 min-w-[3rem] text-center">
+            <span className="text-xs tabular-nums text-neutral-700 px-2 min-w-[3rem] text-center">
               {Math.round(zoomLevel * 100)}%
             </span>
             <Button
@@ -869,7 +869,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
             <Button
               variant="ghost"
               onClick={handleZoomReset}
-              className="text-xs font-mono text-neutral-700 px-2 py-1 hover:bg-neutral-200/50 rounded transition-colors"
+              className="text-xs text-neutral-700 px-2 py-1 hover:bg-neutral-200/50 rounded transition-colors"
               title="Resetar zoom"
             >
               Reset
@@ -880,11 +880,11 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
         {/* Pending field position indicator - top */}
         {pendingFieldPosition && editable && (
           <div className="sticky top-0 z-40 mb-4">
-            <div className="px-4 py-2 bg-brand-cyan/20 border border-neutral-600/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
-              <p className="text-sm font-mono text-foreground flex items-center gap-2 flex-1">
+            <div className="px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-md max-w-4xl mx-auto flex items-center gap-3">
+              <p className="text-sm text-neutral-100 flex items-center gap-2 flex-1">
                 <MapPin size={16} />
-                Posição selecionada! Clique em um campo preenchido do formulário para adicioná-lo
-                aqui.
+                {/* EXCEÇÃO ao ruido-scan/ensina-a-usar: banner de modo, o próximo passo não é visível na tela */}
+                Posição marcada. Escolha um campo preenchido do formulário.
               </p>
               <Button
                 variant="ghost"
@@ -901,8 +901,8 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
         {/* Positioning mode indicator - top */}
         {isPositioningMode && editable && positioningFieldId && (
           <div className="sticky top-0 z-40 mb-4">
-            <div className="px-4 py-2 bg-brand-cyan/20 border border-neutral-600/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
-              <p className="text-sm font-mono text-foreground flex items-center gap-2 flex-1">
+            <div className="px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-md max-w-4xl mx-auto flex items-center gap-3">
+              <p className="text-sm text-neutral-100 flex items-center gap-2 flex-1">
                 <MapPin size={16} />
                 Clique no PDF para posicionar:{' '}
                 {AVAILABLE_FIELDS.find((f) => f.id === positioningFieldId)?.label ||
@@ -1029,7 +1029,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
           {(isReloading || !isVisible) && (
             <div className="absolute inset-0 flex items-center justify-center bg-neutral-200/80 z-30">
               <div className="text-center">
-                <div className="text-neutral-600 font-mono text-sm mb-2">Recarregando PDF...</div>
+                <div className="text-neutral-600 text-sm mb-2">Recarregando PDF...</div>
                 <div className="w-8 h-8 border-2 border-neutral-600 border-t-transparent rounded-md animate-spin mx-auto"></div>
               </div>
             </div>
@@ -1127,8 +1127,8 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                       top: `${fieldY}px`,
                       fontSize: `${12 * pageScale}px`,
                       color: '#000000',
-                      backgroundColor: 'rgba(82, 221, 235, 0.2)',
-                      border: '2px dashed brand-cyan',
+                      backgroundColor: 'color-mix(in oklch, var(--brand-cyan) 20%, transparent)',
+                      border: '2px dashed var(--brand-cyan)',
                       padding: '4px 10px',
                       borderRadius: 'var(--radius)',
                       pointerEvents: 'none',
@@ -1168,9 +1168,10 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                       width: '10px',
                       height: '10px',
                       borderRadius: '50%',
-                      backgroundColor: 'brand-cyan',
-                      border: '2px solid #ffffff',
-                      boxShadow: '0 0 0 2px rgba(82, 221, 235, 0.5)',
+                      backgroundColor: 'var(--brand-cyan)',
+                      border: '2px solid var(--background)',
+                      boxShadow:
+                        '0 0 0 2px color-mix(in oklch, var(--brand-cyan) 50%, transparent)',
                       pointerEvents: 'none',
                       zIndex: 150,
                       transform: 'translate(-50%, -50%)',
@@ -1405,31 +1406,31 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
     backgroundColor:
       editable && !isDragging
         ? isSelected
-          ? 'rgba(82, 221, 235, 0.15)'
-          : 'rgba(82, 221, 235, 0.08)'
+          ? 'color-mix(in oklch, var(--brand-cyan) 15%, transparent)'
+          : 'color-mix(in oklch, var(--brand-cyan) 8%, transparent)'
         : editable && isDragging
-          ? 'rgba(82, 221, 235, 0.2)'
+          ? 'color-mix(in oklch, var(--brand-cyan) 20%, transparent)'
           : 'transparent',
     border: editable
       ? isDragging
-        ? '2px solid brand-cyan'
+        ? '2px solid var(--brand-cyan)'
         : isSelected
-          ? '2px solid brand-cyan'
-          : '1px solid rgba(82, 221, 235, 0.4)'
+          ? '2px solid var(--brand-cyan)'
+          : '1px solid color-mix(in oklch, var(--brand-cyan) 40%, transparent)'
       : 'none',
     padding: editable ? '3px 6px' : '0',
     borderRadius: editable ? 'var(--radius)' : '0',
     boxShadow:
       editable && isDragging
-        ? '0 10px 16px rgba(82, 221, 235, 0.4)'
+        ? '0 10px 16px color-mix(in oklch, var(--brand-cyan) 40%, transparent)'
         : editable && isSelected
-          ? '0 4px 12px rgba(82, 221, 235, 0.3)'
+          ? '0 4px 12px color-mix(in oklch, var(--brand-cyan) 30%, transparent)'
           : editable
-            ? '0 2px 4px rgba(0, 0, 0, 0.1)'
+            ? 'none'
             : 'none',
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 200 : isPositioning ? 200 : isSelected ? 150 : 100,
-    transition: isDragging ? 'none' : 'all 0.2s ease',
+    transition: isDragging ? 'none' : 'background-color 0.2s ease, border-color 0.2s ease',
     willChange: isDragging ? 'transform' : 'auto',
     pointerEvents: editable ? 'auto' : 'none',
   };
@@ -1507,7 +1508,7 @@ const DraggableFieldOverlay: React.FC<DraggableFieldOverlayProps> = ({
       case 'manrope':
         return 'font-manrope';
       case 'redhatmono':
-        return 'font-mono';
+        return '';
       case 'barlow':
         return '';
       default:
@@ -1525,12 +1526,11 @@ const DraggableFieldOverlay: React.FC<DraggableFieldOverlayProps> = ({
         color: mapping.color || '#000000',
         textAlign: mapping.align || 'left',
         fontWeight: mapping.bold ? 'bold' : 'normal',
-        backgroundColor: 'rgba(82, 221, 235, 0.25)',
-        border: '2px solid brand-cyan',
+        backgroundColor: 'color-mix(in oklch, var(--brand-cyan) 25%, transparent)',
+        border: '2px solid var(--brand-cyan)',
         padding: '3px 6px',
         borderRadius: 'var(--radius)',
-        boxShadow: '0 10px 24px rgba(82, 221, 235, 0.5)',
-        transform: 'scale(1.1)',
+        boxShadow: '0 10px 24px color-mix(in oklch, var(--brand-cyan) 50%, transparent)',
         opacity: 0.95,
         whiteSpace: 'nowrap',
       }}
