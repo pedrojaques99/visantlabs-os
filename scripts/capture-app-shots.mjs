@@ -82,6 +82,7 @@ const PROCESS_BTN = 'button.w-full.text-xs:has(> span.ml-2):not([disabled])';
  *   dispararia geração ao montar.
  * type: [{ sel, text, enter }] — preenche campo antes do print (ferramenta
  *   que sem entrada é tela vazia: qrcode, color-converter).
+ * wheel: N notches de scroll (zoom out) no centro da área útil.
  * draw: traça pinceladas no <canvas> (grid-paint não tem upload).
  */
 const SHOTS = [
@@ -193,6 +194,9 @@ const SHOTS = [
     file: 'cmyk-halftone',
     route: '/image-lab',
     upload: SAMPLE.photo,
+    // O preview abre a 100% (pixel real) e vira um recorte de bolinhas. Roda a
+    // roda do mouse pra afastar até a foto inteira caber, como o dono vê.
+    wheel: 6,
     settle: 4500,
   },
   {
@@ -408,6 +412,15 @@ const capture = async (page, shot, api) => {
     await el.fill(step.text);
     if (step.enter) await el.press('Enter');
     await page.waitForTimeout(400);
+  }
+
+  if (shot.wheel) {
+    await page.mouse.move(chrome.rail + AREA.width / 2, TOP + AREA.height / 2);
+    for (let i = 0; i < shot.wheel; i++) {
+      await page.mouse.wheel(0, 100);
+      await page.waitForTimeout(80);
+    }
+    await page.waitForTimeout(800);
   }
 
   if (shot.draw) {
