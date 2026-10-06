@@ -12,7 +12,7 @@ import {
   NAV_SECTIONS,
   type NavCtx,
 } from '@/config/navConfig';
-import { HIDE_APPS_ENABLED } from '../../src/config/hiddenApps';
+import { HIDE_APPS_ENABLED } from '@/config/hiddenApps';
 
 const baseCtx: NavCtx = {
   isAuthenticated: true,
