@@ -135,7 +135,9 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
       {/* Copy examples — real shipped copy, fed to generation as few-shot. */}
       <div className="space-y-1.5 pt-3 mt-2 border-t border-border">
         <div className="flex items-center justify-between">
-          <MicroTitle className="text-muted-foreground/70">{t('brandView.copyExamples')}</MicroTitle>
+          <MicroTitle className="text-muted-foreground/70">
+            {t('brandView.copyExamples')}
+          </MicroTitle>
           <Button
             variant="ghost"
             size="icon"

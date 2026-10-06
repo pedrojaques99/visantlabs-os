@@ -162,7 +162,9 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
 
         {/* Casing rules */}
         <div className="space-y-1.5">
-          <MicroTitle className="text-muted-foreground/70">{t('brandEditor.casingRules')}</MicroTitle>
+          <MicroTitle className="text-muted-foreground/70">
+            {t('brandEditor.casingRules')}
+          </MicroTitle>
           <InlineTags
             values={local.casingRules}
             onChange={(next) => update({ casingRules: next })}

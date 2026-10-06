@@ -169,7 +169,9 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
                     />
                   </div>
                   <div className="space-y-0.5 w-16">
-                    <MicroTitle className="text-muted-foreground/50 text-2xs">{t('brandEditor.width')}</MicroTitle>
+                    <MicroTitle className="text-muted-foreground/50 text-2xs">
+                      {t('brandEditor.width')}
+                    </MicroTitle>
                     <Input
                       type="number"
                       step="0.5"
@@ -180,7 +182,9 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
                     />
                   </div>
                   <div className="flex-1 space-y-0.5">
-                    <MicroTitle className="text-muted-foreground/50 text-2xs">{t('brandEditor.opacity')}</MicroTitle>
+                    <MicroTitle className="text-muted-foreground/50 text-2xs">
+                      {t('brandEditor.opacity')}
+                    </MicroTitle>
                     <input
                       type="range"
                       min={0}

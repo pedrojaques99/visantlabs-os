@@ -181,7 +181,9 @@ export const ShadowSection: React.FC<ShadowSectionProps> = ({ guideline, onUpdat
                       className="absolute inset-0 opacity-0 cursor-pointer"
                     />
                   </div>
-                  <span className="text-2xs font-mono text-muted-foreground/70 w-14">{s.color}</span>
+                  <span className="text-2xs font-mono text-muted-foreground/70 w-14">
+                    {s.color}
+                  </span>
                   <input
                     type="range"
                     min={0}

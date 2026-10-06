@@ -83,14 +83,27 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
         toast.info(t('brandEditor.assetsAllAnalyzed'));
       } else if (res.analyzed === 0) {
         toast.error(
-          t(res.total === 1 ? 'brandEditor.assetsAnalyzeFailedOne' : 'brandEditor.assetsAnalyzeFailedMany', { count: res.total })
+          t(
+            res.total === 1
+              ? 'brandEditor.assetsAnalyzeFailedOne'
+              : 'brandEditor.assetsAnalyzeFailedMany',
+            { count: res.total }
+          )
         );
       } else if (res.failed > 0) {
         toast.warning(
-          t(res.analyzed === 1 ? 'brandEditor.assetsPartialOne' : 'brandEditor.assetsPartialMany', { analyzed: res.analyzed, failed: res.failed })
+          t(res.analyzed === 1 ? 'brandEditor.assetsPartialOne' : 'brandEditor.assetsPartialMany', {
+            analyzed: res.analyzed,
+            failed: res.failed,
+          })
         );
       } else {
-        toast.success(t(res.analyzed === 1 ? 'brandEditor.assetsAnalyzedOne' : 'brandEditor.assetsAnalyzedMany', { count: res.analyzed }));
+        toast.success(
+          t(
+            res.analyzed === 1 ? 'brandEditor.assetsAnalyzedOne' : 'brandEditor.assetsAnalyzedMany',
+            { count: res.analyzed }
+          )
+        );
       }
     } catch (e) {
       toast.error(friendlyAssetError(e, t('brandEditor.assetsAnalyzeFailed'), t));
@@ -145,7 +158,10 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
           <div className="flex items-center gap-2 text-2xs text-muted-foreground">
             <Loader2 size={12} className="animate-spin" />
             {progress && progress.total > 0
-              ? t('brandEditor.analyzingProgress', { processed: progress.processed, total: progress.total })
+              ? t('brandEditor.analyzingProgress', {
+                  processed: progress.processed,
+                  total: progress.total,
+                })
               : t('brandEditor.analysisStarting')}
           </div>
         )}

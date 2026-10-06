@@ -176,7 +176,9 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
           size={32}
           className={cn(
             'transition-colors duration-200',
-            isBlocked ? 'text-muted-foreground/50' : 'text-muted-foreground group-hover:text-foreground'
+            isBlocked
+              ? 'text-muted-foreground/50'
+              : 'text-muted-foreground group-hover:text-foreground'
           )}
         />
 

@@ -48,7 +48,9 @@ export const GraphicSystemSection: React.FC<GraphicSystemSectionProps> = ({
       <div className="space-y-4 py-1">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="space-y-1">
-            <MicroTitle className="text-muted-foreground/70">{t('brandEditor.patterns')}</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">
+              {t('brandEditor.patterns')}
+            </MicroTitle>
             <Textarea
               value={toLines(gs.patterns)}
               onChange={(e) => update({ patterns: fromLines(e.target.value) })}
@@ -57,7 +59,9 @@ export const GraphicSystemSection: React.FC<GraphicSystemSectionProps> = ({
             />
           </div>
           <div className="space-y-1">
-            <MicroTitle className="text-muted-foreground/70">{t('brandEditor.graphics')}</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">
+              {t('brandEditor.graphics')}
+            </MicroTitle>
             <Textarea
               value={toLines(gs.grafisms)}
               onChange={(e) => update({ grafisms: fromLines(e.target.value) })}
@@ -66,7 +70,9 @@ export const GraphicSystemSection: React.FC<GraphicSystemSectionProps> = ({
             />
           </div>
           <div className="space-y-1">
-            <MicroTitle className="text-muted-foreground/70">{t('brandEditor.imageRules')}</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">
+              {t('brandEditor.imageRules')}
+            </MicroTitle>
             <Textarea
               value={toLines(gs.imageRules)}
               onChange={(e) => update({ imageRules: fromLines(e.target.value) })}
@@ -75,7 +81,9 @@ export const GraphicSystemSection: React.FC<GraphicSystemSectionProps> = ({
             />
           </div>
           <div className="space-y-1">
-            <MicroTitle className="text-muted-foreground/70">{t('brandEditor.editorialGrid')}</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">
+              {t('brandEditor.editorialGrid')}
+            </MicroTitle>
             <Textarea
               value={gs.editorialGrid || ''}
               onChange={(e) => update({ editorialGrid: e.target.value })}

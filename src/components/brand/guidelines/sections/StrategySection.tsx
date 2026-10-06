@@ -96,7 +96,12 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
             <MicroTitle className="text-muted-foreground">{t('brandView.archetypes')}</MicroTitle>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-5 w-5" aria-label={t('brandEditor.addArchetype')}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5"
+                  aria-label={t('brandEditor.addArchetype')}
+                >
                   <Plus size={11} />
                 </Button>
               </DropdownMenuTrigger>
@@ -207,7 +212,9 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
             );
           })}
           {!local.archetypes?.length && (
-            <p className="text-2xs text-muted-foreground/50 pl-0.5">{t('brandEditor.noArchetypes')}</p>
+            <p className="text-2xs text-muted-foreground/50 pl-0.5">
+              {t('brandEditor.noArchetypes')}
+            </p>
           )}
         </div>
       </div>

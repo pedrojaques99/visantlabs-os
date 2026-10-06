@@ -249,13 +249,13 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
             {/* Code block */}
             <pre className="p-4 overflow-x-auto max-h-[400px] overflow-y-auto text-2xs leading-relaxed font-mono text-muted-foreground">
               {loading ? (
-                <span className="text-muted-foreground/70 animate-pulse">{t('brandEditor.compiling')}</span>
+                <span className="text-muted-foreground/70 animate-pulse">
+                  {t('brandEditor.compiling')}
+                </span>
               ) : currentOutput ? (
                 <code>{currentOutput.content}</code>
               ) : (
-                <span className="text-muted-foreground/70">
-                  {t('brandEditor.noOutput')}
-                </span>
+                <span className="text-muted-foreground/70">{t('brandEditor.noOutput')}</span>
               )}
             </pre>
           </div>

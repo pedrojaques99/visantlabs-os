@@ -48,9 +48,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
       if (Array.isArray(colors)) onUpdate({ colors });
       const ranked = (colors || []).filter((c) => (c as any)?.usage > 0).length;
       toast.success(
-        ranked > 0
-          ? t('brandEditor.colorUsageUpdated')
-          : t('brandEditor.colorUsageNone')
+        ranked > 0 ? t('brandEditor.colorUsageUpdated') : t('brandEditor.colorUsageNone')
       );
     } catch {
       toast.error(t('brandEditor.colorUsageFailed'));
@@ -145,7 +143,9 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
         })
         .join('\n');
     copyToClipboard(content);
-    toast.success(t('brandEditor.colorsCopiedAs', { count: local.length, format: format.toUpperCase() }));
+    toast.success(
+      t('brandEditor.colorsCopiedAs', { count: local.length, format: format.toUpperCase() })
+    );
   };
 
   return (
@@ -195,14 +195,21 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          <Button variant="action" size="icon-sm" onClick={addColor} aria-label={t('brandEditor.addColor')}>
+          <Button
+            variant="action"
+            size="icon-sm"
+            onClick={addColor}
+            aria-label={t('brandEditor.addColor')}
+          >
             <Plus size={12} />
           </Button>
         </div>
       }
     >
       <div className="space-y-1.5 py-1">
-        {local.length === 0 && <p className="text-2xs text-muted-foreground/50 py-2">{t('brandEditor.noColorsYet')}</p>}
+        {local.length === 0 && (
+          <p className="text-2xs text-muted-foreground/50 py-2">{t('brandEditor.noColorsYet')}</p>
+        )}
         {local.map((c, i) => (
           <div key={i} className="flex items-center gap-3 group/color">
             {/* Color swatch + picker */}
@@ -272,7 +279,9 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
           >
             <div className="mt-4 pt-4 border-t border-border space-y-2">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-muted-foreground">{t('brandEditor.wcagContrast')}</span>
+                <span className="text-xs font-medium text-muted-foreground">
+                  {t('brandEditor.wcagContrast')}
+                </span>
                 <Button
                   variant="action"
                   size="icon-sm"

@@ -80,7 +80,12 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-5 w-5" aria-label={t('brandEditor.addArchetype')}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5"
+                aria-label={t('brandEditor.addArchetype')}
+              >
                 <Plus size={11} />
               </Button>
             </DropdownMenuTrigger>
@@ -117,7 +122,9 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
     >
       <div className="space-y-0 py-1">
         {local.length === 0 && (
-          <p className="text-2xs text-muted-foreground/50 py-2">{t('brandEditor.noArchetypesAdd')}</p>
+          <p className="text-2xs text-muted-foreground/50 py-2">
+            {t('brandEditor.noArchetypesAdd')}
+          </p>
         )}
         {local.map((arch, i) => {
           const preset = ARCHETYPE_PRESETS.find((p) => p.nome === arch.name);

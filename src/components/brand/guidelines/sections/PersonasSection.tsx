@@ -91,7 +91,10 @@ const Avatar: React.FC<{
           </div>
         </div>
         {img && (
-          <DropdownMenuItem className="text-xs text-muted-foreground" onClick={() => onPickImage('')}>
+          <DropdownMenuItem
+            className="text-xs text-muted-foreground"
+            onClick={() => onPickImage('')}
+          >
             {t('brandEditor.removeAvatar')}
           </DropdownMenuItem>
         )}
@@ -162,7 +165,11 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
         guideline.id
       );
       if (Array.isArray(next)) persist(next as BrandPersona[]);
-      toast.success(resolved > 0 ? t('brandEditor.stockPhotosAdded', { count: resolved }) : t('brandEditor.noNewPhotos'));
+      toast.success(
+        resolved > 0
+          ? t('brandEditor.stockPhotosAdded', { count: resolved })
+          : t('brandEditor.noNewPhotos')
+      );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t('brandEditor.stockPhotosFailed'));
     } finally {
@@ -270,7 +277,9 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
               <div className="pl-[52px] pb-4 space-y-3">
                 {/* Bio */}
                 <div className="space-y-1">
-                  <MicroTitle className="text-muted-foreground/70">{t('brandEditor.bio')}</MicroTitle>
+                  <MicroTitle className="text-muted-foreground/70">
+                    {t('brandEditor.bio')}
+                  </MicroTitle>
                   <textarea
                     value={p.bio || ''}
                     onChange={(e) => set(i, { bio: e.target.value })}
@@ -282,7 +291,9 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
                 {/* Desejos + Dores */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <MicroTitle className="text-muted-foreground/70">{t('brandEditor.personaDesires')}</MicroTitle>
+                    <MicroTitle className="text-muted-foreground/70">
+                      {t('brandEditor.personaDesires')}
+                    </MicroTitle>
                     <textarea
                       value={toLines(p.desires)}
                       onChange={(e) => set(i, { desires: fromLines(e.target.value) })}
@@ -291,7 +302,9 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
                     />
                   </div>
                   <div className="space-y-1">
-                    <MicroTitle className="text-muted-foreground/70">{t('brandEditor.personaPains')}</MicroTitle>
+                    <MicroTitle className="text-muted-foreground/70">
+                      {t('brandEditor.personaPains')}
+                    </MicroTitle>
                     <textarea
                       value={toLines(p.painPoints)}
                       onChange={(e) => set(i, { painPoints: fromLines(e.target.value) })}
@@ -303,7 +316,9 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
 
                 {/* Características as badges */}
                 <div className="space-y-1.5">
-                  <MicroTitle className="text-muted-foreground/70">{t('brandEditor.traits')}</MicroTitle>
+                  <MicroTitle className="text-muted-foreground/70">
+                    {t('brandEditor.traits')}
+                  </MicroTitle>
                   <InlineTags
                     values={p.traits || []}
                     onChange={(next) => set(i, { traits: next })}

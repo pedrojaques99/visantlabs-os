@@ -378,7 +378,9 @@ export const BgRemovePage: React.FC = () => {
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Mode toggle — top of panel */}
-      <div title={mode === 'ai' ? t('miniTools.bgRemove.aiHint') : t('miniTools.bgRemove.simpleHint')}>
+      <div
+        title={mode === 'ai' ? t('miniTools.bgRemove.aiHint') : t('miniTools.bgRemove.simpleHint')}
+      >
         <SegmentedControl
           aria-label={t('miniTools.bgRemove.mode')}
           size="sm"
@@ -558,7 +560,6 @@ export const BgRemovePage: React.FC = () => {
             </motion.div>
           )}
         </AnimatePresence>
-
       </div>
 
       <div className="h-px bg-border" />

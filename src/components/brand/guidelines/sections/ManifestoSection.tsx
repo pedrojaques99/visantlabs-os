@@ -77,7 +77,9 @@ export const ManifestoSection: React.FC<ManifestoSectionProps> = ({
       <div className="space-y-4 py-1">
         <div className="space-y-3">
           <div className="space-y-1">
-            <MicroTitle className="text-muted-foreground/70">1. {t('brandView.provocation')}</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">
+              1. {t('brandView.provocation')}
+            </MicroTitle>
             <Textarea
               value={manifesto.provocation || ''}
               onChange={(e) => update({ provocation: e.target.value })}
@@ -86,7 +88,9 @@ export const ManifestoSection: React.FC<ManifestoSectionProps> = ({
             />
           </div>
           <div className="space-y-1">
-            <MicroTitle className="text-muted-foreground/70">2. {t('brandView.tension')}</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">
+              2. {t('brandView.tension')}
+            </MicroTitle>
             <Textarea
               value={manifesto.tension || ''}
               onChange={(e) => update({ tension: e.target.value })}
@@ -95,7 +99,9 @@ export const ManifestoSection: React.FC<ManifestoSectionProps> = ({
             />
           </div>
           <div className="space-y-1">
-            <MicroTitle className="text-muted-foreground/70">3. {t('brandView.promise')}</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">
+              3. {t('brandView.promise')}
+            </MicroTitle>
             <Textarea
               value={manifesto.promise || ''}
               onChange={(e) => update({ promise: e.target.value })}
@@ -107,7 +113,9 @@ export const ManifestoSection: React.FC<ManifestoSectionProps> = ({
 
         <div className="space-y-1">
           <MicroTitle className="text-muted-foreground/70">
-            {hasStructured ? t('brandEditor.manifestoFullOptional') : t('brandEditor.manifestoFree')}
+            {hasStructured
+              ? t('brandEditor.manifestoFullOptional')
+              : t('brandEditor.manifestoFree')}
           </MicroTitle>
           <Textarea
             value={manifesto.full || ''}

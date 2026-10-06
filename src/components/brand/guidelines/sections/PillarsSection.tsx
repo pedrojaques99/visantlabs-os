@@ -69,9 +69,7 @@ export const PillarsSection: React.FC<PillarsSectionProps> = ({ guideline, onUpd
     >
       <div className="space-y-3 py-1">
         {pillars.length === 0 && (
-          <p className="text-2xs text-muted-foreground/50 py-2">
-            {t('brandEditor.noPillarsAdd')}
-          </p>
+          <p className="text-2xs text-muted-foreground/50 py-2">{t('brandEditor.noPillarsAdd')}</p>
         )}
         {pillars.map((p, i) => (
           <div

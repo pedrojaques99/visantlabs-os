@@ -39,7 +39,12 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
   const tokens = guideline.tokens || {};
 
   return (
-    <SectionBlock id="tokens" icon={<Layers size={14} />} title={t('brandEditor.designTokens')} span={span as any}>
+    <SectionBlock
+      id="tokens"
+      icon={<Layers size={14} />}
+      title={t('brandEditor.designTokens')}
+      span={span as any}
+    >
       <div className="space-y-3 py-1">
         {/* View: flat token rows */}
         {(tokens.spacing || tokens.radius) && (

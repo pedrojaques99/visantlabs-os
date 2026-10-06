@@ -109,7 +109,10 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
           setFiles((prev) => [result, ...prev]);
         }
         toast.success(
-          t(fileList.length > 1 ? 'brandEditor.filesUploadedMany' : 'brandEditor.filesUploadedOne', { count: fileList.length })
+          t(
+            fileList.length > 1 ? 'brandEditor.filesUploadedMany' : 'brandEditor.filesUploadedOne',
+            { count: fileList.length }
+          )
         );
       } catch (err: any) {
         toast.error(err?.message || t('brandEditor.knowledgeUploadFailed'));

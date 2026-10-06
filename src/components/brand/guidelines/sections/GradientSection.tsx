@@ -114,7 +114,9 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
     >
       <div className="space-y-2 py-1">
         {items.length === 0 && (
-          <p className="text-2xs text-muted-foreground/50 py-2">{t('brandEditor.noGradientsAdd')}</p>
+          <p className="text-2xs text-muted-foreground/50 py-2">
+            {t('brandEditor.noGradientsAdd')}
+          </p>
         )}
         {items.map((g, gi) => (
           <div
@@ -195,7 +197,9 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <MicroTitle className="text-muted-foreground/50">{t('brandEditor.stops')}</MicroTitle>
+                    <MicroTitle className="text-muted-foreground/50">
+                      {t('brandEditor.stops')}
+                    </MicroTitle>
                     <button
                       type="button"
                       onClick={() => addStop(gi)}
@@ -218,7 +222,9 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
                           className="absolute inset-0 opacity-0 cursor-pointer"
                         />
                       </div>
-                      <span className="text-2xs font-mono text-muted-foreground/70 w-14">{s.color}</span>
+                      <span className="text-2xs font-mono text-muted-foreground/70 w-14">
+                        {s.color}
+                      </span>
                       <input
                         type="range"
                         min={0}

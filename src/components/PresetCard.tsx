@@ -123,10 +123,12 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             variant="surface"
             size={isCopying ? 'xs' : 'icon-sm'}
             aria-label={t('common.copy')}
-            onClick={stop(() => handleCopy(
+            onClick={stop(() =>
+              handleCopy(
                 t('canvasNodes.promptNode.presetCard.copied'),
                 t('canvasNodes.promptNode.presetCard.copyFailed')
-              ))}
+              )
+            )}
           >
             {isCopying ? <span className="font-mono">{glitchText}</span> : <Clipboard />}
           </Button>

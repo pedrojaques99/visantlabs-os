@@ -75,7 +75,9 @@ export const MensagemCentralSection: React.FC<MensagemCentralSectionProps> = ({
       <div className="space-y-4 py-1">
         <div className="space-y-2">
           <div className="space-y-1">
-            <MicroTitle className="text-muted-foreground/70">1. {t('brandView.product')}</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">
+              1. {t('brandView.product')}
+            </MicroTitle>
             <Input
               value={cm.product}
               onChange={(e) => update({ product: e.target.value })}
@@ -84,7 +86,9 @@ export const MensagemCentralSection: React.FC<MensagemCentralSectionProps> = ({
             />
           </div>
           <div className="space-y-1">
-            <MicroTitle className="text-muted-foreground/70">2. {t('brandView.differential')}</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">
+              2. {t('brandView.differential')}
+            </MicroTitle>
             <Input
               value={cm.differential}
               onChange={(e) => update({ differential: e.target.value })}
@@ -93,7 +97,9 @@ export const MensagemCentralSection: React.FC<MensagemCentralSectionProps> = ({
             />
           </div>
           <div className="space-y-1">
-            <MicroTitle className="text-muted-foreground/70">3. {t('brandView.emotionalBond')}</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">
+              3. {t('brandView.emotionalBond')}
+            </MicroTitle>
             <Input
               value={cm.emotionalBond}
               onChange={(e) => update({ emotionalBond: e.target.value })}

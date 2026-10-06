@@ -160,8 +160,14 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
                     type="button"
                     onClick={() => handleSetPrimary(i)}
                     disabled={isPrimary}
-                    title={isPrimary ? t('brandEditor.brandLogoHint') : t('brandEditor.setAsBrandLogo')}
-                    aria-label={isPrimary ? t('brandEditor.currentBrandLogo') : t('brandEditor.setAsBrandLogo')}
+                    title={
+                      isPrimary ? t('brandEditor.brandLogoHint') : t('brandEditor.setAsBrandLogo')
+                    }
+                    aria-label={
+                      isPrimary
+                        ? t('brandEditor.currentBrandLogo')
+                        : t('brandEditor.setAsBrandLogo')
+                    }
                     className={cn(
                       'absolute top-1 left-1 z-10 h-5 w-5 flex items-center justify-center rounded transition-[color,background-color,border-color,opacity]',
                       isPrimary

@@ -63,7 +63,12 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
   const isEmpty = !motion.easing && !motion.philosophy && !motion.durations;
 
   return (
-    <SectionBlock id="motion" icon={<Zap size={14} />} title={t('brandEditor.motion')} span={span as any}>
+    <SectionBlock
+      id="motion"
+      icon={<Zap size={14} />}
+      title={t('brandEditor.motion')}
+      span={span as any}
+    >
       <div className="space-y-3 py-1 group/motion">
         {isEmpty && (
           <div className="space-y-2">
@@ -80,7 +85,9 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
 
         {/* Philosophy: always visible as compact pills */}
         <div className="space-y-1">
-          <MicroTitle className="text-muted-foreground/70">{t('brandEditor.philosophy')}</MicroTitle>
+          <MicroTitle className="text-muted-foreground/70">
+            {t('brandEditor.philosophy')}
+          </MicroTitle>
           <div className="flex gap-1">
             {PHILOSOPHY_OPTIONS.map((opt) => (
               <button

@@ -48,7 +48,9 @@ export const MarketResearchSection: React.FC<MarketResearchSectionProps> = ({
       <div className="space-y-4 py-1">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="space-y-1">
-            <MicroTitle className="text-muted-foreground/70">{t('brandEditor.competitors')}</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">
+              {t('brandEditor.competitors')}
+            </MicroTitle>
             <Textarea
               value={toLines(mr.competitors)}
               onChange={(e) => update({ competitors: fromLines(e.target.value) })}
@@ -66,7 +68,9 @@ export const MarketResearchSection: React.FC<MarketResearchSectionProps> = ({
             />
           </div>
           <div className="space-y-1">
-            <MicroTitle className="text-muted-foreground/70">{t('brandEditor.opportunities')}</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">
+              {t('brandEditor.opportunities')}
+            </MicroTitle>
             <Textarea
               value={toLines(mr.opportunities)}
               onChange={(e) => update({ opportunities: fromLines(e.target.value) })}
@@ -77,7 +81,9 @@ export const MarketResearchSection: React.FC<MarketResearchSectionProps> = ({
         </div>
 
         <div className="space-y-1">
-          <MicroTitle className="text-muted-foreground/70">{t('brandEditor.extraNotes')}</MicroTitle>
+          <MicroTitle className="text-muted-foreground/70">
+            {t('brandEditor.extraNotes')}
+          </MicroTitle>
           <Textarea
             value={mr.notes || ''}
             onChange={(e) => update({ notes: e.target.value })}

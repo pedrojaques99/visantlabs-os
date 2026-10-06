@@ -543,7 +543,8 @@ export const DocsPage: React.FC = () => {
                           </CardHeader>
                           <CardContent>
                             <p className="text-muted-foreground text-sm">
-                              Connect AI agents via MCP, API keys, llms.txt discovery, and clean HTML.
+                              Connect AI agents via MCP, API keys, llms.txt discovery, and clean
+                              HTML.
                             </p>
                           </CardContent>
                         </Card>
@@ -593,8 +594,8 @@ export const DocsPage: React.FC = () => {
                           </CardHeader>
                           <CardContent>
                             <p className="text-muted-foreground text-sm">
-                              Transparent pricing based on official Google API costs. See what you can
-                              create with each credit package.
+                              Transparent pricing based on official Google API costs. See what you
+                              can create with each credit package.
                             </p>
                           </CardContent>
                         </Card>

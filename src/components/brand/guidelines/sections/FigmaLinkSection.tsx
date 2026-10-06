@@ -148,7 +148,9 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
           {/* Linked state */}
           <div className="flex items-center gap-2">
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-muted-foreground mb-1">{t('brandEditor.figmaLinkedFile')}</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t('brandEditor.figmaLinkedFile')}
+              </p>
               <div className="flex items-center gap-2">
                 <p className="text-xs text-foreground truncate font-mono">
                   {guideline.figmaFileKey}
@@ -219,9 +221,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
       ) : (
         <div className="space-y-3">
           {/* Unlinked state */}
-          <p className="text-2xs text-muted-foreground">
-            {t('brandEditor.figmaConnectHint')}
-          </p>
+          <p className="text-2xs text-muted-foreground">{t('brandEditor.figmaConnectHint')}</p>
 
           <div className="flex gap-2">
             <Input
@@ -242,9 +242,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
             </Button>
           </div>
 
-          <p className="text-2xs text-muted-foreground/70">
-            {t('brandEditor.figmaSyncHint')}
-          </p>
+          <p className="text-2xs text-muted-foreground/70">{t('brandEditor.figmaSyncHint')}</p>
         </div>
       )}
     </SectionBlock>
