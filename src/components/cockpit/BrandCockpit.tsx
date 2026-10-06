@@ -427,28 +427,17 @@ export const BrandCockpit: React.FC = () => {
                 {/* Troca de marca vive no rail (SSoT). Aqui: Brand Depth — nível
                     nomeado + barra + distância pro próximo (goal-gradient do RCD). */}
                 <div className="flex items-center gap-2">
-                  {/* SISTEMA % — sinal DISCRETO inline (barra fina + %), não um card
-                      competindo com o nome. Detalhe (nível + próximo) vai no hover. */}
+                  {/* Profundidade da marca: só o NOME do nível. Sem porcentagem
+                      (decisão do dono, 2026-10-06): número de completude virava meta
+                      de vaidade em vez de dizer o que a marca já faz. */}
                   {brandDetail && (
                     <button
                       onClick={openGuideline}
                       aria-label={t('cockpit.depth.title')}
-                      title={`${t(`cockpit.depth.level.${depthLevel.key}`)} · ${
-                        depthLevel.nextAt !== null
-                          ? t('cockpit.depth.toNext', { n: depthLevel.toNext })
-                          : t('cockpit.depth.complete')
-                      }`}
-                      className="group flex items-center gap-2.5 px-1"
+                      title={t('cockpit.depth.title')}
+                      className="px-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      <div className="h-1 w-20 rounded-full bg-muted overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-muted-foreground"
-                          style={{ width: `${depthReport.score}%` }}
-                        />
-                      </div>
-                      <span className="text-xs tabular-nums text-muted-foreground group-hover:text-foreground transition-colors">
-                        {depthReport.score}%
-                      </span>
+                      {t(`cockpit.depth.level.${depthLevel.key}`)}
                     </button>
                   )}
                   <Button
