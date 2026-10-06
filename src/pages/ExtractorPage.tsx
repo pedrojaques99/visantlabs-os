@@ -318,10 +318,20 @@ export default function ExtractorPage() {
   useEffect(() => {
     const q = query.trim().toLowerCase();
 
-    // Intelligence: Detect various patterns
-    if (q.includes('instagram.com/') || q.startsWith('@')) {
+    // Decide pelo hostname de verdade: `includes('instagram.com/')` casava
+    // qualquer URL que tivesse esse texto em algum lugar (ex. evil.com/?instagram.com/).
+    const host = (() => {
+      try {
+        return new URL(/^https?:\/\//.test(q) ? q : `https://${q}`).hostname;
+      } catch {
+        return '';
+      }
+    })();
+    const isHost = (domain: string) => host === domain || host.endsWith(`.${domain}`);
+
+    if (q.startsWith('@') || isHost('instagram.com')) {
       setMode('instagram');
-    } else if (q.includes('pinterest.com/') || q.includes('behance.net/') || q.startsWith('http')) {
+    } else if (isHost('pinterest.com') || isHost('behance.net') || q.startsWith('http')) {
       setMode('url');
     } else {
       setMode('google');
