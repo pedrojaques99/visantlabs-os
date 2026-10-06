@@ -72,6 +72,10 @@ export const PresetCard: React.FC<PresetCardProps> = ({
 }) => {
   const migrated = migrateLegacyPreset(preset);
   const config = CATEGORY_CONFIG[migrated.category] ?? CATEGORY_CONFIG['all'];
+  const categoryKey = migrated.category in CATEGORY_CONFIG ? migrated.category : 'all';
+  const difficultyKey = migrated.difficulty
+    ? migrated.difficulty.charAt(0).toUpperCase() + migrated.difficulty.slice(1)
+    : '';
   const isLiked = migrated.isLikedByUser ?? false;
   const likesCount = migrated.likesCount ?? 0;
   const isOwner = currentUserId && migrated.userId && currentUserId === migrated.userId;
@@ -179,7 +183,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
       meta={
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="rounded border border-border bg-muted px-1.5 py-0.5 text-muted-foreground">
-            {t(`communityPresets.categories.${migrated.category in CATEGORY_CONFIG ? migrated.category : 'all'}`)}
+            {t(`communityPresets.categories.${categoryKey}`)}
           </span>
           {migrated.difficulty && (
             <span
@@ -192,9 +196,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                     : 'text-destructive'
               )}
             >
-              {t(
-                `communityPresets.difficulty${migrated.difficulty.charAt(0).toUpperCase()}${migrated.difficulty.slice(1)}`
-              )}
+              {t(`communityPresets.difficulty${difficultyKey}`)}
             </span>
           )}
           {migrated.aspectRatio && (
