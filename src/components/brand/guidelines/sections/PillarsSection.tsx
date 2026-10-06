@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -14,6 +15,7 @@ interface PillarsSectionProps {
 }
 
 export const PillarsSection: React.FC<PillarsSectionProps> = ({ guideline, onUpdate, span }) => {
+  const { t } = useTranslation();
   const pillars = guideline.strategy?.pillars || [];
 
   const persist = useCallback(
@@ -40,7 +42,7 @@ export const PillarsSection: React.FC<PillarsSectionProps> = ({ guideline, onUpd
     <SectionBlock
       id="pillars"
       icon={<Shield size={14} />}
-      title="Pilares"
+      title={t('brandView.pillars')}
       span={span as any}
       actions={
         <div className="flex items-center gap-1">
@@ -57,7 +59,7 @@ export const PillarsSection: React.FC<PillarsSectionProps> = ({ guideline, onUpd
               size="icon"
               className="h-5 w-5"
               onClick={add}
-              aria-label="Add pillar"
+              aria-label={t('brandEditor.addPillar')}
             >
               <Plus size={11} />
             </Button>
@@ -67,14 +69,12 @@ export const PillarsSection: React.FC<PillarsSectionProps> = ({ guideline, onUpd
     >
       <div className="space-y-3 py-1">
         {pillars.length === 0 && (
-          <p className="text-2xs text-neutral-700 py-2">
-            Nenhum pilar definido. Click + para adicionar.
-          </p>
+          <p className="text-2xs text-muted-foreground/50 py-2">{t('brandEditor.noPillarsAdd')}</p>
         )}
         {pillars.map((p, i) => (
           <div
             key={i}
-            className="group/pillar flex items-start gap-3 border-b border-neutral-800 last:border-0 pb-3 last:pb-0"
+            className="group/pillar flex items-start gap-3 border-b border-border last:border-0 pb-3 last:pb-0"
           >
             <div className="flex items-center justify-center w-6 h-6 rounded-full bg-muted text-muted-foreground text-2xs font-medium shrink-0 mt-0.5">
               {i + 1}
@@ -84,21 +84,21 @@ export const PillarsSection: React.FC<PillarsSectionProps> = ({ guideline, onUpd
                 value={p.value}
                 onChange={(e) => set(i, { value: e.target.value })}
                 className="h-7 bg-transparent border-border text-sm font-medium text-foreground placeholder:text-muted-foreground"
-                placeholder="Ex: Pertencimento"
+                placeholder={t('brandEditor.pillarName')}
               />
               <Input
                 value={p.description}
                 onChange={(e) => set(i, { description: e.target.value })}
-                className="h-7 bg-transparent border-neutral-800 text-xs text-neutral-400 placeholder:text-neutral-700"
-                placeholder="Porque esse pilar importa..."
+                className="h-7 bg-transparent border-border text-xs text-muted-foreground placeholder:text-muted-foreground/50"
+                placeholder={t('brandEditor.pillarWhy')}
               />
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/pillar:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0"
+              className="h-6 w-6 text-muted-foreground/50 hover:text-destructive opacity-0 group-hover/pillar:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0"
               onClick={() => remove(i)}
-              aria-label="Remove"
+              aria-label={t('common.remove')}
             >
               <Trash2 size={10} />
             </Button>

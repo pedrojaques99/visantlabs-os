@@ -414,14 +414,12 @@ export const DocsPage: React.FC = () => {
                       </kbd>
                     </button>
                     <Button
-                      variant="brand"
+                      variant="subtle"
                       onClick={handleCopyMarkdown}
                       title="Copy this section as clean Markdown, ideal for pasting into LLM contexts"
                       className={cn(
-                        'flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-redhatmono transition-colors duration-200 shrink-0',
-                        copied
-                          ? 'bg-success/10 border-success/40 text-success'
-                          : 'bg-secondary/60 border-border text-muted-foreground hover:border-border-hover hover:text-brand-cyan hover:bg-brand-cyan/5'
+                        'flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-redhatmono shrink-0',
+                        copied && 'bg-success/10 border-success/40 text-success'
                       )}
                     >
                       {copied ? (
@@ -479,65 +477,78 @@ export const DocsPage: React.FC = () => {
                         </Card>
                       </Link>
 
-                      <Card
-                        className="cursor-pointer hover:border-border-hover transition-colors"
+                      <button
+                        type="button"
                         onClick={() => setActiveTab('api')}
+                        className="block h-full w-full text-left rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
-                        <CardHeader>
-                          <Server className="w-8 h-8 text-foreground mb-2" />
-                          <CardTitle>REST API</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-muted-foreground text-sm">
-                            HTTP API endpoints for authentication, mockups, and more.
-                          </p>
-                        </CardContent>
-                      </Card>
+                        <Card className="h-full cursor-pointer hover:border-border-hover transition-colors">
+                          <CardHeader>
+                            <Server className="w-8 h-8 text-foreground mb-2" />
+                            <CardTitle>REST API</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-muted-foreground text-sm">
+                              HTTP API endpoints for authentication, mockups, and more.
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </button>
 
-                      <Card
-                        className="cursor-pointer hover:border-border-hover transition-colors"
+                      <button
+                        type="button"
                         onClick={() => setActiveTab('mcp')}
+                        className="block h-full w-full text-left rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
-                        <CardHeader>
-                          <Terminal className="w-8 h-8 text-foreground mb-2" />
-                          <CardTitle>MCP Tools</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-muted-foreground text-sm">
-                            Model Context Protocol tools for Claude and agent integration.
-                          </p>
-                        </CardContent>
-                      </Card>
+                        <Card className="h-full cursor-pointer hover:border-border-hover transition-colors">
+                          <CardHeader>
+                            <Terminal className="w-8 h-8 text-foreground mb-2" />
+                            <CardTitle>MCP Tools</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-muted-foreground text-sm">
+                              Model Context Protocol tools for Claude and agent integration.
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </button>
 
-                      <Card
-                        className="cursor-pointer hover:border-border-hover transition-colors"
+                      <button
+                        type="button"
                         onClick={() => setActiveTab('plugin')}
+                        className="block h-full w-full text-left rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
-                        <CardHeader>
-                          <Puzzle className="w-8 h-8 text-foreground mb-2" />
-                          <CardTitle>Figma Plugin</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-muted-foreground text-sm">
-                            Design automation and mockup generation inside Figma.
-                          </p>
-                        </CardContent>
-                      </Card>
+                        <Card className="h-full cursor-pointer hover:border-border-hover transition-colors">
+                          <CardHeader>
+                            <Puzzle className="w-8 h-8 text-foreground mb-2" />
+                            <CardTitle>Figma Plugin</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-muted-foreground text-sm">
+                              Design automation and mockup generation inside Figma.
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </button>
 
-                      <Card
-                        className="cursor-pointer hover:border-border-hover transition-colors"
+                      <button
+                        type="button"
                         onClick={() => setActiveTab('agents')}
+                        className="block h-full w-full text-left rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
-                        <CardHeader>
-                          <Bot className="w-8 h-8 text-foreground mb-2" />
-                          <CardTitle>For Agents</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-muted-foreground text-sm">
-                            Connect AI agents via MCP, API keys, llms.txt discovery, and clean HTML.
-                          </p>
-                        </CardContent>
-                      </Card>
+                        <Card className="h-full cursor-pointer hover:border-border-hover transition-colors">
+                          <CardHeader>
+                            <Bot className="w-8 h-8 text-foreground mb-2" />
+                            <CardTitle>For Agents</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-muted-foreground text-sm">
+                              Connect AI agents via MCP, API keys, llms.txt discovery, and clean
+                              HTML.
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </button>
 
                       <Card
                         className="cursor-pointer hover:border-border-hover transition-colors"
@@ -571,21 +582,24 @@ export const DocsPage: React.FC = () => {
                         </CardContent>
                       </Card>
 
-                      <Card
-                        className="cursor-pointer hover:border-border-hover transition-colors"
+                      <button
+                        type="button"
                         onClick={() => setActiveTab('pricing')}
+                        className="block h-full w-full text-left rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
-                        <CardHeader>
-                          <Coins className="w-8 h-8 text-foreground mb-2" />
-                          <CardTitle>Pricing & Credits</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-muted-foreground text-sm">
-                            Transparent pricing based on official Google API costs. See what you can
-                            create with each credit package.
-                          </p>
-                        </CardContent>
-                      </Card>
+                        <Card className="h-full cursor-pointer hover:border-border-hover transition-colors">
+                          <CardHeader>
+                            <Coins className="w-8 h-8 text-foreground mb-2" />
+                            <CardTitle>Pricing & Credits</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-muted-foreground text-sm">
+                              Transparent pricing based on official Google API costs. See what you
+                              can create with each credit package.
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </button>
                     </div>
 
                     <Card className="mt-8">

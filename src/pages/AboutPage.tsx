@@ -12,7 +12,6 @@ import {
   BreadcrumbSeparator,
 } from '../components/ui/BreadcrumbWithBack';
 import { branding, getGithubUrl } from '../config/branding';
-import { RepellantText } from '../components/RepellantText';
 import { motion } from 'framer-motion';
 import { ExternalLink, Github, ArrowUpRight, ArrowRight } from '@/lib/ui/icons';
 import { Thumb } from '../components/ui/Thumb';
@@ -112,16 +111,6 @@ export const AboutPage: React.FC = () => {
         data-vsn-page="about"
         data-vsn-component="AboutPage"
       >
-        {/* Subtle radial glow top-right */}
-        <div
-          className="pointer-events-none fixed top-0 right-0 w-[600px] h-[400px] opacity-[0.06]"
-          style={{
-            background:
-              'radial-gradient(ellipse at top right, oklch(0.81 0.156 198.6), transparent 70%)',
-          }}
-          aria-hidden
-        />
-
         <div className="relative z-10 max-w-3xl mx-auto px-6 pt-20 pb-32">
           {/* Breadcrumb */}
           <BreadcrumbWithBack to="/">
@@ -318,20 +307,6 @@ export const AboutPage: React.FC = () => {
               </Link>
             </div>
           </motion.div>
-        </div>
-
-        {/* Background VISANT wordmark */}
-        <div
-          className="fixed bottom-[-2vw] left-0 right-0 overflow-hidden select-none flex justify-center"
-          style={{ pointerEvents: 'none' }}
-          aria-hidden
-        >
-          <RepellantText
-            className="text-[20vw] font-semibold leading-none tracking-tighter whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-b from-foreground/5 to-foreground/[0.03]"
-            style={{ pointerEvents: 'auto' }}
-          >
-            VISANT
-          </RepellantText>
         </div>
       </div>
     </>

@@ -43,9 +43,7 @@ export const EditNode: React.FC<NodeProps<Node<EditNodeData>>> = memo(
         )}
         <NodeHeader icon={Wrench} title={t('canvasNodes.editNode.title')} selected={selected} />
 
-        <div className="text-xs text-neutral-500 font-mono mt-4">
-          {t('canvasNodes.editNode.comingSoon')}
-        </div>
+        <div className="text-xs text-neutral-500 mt-4">{t('canvasNodes.editNode.comingSoon')}</div>
       </NodeContainer>
     );
   }

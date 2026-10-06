@@ -7,7 +7,7 @@ const NodeLabel = React.forwardRef<HTMLLabelElement, NodeLabelProps>(
   ({ className, ...props }, ref) => {
     return (
       <label
-        className={cn('text-xs text-neutral-400 font-mono mb-3 block tracking-tight', className)}
+        className={cn('text-xs text-neutral-400 mb-3 block tracking-tight', className)}
         ref={ref}
         {...props}
       />

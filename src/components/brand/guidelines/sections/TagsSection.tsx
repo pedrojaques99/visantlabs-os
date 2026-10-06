@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ type Tags = Record<string, string[]>;
 type Editing = { cat: string; idx: number } | null;
 
 export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, span }) => {
+  const { t } = useTranslation();
   // No local tags state — derive from guideline prop (draft via GuidelineDetail)
   const tags = guideline.tags || {};
 
@@ -99,15 +101,15 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
     <SectionBlock
       id="tags"
       icon={<Tag size={14} />}
-      title="Tags"
+      title={t('brandEditor.tags')}
       span={span as any}
       actions={
         <Button
           variant="ghost"
           size="icon"
-          className="h-5 w-5 text-neutral-500 hover:text-white"
+          className="h-5 w-5 text-muted-foreground hover:text-foreground"
           onClick={() => setAddingCat(true)}
-          aria-label="Add category"
+          aria-label={t('brandEditor.addCategory')}
         >
           <Plus size={11} />
         </Button>
@@ -115,21 +117,21 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
     >
       <div className="space-y-3 py-1">
         {categories.length === 0 && !addingCat && (
-          <p className="text-2xs text-neutral-700 py-1">No tags yet. Click + to add a category.</p>
+          <p className="text-2xs text-muted-foreground/50 py-1">{t('brandEditor.noTagsAdd')}</p>
         )}
 
         {categories.map((cat) => (
           <div key={cat} className="space-y-1.5">
             <div className="flex items-center gap-1 group/cat">
-              <MicroTitle className="text-neutral-600">{cat}</MicroTitle>
+              <MicroTitle className="text-muted-foreground/70">{cat}</MicroTitle>
               <button
                 onClick={() => {
                   const next = { ...tags };
                   delete next[cat];
                   persist(next);
                 }}
-                className="text-neutral-800 hover:text-destructive opacity-0 group-hover/cat:opacity-100 transition-[color,background-color,border-color,opacity] ml-1"
-                aria-label={`Delete category ${cat}`}
+                className="text-muted-foreground/50 hover:text-destructive opacity-0 group-hover/cat:opacity-100 transition-[color,background-color,border-color,opacity] ml-1"
+                aria-label={t('brandEditor.deleteCategory', { name: cat })}
               >
                 <X size={9} />
               </button>
@@ -156,7 +158,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
                     key={idx}
                     className="group/tag inline-flex items-center gap-1 px-2 h-6 rounded border border-border bg-muted text-xs text-foreground cursor-pointer hover:border-border-hover hover:bg-accent transition-colors"
                     onClick={() => startEdit(cat, idx)}
-                    title="Click to edit"
+                    title={t('brandEditor.clickToEdit')}
                   >
                     {val}
                     <button
@@ -164,8 +166,8 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
                         e.stopPropagation();
                         deleteTag(cat, idx);
                       }}
-                      className="text-neutral-700 hover:text-destructive opacity-0 group-hover/tag:opacity-100 transition-[color,background-color,border-color,opacity] ml-0.5"
-                      aria-label="Remove tag"
+                      className="text-muted-foreground/50 hover:text-destructive opacity-0 group-hover/tag:opacity-100 transition-[color,background-color,border-color,opacity] ml-0.5"
+                      aria-label={t('brandEditor.removeTag')}
                     >
                       <X size={9} />
                     </button>
@@ -187,14 +189,14 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
                       setAddValue('');
                     }
                   }}
-                  placeholder="Nova tag..."
+                  placeholder={t('brandEditor.newTag')}
                   className="h-6 px-2 rounded border border-border-hover bg-muted text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring w-24"
                 />
               ) : (
                 <button
                   onClick={() => setAddingTo(cat)}
                   className="h-6 px-1.5 rounded border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-border-hover transition-colors"
-                  aria-label={`Add tag to ${cat}`}
+                  aria-label={t('brandEditor.addTagTo', { name: cat })}
                 >
                   <Plus size={10} />
                 </button>
@@ -218,7 +220,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
                   setCatValue('');
                 }
               }}
-              placeholder="nova_categoria"
+              placeholder={t('brandEditor.newCategory')}
               className="h-6 px-2 rounded border border-border-hover bg-muted text-xs text-muted-foreground font-mono placeholder:text-muted-foreground focus:outline-none focus:border-ring w-36"
             />
           </div>

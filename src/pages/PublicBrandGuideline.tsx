@@ -125,19 +125,19 @@ const DesignSystemValidation = lazyWithRetry(() =>
 
 // ─── Section label map ────────────────────────────────────────────────────────
 
-const SECTION_LABELS: Record<BrandViewSection, string> = {
-  identity: 'Identity',
-  coreMessage: 'Core Message',
-  pillars: 'Pillars',
-  manifesto: 'Manifesto',
-  archetypes: 'Archetypes',
-  personas: 'Personas',
-  voiceValues: 'Voice & Values',
-  colors: 'Colors',
-  typography: 'Typography',
-  logos: 'Logos',
-  media: 'Media',
-  guidelines: 'Guidelines',
+const SECTION_LABEL_KEYS: Record<BrandViewSection, string> = {
+  identity: 'brandView.identity',
+  coreMessage: 'brandView.coreMessage',
+  pillars: 'brandView.pillars',
+  manifesto: 'brandView.manifesto',
+  archetypes: 'brandView.archetypes',
+  personas: 'brandView.personas',
+  voiceValues: 'brandView.voice',
+  colors: 'brandView.colors',
+  typography: 'brandView.typography',
+  logos: 'brandView.logos',
+  media: 'brandView.media',
+  guidelines: 'brandView.guidelines',
 };
 
 // ─── Main page ────────────────────────────────────────────────────────────────
@@ -970,12 +970,12 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                       <SectionPresenceDot section={section} />
                       <button
                         type="button"
-                        aria-label={`${t('public.brand.guideline.edit_section')}: ${SECTION_LABELS[section]}`}
+                        aria-label={`${t('public.brand.guideline.edit_section')}: ${t(SECTION_LABEL_KEYS[section])}`}
                         onClick={() => setActiveEditSection(section)}
                         className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-transparent border border-[var(--brand-text)]/15 text-[var(--brand-text)]/60 text-xs hover:border-warning/40 hover:text-warning hover:bg-warning/5 transition-colors"
                       >
                         <Pencil size={10} />
-                        {SECTION_LABELS[section]}
+                        {t(SECTION_LABEL_KEYS[section])}
                       </button>
                     </div>
                   )
@@ -1013,7 +1013,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                 {t('public.brand.guideline.editing_section')}
                 {activeEditSection && (
                   <span className="text-muted-foreground ml-2">
-                    {SECTION_LABELS[activeEditSection]}
+                    {t(SECTION_LABEL_KEYS[activeEditSection])}
                   </span>
                 )}
               </SheetTitle>

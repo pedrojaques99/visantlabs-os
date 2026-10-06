@@ -37,6 +37,7 @@ import { snapshotCreativeFromStore } from './lib/persistCreative';
 import { isPersistedId } from './lib/layerUtils';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { useTranslation } from '@/hooks/useTranslation';
 // Formatos do Creative Studio → AspectRatioSelector compartilhado (SSoT).
 const CREATIVE_RATIOS: AspectRatio[] = ['1:1', '9:16', '16:9', '4:5'];
 
@@ -93,6 +94,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
   const reset = useCreativeStore((s) => s.reset);
   const setBackgroundSelected = useCreativeStore((s) => s.setBackgroundSelected);
   const { undo, redo, pastStates, futureStates } = useCreativeStore.temporal.getState();
+  const { t } = useTranslation();
   const { colors, activeGuideline, allGuidelines } = useBrandKit();
 
   const saveMutation = useSaveCreativeProject();
@@ -252,7 +254,9 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
         <div className="flex flex-col gap-3 pb-4 border-b border-neutral-800">
           <div className="flex items-center gap-2">
             <Briefcase size={12} className="text-neutral-500" />
-            <label className="text-xs font-medium text-neutral-300">Brand Vault</label>
+            <label className="text-xs font-medium text-neutral-300">
+              {t('creativeSetup.vault')}
+            </label>
           </div>
           <div className="max-h-[240px] overflow-y-auto pr-1">
             <MediaKitGallery

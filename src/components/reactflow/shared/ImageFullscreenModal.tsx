@@ -135,7 +135,7 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
       >
         {/* Top Bar - Minimal controls */}
         <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/80 to-transparent">
-          {title && <h3 className="text-sm font-mono text-neutral-400">{title}</h3>}
+          {title && <h3 className="text-sm text-neutral-400">{title}</h3>}
           <div className="flex items-center gap-2 ml-auto">
             {/* Zoom Controls */}
             <div className="flex items-center gap-1 bg-neutral-950/70 backdrop-blur-sm rounded-md border-node border-neutral-700/50 p-1">
@@ -228,7 +228,7 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
           <Button
             variant="ghost"
             onClick={handleReset}
-            className="absolute bottom-4 right-4 z-10 px-3 py-1.5 bg-neutral-950/60 backdrop-blur-sm hover:bg-neutral-950/80 rounded text-xs font-mono text-neutral-400 hover:text-white transition-colors border-node border-neutral-700/50"
+            className="absolute bottom-4 right-4 z-10 px-3 py-1.5 bg-neutral-950/60 backdrop-blur-sm hover:bg-neutral-950/80 rounded text-xs text-neutral-400 hover:text-white transition-colors border-node border-neutral-700/50"
             title={t('common.resetView')}
           >
             {t('common.reset')}

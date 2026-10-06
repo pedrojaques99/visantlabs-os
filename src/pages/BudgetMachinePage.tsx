@@ -9,7 +9,6 @@ import { BudgetTemplateSelector } from '../components/budget/BudgetTemplateSelec
 import { BudgetForm } from '../components/budget/BudgetForm';
 import { BudgetPreview } from '../components/budget/BudgetPreview';
 import { PdfUploadRequired } from '../components/budget/PdfUploadRequired';
-import { BrandCustomizationPanel } from '../components/budget/BrandCustomizationPanel';
 import { FieldPropertiesPanel } from '../components/budget/FieldPropertiesPanel';
 import { Tooltip } from '../components/ui/Tooltip';
 import type { PdfFieldMapping } from '../types/types';

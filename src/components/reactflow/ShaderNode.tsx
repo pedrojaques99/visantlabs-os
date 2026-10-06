@@ -535,7 +535,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({
       {/* Header */}
       <NodeHeader
         icon={Diamond}
-        title="Shader Effect"
+        title={t('canvasNodes.shaderNode.title')}
         selected={selected}
         isBrandActive={data.isBrandActive}
         onToggleBrand={(active) => {
@@ -547,19 +547,19 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({
 
       {/* Status/Info - Show manual apply option when ready (only for images, videos auto-process) */}
       {!isLoading && hasConnectedImage && !hasResult && !isVideoInput ? (
-        <div className="w-full px-4 py-3 bg-neutral-800/30 border-node border-neutral-700/30 rounded text-xs font-mono text-neutral-400 flex items-center justify-center gap-3">
+        <div className="w-full px-4 py-3 bg-neutral-800/30 border-node border-neutral-700/30 rounded text-xs text-neutral-400 flex items-center justify-center gap-3">
           <ImageIcon size={14} className="text-foreground" />
-          Ready to process
+          {t('canvasNodes.shaderNode.readyToProcess')}
         </div>
       ) : null}
 
       {!hasConnectedImage ? (
         <div className="w-full space-y-[var(--node-gap-sm)]">
-          <div className="w-full px-4 py-3 bg-neutral-800/30 border-node border-neutral-700/30 rounded text-xs font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-50">
+          <div className="w-full px-4 py-3 bg-neutral-800/30 border-node border-neutral-700/30 rounded text-xs text-neutral-500 flex items-center justify-center gap-3 opacity-50">
             <ImageIcon size={14} />
             {t('canvasNodes.shaderNode.connectImage')}
           </div>
-          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border-node border-neutral-800 hover:border-neutral-700 rounded text-xs font-mono text-foreground flex items-center justify-center gap-2 cursor-pointer transition-[color,background-color,border-color,opacity]">
+          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border-node border-neutral-800 hover:border-neutral-700 rounded text-xs text-foreground flex items-center justify-center gap-2 cursor-pointer transition-[color,background-color,border-color,opacity]">
             <Upload size={14} />
             {t('canvasNodes.shaderNode.uploadImageOrVideo')}
             <Input

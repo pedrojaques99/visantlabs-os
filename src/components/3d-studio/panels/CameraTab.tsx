@@ -216,7 +216,6 @@ export const CameraTab: React.FC = React.memo(() => {
 
       {/* Lighting — preset picker + intensities */}
       <ToolPanelDisclosure label={t('studio3d.lighting.title')} defaultOpen>
-        <span className="text-3xs text-muted-foreground">Preset</span>
         <Select
           options={LIGHTING_PRESET_OPTIONS}
           value=""
@@ -269,7 +268,6 @@ export const CameraTab: React.FC = React.memo(() => {
 
       {/* Rendering */}
       <ToolPanelDisclosure label={t('studio3d.panels.rendering')} defaultOpen>
-        <span className="text-3xs text-muted-foreground">Quality</span>
         <Select
           options={RENDER_QUALITY_OPTIONS}
           value={store.renderQuality}
@@ -288,7 +286,6 @@ export const CameraTab: React.FC = React.memo(() => {
 
       {/* Background */}
       <ToolPanelDisclosure label={t('studio3d.background.title')} defaultOpen>
-        <span className="text-3xs text-muted-foreground">Type</span>
         <Select
           options={[
             { value: 'solid', label: t('studio3d.background.types.solid') },

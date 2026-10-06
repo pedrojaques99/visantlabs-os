@@ -43,7 +43,7 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
             className={cn(
               'w-full h-full flex flex-col items-center justify-center gap-1 p-4 text-xs transition-colors',
               designType === 'logo'
-                ? 'bg-brand-cyan/10 text-foreground border-brand-cyan/40'
+                ? 'bg-accent text-foreground border-transparent ring-1 ring-ring'
                 : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50 hover:bg-neutral-800/40'
             )}
           >
@@ -58,7 +58,7 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
             className={cn(
               'w-full h-full flex flex-col items-center justify-center gap-1 p-4 text-xs transition-colors',
               designType === 'layout'
-                ? 'bg-brand-cyan/10 text-foreground border-brand-cyan/40'
+                ? 'bg-accent text-foreground border-transparent ring-1 ring-ring'
                 : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50 hover:bg-neutral-800/40'
             )}
           >

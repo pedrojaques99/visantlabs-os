@@ -1739,12 +1739,12 @@
 }
 
 /* ── Node border-width token — use `border-node` utility in node components ── */
-@layer utilities {
-  .border-node {
-    border-style: solid;
-    border-width: var(--node-border-width, 1px);
-  }
+@utility border-node {
+  border-style: solid;
+  border-width: var(--node-border-width, 1px);
+}
 
+@layer utilities {
   /**
    * hover-reveal — single source of truth for collapsible detail panels.
    * Usage: add class "hover-reveal" to the panel div.

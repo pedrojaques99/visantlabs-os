@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -42,6 +43,7 @@ const Avatar: React.FC<{
   onPickImage: (url: string) => void;
   onSetGender: (gender: BrandPersona['gender']) => void;
 }> = ({ persona, mediaItems, onPickImage, onSetGender }) => {
+  const { t } = useTranslation();
   const img = (persona as any).image as string | undefined;
   const initials = persona.name
     ? persona.name
@@ -58,7 +60,7 @@ const Avatar: React.FC<{
       <DropdownMenuTrigger asChild>
         <button
           className="w-10 h-10 rounded-full shrink-0 overflow-hidden border border-border bg-muted flex items-center justify-center hover:border-border-hover transition-colors"
-          title="Set avatar / gender for stock photos"
+          title={t('brandEditor.personaAvatarTitle')}
         >
           {img ? (
             <Thumb src={img} alt={persona.name} className="w-full h-full object-cover" />
@@ -70,7 +72,7 @@ const Avatar: React.FC<{
       <DropdownMenuContent align="start" className="w-52 p-1">
         {/* Gender — steers auto-resolved stock portraits */}
         <div className="flex items-center justify-between px-2 py-1.5">
-          <span className="text-2xs text-muted-foreground">Stock gender</span>
+          <span className="text-2xs text-muted-foreground">{t('brandEditor.stockGender')}</span>
           <div className="flex gap-1">
             {GENDERS.map((g) => (
               <button
@@ -89,8 +91,11 @@ const Avatar: React.FC<{
           </div>
         </div>
         {img && (
-          <DropdownMenuItem className="text-xs text-neutral-500" onClick={() => onPickImage('')}>
-            Remove avatar
+          <DropdownMenuItem
+            className="text-xs text-muted-foreground"
+            onClick={() => onPickImage('')}
+          >
+            {t('brandEditor.removeAvatar')}
           </DropdownMenuItem>
         )}
         {hasMedia ? (
@@ -106,8 +111,8 @@ const Avatar: React.FC<{
             ))}
           </div>
         ) : (
-          <p className="text-2xs text-neutral-600 px-2 py-1.5">
-            No media yet. Add images in the Logotipo tab.
+          <p className="text-2xs text-muted-foreground/70 px-2 py-1.5">
+            {t('brandEditor.noMediaYet')}
           </p>
         )}
       </DropdownMenuContent>
@@ -116,6 +121,7 @@ const Avatar: React.FC<{
 };
 
 export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onUpdate, span }) => {
+  const { t } = useTranslation();
   const personas = guideline.strategy?.personas || [];
 
   const persist = useCallback(
@@ -159,9 +165,13 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
         guideline.id
       );
       if (Array.isArray(next)) persist(next as BrandPersona[]);
-      toast.success(resolved > 0 ? `${resolved} stock photo(s) added` : 'No new photos found');
+      toast.success(
+        resolved > 0
+          ? t('brandEditor.stockPhotosAdded', { count: resolved })
+          : t('brandEditor.noNewPhotos')
+      );
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Failed to fetch stock photos');
+      toast.error(e instanceof Error ? e.message : t('brandEditor.stockPhotosFailed'));
     } finally {
       setLoadingPhotos(false);
     }
@@ -171,7 +181,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
     <SectionBlock
       id="personas"
       icon={<User size={14} />}
-      title="Personas"
+      title={t('brandView.personas')}
       span={span as any}
       actions={
         <div className="flex items-center gap-1">
@@ -189,8 +199,8 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
               className="h-5 w-5"
               onClick={autoFillPhotos}
               disabled={loadingPhotos}
-              aria-label="Auto-fill persona photos from free stock"
-              title="Fetch free stock photos (Unsplash/Pexels)"
+              aria-label={t('brandEditor.autofillPhotos')}
+              title={t('brandEditor.fetchStockPhotos')}
             >
               {loadingPhotos ? (
                 <Loader2 size={11} className="animate-spin" />
@@ -204,7 +214,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
             size="icon"
             className="h-5 w-5"
             onClick={add}
-            aria-label="Add persona"
+            aria-label={t('brandEditor.addPersona')}
           >
             <Plus size={11} />
           </Button>
@@ -213,12 +223,12 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
     >
       <div className="space-y-0 py-1">
         {personas.length === 0 && (
-          <p className="text-2xs text-neutral-700 py-2">No personas yet. Click + to add.</p>
+          <p className="text-2xs text-muted-foreground/50 py-2">{t('brandEditor.noPersonasAdd')}</p>
         )}
         {personas.map((p, i) => (
           <div
             key={i}
-            className="group/persona border-b border-neutral-800 last:border-0 overflow-hidden"
+            className="group/persona border-b border-border last:border-0 overflow-hidden"
           >
             {/* Header row: avatar + name + age */}
             <div className="flex items-center gap-3 py-3">
@@ -233,13 +243,13 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
                   value={p.name}
                   onChange={(e) => set(i, { name: e.target.value })}
                   className="h-8 bg-transparent border-none px-0 text-base font-medium text-foreground focus-visible:ring-0 placeholder:text-muted-foreground"
-                  placeholder="Nome da persona"
+                  placeholder={t('brandEditor.personaName')}
                 />
                 <Input
                   value={p.occupation || ''}
                   onChange={(e) => set(i, { occupation: e.target.value })}
-                  className="h-5 bg-transparent border-none px-0 text-xs text-neutral-500 focus-visible:ring-0 placeholder:text-neutral-700 mt-0.5"
-                  placeholder="Cargo / Ocupação"
+                  className="h-5 bg-transparent border-none px-0 text-xs text-muted-foreground focus-visible:ring-0 placeholder:text-muted-foreground/50 mt-0.5"
+                  placeholder={t('brandEditor.personaRole')}
                 />
               </div>
               <Input
@@ -248,15 +258,15 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
                 onChange={(e) =>
                   set(i, { age: e.target.value ? Number(e.target.value) : undefined })
                 }
-                className="h-7 bg-transparent border-none px-0 text-sm text-neutral-500 focus-visible:ring-0 w-10 text-right shrink-0"
-                placeholder="Age"
+                className="h-7 bg-transparent border-none px-0 text-sm text-muted-foreground focus-visible:ring-0 w-10 text-right shrink-0"
+                placeholder={t('brandEditor.age')}
               />
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/persona:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0"
+                className="h-6 w-6 text-muted-foreground/50 hover:text-destructive opacity-0 group-hover/persona:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0"
                 onClick={() => remove(i)}
-                aria-label="Remove"
+                aria-label={t('common.remove')}
               >
                 <Trash2 size={10} />
               </Button>
@@ -267,44 +277,52 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
               <div className="pl-[52px] pb-4 space-y-3">
                 {/* Bio */}
                 <div className="space-y-1">
-                  <MicroTitle className="text-neutral-600">Bio</MicroTitle>
+                  <MicroTitle className="text-muted-foreground/70">
+                    {t('brandEditor.bio')}
+                  </MicroTitle>
                   <textarea
                     value={p.bio || ''}
                     onChange={(e) => set(i, { bio: e.target.value })}
                     className="auto-textarea w-full bg-transparent border border-border rounded-md px-3 py-2 text-xs text-muted-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-colors"
-                    placeholder="Contexto, rotina, mentalidade..."
+                    placeholder={t('brandEditor.bioPlaceholder')}
                   />
                 </div>
 
                 {/* Desejos + Dores */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <MicroTitle className="text-neutral-600">Desejos</MicroTitle>
+                    <MicroTitle className="text-muted-foreground/70">
+                      {t('brandEditor.personaDesires')}
+                    </MicroTitle>
                     <textarea
                       value={toLines(p.desires)}
                       onChange={(e) => set(i, { desires: fromLines(e.target.value) })}
                       className="auto-textarea w-full bg-transparent border border-border rounded-md px-3 py-2 text-xs text-muted-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-colors"
-                      placeholder={'Reduzir fricção\nROI claro\nTime autônomo'}
+                      placeholder={t('brandEditor.desiresPlaceholder')}
                     />
                   </div>
                   <div className="space-y-1">
-                    <MicroTitle className="text-neutral-600">Dores</MicroTitle>
+                    <MicroTitle className="text-muted-foreground/70">
+                      {t('brandEditor.personaPains')}
+                    </MicroTitle>
                     <textarea
                       value={toLines(p.painPoints)}
                       onChange={(e) => set(i, { painPoints: fromLines(e.target.value) })}
                       className="auto-textarea w-full bg-transparent border border-border rounded-md px-3 py-2 text-xs text-muted-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-colors"
-                      placeholder={'Ferramentas fragmentadas\nSem visibilidade\nOnboarding lento'}
+                      placeholder={t('brandEditor.painsPlaceholder')}
                     />
                   </div>
                 </div>
 
                 {/* Características as badges */}
                 <div className="space-y-1.5">
-                  <MicroTitle className="text-neutral-600">Características</MicroTitle>
+                  <MicroTitle className="text-muted-foreground/70">
+                    {t('brandEditor.traits')}
+                  </MicroTitle>
                   <InlineTags
                     values={p.traits || []}
                     onChange={(next) => set(i, { traits: next })}
-                    placeholder="Adicionar..."
+                    placeholder={t('brandEditor.addPlaceholder')}
                     inputWidth={100}
                   />
                 </div>

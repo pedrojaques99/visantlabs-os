@@ -1,11 +1,59 @@
 import React from 'react';
-import { Pickaxe, Lock, RotateCw } from '@/lib/ui/icons';
+import {
+  Pickaxe,
+  Lock,
+  RotateCw,
+  BarChart3,
+  Users,
+  Target,
+  Lightbulb,
+  Building2,
+  Images,
+  Scale,
+  Palette,
+  Shapes,
+  User,
+  Sparkles,
+  LayoutGrid,
+  Crown,
+  BookOpen,
+  PenLine,
+  Diamond,
+  Gem,
+  FileText,
+  type IconComponent,
+} from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getBrandingStepCredits } from '@/utils/creditCalculator';
-import { getSectionEmoji } from '@/utils/brandingHelpers';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+
+const SECTION_ICONS: Record<number, IconComponent> = {
+  1: BarChart3,
+  2: Users,
+  3: Target,
+  4: Lightbulb,
+  5: Building2,
+  6: Images,
+  7: Scale,
+  8: Palette,
+  9: Shapes,
+  10: User,
+  11: Sparkles,
+  12: LayoutGrid,
+  13: Crown,
+  101: Target,
+  102: BarChart3,
+  103: User,
+  104: Crown,
+  105: BookOpen,
+  106: Scale,
+  107: Palette,
+  108: PenLine,
+  109: Diamond,
+  110: Gem,
+};
 
 // ──────────────────────────────────────────────────────────────────────────
 // Errored-steps store (module-level, subscribable)
@@ -77,7 +125,7 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
 }) => {
   const { t } = useTranslation();
   const creditsRequired = getBrandingStepCredits(stepNumber);
-  const emoji = getSectionEmoji(stepNumber);
+  const SectionIcon = SECTION_ICONS[stepNumber] ?? FileText;
   const errored = useStepErrored(stepNumber);
   // A failed generation gets a distinct error+retry look; blocked/generating take precedence.
   const showError = errored && !isBlocked && !isGenerating;
@@ -123,14 +171,16 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
               : undefined
         }
       >
-        {/* Emoji Icon */}
-        <div
-          className={`text-3xl md:text-4xl filter transition-[color,background-color,border-color,opacity,filter] duration-200 ${
-            isBlocked ? 'grayscale opacity-50' : 'grayscale group-hover:grayscale-0'
-          }`}
-        >
-          {emoji}
-        </div>
+        {/* Section icon */}
+        <SectionIcon
+          size={32}
+          className={cn(
+            'transition-colors duration-200',
+            isBlocked
+              ? 'text-muted-foreground/50'
+              : 'text-muted-foreground group-hover:text-foreground'
+          )}
+        />
 
         {/* Label */}
         <h3 className="font-medium font-manrope text-xs md:text-sm text-center leading-tight max-w-full truncate px-2 text-foreground">

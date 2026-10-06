@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Textarea } from '@/components/ui/textarea';
 import { ShieldCheck } from '@/lib/ui/icons';
@@ -15,6 +16,7 @@ export const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({
   onUpdate,
   span,
 }) => {
+  const { t } = useTranslation();
   const text = guideline.guidelines?.accessibility || '';
 
   const persist = useCallback(
@@ -29,13 +31,13 @@ export const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({
       id="accessibility"
       span={span as any}
       icon={<ShieldCheck size={14} />}
-      title="Accessibility"
+      title={t('brandEditor.accessibility')}
     >
       <Textarea
         value={text}
         onChange={(e) => persist(e.target.value)}
-        className="border-neutral-800 text-xs min-h-[100px] resize-none text-neutral-400 placeholder:text-neutral-700"
-        placeholder="Accessibility guidelines and universal design standards..."
+        className="border-border text-xs min-h-[100px] resize-none text-muted-foreground placeholder:text-muted-foreground/50"
+        placeholder={t('brandEditor.accessibilityPlaceholder')}
       />
     </SectionBlock>
   );

@@ -74,7 +74,9 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(
 
         toast.success(t('canvasNodes.upscaleNode.imageSavedSuccessfully'), { duration: 3000 });
       } catch (error: any) {
-        toast.error(error?.message || 'Failed to save image', { duration: 3000 });
+        toast.error(error?.message || t('canvasNodes.shared.failedToSaveImage'), {
+          duration: 3000,
+        });
       } finally {
         setIsSaving(false);
       }
@@ -131,7 +133,9 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(
 
         {!hasConnectedImage && (
           <div className="mb-4">
-            <span className="text-xs font-mono text-neutral-500">Connect an image node</span>
+            <span className="text-xs text-neutral-500">
+              {t('canvasNodes.upscaleNode.connectImageNode')}
+            </span>
           </div>
         )}
 
@@ -141,7 +145,9 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
         >
-          <NodeLabel className="text-neutral-500">Target Resolution</NodeLabel>
+          <NodeLabel className="text-neutral-500">
+            {t('canvasNodes.upscaleNode.targetResolution')}
+          </NodeLabel>
           <div
             onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
@@ -183,7 +189,7 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(
               }
               isLoading={isLoading}
               dragging={dragging}
-              alt="Upscale Result"
+              alt={t('canvasNodes.upscaleNode.resultAlt')}
             />
           </div>
         )}

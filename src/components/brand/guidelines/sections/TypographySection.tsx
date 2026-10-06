@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({
   onUpdate,
   span,
 }) => {
+  const { t } = useTranslation();
   const local = normalize(guideline.typography || []);
 
   const persist = useCallback(
@@ -68,15 +70,15 @@ export const TypographySection: React.FC<TypographySectionProps> = ({
     <SectionBlock
       id="typography"
       icon={<Type size={14} />}
-      title="Typography"
+      title={t('brandView.typography')}
       span={span as any}
       actions={
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6 text-neutral-500 hover:text-white"
+          className="h-6 w-6 text-muted-foreground hover:text-foreground"
           onClick={addFont}
-          aria-label="Add font"
+          aria-label={t('brandEditor.addFont')}
         >
           <Plus size={12} />
         </Button>
@@ -84,17 +86,17 @@ export const TypographySection: React.FC<TypographySectionProps> = ({
     >
       <div className="space-y-3 py-1">
         {local.length === 0 && (
-          <p className="text-2xs text-neutral-700 py-2">No fonts yet. Click + to add.</p>
+          <p className="text-2xs text-muted-foreground/50 py-2">{t('brandEditor.noFonts')}</p>
         )}
         {local.map((f, i) => (
           <div
             key={i}
-            className="flex gap-3 items-start py-2.5 border-b border-neutral-800 last:border-0 group/font"
+            className="flex gap-3 items-start py-2.5 border-b border-border last:border-0 group/font"
           >
             {/* Preview */}
-            <div className="w-8 h-8 shrink-0 flex items-center justify-center rounded bg-neutral-900/60">
+            <div className="w-8 h-8 shrink-0 flex items-center justify-center rounded bg-card/60">
               <span
-                className="text-base font-bold text-neutral-400"
+                className="text-base font-bold text-muted-foreground"
                 style={{ fontFamily: f.family }}
               >
                 Aa
@@ -111,22 +113,22 @@ export const TypographySection: React.FC<TypographySectionProps> = ({
                 <Input
                   value={f.role}
                   onChange={(e) => updateFont(i, { role: e.target.value })}
-                  className="h-7 border-neutral-800 text-xs w-28"
-                  placeholder="Role (e.g. Heading)"
+                  className="h-7 border-border text-xs w-28"
+                  placeholder={t('brandEditor.fontRolePlaceholder')}
                 />
               </div>
               <div className="flex gap-1.5">
                 <Input
                   value={f.style}
                   onChange={(e) => updateFont(i, { style: e.target.value })}
-                  className="h-7 border-neutral-800 text-xs w-24"
-                  placeholder="Style"
+                  className="h-7 border-border text-xs w-24"
+                  placeholder={t('brandEditor.fontStyle')}
                 />
                 <Input
                   value={f.size}
                   type="number"
                   onChange={(e) => updateFont(i, { size: Number(e.target.value) })}
-                  className="h-7 border-neutral-800 text-xs w-16"
+                  className="h-7 border-border text-xs w-16"
                   placeholder="px"
                 />
                 <Input
@@ -136,13 +138,13 @@ export const TypographySection: React.FC<TypographySectionProps> = ({
                   onChange={(e) =>
                     updateFont(i, { lineHeight: Number(e.target.value) || undefined })
                   }
-                  className="h-7 border-neutral-800 text-xs w-16"
+                  className="h-7 border-border text-xs w-16"
                   placeholder="lh"
                 />
                 <Input
                   value={f.letterSpacing ?? ''}
                   onChange={(e) => updateFont(i, { letterSpacing: e.target.value || undefined })}
-                  className="h-7 border-neutral-800 text-xs w-20"
+                  className="h-7 border-border text-xs w-20"
                   placeholder="ls"
                 />
               </div>
@@ -150,9 +152,9 @@ export const TypographySection: React.FC<TypographySectionProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-neutral-700 hover:text-destructive opacity-0 group-hover/font:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0"
+              className="h-7 w-7 text-muted-foreground/50 hover:text-destructive opacity-0 group-hover/font:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0"
               onClick={() => removeFont(i)}
-              aria-label="Remove font"
+              aria-label={t('brandEditor.removeFont')}
             >
               <Trash2 size={11} />
             </Button>

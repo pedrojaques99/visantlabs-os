@@ -21,7 +21,6 @@ interface HeaderProps {
   onCreditsClick?: () => void;
   onCreateNewMockup?: () => void;
   onMyOutputsClick?: () => void;
-  onMyBrandingsClick?: () => void;
   onLogoClickWithReset?: () => void;
   getUnsavedOutputsInfo?: () => {
     hasUnsaved: boolean;
@@ -40,7 +39,6 @@ export const Header: React.FC<HeaderProps> = ({
   onCreditsClick,
   onCreateNewMockup,
   onMyOutputsClick,
-  onMyBrandingsClick,
   onLogoClickWithReset,
   getUnsavedOutputsInfo,
   navigateToHome,

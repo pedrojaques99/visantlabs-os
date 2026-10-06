@@ -1,11 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
-import { Upload, FileText, ArrowRight, Save } from '@/lib/ui/icons';
+import { Upload, FileText } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { budgetApi } from '@/services/budgetApi';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
+import { SavePresetModal } from './SavePresetModal';
 
 interface PdfUploadRequiredProps {
   budgetId?: string;
@@ -45,16 +46,14 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
 
     // Validate file type
     if (file.type !== 'application/pdf') {
-      toast.error('Por favor, selecione um arquivo PDF');
+      toast.error(t('budget.pdf.selectPdf'));
       return;
     }
 
     // Validate file size
     if (file.size > MAX_PDF_SIZE_BYTES) {
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      toast.error(
-        `O arquivo PDF deve ter menos de ${MAX_PDF_SIZE_MB}MB (tamanho atual: ${fileSizeMB}MB)`
-      );
+      toast.error(t('budget.pdf.tooLarge', { max: MAX_PDF_SIZE_MB, size: fileSizeMB }));
       return;
     }
 
@@ -66,7 +65,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
       setShowSavePresetModal(true);
     } catch (error: any) {
       console.error('Error processing PDF:', error);
-      toast.error('Falha ao processar PDF');
+      toast.error(t('budget.pdf.processFailed'));
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -90,7 +89,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
         setIsSavingPreset(true);
         const preset = await budgetApi.createPdfPreset(base64Data, presetName.trim());
         pdfUrl = preset.pdfUrl;
-        toast.success('PDF salvo como preset com sucesso');
+        toast.success(t('budget.pdf.presetSaved'));
         setPresetName('');
         setShowSavePresetModal(false);
       } else {
@@ -102,14 +101,14 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
           const tempPreset = await budgetApi.createPdfPreset(base64Data, `Temp-${Date.now()}`);
           pdfUrl = tempPreset.pdfUrl;
         }
-        toast.success('PDF enviado com sucesso');
+        toast.success(t('budget.pdf.uploaded'));
       }
 
       onPdfUploaded(pdfUrl);
       setPendingPdfBase64(null);
     } catch (error: any) {
       console.error('Error uploading PDF:', error);
-      toast.error(error.message || 'Falha ao enviar PDF');
+      toast.error(error.message || t('budget.pdf.uploadFailed'));
       // Fallback para base64 se upload falhar
       onPdfUploaded(base64Data);
     } finally {
@@ -119,7 +118,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
 
   const handleSavePreset = async () => {
     if (!presetName.trim()) {
-      toast.error('Digite um nome para o preset');
+      toast.error(t('budget.pdf.presetNameRequired'));
       return;
     }
 
@@ -145,67 +144,32 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
             <div className="inline-flex items-center justify-center w-20 h-20 bg-neutral-800 rounded-md mb-4">
               <FileText className="h-10 w-10 text-foreground" />
             </div>
-            <h2 className="text-2xl font-semibold text-foreground mb-2">Layout Custom</h2>
-            <p className="text-sm text-neutral-400">
-              Faça upload do seu PDF customizado para começar
-            </p>
+            <h2 className="text-2xl font-semibold text-foreground mb-2">
+              {t('budget.pdf.customLayoutTitle')}
+            </h2>
+            <p className="text-sm text-neutral-400">{t('budget.pdf.uploadToStart')}</p>
           </div>
 
-          {/* Modal para salvar preset */}
           {showSavePresetModal && (
-            <div className="fixed inset-0 bg-neutral-950/50 flex items-center justify-center z-50">
-              <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 max-w-md w-full mx-4">
-                <h4 className="text-lg font-medium text-foreground mb-4">Salvar como Preset</h4>
-                <Input
-                  type="text"
-                  value={presetName}
-                  onChange={(e) => setPresetName(e.target.value)}
-                  placeholder="Nome do preset"
-                  className="w-full px-4 py-2 bg-neutral-950/20 border border-neutral-800 rounded-md text-neutral-200 mb-4 focus:outline-none focus:border-neutral-600"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSavePreset();
-                    } else if (e.key === 'Escape') {
-                      setShowSavePresetModal(false);
-                      setPresetName('');
-                      setPendingPdfBase64(null);
-                    }
-                  }}
-                  autoFocus
-                />
-                <div className="flex gap-2">
-                  <Button
-                    variant="brand"
-                    onClick={handleSavePreset}
-                    disabled={isSavingPreset || !presetName.trim()}
-                    className="flex-1"
-                  >
-                    {isSavingPreset ? (
-                      <GlitchLoader size={16} />
-                    ) : (
-                      <>
-                        <Save className="h-4 w-4 mr-2" />
-                        Salvar como Preset
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    onClick={handleSkipPreset}
-                    variant="outline"
-                    className="border border-neutral-800 bg-neutral-950/20 hover:bg-neutral-950/30 text-neutral-400"
-                  >
-                    Usar sem Salvar
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <SavePresetModal
+              presetName={presetName}
+              onPresetNameChange={setPresetName}
+              isSaving={isSavingPreset}
+              onSave={handleSavePreset}
+              onSkip={handleSkipPreset}
+              onCancel={() => {
+                setShowSavePresetModal(false);
+                setPresetName('');
+                setPendingPdfBase64(null);
+              }}
+            />
           )}
 
           {isUploading || isSavingPreset ? (
             <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-neutral-800 rounded-xl bg-neutral-950/20">
               <GlitchLoader size={48} className="mb-4" />
               <p className="text-sm text-neutral-400">
-                {isSavingPreset ? 'Salvando preset...' : 'Enviando PDF...'}
+                {isSavingPreset ? t('budget.pdf.savingPreset') : t('budget.pdf.uploading')}
               </p>
             </div>
           ) : (
@@ -227,16 +191,16 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
                   disabled={isUploading}
                 >
                   <Upload className="h-4 w-4 mr-2" />
-                  Selecionar PDF
+                  {t('budget.pdf.selectButton')}
                 </Button>
               </div>
 
               <div className="bg-neutral-900/50 border border-neutral-800 rounded-md p-4">
-                <p className="text-xs text-neutral-500 mb-2">Requisitos:</p>
+                <p className="text-xs text-neutral-500 mb-2">{t('budget.pdf.requirements')}</p>
                 <ul className="text-xs text-neutral-400 space-y-1 list-disc list-inside">
-                  <li>Formato: PDF</li>
-                  <li>Tamanho máximo: {MAX_PDF_SIZE_MB}MB</li>
-                  <li>Após o upload, você poderá mapear os campos do formulário</li>
+                  <li>{t('budget.pdf.reqFormat')}</li>
+                  <li>{t('budget.pdf.reqMaxSize', { max: MAX_PDF_SIZE_MB })}</li>
+                  <li>{t('budget.pdf.reqMapFields')}</li>
                 </ul>
               </div>
             </div>

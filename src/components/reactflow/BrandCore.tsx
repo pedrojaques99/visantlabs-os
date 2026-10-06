@@ -136,7 +136,9 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
       nodeData.onUpdateData(id, { uploadedLogo: imageData.base64 });
       toast.success(t('canvasNodes.brandCore.logoUploadedSuccessfully'), { duration: 2000 });
     } catch (err: any) {
-      toast.error(err?.message || 'Failed to process logo image', { duration: 5000 });
+      toast.error(err?.message || t('canvasNodes.logoNode.failedToProcessLogo'), {
+        duration: 5000,
+      });
     }
   };
 
@@ -158,20 +160,22 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
     if (isPdf) {
       const pdfValidation = validatePdfFile(file);
       if (!pdfValidation.isValid) {
-        toast.error(pdfValidation.error || 'Invalid PDF file', { duration: 5000 });
+        toast.error(pdfValidation.error || t('canvasNodes.shared.invalidPdf'), { duration: 5000 });
         return;
       }
       try {
         base64 = await pdfToBase64(file);
       } catch (err: any) {
-        toast.error(err?.message || 'Failed to process PDF', { duration: 5000 });
+        toast.error(err?.message || t('canvasNodes.shared.failedToProcessPdf'), { duration: 5000 });
         return;
       }
     } else {
       try {
         base64 = (await fileToBase64(file)).base64;
       } catch (err: any) {
-        toast.error(err?.message || 'Failed to process image', { duration: 5000 });
+        toast.error(err?.message || t('canvasNodes.shared.failedToProcessImage'), {
+          duration: 5000,
+        });
         return;
       }
     }
@@ -191,11 +195,13 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
         // Validate base64 size before upload to prevent 413 errors
         const sizeValidation = validatePdfBase64Size(base64);
         if (!sizeValidation.isValid) {
-          toast.error(sizeValidation.error || 'PDF is too large for upload', { duration: 5000 });
+          toast.error(sizeValidation.error || t('canvasNodes.shared.pdfTooLarge'), {
+            duration: 5000,
+          });
           return;
         }
 
-        toast.loading('Uploading PDF to cloud storage...', { id: 'pdf-upload' });
+        toast.loading(t('canvasNodes.shared.uploadingPdf'), { id: 'pdf-upload' });
         const pdfUrl = await nodeData.onUploadPdfToR2(id, base64);
         console.log('[BrandCore] PDF uploaded successfully to R2', { nodeId: id, pdfUrl });
         toast.success(t('canvasNodes.brandCore.pdfUploadedSuccessfully'), {
@@ -215,10 +221,15 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
           uploadedIdentityType: fileType,
         });
         console.log('[BrandCore] Identity file uploaded successfully', { nodeId: id, fileType });
-        toast.success(`${fileType.toUpperCase()} uploaded successfully!`, { duration: 2000 });
+        toast.success(
+          t('canvasNodes.brandCore.fileUploadedSuccessfully', { type: fileType.toUpperCase() }),
+          { duration: 2000 }
+        );
       }
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to process file', { duration: 5000 });
+      toast.error(error?.message || t('canvasNodes.shared.failedToProcessFile'), {
+        duration: 5000,
+      });
       console.error('[BrandCore] Failed to process identity file:', error);
     }
   };
@@ -280,7 +291,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
       await nodeData.onAnalyze(id, normalizedLogo, finalIdentity, identityType);
     } catch (error) {
       console.error('Analysis failed:', error);
-      toast.error('Failed to prepare images for analysis', { duration: 3000 });
+      toast.error(t('canvasNodes.shared.failedToPrepareImages'), { duration: 3000 });
     }
   }, [nodeData, id, logoBase64, identityBase64, identityType]);
 
@@ -773,7 +784,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                         )}
                       </NodeButton>
                     </div>
-                    <div className="text-2xs text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border-node border-neutral-700/30 max-h-32 overflow-y-auto">
+                    <div className="text-2xs text-neutral-400 bg-neutral-900/50 p-2 rounded border-node border-neutral-700/30 max-h-32 overflow-y-auto">
                       {visualPrompts.mockupPrompt}
                     </div>
                   </div>
@@ -800,7 +811,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                         )}
                       </NodeButton>
                     </div>
-                    <div className="text-2xs text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border-node border-neutral-700/30 max-h-24 overflow-y-auto">
+                    <div className="text-2xs text-neutral-400 bg-neutral-900/50 p-2 rounded border-node border-neutral-700/30 max-h-24 overflow-y-auto">
                       {visualPrompts.compositionPrompt}
                     </div>
                   </div>
@@ -826,7 +837,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                         )}
                       </NodeButton>
                     </div>
-                    <div className="text-2xs text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border-node border-neutral-700/30 max-h-24 overflow-y-auto">
+                    <div className="text-2xs text-neutral-400 bg-neutral-900/50 p-2 rounded border-node border-neutral-700/30 max-h-24 overflow-y-auto">
                       {visualPrompts.stylePrompt}
                     </div>
                   </div>
@@ -874,7 +885,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                     )}
                   </NodeButton>
                 </div>
-                <div className="text-2xs text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border-node border-neutral-700/30 max-h-64 overflow-y-auto whitespace-pre-wrap">
+                <div className="text-2xs text-neutral-400 bg-neutral-900/50 p-2 rounded border-node border-neutral-700/30 max-h-64 overflow-y-auto whitespace-pre-wrap">
                   {consolidateStrategiesToText(strategicPrompts.consolidated)}
                 </div>
               </div>

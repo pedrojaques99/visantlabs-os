@@ -107,7 +107,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                 <div className="relative h-full flex flex-col p-6 sm:p-7 md:p-8">
                   {/* Video or Image */}
                   <div
-                    className={`tutorial-bento-image flex-shrink-0 w-full rounded-md overflow-hidden mb-4 sm:mb-5 md:mb-6 ${
+                    className={`flex-shrink-0 w-full rounded-md overflow-hidden mb-4 sm:mb-5 md:mb-6 ${
                       step.isVideo && step.videoId
                         ? 'aspect-video'
                         : 'h-[160px] sm:h-[200px] md:h-[240px] flex items-center justify-center'
@@ -148,7 +148,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                   {/* Description */}
                   <div className={`tutorial-bento-content flex-1 flex items-start gap-3 sm:gap-4`}>
                     {/* Step Number Circle */}
-                    <div className="tutorial-bento-step-number flex-shrink-0 rounded-md w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 flex items-center justify-center bg-muted border border-border">
+                    <div className="flex-shrink-0 rounded-md w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 flex items-center justify-center bg-muted border border-border">
                       <p className="font-medium tabular-nums text-xs sm:text-sm md:text-base text-foreground">
                         {step.number}
                       </p>

@@ -1,11 +1,10 @@
 import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { FormInput } from '@/components/ui/form-input';
 import { FormTextarea } from '@/components/ui/form-textarea';
 import { DeliverablesSection } from './DeliverablesSection';
 import { LinksSection } from './LinksSection';
 import { FAQSection } from './FAQSection';
-import { DateRangePicker } from './DateRangePicker';
+import { BudgetBasicInfoFields } from './BudgetBasicInfoFields';
 import { TimelineSection } from './TimelineSection';
 import { PaymentInfoSection } from './PaymentInfoSection';
 import { SignaturesSection } from './SignaturesSection';
@@ -149,74 +148,12 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Basic Info */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium text-foreground">Informações Básicas</h3>
-
-        <div>
-          <label className="block text-xs text-neutral-400 mb-2">{t('budget.clientName')} *</label>
-          <FormInput
-            ref={(el) => {
-              fieldRefs.current['clientName'] = el;
-            }}
-            value={data.clientName}
-            onChange={(e) => updateField('clientName', e.target.value)}
-            placeholder={t('budget.placeholders.clientName')}
-            required
-            className={
-              focusedFieldId === 'clientName'
-                ? 'ring-2 ring-neutral-600 ring-offset-2 ring-offset-[#1A1A1A]'
-                : ''
-            }
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs text-neutral-400 mb-2">{t('budget.projectName')} *</label>
-          <FormInput
-            ref={(el) => {
-              fieldRefs.current['projectName'] = el;
-            }}
-            value={data.projectName}
-            onChange={(e) => updateField('projectName', e.target.value)}
-            placeholder={t('budget.placeholders.projectName')}
-            required
-            className={
-              focusedFieldId === 'projectName'
-                ? 'ring-2 ring-neutral-600 ring-offset-2 ring-offset-[#1A1A1A]'
-                : ''
-            }
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs text-neutral-400 mb-2">
-            {t('budget.projectDescription')} *
-          </label>
-          <FormTextarea
-            ref={(el) => {
-              fieldRefs.current['projectDescription'] = el;
-            }}
-            value={data.projectDescription}
-            onChange={(e) => updateField('projectDescription', e.target.value)}
-            placeholder={t('budget.placeholders.projectDescription')}
-            rows={4}
-            required
-            className={
-              focusedFieldId === 'projectDescription'
-                ? 'ring-2 ring-neutral-600 ring-offset-2 ring-offset-[#1A1A1A]'
-                : ''
-            }
-          />
-        </div>
-
-        <DateRangePicker
-          startDate={data.startDate}
-          endDate={data.endDate}
-          onStartDateChange={(date) => updateField('startDate', date)}
-          onEndDateChange={(date) => updateField('endDate', date)}
-        />
-      </div>
+      <BudgetBasicInfoFields
+        data={data}
+        onFieldChange={updateField}
+        fieldRefs={fieldRefs}
+        focusedFieldId={focusedFieldId}
+      />
 
       {/* Deliverables */}
       <DeliverablesSection

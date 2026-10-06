@@ -1,4 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Image as ImageIcon, Plus, Trash2, Gem } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
   onLogosChange,
   span,
 }) => {
+  const { t } = useTranslation();
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -53,9 +55,9 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
           hasPrimary = true;
           onLogosChange(result.allLogos);
         }
-        toast.success('Logo uploaded');
+        toast.success(t('brandEditor.logoUploaded'));
       } catch {
-        toast.error('Failed to upload logo');
+        toast.error(t('brandEditor.logoUploadFailed'));
       } finally {
         setIsUploading(false);
       }
@@ -77,7 +79,7 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
         return l;
       });
       onLogosChange(updated);
-      toast.success(`"${target.label || 'Logo'}" set as brand logo`);
+      toast.success(t('brandEditor.logoSetPrimary', { name: target.label || t('brandView.logo') }));
     },
     [logos, onLogosChange]
   );
@@ -93,7 +95,7 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
         if (logo.id) await brandGuidelineApi.deleteLogo(guideline.id, logo.id);
       } catch {
         onLogosChange(logos);
-        toast.error('Failed to delete logo');
+        toast.error(t('brandEditor.logoDeleteFailed'));
       }
     },
     [guideline.id, logos, onLogosChange]
@@ -103,16 +105,16 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
     <SectionBlock
       id="logos"
       icon={<ImageIcon size={14} />}
-      title="Logotype"
+      title={t('brandView.logos')}
       span={span as any}
       actions={
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6 text-neutral-500 hover:text-white"
+          className="h-6 w-6 text-muted-foreground hover:text-foreground"
           disabled={isUploading}
           onClick={() => fileInputRef.current?.click()}
-          aria-label="Upload logo"
+          aria-label={t('brandEditor.uploadLogo')}
         >
           {isUploading ? <GlitchLoader size={12} /> : <Plus size={12} />}
         </Button>
@@ -158,8 +160,14 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
                     type="button"
                     onClick={() => handleSetPrimary(i)}
                     disabled={isPrimary}
-                    title={isPrimary ? 'Brand logo (avatars & mockups)' : 'Set as brand logo'}
-                    aria-label={isPrimary ? 'Current brand logo' : 'Set as brand logo'}
+                    title={
+                      isPrimary ? t('brandEditor.brandLogoHint') : t('brandEditor.setAsBrandLogo')
+                    }
+                    aria-label={
+                      isPrimary
+                        ? t('brandEditor.currentBrandLogo')
+                        : t('brandEditor.setAsBrandLogo')
+                    }
                     className={cn(
                       'absolute top-1 left-1 z-10 h-5 w-5 flex items-center justify-center rounded transition-[color,background-color,border-color,opacity]',
                       isPrimary
@@ -176,7 +184,7 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
                     size="icon"
                     className="absolute top-1 right-1 z-10 h-5 w-5 text-muted-foreground hover:text-destructive opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/logo:opacity-100 group-focus-within/logo:opacity-100 transition-[color,opacity]"
                     onClick={() => handleDelete(i)}
-                    aria-label="Remove logo"
+                    aria-label={t('brandEditor.removeLogo')}
                   >
                     <Trash2 size={10} />
                   </Button>
@@ -202,7 +210,7 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
             multiple
             icon={ImageIcon}
             onFiles={handleUpload}
-            label="Upload logo"
+            label={t('brandEditor.uploadLogo')}
             className="h-20 text-xs"
           />
         )}

@@ -685,8 +685,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
         {mockup && !isLoading && (
           <div className="flex-shrink-0 space-y-3 border-t border-border pt-4">
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">{mockup.designType}</span>
+              <div className="flex items-center justify-end">
                 <span className="text-xs font-mono text-muted-foreground">
                   {mockup.aspectRatio}
                 </span>

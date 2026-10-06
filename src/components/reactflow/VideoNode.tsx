@@ -575,7 +575,7 @@ export const VideoNode = memo(
             variant="ghost"
             size="sm"
             onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-            className="text-xs font-mono text-neutral-400 hover:text-neutral-200 w-full p-2 hover:bg-neutral-800/50"
+            className="text-xs text-neutral-400 hover:text-neutral-200 w-full p-2 hover:bg-neutral-800/50"
           >
             <Settings size={12} />
             <span>{t('canvasNodes.videoNode.advancedSettings')}</span>
@@ -635,7 +635,7 @@ export const VideoNode = memo(
             {/* Kling Quality Mode (std / pro / 4k) */}
             {isKling && klingModeOptions.length > 0 && (
               <div>
-                <NodeLabel>Quality Mode</NodeLabel>
+                <NodeLabel>{t('canvasNodes.videoNode.qualityMode')}</NodeLabel>
                 <Select
                   value={klingMode}
                   onChange={(v) => {
@@ -649,7 +649,9 @@ export const VideoNode = memo(
                 />
                 {modelCaps?.resolutionByMode[klingMode] && (
                   <span className="text-2xs text-neutral-500 font-mono mt-0.5 block">
-                    Output: {modelCaps.resolutionByMode[klingMode]}
+                    {t('canvasNodes.videoNode.outputResolution', {
+                      value: modelCaps.resolutionByMode[klingMode],
+                    })}
                   </span>
                 )}
               </div>
@@ -724,7 +726,7 @@ export const VideoNode = memo(
               <div className="flex items-center justify-between py-1">
                 <NodeLabel className="mb-0 flex items-center gap-1">
                   <Volume2 size={11} className="opacity-60" />
-                  Generate Audio
+                  {t('canvasNodes.videoNode.generateAudio')}
                 </NodeLabel>
                 <Switch
                   checked={sound === 'on'}
@@ -759,9 +761,9 @@ export const VideoNode = memo(
                   disabled={isLoading}
                   className="w-full accent-brand-cyan"
                 />
-                <div className="flex justify-between text-2xs text-neutral-600 font-mono">
-                  <span>Free</span>
-                  <span>Strict</span>
+                <div className="flex justify-between text-2xs text-neutral-600">
+                  <span>{t('canvasNodes.videoNode.free')}</span>
+                  <span>{t('canvasNodes.videoNode.strict')}</span>
                 </div>
               </div>
             )}
@@ -771,7 +773,7 @@ export const VideoNode = memo(
               <div>
                 <NodeLabel>{t('canvasNodes.videoNode.negativePrompt')}</NodeLabel>
                 <Input
-                  className="w-full bg-neutral-900 border-node border-neutral-700 rounded p-2 text-xs font-mono text-neutral-300 focus:border-neutral-600 outline-none placeholder:text-neutral-600"
+                  className="w-full bg-neutral-900 border-node border-neutral-700 rounded p-2 text-xs text-neutral-300 focus:border-neutral-600 outline-none placeholder:text-neutral-600"
                   placeholder={t('canvasNodes.videoNode.whatToAvoid')}
                   value={negativePrompt}
                   onChange={(e) => {

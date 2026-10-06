@@ -219,11 +219,11 @@ export function createGenericPresetNode<
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-mono truncate text-foreground font-medium">
+              <div className="text-xs truncate text-foreground font-medium">
                 {selectedPreset?.name || t(config.translationKeys.selectPreset)}
               </div>
               {selectedPreset?.description && (
-                <div className="text-2xs font-mono text-neutral-500 truncate">
+                <div className="text-2xs text-neutral-500 truncate">
                   {selectedPreset.description}
                 </div>
               )}
@@ -241,7 +241,7 @@ export function createGenericPresetNode<
 
         {!hasConnectedImage && (
           <div className="mb-2">
-            <span className="text-xs font-mono text-neutral-500">
+            <span className="text-xs text-neutral-500">
               {t(config.translationKeys.connectImageNode)}
             </span>
           </div>

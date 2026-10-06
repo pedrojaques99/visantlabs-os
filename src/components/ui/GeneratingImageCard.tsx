@@ -14,7 +14,7 @@ import { getTranslations } from '@/utils/localeUtils';
  *
  * Composes existing primitives (TurbulenceField + GlitchPickaxe + PremiumGlitchLoader)
  * into the loading card that was previously duplicated across MockupCard, ChatShell,
- * NodePlaceholder and the image-editor GeneratingOverlay. The animated brand-cyan fog
+ * NodePlaceholder and the image-editor GeneratingOverlay. The animated neutral fog
  * (TurbulenceField) entertains DURING generation; it is pure SVG so it scales to grids
  * of concurrent tiles without spawning WebGL contexts.
  *
@@ -81,7 +81,7 @@ export function GeneratingImageCard({
           <GlitchPickaxe size={28} className="relative z-10" />
           <PremiumGlitchLoader
             steps={resolvedSteps}
-            color="var(--brand-cyan)"
+            color="var(--muted-foreground)"
             className="relative z-10"
           />
           {onCancel && (
@@ -109,7 +109,7 @@ export function GeneratingImageCard({
         <TurbulenceField intensity={intensity} />
         <GlitchPickaxe className="relative z-10" />
         <PremiumGlitchLoader
-          color="var(--brand-cyan)"
+          color="var(--muted-foreground)"
           steps={resolvedSteps}
           className="relative z-10 justify-center"
         />
@@ -132,7 +132,7 @@ export function GeneratingImageCard({
         <GlitchPickaxe />
       </div>
       <div className="absolute bottom-4 left-1/2 w-[85%] max-w-[240px] -translate-x-1/2">
-        <PremiumGlitchLoader color="var(--brand-cyan)" steps={resolvedSteps} />
+        <PremiumGlitchLoader color="var(--muted-foreground)" steps={resolvedSteps} />
       </div>
     </div>
   );

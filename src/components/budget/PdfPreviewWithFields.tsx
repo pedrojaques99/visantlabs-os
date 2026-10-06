@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import {
   Plus,
@@ -19,6 +19,7 @@ import { FieldSelectionMenu } from './FieldSelectionMenu';
 import { FieldPropertiesPanel } from './FieldPropertiesPanel';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/utils/localeUtils';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Configure PDF.js worker - use local worker from public folder
 // This ensures it works in all environments including Cloudflare
@@ -26,20 +27,20 @@ if (typeof window !== 'undefined') {
   pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 }
 
-// Available fields from BudgetData
-const AVAILABLE_FIELDS = [
-  { id: 'clientName', label: 'Nome do Cliente' },
-  { id: 'projectName', label: 'Nome do Projeto' },
-  { id: 'projectDescription', label: 'Descrição do Projeto' },
-  { id: 'brandName', label: 'Nome da Marca' },
-  { id: 'startDate', label: 'Data de Início' },
-  { id: 'endDate', label: 'Data de Término' },
-  { id: 'year', label: 'Ano' },
-  { id: 'observations', label: 'Observações' },
-  { id: 'finalCTAText', label: 'Texto CTA Final' },
-  { id: 'custom_text', label: 'Campo de Texto' },
-  { id: 'custom_currency', label: 'Campo de Valor (Moeda)' },
-];
+// Available fields from BudgetData (labels vêm do locale: budget.pdfFields.<id>)
+const AVAILABLE_FIELD_IDS = [
+  'clientName',
+  'projectName',
+  'projectDescription',
+  'brandName',
+  'startDate',
+  'endDate',
+  'year',
+  'observations',
+  'finalCTAText',
+  'custom_text',
+  'custom_currency',
+] as const;
 
 interface PdfPreviewWithFieldsProps {
   pdfUrl: string;
@@ -149,6 +150,11 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
   onAddFieldFromForm,
   onDragCancel: externalOnDragCancel,
 }) => {
+  const { t } = useTranslation();
+  const AVAILABLE_FIELDS = useMemo(
+    () => AVAILABLE_FIELD_IDS.map((id) => ({ id, label: t(`budget.pdfFields.${id}`) })),
+    [t]
+  );
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState(1);
   const [containerWidth, setContainerWidth] = useState(800);
@@ -849,7 +855,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
               onClick={handleZoomOut}
               disabled={zoomLevel <= 0.5}
               className="p-1.5 hover:bg-neutral-200/50 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-              title="Diminuir zoom"
+              title={t('budget.pdfEditor.zoomOut')}
             >
               <ZoomOut size={16} className="text-neutral-700" />
             </Button>
@@ -861,7 +867,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
               onClick={handleZoomIn}
               disabled={zoomLevel >= 3.0}
               className="p-1.5 hover:bg-neutral-200/50 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-              title="Aumentar zoom"
+              title={t('budget.pdfEditor.zoomIn')}
             >
               <ZoomIn size={16} className="text-neutral-700" />
             </Button>
@@ -870,9 +876,9 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
               variant="ghost"
               onClick={handleZoomReset}
               className="text-xs text-neutral-700 px-2 py-1 hover:bg-neutral-200/50 rounded transition-colors"
-              title="Resetar zoom"
+              title={t('budget.pdfEditor.zoomReset')}
             >
-              Reset
+              {t('budget.pdfEditor.zoomResetLabel')}
             </Button>
           </div>
         </div>
@@ -884,13 +890,13 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
               <p className="text-sm text-neutral-100 flex items-center gap-2 flex-1">
                 <MapPin size={16} />
                 {/* EXCEÇÃO ao ruido-scan/ensina-a-usar: banner de modo, o próximo passo não é visível na tela */}
-                Posição marcada. Escolha um campo preenchido do formulário.
+                {t('budget.pdfEditor.pendingPosition')}
               </p>
               <Button
                 variant="ghost"
                 onClick={() => setPendingFieldPosition(null)}
                 className="p-1.5 bg-destructive/20 hover:bg-destructive/30 border border-destructive/50 rounded-md text-destructive transition-colors"
-                title="Cancelar"
+                title={t('budget.pdfEditor.cancel')}
               >
                 <XCircle size={16} />
               </Button>
@@ -904,7 +910,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
             <div className="px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-md max-w-4xl mx-auto flex items-center gap-3">
               <p className="text-sm text-neutral-100 flex items-center gap-2 flex-1">
                 <MapPin size={16} />
-                Clique no PDF para posicionar:{' '}
+                {t('budget.pdfEditor.clickToPlace')}{' '}
                 {AVAILABLE_FIELDS.find((f) => f.id === positioningFieldId)?.label ||
                   positioningFieldId}
               </p>
@@ -922,7 +928,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                     }
                   }}
                   className="p-1.5 bg-destructive/20 hover:bg-destructive/30 border border-destructive/50 rounded-md text-destructive transition-colors"
-                  title="Cancelar"
+                  title={t('budget.pdfEditor.cancel')}
                 >
                   <XCircle size={16} />
                 </Button>
@@ -939,7 +945,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                     }
                   }}
                   className="p-1.5 bg-success/20 hover:bg-success/30 border border-success/50 rounded-md text-success transition-colors"
-                  title="Aceitar"
+                  title={t('budget.pdfEditor.accept')}
                 >
                   <Check size={16} />
                 </Button>
@@ -1029,7 +1035,9 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
           {(isReloading || !isVisible) && (
             <div className="absolute inset-0 flex items-center justify-center bg-neutral-200/80 z-30">
               <div className="text-center">
-                <div className="text-neutral-600 text-sm mb-2">Recarregando PDF...</div>
+                <div className="text-neutral-600 text-sm mb-2">
+                  {t('budget.pdfEditor.reloading')}
+                </div>
                 <div className="w-8 h-8 border-2 border-neutral-600 border-t-transparent rounded-md animate-spin mx-auto"></div>
               </div>
             </div>
@@ -1038,8 +1046,8 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
             key={documentKey}
             file={pdfUrl}
             onLoadSuccess={onDocumentLoadSuccess}
-            loading={<div className="text-neutral-600">Carregando PDF...</div>}
-            error={<div className="text-destructive">Erro ao carregar PDF</div>}
+            loading={<div className="text-neutral-600">{t('budget.pdfEditor.loading')}</div>}
+            error={<div className="text-destructive">{t('budget.pdfEditor.loadError')}</div>}
           >
             {numPages > 0 &&
               Array.from({ length: numPages }, (_, i) => i + 1).map((pageNum) => (
@@ -1170,8 +1178,6 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                       borderRadius: '50%',
                       backgroundColor: 'var(--brand-cyan)',
                       border: '2px solid var(--background)',
-                      boxShadow:
-                        '0 0 0 2px color-mix(in oklch, var(--brand-cyan) 50%, transparent)',
                       pointerEvents: 'none',
                       zIndex: 150,
                       transform: 'translate(-50%, -50%)',
@@ -1234,7 +1240,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                 }}
                 className="bg-neutral-900 border border-neutral-800 rounded-md shadow-xl"
                 role="dialog"
-                aria-label="Painel de propriedades do campo"
+                aria-label={t('budget.pdfEditor.panelAria')}
               >
                 <FieldPropertiesPanel
                   mapping={selectedMapping}
@@ -1353,6 +1359,7 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
   AVAILABLE_FIELDS,
   absolutePosition,
 }) => {
+  const { t } = useTranslation();
   const [isHovered, setIsHovered] = React.useState(false);
   const instanceId = mapping.id || mapping.fieldId;
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -1420,14 +1427,6 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
       : 'none',
     padding: editable ? '3px 6px' : '0',
     borderRadius: editable ? 'var(--radius)' : '0',
-    boxShadow:
-      editable && isDragging
-        ? '0 10px 16px color-mix(in oklch, var(--brand-cyan) 40%, transparent)'
-        : editable && isSelected
-          ? '0 4px 12px color-mix(in oklch, var(--brand-cyan) 30%, transparent)'
-          : editable
-            ? 'none'
-            : 'none',
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 200 : isPositioning ? 200 : isSelected ? 150 : 100,
     transition: isDragging ? 'none' : 'background-color 0.2s ease, border-color 0.2s ease',
@@ -1453,9 +1452,16 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
       onMouseLeave={() => setIsHovered(false)}
       {...listeners}
       {...attributes}
-      title={editable ? `Arraste para mover: ${fieldLabel}` : fieldValue || fieldLabel}
+      title={
+        editable
+          ? t('budget.pdfEditor.dragToMove', { label: fieldLabel })
+          : fieldValue || fieldLabel
+      }
       role="button"
-      aria-label={`Campo ${fieldLabel}${isSelected ? ' selecionado' : ''}`}
+      aria-label={t(
+        isSelected ? 'budget.pdfEditor.fieldAriaSelected' : 'budget.pdfEditor.fieldAria',
+        { label: fieldLabel }
+      )}
       tabIndex={editable && !isPositioning ? 0 : -1}
     >
       {fieldValue || `[${fieldLabel}]`}
@@ -1467,8 +1473,8 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
             onDelete();
           }}
           className="absolute -top-2 -right-2 p-1 bg-destructive hover:bg-destructive border border-destructive rounded-md text-white transition-colors z-50 focus:outline-none focus:ring-2 focus:ring-destructive"
-          title="Deletar campo (Delete)"
-          aria-label={`Deletar campo ${fieldLabel}`}
+          title={t('budget.pdfEditor.deleteHint')}
+          aria-label={t('budget.pdfEditor.deleteAria', { label: fieldLabel })}
         >
           <Trash2 size={12} />
         </Button>
@@ -1530,7 +1536,6 @@ const DraggableFieldOverlay: React.FC<DraggableFieldOverlayProps> = ({
         border: '2px solid var(--brand-cyan)',
         padding: '3px 6px',
         borderRadius: 'var(--radius)',
-        boxShadow: '0 10px 24px color-mix(in oklch, var(--brand-cyan) 50%, transparent)',
         opacity: 0.95,
         whiteSpace: 'nowrap',
       }}

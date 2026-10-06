@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,6 +24,7 @@ export const MarketResearchSection: React.FC<MarketResearchSectionProps> = ({
   onUpdate,
   span,
 }) => {
+  const { t } = useTranslation();
   const mr = guideline.strategy?.marketResearch || {};
 
   const persist = useCallback(
@@ -40,47 +42,53 @@ export const MarketResearchSection: React.FC<MarketResearchSectionProps> = ({
     <SectionBlock
       id="market_research"
       icon={<Search size={14} />}
-      title="Pesquisa de Mercado"
+      title={t('brandEditor.marketResearch')}
       span={span as any}
     >
       <div className="space-y-4 py-1">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="space-y-1">
-            <MicroTitle className="text-neutral-600">Concorrentes</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">
+              {t('brandEditor.competitors')}
+            </MicroTitle>
             <Textarea
               value={toLines(mr.competitors)}
               onChange={(e) => update({ competitors: fromLines(e.target.value) })}
-              className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[80px] resize-none placeholder:text-neutral-700"
-              placeholder={'Playtomic\nStrava\nFrontify'}
+              className="border-border bg-transparent text-xs text-muted-foreground min-h-[80px] resize-none placeholder:text-muted-foreground/50"
+              placeholder={t('brandEditor.competitorsPlaceholder')}
             />
           </div>
           <div className="space-y-1">
-            <MicroTitle className="text-neutral-600">Gaps (o que entregam mal)</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">{t('brandEditor.gaps')}</MicroTitle>
             <Textarea
               value={toLines(mr.gaps)}
               onChange={(e) => update({ gaps: fromLines(e.target.value) })}
-              className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[80px] resize-none placeholder:text-neutral-700"
-              placeholder={'Sem DNA cultural\nUI fria e genérica'}
+              className="border-border bg-transparent text-xs text-muted-foreground min-h-[80px] resize-none placeholder:text-muted-foreground/50"
+              placeholder={t('brandEditor.gapsPlaceholder')}
             />
           </div>
           <div className="space-y-1">
-            <MicroTitle className="text-neutral-600">Oportunidades (território livre)</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">
+              {t('brandEditor.opportunities')}
+            </MicroTitle>
             <Textarea
               value={toLines(mr.opportunities)}
               onChange={(e) => update({ opportunities: fromLines(e.target.value) })}
-              className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[80px] resize-none placeholder:text-neutral-700"
-              placeholder={'Cultura local\nComunidade ativa'}
+              className="border-border bg-transparent text-xs text-muted-foreground min-h-[80px] resize-none placeholder:text-muted-foreground/50"
+              placeholder={t('brandEditor.opportunitiesPlaceholder')}
             />
           </div>
         </div>
 
         <div className="space-y-1">
-          <MicroTitle className="text-neutral-600">Notas adicionais</MicroTitle>
+          <MicroTitle className="text-muted-foreground/70">
+            {t('brandEditor.extraNotes')}
+          </MicroTitle>
           <Textarea
             value={mr.notes || ''}
             onChange={(e) => update({ notes: e.target.value })}
-            className="border-neutral-800 bg-transparent text-xs text-neutral-400 min-h-[50px] resize-none placeholder:text-neutral-700"
-            placeholder="Observações sobre o mercado..."
+            className="border-border bg-transparent text-xs text-muted-foreground min-h-[50px] resize-none placeholder:text-muted-foreground/50"
+            placeholder={t('brandEditor.marketNotesPlaceholder')}
           />
         </div>
       </div>

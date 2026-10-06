@@ -6,7 +6,7 @@ import { useBrandGuidelines, useBrandQuota } from '@/hooks/queries/useBrandGuide
 import { FEATURE_BRAND_BILLING } from '@/config/featureFlags';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { BrandGuidelineWizardModal } from '@/components/mockupmachine/BrandGuidelineWizardModal';
-import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { SEO } from '@/components/SEO';
 import { AuthModal } from '@/components/AuthModal';
 import { Button } from '@/components/ui/button';
@@ -322,6 +322,11 @@ const BrandGrid = ({
     return Array.from(s).sort();
   }, [guidelines]);
 
+  const completenessScores = useMemo(
+    () => new Map(guidelines.map((g) => [g.id, computeBrandCompleteness(g).score])),
+    [guidelines]
+  );
+
   const filtered = useMemo(() => {
     let list = guidelines;
     if (folderFilter) list = list.filter((g) => g.folder === folderFilter);
@@ -340,7 +345,7 @@ const BrandGrid = ({
       );
     } else if (sort === 'completeness') {
       list = [...list].sort(
-        (a, b) => computeBrandCompleteness(b).score - computeBrandCompleteness(a).score
+        (a, b) => (completenessScores.get(b.id) ?? 0) - (completenessScores.get(a.id) ?? 0)
       );
     } else {
       // 'recent' is the default the UI advertises — sort explicitly rather than
@@ -350,7 +355,7 @@ const BrandGrid = ({
       );
     }
     return list;
-  }, [guidelines, search, folderFilter, sort]);
+  }, [guidelines, search, folderFilter, sort, completenessScores]);
 
   // Marcas arquivadas saem do grid principal e viram seção colapsável no fim
   // (billing por marca ativa). Sem a flag, tudo cai em `activeList` como antes.
@@ -665,9 +670,10 @@ export const BrandGuidelinesPage: React.FC = () => {
 
             {/* Lista. A view por marca (PublicBrandGuideline) vem pelo early return acima. */}
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-40 gap-6">
-                <GlitchLoader size={40} />
-                <p className="text-muted-foreground text-xs animate-pulse">{t('common.loading')}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <SkeletonLoader key={i} height="9rem" className="rounded-lg" />
+                ))}
               </div>
             ) : isError ? (
               <ErrorState

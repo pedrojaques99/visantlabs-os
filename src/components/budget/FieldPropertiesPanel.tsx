@@ -5,6 +5,7 @@ import { Select } from '@/components/ui/select';
 import type { PdfFieldMapping } from '@/types/types';
 import { Button } from '@/components/ui/button';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface FieldPropertiesPanelProps {
   mapping: PdfFieldMapping;
@@ -23,6 +24,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
   currentPage,
   totalPages,
 }) => {
+  const { t } = useTranslation();
   // Local state for temporary changes
   const [localChanges, setLocalChanges] = useState<Partial<PdfFieldMapping>>({});
   const [fontSizeError, setFontSizeError] = useState<string | null>(null);
@@ -105,7 +107,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
   // Validation helpers
   const validateFontSize = (value: number): boolean => {
     if (isNaN(value) || value < 6 || value > 144) {
-      setFontSizeError('Tamanho deve estar entre 6 e 144');
+      setFontSizeError(t('budget.fieldProps.fontSizeRange'));
       return false;
     }
     setFontSizeError(null);
@@ -115,9 +117,9 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
   const validatePosition = (value: number, axis: 'x' | 'y'): boolean => {
     if (isNaN(value) || value < 0) {
       if (axis === 'x') {
-        setXError('Valor deve ser maior ou igual a 0');
+        setXError(t('budget.fieldProps.positionMin'));
       } else {
-        setYError('Valor deve ser maior ou igual a 0');
+        setYError(t('budget.fieldProps.positionMin'));
       }
       return false;
     }
@@ -134,30 +136,32 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
       {/* Warning message when trying to close with pending changes */}
       {showCloseWarning && (
         <div className="absolute top-2 left-2 right-2 z-50 px-3 py-2 bg-warning/20 border border-warning/50 rounded-md text-warning text-xs animate-pulse">
-          Aplique ou descarte as mudanças antes de fechar
+          {t('budget.fieldProps.closeWarning')}
         </div>
       )}
       <div className="p-4 border-b border-neutral-800">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-medium text-foreground">Propriedades</h3>
+          <h3 className="text-sm font-medium text-foreground">{t('budget.fieldProps.title')}</h3>
         </div>
         <p className="text-xs text-neutral-400 mb-3">{mapping.label || mapping.fieldId}</p>
         <Button
           variant="destructive"
           onClick={onRemove}
           className="w-full px-3 py-2 bg-destructive/20 hover:bg-destructive/30 border border-destructive/50 rounded-md text-destructive text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-destructive"
-          title="Remover campo (Delete)"
-          aria-label="Remover campo"
+          title={t('budget.fieldProps.removeHint')}
+          aria-label={t('budget.fieldProps.remove')}
         >
           <Trash2 size={16} />
-          Remover Campo
+          {t('budget.fieldProps.remove')}
         </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* Fonte */}
         <div>
-          <label className="block text-xs text-neutral-400 mb-2">Fonte</label>
+          <label className="block text-xs text-neutral-400 mb-2">
+            {t('budget.fieldProps.font')}
+          </label>
           <Select
             value={getValue('fontFamily') || 'geist'}
             onChange={(value) =>
@@ -169,13 +173,15 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
               { value: 'redhatmono', label: 'Red Hat Mono' },
               { value: 'barlow', label: 'Barlow' },
             ]}
-            aria-label="Selecionar família da fonte"
+            aria-label={t('budget.fieldProps.fontFamilyAria')}
           />
         </div>
 
         {/* Tamanho da Fonte */}
         <div>
-          <label className="block text-xs text-neutral-400 mb-2">Tamanho da Fonte</label>
+          <label className="block text-xs text-neutral-400 mb-2">
+            {t('budget.fieldProps.fontSize')}
+          </label>
           <div className="flex items-center gap-2">
             <Type size={16} className="text-neutral-500" />
             <FormInput
@@ -207,7 +213,9 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
 
         {/* Bold */}
         <div>
-          <label className="block text-xs text-neutral-400 mb-2">Estilo</label>
+          <label className="block text-xs text-neutral-400 mb-2">
+            {t('budget.fieldProps.style')}
+          </label>
           <Button
             variant="ghost"
             onClick={() => updateLocal({ bold: !isBold })}
@@ -216,24 +224,26 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
                 ? 'bg-muted border-neutral-600/50 text-foreground'
                 : 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700'
             }`}
-            aria-label={isBold ? 'Desativar negrito' : 'Ativar negrito'}
+            aria-label={isBold ? t('budget.fieldProps.boldOff') : t('budget.fieldProps.boldOn')}
             aria-pressed={isBold}
           >
             <Bold size={16} />
-            {isBold ? 'Negrito' : 'Normal'}
+            {isBold ? t('budget.fieldProps.bold') : t('budget.fieldProps.normal')}
           </Button>
         </div>
 
         {/* Cor */}
         <div>
-          <label className="block text-xs text-neutral-400 mb-2">Cor</label>
+          <label className="block text-xs text-neutral-400 mb-2">
+            {t('budget.fieldProps.color')}
+          </label>
           <div className="flex gap-2">
             <input
               type="color"
               value={getValue('color') || '#000000'}
               onChange={(e) => updateLocal({ color: e.target.value })}
               className="w-12 h-10 rounded border border-neutral-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-neutral-600/50"
-              aria-label="Selecionar cor do texto"
+              aria-label={t('budget.fieldProps.colorAria')}
             />
             <FormInput
               type="text"
@@ -247,28 +257,42 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
 
         {/* Alinhamento */}
         <div>
-          <label className="block text-xs text-neutral-400 mb-2">Alinhamento</label>
+          <label className="block text-xs text-neutral-400 mb-2">
+            {t('budget.fieldProps.align')}
+          </label>
           <SegmentedControl
-            aria-label="Alinhamento"
+            aria-label={t('budget.fieldProps.align')}
             fullWidth
             value={(getValue('align') || 'left') as 'left' | 'center' | 'right'}
             onChange={(align) => updateLocal({ align })}
             options={[
-              { value: 'left', label: null, icon: AlignLeft, 'aria-label': 'Alinhar à esquerda' },
+              {
+                value: 'left',
+                label: null,
+                icon: AlignLeft,
+                'aria-label': t('budget.fieldProps.alignLeft'),
+              },
               {
                 value: 'center',
                 label: null,
                 icon: AlignCenter,
-                'aria-label': 'Alinhar ao centro',
+                'aria-label': t('budget.fieldProps.alignCenter'),
               },
-              { value: 'right', label: null, icon: AlignRight, 'aria-label': 'Alinhar à direita' },
+              {
+                value: 'right',
+                label: null,
+                icon: AlignRight,
+                'aria-label': t('budget.fieldProps.alignRight'),
+              },
             ]}
           />
         </div>
 
         {/* Posição */}
         <div>
-          <label className="block text-xs text-neutral-400 mb-2">Posição (pontos)</label>
+          <label className="block text-xs text-neutral-400 mb-2">
+            {t('budget.fieldProps.position')}
+          </label>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <span className="text-xs text-neutral-500">X:</span>
@@ -327,21 +351,21 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
             variant="brand"
             onClick={handleApply}
             className="flex-1"
-            title="Aplicar mudanças"
-            aria-label="Aplicar mudanças"
+            title={t('budget.fieldProps.applyHint')}
+            aria-label={t('budget.fieldProps.applyHint')}
           >
             <Check size={16} />
-            Aplicar
+            {t('budget.fieldProps.apply')}
           </Button>
           <Button
             variant="outline"
             onClick={handleDismiss}
             className="flex-1 px-3 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-neutral-500"
-            title="Descartar mudanças"
-            aria-label="Descartar mudanças"
+            title={t('budget.fieldProps.dismissHint')}
+            aria-label={t('budget.fieldProps.dismissHint')}
           >
             <X size={16} />
-            Descartar
+            {t('budget.fieldProps.dismiss')}
           </Button>
         </div>
       )}

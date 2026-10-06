@@ -86,12 +86,26 @@
     "canvasNodes.customNode.placeholder.${placeholderKey}",
     "miniTools.og.templates.${tpl}",
     "mockup.card.imageStep${n}",
-    "mockup.card.promptStep${n}"
+    "mockup.card.promptStep${n}",
+    "budget.pdfFields.${id}",
+    "communityPresets.categories.${categoryKey}",
+    "communityPresets.difficulty${difficultyKey}",
+    "connect.chatgpt.step${n}",
+    "connect.claude.step${n}",
+    "connect.prompt${n}",
+    "miniTools.watermark.positions.${pos}"
   ],
   "comments": {
     "${...}": "All ${...} entries are dynamic key construction — t('prefix.' + var). Their resolved keys must be defined in the locale (we can't validate that statically).",
     "budget.myBudgets.*": "Collision: budget.myBudgets is used both as a leaf string AND as a namespace prefix in src. JSON cannot represent both. Refactor required: rename one usage.",
     "onboarding.persona.${...}": "Keyed by SEGMENTS[].id — designer|agency|marketing|developer. All 20 resolved keys verified present in both locales. Adding a segment means adding its 5 keys to en-US and pt-BR; the scanner cannot catch that for you.",
-    "cockpit.voice.${voice.key}": "Uniao TS fechada (BrandVoiceKey, 7 chaves) montada em src/lib/brandVoice.ts. As 7 existem nos dois locales; o diretor de frase devolve chave, nao string."
+    "cockpit.voice.${voice.key}": "Uniao TS fechada (BrandVoiceKey, 7 chaves) montada em src/lib/brandVoice.ts. As 7 existem nos dois locales; o diretor de frase devolve chave, nao string.",
+    "budget.pdfFields.${id}": "ids de AVAILABLE_FIELD_IDS; as 11 chaves existem",
+    "communityPresets.categories.${categoryKey}": "PromptCategory do CATEGORY_CONFIG, fallback 'all'; todas existem",
+    "communityPresets.difficulty${difficultyKey}": "beginner/intermediate/advanced capitalizado; as 3 existem",
+    "connect.chatgpt.step${n}": "passos 1-4, existem",
+    "connect.claude.step${n}": "passos 1-4, existem",
+    "connect.prompt${n}": "prompts 1-3, existem",
+    "miniTools.watermark.positions.${pos}": "9 posições do grid, existem"
   }
 }

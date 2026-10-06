@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { History, Plus, Trash2, Loader2 } from '@/lib/ui/icons';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { useClickOutside } from '@/hooks/useClickOutside';
+import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
 import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { relativeTime } from '@/utils/time';
@@ -31,6 +32,7 @@ export const NamingHistoryPopover: React.FC<NamingHistoryPopoverProps> = ({
   onNew,
   className,
 }) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sessions, setSessions] = useState<NamingSessionSummary[]>([]);
@@ -86,7 +88,7 @@ export const NamingHistoryPopover: React.FC<NamingHistoryPopoverProps> = ({
       <button
         type="button"
         onClick={toggle}
-        aria-label="Sessões anteriores"
+        aria-label={t('naming.history.title')}
         aria-expanded={open}
         className={cn(
           'flex h-8 w-8 items-center justify-center rounded-full border transition-colors',
@@ -112,23 +114,23 @@ export const NamingHistoryPopover: React.FC<NamingHistoryPopoverProps> = ({
               className="max-h-[70vh] gap-2 overflow-y-auto scrollbar-none bg-neutral-900/80 p-4 backdrop-blur-xl shadow-2xl shadow-black/40"
             >
               <div className="flex items-center justify-between">
-                <span className="text-2xs text-neutral-500">Sessões anteriores</span>
+                <span className="text-2xs text-neutral-500">{t('naming.history.title')}</span>
                 <button
                   type="button"
                   onClick={startNew}
                   className="flex items-center gap-1 text-2xs text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  <Plus size={11} /> nova
+                  <Plus size={11} /> {t('naming.history.new')}
                 </button>
               </div>
 
               {loading ? (
                 <p className="flex items-center gap-2 py-4 text-xs text-neutral-600">
-                  <Loader2 size={12} className="animate-spin" /> carregando…
+                  <Loader2 size={12} className="animate-spin" /> {t('naming.history.loading')}
                 </p>
               ) : sessions.length === 0 ? (
                 <p className="py-4 text-center text-xs text-neutral-600">
-                  Nenhuma sessão anterior ainda.
+                  {t('naming.history.empty')}
                 </p>
               ) : (
                 <div className="flex flex-col gap-1">
@@ -155,14 +157,16 @@ export const NamingHistoryPopover: React.FC<NamingHistoryPopoverProps> = ({
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm text-neutral-200">{s.name}</p>
                         <p className="flex gap-2 text-2xs text-neutral-600">
-                          {s.likedCount > 0 && <span>{s.likedCount} curtidos</span>}
+                          {s.likedCount > 0 && (
+                            <span>{t('naming.history.liked', { count: s.likedCount })}</span>
+                          )}
                           <span>{relativeTime(s.updatedAt)}</span>
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={(e) => handleDelete(e, s.id)}
-                        aria-label="Remover sessão"
+                        aria-label={t('naming.history.remove')}
                         className={cn(
                           hoverReveal,
                           'shrink-0 rounded p-1 text-neutral-600 hover:text-destructive'

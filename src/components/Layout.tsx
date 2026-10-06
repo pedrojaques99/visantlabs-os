@@ -704,7 +704,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               onMockupsClick={() => navigate('/mockups')}
               onCreateNewMockup={() => navigate('/mockupmachine')}
               onMyOutputsClick={() => navigate('/my-outputs')}
-              onMyBrandingsClick={() => navigate('/my-brandings')}
             />
           )}
 

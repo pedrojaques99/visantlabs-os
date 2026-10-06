@@ -454,11 +454,6 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 </span>
                               </div>
                             </div>
-                            <span className="text-2xs font-mono text-muted-foreground text-right leading-relaxed">
-                              $0.067 Google
-                              <br />
-                              $0.013 Infra
-                            </span>
                           </div>
                         )}
                       </div>

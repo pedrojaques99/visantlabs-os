@@ -207,7 +207,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
             <Textarea
               value={systemPrompt}
               onChange={(e) => setSystemPrompt(e.target.value)}
-              className="text-xs font-mono bg-neutral-900/60 border-neutral-700/40 min-h-[100px]"
+              className="text-xs bg-neutral-900/60 border-neutral-700/40 min-h-[100px]"
             />
           </div>
         )}

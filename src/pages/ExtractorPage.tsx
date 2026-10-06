@@ -7,7 +7,6 @@ import {
   Download,
   ExternalLink,
   Image as ImageIcon,
-  CheckCircle2,
   AlertCircle,
   X,
   Plus,
@@ -23,6 +22,8 @@ import { PageShell } from '../components/ui/PageShell';
 import { imageApi, SearchImage, DesignerParams, ContentMode } from '../services/imageApi';
 import { applyShaderEffect } from '../utils/shaders/shaderRenderer';
 import { Button } from '../components/ui/button';
+import { MediaTile } from '../components/ui/MediaTile';
+import { Badge } from '../components/ui/badge';
 import { toast } from 'sonner';
 import { copyImageAsPng } from '@/utils/clipboard';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -32,55 +33,7 @@ import { cn } from '@/lib/utils';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { glassSurface } from '@/lib/ui/glass';
-import { hoverReveal } from '@/lib/ui/hoverReveal';
 type ExtractionMode = 'google' | 'url' | 'instagram' | 'document';
-
-// EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia (ações sobre a foto extraída)
-const OVERLAY_BTN =
-  'w-9 h-9 border border-white/10 bg-black/50 text-white rounded-xl flex items-center justify-center hover:bg-black/70 transition-colors';
-
-/**
- * Lazy-loaded image component with skeleton and error states
- */
-const StreamImage = ({
-  src,
-  alt,
-  onCrashed,
-}: {
-  src: string;
-  alt: string;
-  onCrashed: () => void;
-}) => {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [hasError, setHasError] = useState(false);
-
-  return (
-    <div className="relative w-full bg-neutral-900/40 overflow-hidden rounded-xl">
-      {!isLoaded && !hasError && <div className="w-full h-32 bg-neutral-800/50 animate-pulse" />}
-
-      {hasError ? (
-        <div className="w-full h-32 flex items-center justify-center bg-destructive/5">
-          <AlertCircle size={20} strokeWidth={1} className="text-destructive/20" />
-        </div>
-      ) : (
-        <img
-          src={src}
-          alt={alt}
-          loading="lazy"
-          onLoad={() => setIsLoaded(true)}
-          onError={() => {
-            setHasError(true);
-            onCrashed();
-          }}
-          className={cn(
-            'w-full h-auto block transition-opacity duration-700',
-            isLoaded ? 'opacity-100' : 'opacity-0 absolute inset-0'
-          )}
-        />
-      )}
-    </div>
-  );
-};
 
 /**
  * Memoized image card component
@@ -112,121 +65,97 @@ const ImageCard = memo<ImageCardProps>(
     onCrashed,
   }) => {
     const { t } = useTranslation();
+    const title = img.title || t('extractor.untitledImage');
     return (
       <motion.div
         key={img.url}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
-        className={cn(
-          'group relative rounded-xl overflow-hidden transition-colors duration-300',
-          glassSurface.panel
-        )}
       >
-        <div
-          className="relative cursor-pointer overflow-hidden"
+        <MediaTile
+          layout="masonry"
+          src={img.url}
+          alt={img.title || ''}
+          title={title}
+          density="compact"
+          selected={batchSelecting ? isSelected : undefined}
+          onImageError={onCrashed}
+          badge={
+            <>
+              {isHD && <Badge variant="neutral">HD</Badge>}
+              <Badge variant="neutral" className="font-mono tabular-nums">
+                {img.width}×{img.height}
+              </Badge>
+            </>
+          }
           onClick={() => {
             if (batchSelecting) onSelect(img.url);
             else window.open(img.url, '_blank');
           }}
-        >
-          {/* Technical Badges. EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
-          <div className="absolute top-3 left-3 z-10 flex gap-1.5">
-            {isHD && (
-              <div className="bg-white/90 text-2xs font-medium px-1.5 py-0.5 rounded text-black">
-                HD
-              </div>
-            )}
-            <div className="bg-black/60 text-white/60 text-2xs font-mono tabular-nums px-1.5 py-0.5 rounded border border-neutral-800">
-              {img.width}×{img.height}
-            </div>
-          </div>
-
-          {/* Selection Checkbox. EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
-          {batchSelecting && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
-              <div
-                className={`
-            w-8 h-8 rounded-full border flex items-center justify-center transition-colors
-            ${
-              isSelected
-                ? 'bg-white border-white text-black'
-                : 'bg-transparent border-white/30 text-transparent'
-            }
-          `}
-              >
-                <CheckCircle2 size={16} />
-              </div>
-            </div>
-          )}
-
-          {/* Image Asset */}
-          <StreamImage src={img.url} alt={img.title} onCrashed={onCrashed} />
-
-          {/* Subtle Hover Overlay. EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
-          {!batchSelecting && (
-            <div
-              className={cn(
-                'absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-4',
-                hoverReveal
-              )}
-            >
-              <h4 className="text-white font-medium text-xs line-clamp-1 mb-3 opacity-90">
-                {img.title || t('extractor.untitledImage')}
-              </h4>
-              <div className="flex gap-1.5">
-                <a
-                  href={imageApi.getProxiedDownloadUrl(img.url, `${img.title}.jpg`)}
-                  download
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-9 h-9 border border-white/10 bg-white text-black rounded-xl flex items-center justify-center hover:bg-neutral-200 transition-colors"
+          actions={
+            batchSelecting ? undefined : (
+              <>
+                <Button
+                  asChild
+                  variant="surface"
+                  size="icon-sm"
                   title={t('extractor.download_original')}
-                  aria-label={t('extractor.download_original')}
                 >
-                  <Download size={14} />
-                </a>
-                <button
+                  <a
+                    href={imageApi.getProxiedDownloadUrl(img.url, `${img.title}.jpg`)}
+                    download
+                    aria-label={t('extractor.download_original')}
+                  >
+                    <Download size={14} />
+                  </a>
+                </Button>
+                <Button
+                  variant="surface"
+                  size="icon-sm"
                   onClick={(e) => onCopy(e, img)}
-                  className={OVERLAY_BTN}
                   title={t('common.copyAsPng')}
+                  aria-label={t('common.copyAsPng')}
                 >
                   <Copy size={14} />
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="surface"
+                  size="icon-sm"
                   onClick={(e) => onUpscale(e, img)}
                   disabled={isUpscaling}
-                  className={OVERLAY_BTN}
                   title={t('extractor.upscale_to_ultra_hd')}
+                  aria-label={t('extractor.upscale_to_ultra_hd')}
                 >
                   {isUpscaling ? <GlitchLoader size={14} /> : <Zap size={14} />}
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
+                </Button>
+                <Button
+                  variant="surface"
+                  size="icon-sm"
+                  onClick={() =>
                     window.open(
                       `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(img.url)}`,
                       '_blank'
-                    );
-                  }}
-                  className={OVERLAY_BTN}
+                    )
+                  }
                   title={t('extractor.search_with_google_lens')}
+                  aria-label={t('extractor.search_with_google_lens')}
                 >
                   <Search size={14} />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.open(img.url, '_blank');
-                  }}
-                  className={OVERLAY_BTN}
+                </Button>
+                <Button
+                  variant="surface"
+                  size="icon-sm"
+                  onClick={() => window.open(img.url, '_blank')}
                   title={t('extractor.viewOriginal')}
+                  aria-label={t('extractor.viewOriginal')}
                 >
                   <Maximize2 size={14} />
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+                </Button>
+              </>
+            )
+          }
+        />
       </motion.div>
     );
   },

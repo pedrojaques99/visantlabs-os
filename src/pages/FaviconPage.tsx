@@ -23,6 +23,7 @@ import { glassSurface } from '@/lib/ui/glass';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Thumb } from '@/components/ui/Thumb';
 import { fade, transitions } from '@/lib/ui/motion';
+import { useIsMobile } from '@/hooks/use-media-query';
 
 const fadeScale = {
   initial: { opacity: 0, scale: 0.96 },
@@ -131,6 +132,7 @@ export const FaviconPage: React.FC = () => {
   const padding = useFaviconStore((s) => s.padding);
   const generatedIcons = useFaviconStore((s) => s.generatedIcons);
   const isGenerating = useFaviconStore((s) => s.isGenerating);
+  const isMobile = useIsMobile();
   const setSource = useFaviconStore((s) => s.setSource);
   const setBackgroundColor = useFaviconStore((s) => s.setBackgroundColor);
   const setBorderRadius = useFaviconStore((s) => s.setBorderRadius);
@@ -383,21 +385,29 @@ export const FaviconPage: React.FC = () => {
     </div>
   ) : undefined;
 
-  /* ── Status bar: Generate + Download actions ── */
-  const statusBar = sourceUrl ? (
-    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-      <button
-        type="button"
-        onClick={handleGenerate}
-        disabled={isGenerating}
-        className="hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
-      >
-        <ImageIcon className="w-3.5 h-3.5" />
-        {isGenerating ? t('miniTools.favicon.generating') : t('miniTools.favicon.generate')}
-      </button>
-      {generatedIcons.length > 0 && (
-        <>
-          <span>·</span>
+  /* ── Status bar: só o progresso. No mobile o painel vira sheet, então as
+     ações de gerar/baixar ficam aqui como atalho (no desktop já estão no painel
+     e no QuickActions). ── */
+  const progressText = isGenerating
+    ? t('miniTools.favicon.generating')
+    : generatedIcons.length > 0
+      ? t('miniTools.favicon.generated', { count: generatedIcons.length })
+      : null;
+  const statusBar =
+    sourceUrl && (isMobile || progressText) ? (
+      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        {isMobile && (
+          <button
+            type="button"
+            onClick={handleGenerate}
+            disabled={isGenerating}
+            className="hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+          >
+            <ImageIcon className="w-3.5 h-3.5" />
+            {t('miniTools.favicon.generate')}
+          </button>
+        )}
+        {isMobile && generatedIcons.length > 0 && (
           <button
             type="button"
             onClick={handleDownloadZip}
@@ -406,10 +416,10 @@ export const FaviconPage: React.FC = () => {
             <Download className="w-3.5 h-3.5" />
             {t('miniTools.favicon.downloadZip')}
           </button>
-        </>
-      )}
-    </div>
-  ) : undefined;
+        )}
+        {progressText && <span>{progressText}</span>}
+      </div>
+    ) : undefined;
 
   return (
     <MiniAppShell

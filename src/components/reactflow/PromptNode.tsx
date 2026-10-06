@@ -281,7 +281,7 @@ export const PromptNode = memo(
           nodeData.onUpdateData(id, updates);
         }
       } else {
-        toast.warning('All available reference slots are full. Added to board instead.');
+        toast.warning(t('canvasNodes.videoNode.allSlotsFull'));
         handleAddToBoard(url, type);
       }
     };
@@ -626,7 +626,7 @@ export const PromptNode = memo(
             >
               <div
                 className={cn(
-                  'flex items-center gap-2 px-2.5 py-1.5 rounded-xl border-node text-2xs font-mono transition-[color,background-color,border-color,box-shadow,opacity] duration-300',
+                  'flex items-center gap-2 px-2.5 py-1.5 rounded-md border-node text-2xs transition-[color,background-color,border-color,box-shadow,opacity] duration-300',
                   isBrandActive
                     ? 'bg-accent border-neutral-700 text-foreground shadow-[0_0_15px_rgba(255,255,255,0.05)]'
                     : 'bg-neutral-900/40 border-neutral-800/40 text-neutral-400 opacity-80'
@@ -664,7 +664,7 @@ export const PromptNode = memo(
         {/* Prompt Input */}
         <div className="node-margin">
           {hasTextNodeConnection && (
-            <div className="mb-1.5 text-2xs font-mono text-foreground flex items-center gap-1">
+            <div className="mb-1.5 text-2xs text-foreground flex items-center gap-1">
               <span>•</span>
               <span>{t('canvasNodes.promptNode.connectedToTextNode')}</span>
             </div>
@@ -752,7 +752,7 @@ export const PromptNode = memo(
                 exit={{ height: 0, opacity: 0 }}
                 className="mt-2 space-y-1.5 overflow-hidden"
               >
-                <div className="text-2xs font-mono text-foreground mb-1.5 flex items-center gap-2">
+                <div className="text-2xs text-foreground mb-1.5 flex items-center gap-2">
                   <Diamond size={10} />
                   {t('canvasNodes.promptNode.aiSuggestions')}
                 </div>
@@ -769,7 +769,7 @@ export const PromptNode = memo(
                         nodeData.onUpdateData(id, { promptSuggestions: [] });
                       }
                     }}
-                    className="w-full text-left font-mono border-node border-neutral-800 hover:border-neutral-700 hover:bg-brand-cyan/5 hover:text-brand-cyan transition-colors"
+                    className="w-full text-left border-node border-neutral-800 hover:border-neutral-700 hover:bg-brand-cyan/5 hover:text-brand-cyan transition-colors"
                   >
                     <span className="truncate">{suggestion}</span>
                   </NodeButton>
@@ -820,10 +820,10 @@ export const PromptNode = memo(
               variant="ghost"
               size="sm"
               onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-              className="text-xs font-mono text-neutral-400 hover:text-neutral-200 w-full p-2 hover:bg-neutral-800/50"
+              className="text-xs text-neutral-400 hover:text-neutral-200 w-full p-2 hover:bg-neutral-800/50"
             >
               <Settings size={12} />
-              <span>Advanced Settings</span>
+              <span>{t('canvasNodes.shared.advancedSettings')}</span>
               <ChevronRight
                 size={12}
                 className={cn('transition-transform ml-auto', isAdvancedOpen && 'rotate-90')}

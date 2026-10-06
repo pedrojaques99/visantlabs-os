@@ -232,7 +232,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       if (isPdf) {
         const validation = validatePdfFile(file);
         if (!validation.isValid) {
-          toast.error(validation.error || 'Invalid PDF', { duration: 3000 });
+          toast.error(validation.error || t('canvasNodes.shared.invalidPdf'), { duration: 3000 });
           return;
         }
         base64 = await pdfToBase64(file);
@@ -410,7 +410,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     return (
       <div className="mb-3 last:mb-0">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-neutral-500 font-mono text-2xs">{title}</span>
+          <span className="text-neutral-500 text-2xs">{title}</span>
           {isEditing ? (
             <NodeButton
               variant="ghost"
@@ -728,7 +728,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                     <div className="space-y-1.5 text-2xs text-neutral-400">
                       {brandIdentity.personality.tone && (
                         <div>
-                          <span className="text-neutral-600 text-2xs font-mono mr-1.5">
+                          <span className="text-neutral-600 text-2xs mr-1.5">
                             {t('canvasNodes.brandNode.tone')}
                           </span>
                           {brandIdentity.personality.tone}
@@ -736,7 +736,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                       )}
                       {brandIdentity.personality.feeling && (
                         <div>
-                          <span className="text-neutral-600 text-2xs font-mono mr-1.5">
+                          <span className="text-neutral-600 text-2xs mr-1.5">
                             {t('canvasNodes.brandNode.feeling')}
                           </span>
                           {brandIdentity.personality.feeling}

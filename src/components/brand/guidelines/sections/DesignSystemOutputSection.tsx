@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Code2, Copy, Download, Check, FileCode, Braces, Palette, Hash } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
   guideline,
   span,
 }) => {
+  const { t } = useTranslation();
   const [activeFormat, setActiveFormat] = useState<OutputFormat>('css');
   const [outputs, setOutputs] = useState<Record<string, { content: string; filename: string }>>({});
   const [loading, setLoading] = useState(false);
@@ -50,7 +52,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
         }));
         setActiveFormat(format);
       } catch {
-        toast.error('Failed to compile tokens');
+        toast.error(t('brandEditor.compileFailed'));
       } finally {
         setLoading(false);
       }
@@ -70,7 +72,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
       setOutputs(mapped);
       setActiveFormat('css');
     } catch {
-      toast.error('Failed to compile tokens');
+      toast.error(t('brandEditor.compileFailed'));
     } finally {
       setLoading(false);
     }
@@ -86,7 +88,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
     if (!currentOutput) return;
     copyToClipboard(currentOutput.content);
     setCopied(true);
-    toast.success('Copied to clipboard');
+    toast.success(t('brandEditor.copiedClipboard'));
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -94,7 +96,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
     if (!currentOutput) return;
     const blob = new Blob([currentOutput.content], { type: 'text/plain' });
     downloadBlob(blob, currentOutput.filename);
-    toast.success(`Downloaded ${currentOutput.filename}`);
+    toast.success(t('brandEditor.downloadedFile', { filename: currentOutput.filename }));
   };
 
   const handleDownloadAll = async () => {
@@ -105,9 +107,9 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
         const blob = new Blob([o.content], { type: 'text/plain' });
         downloadBlob(blob, o.filename);
       }
-      toast.success('All formats downloaded');
+      toast.success(t('brandEditor.allFormatsDownloaded'));
     } catch {
-      toast.error('Failed to download');
+      toast.error(t('brandEditor.downloadFailed'));
     }
   };
 
@@ -122,13 +124,13 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
     <SectionBlock
       id="design-system-output"
       icon={<Code2 size={14} />}
-      title="Design System Output"
+      title={t('brandEditor.dsOutput')}
       span={span as any}
     >
       <div className="space-y-4">
         {/* Visual Token Preview */}
         {hasTokens && (
-          <div className="space-y-3 pb-4 border-b border-neutral-800">
+          <div className="space-y-3 pb-4 border-b border-border">
             {/* Color Palette Strip */}
             {guideline.colors && guideline.colors.length > 0 && (
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
@@ -139,7 +141,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
                       style={{ backgroundColor: c.hex }}
                       title={`${c.name}: ${c.hex}`}
                     />
-                    <span className="text-2xs font-mono text-neutral-600 max-w-[40px] truncate">
+                    <span className="text-2xs font-mono text-muted-foreground/70 max-w-[40px] truncate">
                       {c.role || c.name}
                     </span>
                   </div>
@@ -153,7 +155,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
                 {guideline.typography.slice(0, 4).map((t, i) => (
                   <div key={i} className="flex flex-col gap-0.5">
                     <span
-                      className="text-neutral-300 leading-tight"
+                      className="text-foreground leading-tight"
                       style={{
                         fontFamily: `'${t.family}', sans-serif`,
                         fontSize: Math.min(t.size || 16, 24),
@@ -161,7 +163,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
                     >
                       {t.family}
                     </span>
-                    <span className="text-2xs font-mono text-neutral-600">
+                    <span className="text-2xs font-mono text-muted-foreground/70">
                       {t.role}, {t.style || 'Regular'}
                     </span>
                   </div>
@@ -220,7 +222,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
               className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground bg-background/90"
             >
               {copied ? <Check size={12} className="text-success" /> : <Copy size={12} />}
-              {copied ? 'Copied' : 'Copy'}
+              {copied ? t('brandEditor.copiedShort') : t('common.copy')}
             </Button>
             <Button
               variant="ghost"
@@ -229,7 +231,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
               className="h-7 px-2 text-2xs font-mono text-muted-foreground hover:text-foreground bg-background/90"
             >
               <Download size={12} />
-              {currentOutput?.filename || 'Download'}
+              {currentOutput?.filename || t('common.download')}
             </Button>
           </div>
 
@@ -237,23 +239,23 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
             {/* Filename bar */}
             {currentOutput && (
               <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-muted">
-                <FileCode size={11} className="text-neutral-600" />
-                <span className="text-2xs font-mono text-neutral-500">
+                <FileCode size={11} className="text-muted-foreground/70" />
+                <span className="text-2xs font-mono text-muted-foreground">
                   {currentOutput.filename}
                 </span>
               </div>
             )}
 
             {/* Code block */}
-            <pre className="p-4 overflow-x-auto max-h-[400px] overflow-y-auto text-2xs leading-relaxed font-mono text-neutral-400">
+            <pre className="p-4 overflow-x-auto max-h-[400px] overflow-y-auto text-2xs leading-relaxed font-mono text-muted-foreground">
               {loading ? (
-                <span className="text-neutral-600 animate-pulse">Compiling tokens...</span>
+                <span className="text-muted-foreground/70 animate-pulse">
+                  {t('brandEditor.compiling')}
+                </span>
               ) : currentOutput ? (
                 <code>{currentOutput.content}</code>
               ) : (
-                <span className="text-neutral-600">
-                  No output available. Add colors, typography, or tokens to your brand.
-                </span>
+                <span className="text-muted-foreground/70">{t('brandEditor.noOutput')}</span>
               )}
             </pre>
           </div>
@@ -261,8 +263,10 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
 
         {/* Actions */}
         <div className="flex items-center justify-between">
-          <p className="text-2xs font-mono text-neutral-600">
-            {currentOutput ? `${currentOutput.content.split('\n').length} lines` : null}
+          <p className="text-2xs font-mono text-muted-foreground/70">
+            {currentOutput
+              ? t('brandEditor.linesCount', { count: currentOutput.content.split('\n').length })
+              : null}
           </p>
           <Button
             variant="ghost"
@@ -271,16 +275,16 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
             className="h-7 px-3 text-xs text-muted-foreground hover:text-foreground border border-border hover:border-ring"
           >
             <Download size={11} />
-            Download All Formats
+            {t('brandEditor.downloadAll')}
           </Button>
         </div>
 
         {/* Token Summary */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <TokenStat label="Colors" count={guideline.colors?.length || 0} />
-          <TokenStat label="Fonts" count={guideline.typography?.length || 0} />
-          <TokenStat label="Shadows" count={guideline.shadows?.length || 0} />
-          <TokenStat label="Gradients" count={guideline.gradients?.length || 0} />
+          <TokenStat label={t('brandView.colors')} count={guideline.colors?.length || 0} />
+          <TokenStat label={t('brandEditor.fonts')} count={guideline.typography?.length || 0} />
+          <TokenStat label={t('brandEditor.shadows')} count={guideline.shadows?.length || 0} />
+          <TokenStat label={t('brandEditor.gradients')} count={guideline.gradients?.length || 0} />
         </div>
       </div>
     </SectionBlock>
@@ -293,12 +297,12 @@ function TokenStat({ label, count }: { label: string; count: number }) {
       <span
         className={cn(
           'text-sm font-medium tabular-nums',
-          count > 0 ? 'text-neutral-300' : 'text-neutral-700'
+          count > 0 ? 'text-foreground' : 'text-muted-foreground/50'
         )}
       >
         {count}
       </span>
-      <span className="text-2xs font-mono text-neutral-600">{label}</span>
+      <span className="text-2xs font-mono text-muted-foreground/70">{label}</span>
     </div>
   );
 }

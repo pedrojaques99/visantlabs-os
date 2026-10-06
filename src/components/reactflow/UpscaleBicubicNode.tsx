@@ -181,7 +181,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               duration: 2000,
             });
           } else {
-            toast.error('Failed to find node position');
+            toast.error(t('canvasNodes.shared.failedToFindNodePosition'));
           }
         } else {
           if (data.onUpdateData) {

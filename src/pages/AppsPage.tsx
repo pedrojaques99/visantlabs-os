@@ -21,7 +21,6 @@ import {
   X,
   LayoutGrid,
   Star,
-  History,
   Eye,
   EyeOff,
 } from '@/lib/ui/icons';
@@ -36,7 +35,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { MediaTile } from '@/components/ui/MediaTile';
-import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { toast } from 'sonner';
 import { glassSurface } from '@/lib/ui/glass';
 import { useInAppShell } from '@/components/shell/InAppShellContext';
@@ -222,12 +220,11 @@ function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit, onToggleHidden }: Ap
 interface CategoryChipProps {
   icon: typeof Crown;
   label: string;
-  count: number;
   active: boolean;
   onClick: () => void;
 }
 
-function CategoryChip({ icon: Icon, label, count, active, onClick }: CategoryChipProps) {
+function CategoryChip({ icon: Icon, label, active, onClick }: CategoryChipProps) {
   return (
     <button
       onClick={onClick}
@@ -240,7 +237,6 @@ function CategoryChip({ icon: Icon, label, count, active, onClick }: CategoryChi
     >
       <Icon size={13} className="shrink-0" />
       {label}
-      <span className="text-2xs tabular-nums text-muted-foreground">{count}</span>
     </button>
   );
 }
@@ -270,7 +266,6 @@ export const AppsPage: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'default' | 'name' | 'recent'>('default');
   // Cinto de utilidades colapsado por padrão (two-tier, RCD §3.3).
   const [showUtilities, setShowUtilities] = useState(false);
 
@@ -687,7 +682,8 @@ export const AppsPage: React.FC = () => {
       } catch (error) {
         console.error('Error fetching apps:', error);
         setApps(staticAppsData as any);
-        toast.error(t('apps.failed_to_load_apps_from_database_using'));
+        // O fallback estático já cobre a tela; o aviso só interessa a quem administra o banco.
+        if (isAdmin) toast.error(t('apps.failed_to_load_apps_from_database_using'));
       } finally {
         setIsLoading(false);
       }
@@ -746,18 +742,13 @@ export const AppsPage: React.FC = () => {
     });
   }, [visibleApps, isListed, search, activeCategory]);
 
+  // Ordem fixa: mais usados por último primeiro. Empate mantém a ordem do catálogo (sort estável).
   const sortedApps = useMemo(() => {
-    const sorted = [...filteredApps];
-    if (sortBy === 'name') {
-      sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-    } else if (sortBy === 'recent') {
-      const lu = getLastUsed();
-      sorted.sort((a, b) => (lu[appId(b)] ?? 0) - (lu[appId(a)] ?? 0));
-    }
-    return sorted;
-  }, [filteredApps, sortBy]);
+    const lu = getLastUsed();
+    return [...filteredApps].sort((a, b) => (lu[appId(b)] ?? 0) - (lu[appId(a)] ?? 0));
+  }, [filteredApps]);
 
-  // Category counts (always over the full listed set, ignoring filters).
+  // Categorias que têm ao menos um app listado (sem contagem na UI).
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     visibleApps.forEach((app) => {
@@ -767,31 +758,29 @@ export const AppsPage: React.FC = () => {
     return counts;
   }, [visibleApps, isListed]);
 
-  const totalApps = Object.values(categoryCounts).reduce((a, b) => a + b, 0);
   const hasActiveFilters = !!search || !!activeCategory;
 
   // Uma única lista de categorias pra rail e chips; categoria vazia não aparece.
   const categoryNav = useMemo(
     () => [
-      { key: null as string | null, icon: LayoutGrid, label: t('apps.allApps'), count: totalApps },
+      { key: null as string | null, icon: LayoutGrid, label: t('apps.allApps') },
       ...categories
         .filter((cat) => (categoryCounts[cat.key] || 0) > 0)
         .map((cat) => ({
           key: cat.key as string | null,
           icon: cat.icon,
           label: catLabel(cat.key),
-          count: categoryCounts[cat.key] || 0,
         })),
     ],
-    [categories, categoryCounts, totalApps, catLabel, t]
+    [categories, categoryCounts, catLabel, t]
   );
   const isCategoryActive = (key: string | null) =>
     key === null ? !activeCategory : activeCategory === key;
   const selectCategory = (key: string | null) =>
     setActiveCategory(key === null || activeCategory === key ? null : key);
 
-  // Sectioned view: only on "All", no search, default sort.
-  const showSections = !activeCategory && !search && sortBy === 'default';
+  // Sectioned view: only on "All" and without search.
+  const showSections = !activeCategory && !search;
 
   const sections = useMemo(() => {
     if (!showSections) return [];
@@ -924,9 +913,6 @@ export const AppsPage: React.FC = () => {
                   >
                     <Icon size={14} className="shrink-0" />
                     <span className="flex-1 truncate text-left">{item.label}</span>
-                    <span className="text-2xs tabular-nums text-sidebar-foreground/40">
-                      {item.count}
-                    </span>
                   </button>
                 );
               })}
@@ -949,7 +935,6 @@ export const AppsPage: React.FC = () => {
                 key={item.key ?? 'all'}
                 icon={item.icon}
                 label={item.label}
-                count={item.count}
                 active={isCategoryActive(item.key)}
                 onClick={() => selectCategory(item.key)}
               />
@@ -957,7 +942,7 @@ export const AppsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Sticky toolbar: search + sort */}
+        {/* Sticky toolbar: search */}
         <div
           className={cn(
             'sticky z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-6 bg-background border-b border-border',
@@ -990,34 +975,6 @@ export const AppsPage: React.FC = () => {
                 </button>
               )}
             </div>
-
-            <SegmentedControl
-              aria-label={t('apps.sort.label')}
-              size="sm"
-              className="shrink-0"
-              value={sortBy}
-              onChange={setSortBy}
-              options={[
-                {
-                  value: 'default',
-                  icon: LayoutGrid,
-                  'aria-label': t('apps.sort.default'),
-                  label: <span className="hidden sm:inline">{t('apps.sort.default')}</span>,
-                },
-                {
-                  value: 'recent',
-                  icon: History,
-                  'aria-label': t('apps.sort.hintRecent'),
-                  label: <span className="hidden sm:inline">{t('apps.sort.recent')}</span>,
-                },
-                {
-                  value: 'name',
-                  icon: ArrowUpDown,
-                  'aria-label': t('apps.sort.hintName'),
-                  label: <span className="hidden sm:inline">{t('apps.sort.name')}</span>,
-                },
-              ]}
-            />
           </div>
         </div>
 

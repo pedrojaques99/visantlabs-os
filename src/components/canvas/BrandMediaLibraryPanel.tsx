@@ -417,7 +417,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                       className="fixed inset-0 z-40"
                       role="button"
                       tabIndex={-1}
-                      aria-label="Close filter dropdown"
+                      aria-label={t('canvas.mediaLibrary.closeFilter')}
                       onClick={() => setExpandedDim(null)}
                       onKeyDown={(e) => {
                         if (e.key === 'Escape') setExpandedDim(null);

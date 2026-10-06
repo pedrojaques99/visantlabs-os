@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -26,6 +27,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
   onUpdate,
   span,
 }) => {
+  const { t } = useTranslation();
   const local = guideline.strategy?.archetypes || [];
 
   const persist = useCallback(
@@ -65,7 +67,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
     <SectionBlock
       id="archetypes"
       icon={<Diamond size={14} />}
-      title="Archetypes"
+      title={t('brandView.archetypes')}
       span={span as any}
       actions={
         <div className="flex items-center gap-1">
@@ -78,7 +80,12 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-5 w-5" aria-label="Add archetype">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5"
+                aria-label={t('brandEditor.addArchetype')}
+              >
                 <Plus size={11} />
               </Button>
             </DropdownMenuTrigger>
@@ -95,15 +102,15 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
                     className="w-7 h-9 object-cover rounded shrink-0"
                   />
                   <div className="min-w-0">
-                    <p className="text-xs font-medium text-neutral-200 truncate">{preset.nome}</p>
-                    <p className="text-2xs text-neutral-600 truncate">
+                    <p className="text-xs font-medium text-foreground truncate">{preset.nome}</p>
+                    <p className="text-2xs text-muted-foreground/70 truncate">
                       {preset.valores.slice(0, 2).join(', ')}
                     </p>
                   </div>
                 </DropdownMenuItem>
               ))}
               <DropdownMenuItem
-                className="text-2xs text-neutral-600 border-t border-neutral-800 mt-1 pt-2"
+                className="text-2xs text-muted-foreground/70 border-t border-border mt-1 pt-2"
                 onClick={addBlank}
               >
                 + Custom
@@ -115,7 +122,9 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
     >
       <div className="space-y-0 py-1">
         {local.length === 0 && (
-          <p className="text-2xs text-neutral-700 py-2">No archetypes. Click + to add.</p>
+          <p className="text-2xs text-muted-foreground/50 py-2">
+            {t('brandEditor.noArchetypesAdd')}
+          </p>
         )}
         {local.map((arch, i) => {
           const preset = ARCHETYPE_PRESETS.find((p) => p.nome === arch.name);
@@ -123,7 +132,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
           return (
             <div
               key={i}
-              className="flex gap-3 items-start py-2 border-b border-neutral-800 last:border-0 group/item"
+              className="flex gap-3 items-start py-2 border-b border-border last:border-0 group/item"
             >
               {img && (
                 <Thumb
@@ -137,8 +146,8 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
                   <Input
                     value={arch.name}
                     onChange={(e) => set(i, { name: e.target.value })}
-                    className="h-6 bg-transparent border-none px-0 text-xs font-medium text-neutral-200 focus-visible:ring-0 placeholder:text-neutral-700 flex-1"
-                    placeholder="Name"
+                    className="h-6 bg-transparent border-none px-0 text-xs font-medium text-foreground focus-visible:ring-0 placeholder:text-muted-foreground/50 flex-1"
+                    placeholder={t('brandEditor.namePlaceholder')}
                   />
                   <button
                     type="button"
@@ -153,8 +162,8 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
                 <Input
                   value={arch.description}
                   onChange={(e) => set(i, { description: e.target.value })}
-                  className="h-6 bg-transparent border-none px-0 text-xs text-neutral-500 focus-visible:ring-0 placeholder:text-neutral-700"
-                  placeholder="Objetivo..."
+                  className="h-6 bg-transparent border-none px-0 text-xs text-muted-foreground focus-visible:ring-0 placeholder:text-muted-foreground/50"
+                  placeholder={t('brandEditor.goalPlaceholder')}
                 />
                 {preset && (
                   <p className="text-2xs text-muted-foreground">{preset.valores.join(', ')}</p>
@@ -163,9 +172,9 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/item:opacity-100 shrink-0 mt-0.5"
+                className="h-6 w-6 text-muted-foreground/50 hover:text-destructive opacity-0 group-hover/item:opacity-100 shrink-0 mt-0.5"
                 onClick={() => remove(i)}
-                aria-label="Remove"
+                aria-label={t('common.remove')}
               >
                 <Trash2 size={10} />
               </Button>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Thumb } from '@/components/ui/Thumb';
+import { MediaTile } from '@/components/ui/MediaTile';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Modal } from '../ui/Modal';
@@ -9,7 +9,6 @@ import { MediaKitGallery } from '../brand/MediaKitGallery';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
-import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { toast } from 'sonner';
 import { FileText, X, Image as ImageIcon, Figma } from '@/lib/ui/icons';
 import { validatePdfFile } from '@/utils/pdfUtils';
@@ -678,28 +677,25 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
           {imagePreviews.length > 0 && (
             <div className="grid grid-cols-5 gap-2">
               {imagePreviews.map((preview, index) => (
-                <div
+                <MediaTile
                   key={index}
-                  className="relative group aspect-square rounded bg-muted border border-border overflow-hidden"
-                >
-                  <Thumb
-                    src={sanitizePreviewUrl(preview)}
-                    alt=""
-                    className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
-                  />
-                  {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim sobre mídia */}
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className={cn(
-                      hoverReveal,
-                      'absolute top-0.5 right-0.5 p-1 bg-black/60 rounded-full text-white opacity-80 hover:opacity-100'
-                    )}
-                    aria-label={t('mockup.removeImage')}
-                  >
-                    <X size={10} />
-                  </button>
-                </div>
+                  layout="overlay"
+                  src={sanitizePreviewUrl(preview)}
+                  alt=""
+                  title={t('mockup.removeImage')}
+                  aspectRatio={1}
+                  actions={
+                    <Button
+                      type="button"
+                      variant="surface"
+                      size="icon-sm"
+                      onClick={() => removeImage(index)}
+                      aria-label={t('mockup.removeImage')}
+                    >
+                      <X size={10} />
+                    </Button>
+                  }
+                />
               ))}
             </div>
           )}

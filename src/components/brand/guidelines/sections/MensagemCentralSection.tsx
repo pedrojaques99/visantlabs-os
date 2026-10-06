@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -24,6 +25,7 @@ export const MensagemCentralSection: React.FC<MensagemCentralSectionProps> = ({
   onUpdate,
   span,
 }) => {
+  const { t } = useTranslation();
   const cm = readCoreMessage(guideline);
 
   const persist = useCallback(
@@ -58,7 +60,7 @@ export const MensagemCentralSection: React.FC<MensagemCentralSectionProps> = ({
     <SectionBlock
       id="mensagem_central"
       icon={<MessageSquare size={14} />}
-      title="Mensagem Central"
+      title={t('brandView.coreMessage')}
       span={span as any}
       actions={
         !hasMessage ? (
@@ -73,47 +75,53 @@ export const MensagemCentralSection: React.FC<MensagemCentralSectionProps> = ({
       <div className="space-y-4 py-1">
         <div className="space-y-2">
           <div className="space-y-1">
-            <MicroTitle className="text-neutral-600">1. Produto</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">
+              1. {t('brandView.product')}
+            </MicroTitle>
             <Input
               value={cm.product}
               onChange={(e) => update({ product: e.target.value })}
-              className="h-7 border-neutral-800 text-xs text-neutral-300 bg-transparent placeholder:text-neutral-700"
-              placeholder="ex: ITSM para times enxutos de TI"
+              className="h-7 border-border text-xs text-foreground bg-transparent placeholder:text-muted-foreground/50"
+              placeholder={t('brandEditor.productPlaceholder')}
             />
           </div>
           <div className="space-y-1">
-            <MicroTitle className="text-neutral-600">2. Diferencial</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">
+              2. {t('brandView.differential')}
+            </MicroTitle>
             <Input
               value={cm.differential}
               onChange={(e) => update({ differential: e.target.value })}
-              className="h-7 border-neutral-800 text-xs text-neutral-300 bg-transparent placeholder:text-neutral-700"
-              placeholder="ex: conectar as ferramentas num fluxo único"
+              className="h-7 border-border text-xs text-foreground bg-transparent placeholder:text-muted-foreground/50"
+              placeholder={t('brandEditor.differentialPlaceholder')}
             />
           </div>
           <div className="space-y-1">
-            <MicroTitle className="text-neutral-600">3. Elo Emocional</MicroTitle>
+            <MicroTitle className="text-muted-foreground/70">
+              3. {t('brandView.emotionalBond')}
+            </MicroTitle>
             <Input
               value={cm.emotionalBond}
               onChange={(e) => update({ emotionalBond: e.target.value })}
-              className="h-7 border-neutral-800 text-xs text-neutral-300 bg-transparent placeholder:text-neutral-700"
-              placeholder="ex: alívio de ter o caos operacional sob controle"
+              className="h-7 border-border text-xs text-foreground bg-transparent placeholder:text-muted-foreground/50"
+              placeholder={t('brandEditor.emotionalPlaceholder')}
             />
           </div>
         </div>
 
         {hasMessage && (
-          <div className="pt-3 border-t border-neutral-800">
-            <p className="text-2xs text-muted-foreground mb-2">Preview</p>
-            <p className="text-sm text-neutral-300 leading-relaxed">
+          <div className="pt-3 border-t border-border">
+            <p className="text-2xs text-muted-foreground mb-2">{t('brandEditor.preview')}</p>
+            <p className="text-sm text-foreground leading-relaxed">
               {cm.product && <span className="font-medium text-foreground">{cm.product}</span>}
               {cm.product && cm.differential && (
-                <span className="text-neutral-500"> com o diferencial de </span>
+                <span className="text-muted-foreground"> {t('brandEditor.previewWith')} </span>
               )}
               {cm.differential && (
                 <span className="font-medium text-foreground">{cm.differential}</span>
               )}
               {cm.differential && cm.emotionalBond && (
-                <span className="text-neutral-500"> que transmite o sentimento de </span>
+                <span className="text-muted-foreground"> {t('brandEditor.previewFeeling')} </span>
               )}
               {cm.emotionalBond && (
                 <span className="font-medium text-foreground">{cm.emotionalBond}.</span>

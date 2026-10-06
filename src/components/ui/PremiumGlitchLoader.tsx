@@ -33,7 +33,7 @@ interface PremiumGlitchLoaderProps {
 
 export const PremiumGlitchLoader: React.FC<PremiumGlitchLoaderProps> = ({
   className = '',
-  color = '#7e7e7eff',
+  color = 'var(--muted-foreground)',
   steps = WORDS,
 }) => {
   const [glitch, setGlitch] = useState('****');

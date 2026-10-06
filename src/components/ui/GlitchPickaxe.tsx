@@ -10,7 +10,11 @@ interface GlitchPickaxeProps {
   className?: string;
 }
 
-export function GlitchPickaxe({ size = 20, color = 'brand-cyan', className }: GlitchPickaxeProps) {
+export function GlitchPickaxe({
+  size = 20,
+  color = 'var(--muted-foreground)',
+  className,
+}: GlitchPickaxeProps) {
   const [sparks, setSparks] = useState('');
 
   useEffect(() => {

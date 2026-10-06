@@ -1,13 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  ChevronDown,
-  ChevronRight,
-  CheckCircle2,
-  ExternalLink,
-  Image as ImageIcon,
-} from '@/lib/ui/icons';
+import { ChevronDown, ChevronRight, ExternalLink, Image as ImageIcon } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { DemoBrandBanner } from '@/components/onboarding/DemoBrandBanner';
@@ -516,14 +510,6 @@ export const BrandCockpit: React.FC = () => {
                       ))}
                     </ul>
                   )}
-                </section>
-              ) : brandDetail ? (
-                <section
-                  data-vsn-region="next-best-action"
-                  className={cn(cardCls, 'flex items-center gap-2.5 px-4 py-3')}
-                >
-                  <CheckCircle2 size={14} className="text-success shrink-0" />
-                  <span className="text-xs text-muted-foreground">{t('cockpit.nba.complete')}</span>
                 </section>
               ) : null}
 

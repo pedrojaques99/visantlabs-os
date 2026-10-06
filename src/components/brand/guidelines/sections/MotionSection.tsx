@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -15,9 +16,9 @@ interface MotionSectionProps {
 type Philosophy = 'minimal' | 'moderate' | 'expressive';
 
 const PHILOSOPHY_OPTIONS: { value: Philosophy; label: string }[] = [
-  { value: 'minimal', label: 'Minimal' },
-  { value: 'moderate', label: 'Moderate' },
-  { value: 'expressive', label: 'Expressive' },
+  { value: 'minimal', label: 'brandEditor.philosophyMinimal' },
+  { value: 'moderate', label: 'brandEditor.philosophyModerate' },
+  { value: 'expressive', label: 'brandEditor.philosophyExpressive' },
 ];
 
 const EASING_PRESETS = [
@@ -35,6 +36,7 @@ const DEFAULT_MOTION: BrandGuidelineMotion = {
 };
 
 export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdate, span }) => {
+  const { t } = useTranslation();
   const motion = guideline.motion || {};
 
   const persist = useCallback(
@@ -61,24 +63,31 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
   const isEmpty = !motion.easing && !motion.philosophy && !motion.durations;
 
   return (
-    <SectionBlock id="motion" icon={<Zap size={14} />} title="Motion" span={span as any}>
+    <SectionBlock
+      id="motion"
+      icon={<Zap size={14} />}
+      title={t('brandEditor.motion')}
+      span={span as any}
+    >
       <div className="space-y-3 py-1 group/motion">
         {isEmpty && (
           <div className="space-y-2">
-            <p className="text-2xs text-neutral-700">No motion tokens yet.</p>
+            <p className="text-2xs text-muted-foreground/50">{t('brandEditor.noMotionYet')}</p>
             <button
               type="button"
               onClick={() => persist(DEFAULT_MOTION)}
-              className="text-2xs font-mono text-neutral-600 hover:text-neutral-400 transition-colors"
+              className="text-2xs font-mono text-muted-foreground/70 hover:text-muted-foreground transition-colors"
             >
-              Seed defaults
+              {t('brandEditor.seedDefaults')}
             </button>
           </div>
         )}
 
         {/* Philosophy: always visible as compact pills */}
         <div className="space-y-1">
-          <MicroTitle className="text-neutral-600">Philosophy</MicroTitle>
+          <MicroTitle className="text-muted-foreground/70">
+            {t('brandEditor.philosophy')}
+          </MicroTitle>
           <div className="flex gap-1">
             {PHILOSOPHY_OPTIONS.map((opt) => (
               <button
@@ -92,7 +101,7 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
                     : 'border-border text-muted-foreground hover:border-border-hover'
                 )}
               >
-                {opt.label}
+                {t(opt.label)}
               </button>
             ))}
           </div>
@@ -100,16 +109,16 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
 
         {/* Durations: always visible, compact */}
         <div className="space-y-1">
-          <MicroTitle className="text-neutral-600">Durations (ms)</MicroTitle>
+          <MicroTitle className="text-muted-foreground/70">{t('brandEditor.durations')}</MicroTitle>
           <div className="grid grid-cols-3 gap-1.5">
             {(['fast', 'medium', 'slow'] as const).map((key) => (
               <div key={key} className="space-y-0.5">
-                <MicroTitle className="text-neutral-700 text-2xs">{key}</MicroTitle>
+                <MicroTitle className="text-muted-foreground/50 text-2xs">{key}</MicroTitle>
                 <Input
                   type="number"
                   value={motion.durations?.[key] ?? DEFAULT_MOTION.durations![key]}
                   onChange={(e) => patchDuration(key, Number(e.target.value))}
-                  className="h-6 border-neutral-800 text-2xs font-mono text-center"
+                  className="h-6 border-border text-2xs font-mono text-center"
                 />
               </div>
             ))}
@@ -118,7 +127,7 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
 
         {/* Easing: hover-reveal preset buttons, always show input */}
         <div className="space-y-1">
-          <MicroTitle className="text-neutral-600">Easing</MicroTitle>
+          <MicroTitle className="text-muted-foreground/70">Easing</MicroTitle>
           {/* Preset buttons hidden until hover */}
           <div className="max-h-0 overflow-hidden group-hover/motion:max-h-12 group-focus-within/motion:max-h-12 transition-[max-height] duration-150 ease-out mb-1">
             <div className="flex flex-wrap gap-1 pb-1">
@@ -142,7 +151,7 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
           <Input
             value={motion.easing || ''}
             onChange={(e) => patch({ easing: e.target.value })}
-            className="h-7 border-neutral-800 text-2xs font-mono text-neutral-400 placeholder:text-neutral-700"
+            className="h-7 border-border text-2xs font-mono text-muted-foreground placeholder:text-muted-foreground/50"
             placeholder="cubic-bezier(x1, y1, x2, y2)"
           />
         </div>
@@ -159,16 +168,16 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
                   ? 'bg-accent border-border-hover'
                   : 'bg-muted border-border'
               )}
-              aria-label="Toggle reduced motion"
+              aria-label={t('brandEditor.toggleReducedMotion')}
             >
               <div
                 className={cn(
-                  'absolute top-0.5 w-2.5 h-2.5 rounded-full transition-[left,background-color] bg-neutral-500',
-                  motion.respectsReducedMotion ? 'left-3.5 bg-neutral-300' : 'left-0.5'
+                  'absolute top-0.5 w-2.5 h-2.5 rounded-full transition-[left,background-color] bg-muted-foreground',
+                  motion.respectsReducedMotion ? 'left-3.5 bg-foreground' : 'left-0.5'
                 )}
               />
             </button>
-            <span className="text-2xs font-mono text-neutral-500">prefers-reduced-motion</span>
+            <span className="text-2xs font-mono text-muted-foreground">prefers-reduced-motion</span>
           </label>
         </div>
       </div>

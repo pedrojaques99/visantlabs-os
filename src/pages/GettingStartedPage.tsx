@@ -25,6 +25,7 @@ import {
 import { copyToClipboard } from '@/utils/clipboard';
 import { useInAppShell } from '@/components/shell/InAppShellContext';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // ─── Local CodeBlock component ──────────────────────────────────────────────
 
@@ -36,6 +37,7 @@ interface CodeBlockProps {
 }
 
 const CodeBlock: React.FC<CodeBlockProps> = ({ code, language }) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -61,10 +63,10 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ code, language }) => {
         <button
           onClick={handleCopy}
           className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-0.5 px-2 rounded hover:bg-muted"
-          aria-label="Copy code"
+          aria-label={t('gettingStarted.copyCode')}
         >
           {copied ? <Check size={12} className="text-success" /> : <Copy size={12} />}
-          <span>{copied ? 'Copied!' : 'Copy'}</span>
+          <span>{copied ? t('gettingStarted.copied') : t('common.copy')}</span>
         </button>
       </div>
       <pre className="overflow-x-auto p-4 text-sm font-mono text-foreground leading-relaxed">
@@ -113,11 +115,11 @@ const TabCode: React.FC<TabCodeProps> = ({ js, python }) => {
 // ─── Section anchor helper ───────────────────────────────────────────────────
 
 const SECTIONS = [
-  { id: 'authentication', label: 'Authentication' },
-  { id: 'brand-generation', label: 'Brand Generation' },
-  { id: 'mockup-generation', label: 'Mockup Generation' },
-  { id: 'creative-studio', label: 'Creative Studio' },
-  { id: 'next-steps', label: 'Next Steps' },
+  { id: 'authentication', labelKey: 'gettingStarted.sections.authentication' },
+  { id: 'brand-generation', labelKey: 'gettingStarted.sections.brand' },
+  { id: 'mockup-generation', labelKey: 'gettingStarted.sections.mockup' },
+  { id: 'creative-studio', labelKey: 'gettingStarted.sections.creative' },
+  { id: 'next-steps', labelKey: 'gettingStarted.sections.next' },
 ];
 
 // ─── Code snippets ───────────────────────────────────────────────────────────
@@ -289,15 +291,81 @@ result = response.json()
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
+const CODE_CLASS = 'text-foreground bg-muted px-1.5 py-0.5 rounded text-xs font-mono';
+
+/** Troca {chave} no texto traduzido pelos nós informados (code, link). */
+const Rich: React.FC<{ text: string; slots: Record<string, React.ReactNode> }> = ({
+  text,
+  slots,
+}) => (
+  <>
+    {text.split(/(\{\w+\})/).map((part, i) => {
+      const m = part.match(/^\{(\w+)\}$/);
+      return m && slots[m[1]] !== undefined ? (
+        <React.Fragment key={i}>{slots[m[1]]}</React.Fragment>
+      ) : (
+        <React.Fragment key={i}>{part}</React.Fragment>
+      );
+    })}
+  </>
+);
+
 export const GettingStartedPage: React.FC = () => {
   useLayout();
   const inShell = useInAppShell();
+  const { t } = useTranslation();
+
+  const code = (children: string) => <code className={CODE_CLASS}>{children}</code>;
+  const scopes = [
+    {
+      scope: 'read',
+      desc: t('gettingStarted.scopes.read'),
+      color: 'text-foreground bg-chart-1/10 border-chart-1/40',
+    },
+    {
+      scope: 'write',
+      desc: t('gettingStarted.scopes.write'),
+      color: 'text-warning bg-warning/10 border-warning/30',
+    },
+    {
+      scope: 'generate',
+      desc: t('gettingStarted.scopes.generate'),
+      color: 'text-foreground bg-chart-4/10 border-chart-4/40',
+    },
+  ];
+  const nextSteps = [
+    {
+      to: '/api/docs',
+      icon: BookOpen,
+      title: t('gettingStarted.next.reference.title'),
+      desc: t('gettingStarted.next.reference.desc'),
+    },
+    {
+      to: '/settings/api-keys',
+      icon: Key,
+      title: t('gettingStarted.next.keys.title'),
+      desc: t('gettingStarted.next.keys.desc'),
+    },
+    {
+      to: '/profile?tab=overview',
+      icon: Zap,
+      title: t('gettingStarted.next.usage.title'),
+      desc: t('gettingStarted.next.usage.desc'),
+    },
+  ];
+  const scopeRequired = (cls: string) => (
+    <p className="text-xs text-muted-foreground mt-0.5">
+      {t('gettingStarted.scopeRequired')} <span className={cn('font-mono', cls)}>generate</span>
+    </p>
+  );
+  const specBox =
+    'bg-muted/40 border border-border rounded-xl p-4 text-xs font-mono text-muted-foreground space-y-1';
 
   return (
     <>
       <SEO
-        title="Getting Started with the Visant API"
-        description="Follow a step-by-step guide to authenticate and call Visant's AI brand, mockup, and creative generation tools via API."
+        title={t('gettingStarted.seo.title')}
+        description={t('gettingStarted.seo.description')}
       />
       <div
         className={cn(
@@ -315,18 +383,18 @@ export const GettingStartedPage: React.FC = () => {
                   <BreadcrumbList>
                     <BreadcrumbItem>
                       <BreadcrumbLink asChild>
-                        <Link to="/">Home</Link>
+                        <Link to="/">{t('common.home')}</Link>
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
                       <BreadcrumbLink asChild>
-                        <Link to="/docs">Documentation</Link>
+                        <Link to="/docs">{t('gettingStarted.breadcrumbDocs')}</Link>
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
-                      <BreadcrumbPage>Getting Started</BreadcrumbPage>
+                      <BreadcrumbPage>{t('gettingStarted.title')}</BreadcrumbPage>
                     </BreadcrumbItem>
                   </BreadcrumbList>
                 </BreadcrumbWithBack>
@@ -335,11 +403,9 @@ export const GettingStartedPage: React.FC = () => {
                 <BookOpen className="h-7 w-7 text-muted-foreground mt-1 shrink-0" />
                 <div>
                   <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-foreground mb-1">
-                    Getting Started
+                    {t('gettingStarted.title')}
                   </h1>
-                  <p className="text-muted-foreground text-sm">
-                    Authenticate and make your first API call in under 5 minutes.
-                  </p>
+                  <p className="text-muted-foreground text-sm">{t('gettingStarted.subtitle')}</p>
                 </div>
               </div>
             </CardContent>
@@ -349,7 +415,9 @@ export const GettingStartedPage: React.FC = () => {
             {/* Sidebar nav */}
             <aside className="hidden lg:block w-52 shrink-0">
               <div className={cn('sticky space-y-1', inShell ? 'top-4' : 'top-20')}>
-                <p className="text-xs font-medium text-muted-foreground mb-3">On this page</p>
+                <p className="text-xs font-medium text-muted-foreground mb-3">
+                  {t('gettingStarted.onThisPage')}
+                </p>
                 {SECTIONS.map((s) => (
                   <a
                     key={s.id}
@@ -360,7 +428,7 @@ export const GettingStartedPage: React.FC = () => {
                       size={12}
                       className="opacity-0 group-hover:opacity-100 transition-opacity text-foreground"
                     />
-                    {s.label}
+                    {t(s.labelKey)}
                   </a>
                 ))}
               </div>
@@ -377,78 +445,61 @@ export const GettingStartedPage: React.FC = () => {
                         <Key size={18} className="text-muted-foreground" />
                       </div>
                       <h2 className="text-xl font-medium font-manrope text-foreground">
-                        Authentication
+                        {t('gettingStarted.sections.authentication')}
                       </h2>
                     </div>
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                      All API requests require a{' '}
-                      <code className="text-foreground bg-muted px-1.5 py-0.5 rounded text-xs font-mono">
-                        visant_sk_
-                      </code>{' '}
-                      API key passed as a{' '}
-                      <code className="text-foreground bg-muted px-1.5 py-0.5 rounded text-xs font-mono">
-                        Bearer
-                      </code>{' '}
-                      token in the{' '}
-                      <code className="text-foreground bg-muted px-1.5 py-0.5 rounded text-xs font-mono">
-                        Authorization
-                      </code>{' '}
-                      header.
+                      <Rich
+                        text={t('gettingStarted.auth.intro')}
+                        slots={{
+                          key: code('visant_sk_'),
+                          bearer: code('Bearer'),
+                          header: code('Authorization'),
+                        }}
+                      />
                     </p>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span>Don't have a key yet?</span>
+                      <span>{t('gettingStarted.auth.noKey')}</span>
                       <Link
                         to="/settings/api-keys"
                         className="text-foreground underline-offset-2 hover:underline flex items-center gap-1 text-xs"
                       >
-                        Create an API key <ExternalLink size={12} />
+                        {t('gettingStarted.auth.createKey')} <ExternalLink size={12} />
                       </Link>
                     </div>
                     <div className="bg-muted/40 border border-border rounded-xl p-4">
                       <p className="text-xs font-medium text-muted-foreground mb-2">
-                        OAuth 2.1 (for AI agents &amp; third-party apps)
+                        {t('gettingStarted.auth.oauthTitle')}
                       </p>
                       <p className="text-muted-foreground text-sm leading-relaxed">
-                        Agents and apps can authenticate via{' '}
-                        <code className="text-foreground bg-muted px-1.5 py-0.5 rounded text-xs font-mono">
-                          OAuth 2.1 + PKCE
-                        </code>{' '}
-                        with dynamic client registration. See{' '}
-                        <Link
-                          to="/settings/connected-apps"
-                          className="text-foreground underline-offset-2 hover:underline"
-                        >
-                          Connected Apps
-                        </Link>{' '}
-                        to manage authorized agents.
+                        <Rich
+                          text={t('gettingStarted.auth.oauthBody')}
+                          slots={{
+                            oauth: code('OAuth 2.1 + PKCE'),
+                            link: (
+                              <Link
+                                to="/settings/connected-apps"
+                                className="text-foreground underline-offset-2 hover:underline"
+                              >
+                                {t('gettingStarted.auth.connectedApps')}
+                              </Link>
+                            ),
+                          }}
+                        />
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground mb-2">List available tools</p>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {t('gettingStarted.auth.listTools')}
+                      </p>
                       <CodeBlock code={AUTH_CURL} language="bash" />
                     </div>
                     <div className="bg-muted/40 border border-border rounded-xl p-4">
                       <p className="text-xs font-medium text-muted-foreground mb-2">
-                        Available scopes
+                        {t('gettingStarted.auth.scopesTitle')}
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {[
-                          {
-                            scope: 'read',
-                            desc: 'Read resources and metadata',
-                            color: 'text-foreground bg-chart-1/10 border-chart-1/40',
-                          },
-                          {
-                            scope: 'write',
-                            desc: 'Create and modify resources',
-                            color: 'text-warning bg-warning/10 border-warning/30',
-                          },
-                          {
-                            scope: 'generate',
-                            desc: 'Invoke AI generation tools',
-                            color: 'text-foreground bg-chart-4/10 border-chart-4/40',
-                          },
-                        ].map(({ scope, desc, color }) => (
+                        {scopes.map(({ scope, desc, color }) => (
                           <div
                             key={scope}
                             className={`text-xs font-mono px-2.5 py-1.5 rounded border ${color}`}
@@ -468,42 +519,41 @@ export const GettingStartedPage: React.FC = () => {
                 <Card className="bg-card border border-border rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
-                      <div className="p-2 bg-chart-4/10 rounded-xl">
-                        <Palette size={18} className="text-foreground" />
+                      <div className="p-2 bg-muted rounded-xl">
+                        <Palette size={18} className="text-muted-foreground" />
                       </div>
                       <div>
                         <h2 className="text-xl font-medium font-manrope text-foreground">
-                          Brand Generation
+                          {t('gettingStarted.sections.brand')}
                         </h2>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          Scope required:{' '}
-                          <span className="font-mono text-foreground">generate</span>
-                        </p>
+                        {scopeRequired('text-foreground')}
                       </div>
                     </div>
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                      Create a brand guideline from a name and a short description, then add colors,
-                      typography, voice and visual direction. Brand guidelines become input for all
-                      subsequent generation tools.
+                      {t('gettingStarted.brand.intro')}
                     </p>
                     <div>
-                      <p className="text-xs text-muted-foreground mb-2">Create a brand guideline</p>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {t('gettingStarted.brand.example')}
+                      </p>
                       <TabCode js={BRAND_JS} python={BRAND_PY} />
                     </div>
-                    <div className="bg-muted/40 border border-border rounded-xl p-4 text-xs font-mono text-muted-foreground space-y-1">
+                    <div className={specBox}>
                       <p className="text-foreground font-medium mb-2">
-                        Tool: <span className="font-mono">brand-guidelines-create</span>
+                        {t('gettingStarted.tool')}{' '}
+                        <span className="font-mono">brand-guidelines-create</span>
                       </p>
                       <p>
-                        <span className="text-foreground">identity.name</span>: string, required
+                        <span className="text-foreground">identity.name</span>:{' '}
+                        {t('gettingStarted.brand.paramName')}
                       </p>
                       <p>
-                        <span className="text-foreground">identity.description</span>: string,
-                        optional
+                        <span className="text-foreground">identity.description</span>:{' '}
+                        {t('gettingStarted.brand.paramDescription')}
                       </p>
                       <p>
-                        <span className="text-foreground">colors, typography, strategy</span>:
-                        optional, or later via brand-guidelines-update
+                        <span className="text-foreground">colors, typography, strategy</span>:{' '}
+                        {t('gettingStarted.brand.paramRest')}
                       </p>
                     </div>
                   </CardContent>
@@ -515,45 +565,45 @@ export const GettingStartedPage: React.FC = () => {
                 <Card className="bg-card border border-border rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
-                      <div className="p-2 bg-warning/10 rounded-xl">
-                        <Image size={18} className="text-warning" />
+                      <div className="p-2 bg-muted rounded-xl">
+                        <Image size={18} className="text-muted-foreground" />
                       </div>
                       <div>
                         <h2 className="text-xl font-medium font-manrope text-foreground">
-                          Mockup Generation
+                          {t('gettingStarted.sections.mockup')}
                         </h2>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          Scope required: <span className="font-mono text-warning">generate</span>
-                        </p>
+                        {scopeRequired('text-foreground')}
                       </div>
                     </div>
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                      Place your artwork or brand into a realistic scene (apparel, packaging,
-                      devices, print) and receive a rendered mockup image URL.
+                      {t('gettingStarted.mockup.intro')}
                     </p>
                     <div>
                       <p className="text-xs text-muted-foreground mb-2">
-                        Generate a product mockup
+                        {t('gettingStarted.mockup.example')}
                       </p>
                       <TabCode js={MOCKUP_JS} python={MOCKUP_PY} />
                     </div>
-                    <div className="bg-muted/40 border border-border rounded-xl p-4 text-xs font-mono text-muted-foreground space-y-1">
+                    <div className={specBox}>
                       <p className="text-foreground font-medium mb-2">
-                        Tool: <span className="text-warning">mockup-generate</span>
+                        {t('gettingStarted.tool')}{' '}
+                        <span className="font-mono">mockup-generate</span>
                       </p>
                       <p>
-                        <span className="text-foreground">prompt</span>: string, required (scene
-                        only)
+                        <span className="text-foreground">prompt</span>:{' '}
+                        {t('gettingStarted.mockup.paramPrompt')}
                       </p>
                       <p>
-                        <span className="text-foreground">brandGuidelineId</span>: string, optional
+                        <span className="text-foreground">brandGuidelineId</span>:{' '}
+                        {t('gettingStarted.paramOptionalString')}
                       </p>
                       <p>
-                        <span className="text-foreground">referenceImages</span>: public URLs,
-                        optional
+                        <span className="text-foreground">referenceImages</span>:{' '}
+                        {t('gettingStarted.mockup.paramReferences')}
                       </p>
                       <p>
-                        <span className="text-foreground">aspectRatio</span>: string, optional
+                        <span className="text-foreground">aspectRatio</span>:{' '}
+                        {t('gettingStarted.paramOptionalString')}
                       </p>
                     </div>
                   </CardContent>
@@ -565,42 +615,41 @@ export const GettingStartedPage: React.FC = () => {
                 <Card className="bg-card border border-border rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
-                      <div className="p-2 bg-success/10 rounded-xl">
-                        <Zap size={18} className="text-success" />
+                      <div className="p-2 bg-muted rounded-xl">
+                        <Zap size={18} className="text-muted-foreground" />
                       </div>
                       <div>
                         <h2 className="text-xl font-medium font-manrope text-foreground">
-                          Creative Studio
+                          {t('gettingStarted.sections.creative')}
                         </h2>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          Scope required: <span className="font-mono text-success">generate</span>
-                        </p>
+                        {scopeRequired('text-foreground')}
                       </div>
                     </div>
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                      Generate on-brand social posts, banners and ads from a natural language prompt
-                      paired with your brand context. Brand guidelines are used as generation input,
-                      not just documentation.
+                      {t('gettingStarted.creative.intro')}
                     </p>
                     <div>
                       <p className="text-xs text-muted-foreground mb-2">
-                        Generate a creative asset
+                        {t('gettingStarted.creative.example')}
                       </p>
                       <TabCode js={CREATIVE_JS} python={CREATIVE_PY} />
                     </div>
-                    <div className="bg-muted/40 border border-border rounded-xl p-4 text-xs font-mono text-muted-foreground space-y-1">
+                    <div className={specBox}>
                       <p className="text-foreground font-medium mb-2">
-                        Tool: <span className="text-success">creative-generate</span>
+                        {t('gettingStarted.tool')}{' '}
+                        <span className="font-mono">creative-generate</span>
                       </p>
                       <p>
-                        <span className="text-foreground">prompt</span>: string, required
+                        <span className="text-foreground">prompt</span>:{' '}
+                        {t('gettingStarted.creative.paramPrompt')}
                       </p>
                       <p>
-                        <span className="text-foreground">brandGuidelineId</span>: string, optional
-                        (injects brand context)
+                        <span className="text-foreground">brandGuidelineId</span>:{' '}
+                        {t('gettingStarted.creative.paramBrand')}
                       </p>
                       <p>
-                        <span className="text-foreground">format</span>: 1:1, 16:9, 9:16 or 4:5
+                        <span className="text-foreground">format</span>:{' '}
+                        {t('gettingStarted.creative.paramFormat')}
                       </p>
                     </div>
                   </CardContent>
@@ -612,57 +661,26 @@ export const GettingStartedPage: React.FC = () => {
                 <Card className="bg-card border border-border rounded-xl">
                   <CardContent className="p-6">
                     <h2 className="text-xl font-medium font-manrope text-foreground mb-5">
-                      Next Steps
+                      {t('gettingStarted.sections.next')}
                     </h2>
                     <div className="grid sm:grid-cols-3 gap-4">
-                      <Link
-                        to="/api/docs"
-                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-xl hover:border-border-hover hover:bg-muted transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <BookOpen size={16} className="text-muted-foreground" />
-                          <ChevronRight
-                            size={14}
-                            className="text-muted-foreground group-hover:text-foreground transition-colors"
-                          />
-                        </div>
-                        <p className="text-sm font-medium text-foreground">Full API Reference</p>
-                        <p className="text-xs text-muted-foreground">
-                          Browse all MCP tools with params and response schemas
-                        </p>
-                      </Link>
-                      <Link
-                        to="/settings/api-keys"
-                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-xl hover:border-border-hover hover:bg-muted transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <Key size={16} className="text-muted-foreground" />
-                          <ChevronRight
-                            size={14}
-                            className="text-muted-foreground group-hover:text-foreground transition-colors"
-                          />
-                        </div>
-                        <p className="text-sm font-medium text-foreground">Manage API Keys</p>
-                        <p className="text-xs text-muted-foreground">
-                          Create, rotate, and scope your API keys
-                        </p>
-                      </Link>
-                      <Link
-                        to="/profile?tab=overview"
-                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-xl hover:border-border-hover hover:bg-muted transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <Zap size={16} className="text-muted-foreground" />
-                          <ChevronRight
-                            size={14}
-                            className="text-muted-foreground group-hover:text-foreground transition-colors"
-                          />
-                        </div>
-                        <p className="text-sm font-medium text-foreground">Usage Dashboard</p>
-                        <p className="text-xs text-muted-foreground">
-                          Monitor request counts, credits, and quotas
-                        </p>
-                      </Link>
+                      {nextSteps.map(({ to, icon: Icon, title, desc }) => (
+                        <Link
+                          key={to}
+                          to={to}
+                          className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-xl hover:border-border-hover hover:bg-muted transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <Icon size={16} className="text-muted-foreground" />
+                            <ChevronRight
+                              size={14}
+                              className="text-muted-foreground group-hover:text-foreground transition-colors"
+                            />
+                          </div>
+                          <p className="text-sm font-medium text-foreground">{title}</p>
+                          <p className="text-xs text-muted-foreground">{desc}</p>
+                        </Link>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>

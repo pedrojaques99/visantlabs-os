@@ -1286,7 +1286,6 @@ export const ImageLabPage: React.FC = () => {
               }}
               accept="image/*,video/*"
               label={t('imagelab.dropPrompt')}
-              hint={t('imagelab.shortcutsHint')}
               dropTarget={false}
               className="max-w-md"
             />

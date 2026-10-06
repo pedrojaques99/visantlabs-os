@@ -589,7 +589,7 @@ export const CommunityPage: React.FC = () => {
                       className="relative rounded-xl p-6 flex flex-col h-full hover:border-ring transition-colors overflow-hidden bg-muted/40"
                     >
                       <Link to={`/community/presets?type=${category.type}`}>
-                        <div className="flex items-baseline justify-between gap-3 mb-6 flex-1">
+                        <div className="flex items-baseline justify-between gap-3">
                           <h3 className="text-lg font-medium text-foreground capitalize text-left">
                             {category.label}
                           </h3>
@@ -597,36 +597,6 @@ export const CommunityPage: React.FC = () => {
                             <span className="font-mono text-foreground">{category.count}</span>{' '}
                             {t('common.presets')}
                           </span>
-                        </div>
-
-                        {/* Prévia: 5 nomes, sem scroll aninhado. O card inteiro é o link —
-                        uma lista rolável aqui dentro competia com ele e cada linha
-                        tinha hover state sem ser clicável. */}
-                        <div className="space-y-2 pt-4 border-t border-border w-full">
-                          {category.presets.length > 0 ? (
-                            <>
-                              {category.presets.slice(0, 5).map((preset: any, index: number) => (
-                                <div
-                                  key={`${category.type}-${preset.id || preset._id || index}`}
-                                  className="flex items-center gap-3 py-1"
-                                >
-                                  <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground shrink-0" />
-                                  <p className="text-xs text-muted-foreground truncate text-left">
-                                    {preset.name}
-                                  </p>
-                                </div>
-                              ))}
-                              {category.presets.length > 5 && (
-                                <p className="text-xs text-muted-foreground/70 pt-1 text-left">
-                                  +{category.presets.length - 5}
-                                </p>
-                              )}
-                            </>
-                          ) : (
-                            <p className="text-xs text-muted-foreground text-left">
-                              {t('community.vazio')}
-                            </p>
-                          )}
                         </div>
                       </Link>
                     </GlassPanel>

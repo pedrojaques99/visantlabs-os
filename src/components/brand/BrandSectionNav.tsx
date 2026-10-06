@@ -55,7 +55,7 @@ export const BrandSectionNav: React.FC<BrandSectionNavProps> = ({
           : 'text-[var(--brand-text)]/60 hover:text-[var(--brand-text)] hover:bg-[var(--brand-text)]/5'
       )}
     >
-      {tab.label}
+      {t(tab.labelKey)}
     </button>
   );
 
@@ -173,7 +173,7 @@ export const BrandSectionNav: React.FC<BrandSectionNavProps> = ({
                 activeTab === tab.id ? 'h-6 bg-[var(--accent)]' : 'bg-current/30'
               )}
             />
-            <span className="text-xs font-medium">{tab.label}</span>
+            <span className="text-xs font-medium">{t(tab.labelKey)}</span>
           </button>
         ))}
       </nav>
