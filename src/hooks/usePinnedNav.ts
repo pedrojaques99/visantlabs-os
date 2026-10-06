@@ -1,4 +1,5 @@
-import { useSyncExternalStore, useCallback } from 'react';
+import { useSyncExternalStore, useCallback, useMemo } from 'react';
+import { isAppHidden } from '@/config/hiddenApps';
 
 /**
  * Itens fixados ("starred", estilo Figma) que o usuário fixa no rail para
@@ -63,7 +64,12 @@ const getSnapshot = () => cache;
 const getServerSnapshot = (): PinnedItem[] => [];
 
 export function usePinnedNav() {
-  const items = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const all = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  // App fixado que virou escondido some do rail/palette (o fixado fica guardado).
+  const items = useMemo(
+    () => all.filter((i) => !(i.type === 'app' && isAppHidden({ id: i.id, to: i.to }))),
+    [all]
+  );
 
   const isPinned = useCallback(
     (type: PinnedItem['type'], id: string) => items.some((i) => same(i, type, id)),
