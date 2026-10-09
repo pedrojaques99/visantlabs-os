@@ -62,7 +62,7 @@ const EXPORTER_ENTRY: AppConfig = {
   appId: 'vsn-exporter',
   name: 'Visant Exporter',
   description: 'Export workspace assets as a structured zip',
-  link: '/vsn-exporter.ps1',
+  link: '/vsn-exporter.zip',
   badge: 'DOWNLOAD',
   badgeVariant: 'free',
   category: 'tools',
@@ -218,8 +218,8 @@ const useLauncherApps = (): LauncherAppsResult => {
       recordLastUsed(app.appId);
       if (app.appId === 'vsn-exporter') {
         const a = document.createElement('a');
-        a.href = '/vsn-exporter.ps1';
-        a.download = 'vsn-exporter.ps1';
+        a.href = '/vsn-exporter.zip';
+        a.download = 'vsn-exporter.zip';
         a.click();
         return;
       }
