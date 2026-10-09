@@ -308,7 +308,7 @@
     "vitest": "^4.1.0"
   },
   "overrides": {
-    "ip-address": ">=10.2.0",
+    "ip-address": ">=10.7.2",
     "lodash": ">=4.17.24",
     "phin": ">=3.7.1",
     "hono": ">=4.12.25",
