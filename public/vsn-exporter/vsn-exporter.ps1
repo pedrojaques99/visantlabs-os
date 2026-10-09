@@ -23,6 +23,8 @@ $script:OrganizedDirs = @('Avatar', 'Transparentes', 'Vetor', 'PNG', 'JPG_Export
 # Repo root resolves from public/vsn-exporter/ -> ../../ . Falls back to script dir if standalone.
 $script:RepoRoot = try { (Resolve-Path (Join-Path $PSScriptRoot "..\..") -ErrorAction Stop).Path } catch { $PSScriptRoot }
 $script:ScriptsDir = Join-Path $script:RepoRoot "scripts"
+# Standalone (vsn-exporter.zip): the helper scripts ship in .\scripts next to this file.
+if (Test-Path (Join-Path $PSScriptRoot "scripts")) { $script:ScriptsDir = Join-Path $PSScriptRoot "scripts" }
 
 # --- MODULES ---
 # Dot-source direto: $modPath como variavel ja lida com espaco e acento no caminho.

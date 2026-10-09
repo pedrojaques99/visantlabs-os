@@ -184,3 +184,6 @@ ZCursorvisantlabs-os.env
 
 # VSN Exporter: .reg local com caminhos absolutos da maquina (nao versionar)
 public/vsn-exporter/*.local.reg
+
+# gerado no prebuild por scripts/pack-vsn-exporter.mjs
+public/vsn-exporter.zip

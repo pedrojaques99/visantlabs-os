@@ -40,19 +40,20 @@ O exporter encontra essas ferramentas sozinho (PATH ou caminhos padrão do winge
 
 ## 2. Baixar
 
-**Importante:** baixe a **pasta inteira**, não só o `vsn-exporter.ps1`. O script carrega os módulos de `lib/` ao lado dele — um arquivo solto não funciona.
-
-- **Via Git:** `git clone` do repo e use `public/vsn-exporter/`, ou
-- **Via web:** baixe `vsn-exporter.ps1` **+** a pasta `lib/` mantendo a estrutura:
+Baixe **[visantlabs.com/vsn-exporter.zip](https://visantlabs.com/vsn-exporter.zip)** (ou o botão Visant Exporter na home) e descompacte onde quiser. Vem tudo junto:
 
 ```
 vsn-exporter/
 ├─ vsn-exporter.ps1
 ├─ vsn-context-menu.reg   (opcional, integração com botão direito)
-└─ lib/
-   ├─ log.ps1  tools.ps1  organize.ps1
-   ├─ image.ps1  pdf.ps1  delivery.ps1
+├─ lib/
+│  ├─ log.ps1  tools.ps1  organize.ps1
+│  ├─ image.ps1  pdf.ps1  delivery.ps1
+└─ scripts/               (comprimir PDF/JPG, PDF de gráfica, arte final CMYK)
 ```
+
+Não separe os arquivos: o `vsn-exporter.ps1` carrega `lib/` e `scripts/` ao lado dele, e um arquivo solto não funciona.
+Pelo Git, a pasta é `public/vsn-exporter/` do repo (os `scripts/` ficam na raiz do repo).
 
 ---
 
