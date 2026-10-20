@@ -152,7 +152,7 @@ describe('OAuth 2.1 MCP Flow', () => {
       });
 
       expect(res.status).toBe(200);
-      expect(res.text).toContain('Sign in to continue');
+      expect(res.text).toContain('Sign in to connect');
     });
 
     it('shows consent page when user is authenticated', async () => {
@@ -181,7 +181,7 @@ describe('OAuth 2.1 MCP Flow', () => {
 
       expect(res.status).toBe(200);
       expect(res.text).toContain('Claude Code');
-      expect(res.text).toContain('Approve');
+      expect(res.text).toContain('value="approve"');
       expect(res.text).toContain('Deny');
     });
 

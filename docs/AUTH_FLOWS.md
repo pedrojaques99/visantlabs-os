@@ -82,6 +82,17 @@ nunca existiu.
 resposta passaria a trazer `sessionId` e o callback responderia HTML em vez de
 redirecionar.
 
+### Redirect de volta pras telas de OAuth (`return_to`)
+
+As telas de login de `/oauth/authorize` e `/oauth/device` são servidas pela
+própria API, então "Continuar com Google" nelas é redirect, não popup:
+`GET /api/auth/google?return_to=<caminho>` guarda o caminho numa sessão
+(`state=return:<id>`) e o callback redireciona pra `API_BASE_URL + caminho`
+com `&token=…`, ou com `&login_error=google` se o Google falhar. O `return_to`
+é **só caminho**, só `/oauth/authorize` ou `/oauth/device`; host, `//` ou
+outro caminho devolvem 400 (`oauthReturnPath` em `auth.ts`). É isso que impede
+open redirect.
+
 `GET /api/auth/google/link` (autenticado) é o mesmo desenho pra vincular Google a
 uma conta existente; usa `state=link:<userId>`.
 
@@ -109,4 +120,5 @@ acima, nenhum repo tem código de OAuth — os outros acertos eram só documenta
 | Origens e cópia da página de retorno       | `server/lib/oauthPopupPage.ts`          |
 | Rotas Google (start, callback, poll, link) | `server/routes/auth.ts`                 |
 | OAuth 2.1 / device flow                    | `server/routes/oauth.ts`                |
-| Testes do fluxo popup                      | `tests/integration/routes/auth.test.ts` |
+| Telas do OAuth e do popup (HTML, cópia)    | `server/routes/oauth-pages.ts`          |
+| Testes do fluxo popup e do `return_to`     | `tests/integration/routes/auth.test.ts` |
