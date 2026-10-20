@@ -11,8 +11,9 @@ let getTokenOverride: Error | null = null;
 
 vi.mock('google-auth-library', () => {
   class MockOAuth2Client {
-    generateAuthUrl() {
-      return 'https://accounts.google.com/mock-auth-url';
+    generateAuthUrl(opts?: { state?: string }) {
+      const state = opts?.state ? `?state=${encodeURIComponent(opts.state)}` : '';
+      return `https://accounts.google.com/mock-auth-url${state}`;
     }
     async getToken(_code: string) {
       if (getTokenOverride) throw getTokenOverride;
@@ -199,6 +200,66 @@ describe('popup OAuth flow (source + poll)', () => {
     const agent = await request();
     const res = await agent.get('/api/auth/google/poll/does-not-exist');
     expect(res.body.status).toBe('expired');
+  });
+});
+
+// Login com Google a partir das telas de OAuth: redirect de volta, sem popup.
+describe('Google sign-in from the OAuth pages (return_to)', () => {
+  const stateOf = (authUrl: string) => new URL(authUrl).searchParams.get('state')!;
+
+  it('rejects any return_to that is not an OAuth path on the API', async () => {
+    const agent = await request();
+    for (const bad of [
+      'https://evil.example/oauth/authorize',
+      '//evil.example/oauth/authorize',
+      '/api/auth/me',
+      'oauth/authorize',
+    ]) {
+      const res = await agent.get('/api/auth/google').query({ return_to: bad });
+      expect(res.status, bad).toBe(400);
+    }
+  });
+
+  it('sends the browser back to the authorize page with the token', async () => {
+    const agent = await request();
+    const start = await agent
+      .get('/api/auth/google')
+      .query({ return_to: '/oauth/authorize?client_id=abc&state=xyz&token=stale' });
+    expect(start.status).toBe(200);
+    expect(start.body.sessionId).toBeUndefined();
+
+    const cb = await agent
+      .get('/api/auth/google/callback')
+      .query({ code: 'mock-code', state: stateOf(start.body.authUrl) });
+
+    expect(cb.status).toBe(302);
+    const back = new URL(cb.headers.location);
+    expect(back.pathname).toBe('/oauth/authorize');
+    expect(back.searchParams.get('client_id')).toBe('abc');
+    expect(back.searchParams.get('state')).toBe('xyz');
+    expect(back.searchParams.get('token')).not.toBe('stale');
+    expect(back.searchParams.get('token')).toBeTypeOf('string');
+  });
+
+  it('returns to the device page with login_error when Google fails', async () => {
+    const agent = await request();
+    const start = await agent
+      .get('/api/auth/google')
+      .query({ return_to: '/oauth/device?code=ABCD-1234' });
+    getTokenOverride = new Error('boom');
+    try {
+      const cb = await agent
+        .get('/api/auth/google/callback')
+        .query({ code: 'bad', state: stateOf(start.body.authUrl) });
+      expect(cb.status).toBe(302);
+      const back = new URL(cb.headers.location);
+      expect(back.pathname).toBe('/oauth/device');
+      expect(back.searchParams.get('code')).toBe('ABCD-1234');
+      expect(back.searchParams.get('login_error')).toBe('google');
+      expect(back.searchParams.get('token')).toBeNull();
+    } finally {
+      getTokenOverride = null;
+    }
   });
 });
 

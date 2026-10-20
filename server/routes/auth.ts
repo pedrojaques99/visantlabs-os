@@ -35,7 +35,7 @@ import {
 import { isValidEmail } from '../utils/validation.js';
 import { bruteForceGuard } from '../middleware/bruteForceGuard.js';
 import crypto from 'crypto';
-import { FRONTEND_BASE_URL, CLUB_BASE_URL } from '../lib/mcp-constants.js';
+import { API_BASE_URL, FRONTEND_BASE_URL, CLUB_BASE_URL } from '../lib/mcp-constants.js';
 import { FREE_MONTHLY_CREDITS } from '../lib/credits.js';
 import { toEntitlements } from '../lib/entitlements.js';
 import { resolveOnboardingPersona, PRIVILEGED_USER_CATEGORIES } from '../lib/onboardingPersona.js';
@@ -62,8 +62,35 @@ const getFrontendUrl = () => FRONTEND_BASE_URL.replace(/\/+$/, '');
 // `source` é o que a página de retorno usa pra saber pra onde mandar o usuário voltar.
 const pluginOAuthSessions = new Map<
   string,
-  { token?: string; error?: string; source?: string; createdAt: number }
+  { token?: string; error?: string; source?: string; returnTo?: string; createdAt: number }
 >();
+
+/**
+ * Login com Google a partir das telas de OAuth (/oauth/authorize, /oauth/device).
+ * Elas são servidas pela própria API, então o callback do Google pode mandar o
+ * navegador de volta com redirect em vez de popup + poll. O destino é só CAMINHO
+ * (nunca host) e só desses dois prefixos, colado no API_BASE_URL: não tem como
+ * virar open redirect.
+ */
+function oauthReturnPath(value: unknown): string | null {
+  if (typeof value !== 'string' || !value.startsWith('/')) return null;
+  try {
+    const u = new URL(value, API_BASE_URL);
+    if (u.origin !== new URL(API_BASE_URL).origin) return null;
+    if (u.pathname !== '/oauth/authorize' && u.pathname !== '/oauth/device') return null;
+    u.searchParams.delete('token');
+    u.searchParams.delete('login_error');
+    return `${u.pathname}${u.search}`;
+  } catch {
+    return null;
+  }
+}
+
+function oauthReturnUrl(path: string, extra: Record<string, string>): string {
+  const u = new URL(path, API_BASE_URL);
+  for (const [k, v] of Object.entries(extra)) u.searchParams.set(k, v);
+  return u.toString();
+}
 const PLUGIN_SESSION_TTL = 5 * 60 * 1000; // 5 minutes
 
 function cleanExpiredSessions() {
@@ -346,6 +373,11 @@ router.get('/google', oauthRateLimiter, (req, res) => {
 
     const source = req.query.source as string | undefined;
     const referralCode = req.query.ref as string | undefined;
+    const returnTo = oauthReturnPath(req.query.return_to);
+
+    if (req.query.return_to !== undefined && !returnTo) {
+      return res.status(400).json({ error: 'Invalid return_to' });
+    }
 
     let state: string | undefined;
     let sessionId: string | undefined;
@@ -365,7 +397,14 @@ router.get('/google', oauthRateLimiter, (req, res) => {
 
     // Fluxo popup + poll: qualquer origem conhecida (plugin, club, cli…).
     // O prefixo do state segue `plugin:` por compatibilidade com builds antigos.
-    if (isPopupOAuthSource(source)) {
+    if (returnTo) {
+      // Volta pra tela de OAuth que pediu o login (ver oauthReturnPath).
+      cleanExpiredSessions();
+      sessionId = crypto.randomBytes(16).toString('hex');
+      pluginOAuthSessions.set(sessionId, { createdAt: Date.now(), returnTo });
+      state = `return:${sessionId}`;
+      sessionId = undefined;
+    } else if (isPopupOAuthSource(source)) {
       cleanExpiredSessions();
       sessionId = crypto.randomBytes(16).toString('hex');
       pluginOAuthSessions.set(sessionId, { createdAt: Date.now(), source });
@@ -451,7 +490,10 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
     const stateStr = state as string | undefined;
     const referralCode = stateStr?.startsWith('ref:')
       ? stateStr.substring(4)
-      : stateStr && !stateStr.startsWith('plugin:') && !stateStr.startsWith('link:')
+      : stateStr &&
+          !stateStr.startsWith('plugin:') &&
+          !stateStr.startsWith('link:') &&
+          !stateStr.startsWith('return:')
         ? stateStr
         : undefined;
 
@@ -518,6 +560,12 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
       return res.send(renderPopupSuccessPage(session?.source));
     }
 
+    if (typeof state === 'string' && state.startsWith('return:')) {
+      const session = pluginOAuthSessions.get(state.substring(7));
+      pluginOAuthSessions.delete(state.substring(7));
+      if (session?.returnTo) return res.redirect(oauthReturnUrl(session.returnTo, { token }));
+    }
+
     // Redirect to frontend with token
     res.redirect(`${getFrontendUrl()}/auth?token=${token}`);
   } catch (error) {
@@ -531,6 +579,15 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
       const session = pluginOAuthSessions.get(sessionId);
       if (session) session.error = 'oauth_failed';
       return res.send(renderPopupErrorPage(session?.source));
+    }
+
+    const failedState = req.query.state;
+    if (typeof failedState === 'string' && failedState.startsWith('return:')) {
+      const session = pluginOAuthSessions.get(failedState.substring(7));
+      pluginOAuthSessions.delete(failedState.substring(7));
+      if (session?.returnTo) {
+        return res.redirect(oauthReturnUrl(session.returnTo, { login_error: 'google' }));
+      }
     }
 
     res.redirect(`${getFrontendUrl()}/auth?error=oauth_failed`);

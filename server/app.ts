@@ -182,6 +182,8 @@ export function createApp() {
             // ChatGPT connector OAuth redirects the consent form to chatgpt.com.
             'https://chatgpt.com',
             'https://chat.openai.com',
+            // Vitrine @visant/ui (Brand Connect) receives the code at /callback.
+            'https://ui.visantlabs.com',
             'http://localhost:*',
           ],
           objectSrc: ["'none'"],

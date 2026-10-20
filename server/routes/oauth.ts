@@ -13,6 +13,17 @@ import {
   DEVICE_CODE_GRANT,
   OOB_REDIRECT_URI,
 } from '../lib/mcp-constants.js';
+import {
+  langFrom,
+  buildLoginPage,
+  buildConsentPage,
+  buildDeviceLoginPage,
+  buildDeviceCodeEntryPage,
+  buildDeviceConsentPage,
+  buildDonePage,
+  buildOobCodePage,
+  buildErrorPage,
+} from './oauth-pages.js';
 
 const router = express.Router();
 
@@ -23,6 +34,16 @@ const DEVICE_CODE_TTL_SECONDS = 600;
 const DEVICE_POLL_INTERVAL = 5;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+/** E-mail da conta pra tela de consentimento. Só informativo: falhou, a tela segue sem ele. */
+async function emailOf(userId: string): Promise<string | null> {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+    return user?.email ?? null;
+  } catch {
+    return null;
+  }
+}
 
 function isLocalhostUri(uri: string): boolean {
   try {
@@ -254,6 +275,7 @@ router.get('/oauth/authorize', async (req, res) => {
     response_type,
     scope,
   } = req.query as Record<string, string>;
+  const lang = langFrom(req.headers['accept-language']);
 
   // Validate required params — state is optional for OOB (no redirect to CSRF-protect)
   const isOobRequest = redirect_uri === OOB_REDIRECT_URI;
@@ -264,7 +286,7 @@ router.get('/oauth/authorize', async (req, res) => {
     !state && !isOobRequest && 'state',
   ].filter(Boolean);
   if (missingParams.length > 0) {
-    return res.status(400).send(`Missing required parameters: ${missingParams.join(', ')}`);
+    return res.status(400).send(buildErrorPage({ lang, error: 'missing' }));
   }
 
   if (code_challenge_method && code_challenge_method !== 'S256') {
@@ -279,7 +301,7 @@ router.get('/oauth/authorize', async (req, res) => {
     // Lookup client — auto-register if client_id is a metadata URL (RFC 7591 §2)
     const oauthClient = await resolveOrRegisterClient(client_id);
     if (!oauthClient) {
-      return res.status(400).send('Unknown client_id');
+      return res.status(400).send(buildErrorPage({ lang, error: 'unknownClient' }));
     }
 
     // Validate redirect_uri — OOB is always allowed for agents without a local server
@@ -289,7 +311,7 @@ router.get('/oauth/authorize', async (req, res) => {
         redirectUriMatches(redirect_uri, stored)
       );
       if (!uriMatch) {
-        return res.status(400).send('redirect_uri not registered for this client');
+        return res.status(400).send(buildErrorPage({ lang, error: 'badRedirect' }));
       }
     }
 
@@ -320,42 +342,59 @@ router.get('/oauth/authorize', async (req, res) => {
       : [...MCP_SCOPES];
     const resolvedScopes = requestedScopes.length > 0 ? requestedScopes : [...MCP_SCOPES];
 
+    // Os mesmos parâmetros servem pro login voltar aqui e pro "trocar de conta".
+    const authorizeUrl = `${BASE_URL}/oauth/authorize?${new URLSearchParams({
+      client_id,
+      redirect_uri,
+      code_challenge,
+      code_challenge_method: code_challenge_method || 'S256',
+      state: state || '',
+      response_type: response_type || 'code',
+      resource: resource || MCP_RESOURCE,
+      scope: resolvedScopes.join(' '),
+    }).toString()}`;
+
     if (!userId) {
       // Serve standalone login page (no SPA dependency) so browser-based OAuth flows
       // and agents that open a browser window can complete authentication.
       return res.send(
         buildLoginPage({
+          lang,
+          apiBase: API_BASE_URL,
           clientName: oauthClient.clientName,
-          clientId: client_id,
-          redirectUri: redirect_uri,
-          codeChallenge: code_challenge,
-          codeChallengeMethod: code_challenge_method || 'S256',
-          state: state || '',
-          resource: resource || MCP_RESOURCE,
-          responseType: response_type || 'code',
-          scopes: resolvedScopes.join(' '),
+          authorizeUrl,
+          googleFailed: req.query.login_error === 'google',
         })
       );
     }
 
     // User is logged in — show consent page
-    const clientName = oauthClient.clientName;
-    const consentHtml = buildConsentPage({
-      clientName,
-      clientId: client_id,
-      redirectUri: redirect_uri,
-      codeChallenge: code_challenge,
-      codeChallengeMethod: code_challenge_method || 'S256',
-      state: state || '',
-      resource: resource || MCP_RESOURCE,
-      scopes: resolvedScopes.join(' '),
-      token: rawToken,
-    });
+    const accountEmail = await emailOf(userId);
 
-    return res.send(consentHtml);
+    return res.send(
+      buildConsentPage({
+        lang,
+        action: `${BASE_URL}/oauth/authorize`,
+        clientName: oauthClient.clientName,
+        accountEmail,
+        returnHost: isOob ? null : new URL(redirect_uri).host,
+        switchAccountUrl: authorizeUrl,
+        scopes: resolvedScopes.join(' '),
+        hidden: {
+          client_id,
+          redirect_uri,
+          code_challenge,
+          code_challenge_method: code_challenge_method || 'S256',
+          state: state || '',
+          resource: resource || MCP_RESOURCE,
+          scopes: resolvedScopes.join(' '),
+          token: rawToken || '',
+        },
+      })
+    );
   } catch (err) {
     console.error('[OAuth] GET /oauth/authorize error', err);
-    return res.status(500).send('Internal server error');
+    return res.status(500).send(buildErrorPage({ lang, error: 'server' }));
   }
 });
 
@@ -372,11 +411,12 @@ router.post('/oauth/authorize', express.urlencoded({ extended: false }), async (
     state,
     action,
   } = req.body as Record<string, string>;
+  const lang = langFrom(req.headers['accept-language']);
 
   const isOob = redirect_uri === OOB_REDIRECT_URI;
 
   if (!client_id || !redirect_uri || !code_challenge || (!state && !isOob) || !action) {
-    return res.status(400).send('Missing required parameters');
+    return res.status(400).send(buildErrorPage({ lang, error: 'missing' }));
   }
 
   try {
@@ -390,7 +430,7 @@ router.post('/oauth/authorize', express.urlencoded({ extended: false }), async (
     // RFC 6749 §3.1.2.4 é explícito: redirect_uri inválido NÃO redireciona.
     const oauthClient = await resolveOrRegisterClient(client_id);
     if (!oauthClient) {
-      return res.status(400).send('Unknown client_id');
+      return res.status(400).send(buildErrorPage({ lang, error: 'unknownClient' }));
     }
 
     if (!isOob) {
@@ -398,13 +438,13 @@ router.post('/oauth/authorize', express.urlencoded({ extended: false }), async (
         redirectUriMatches(redirect_uri, stored)
       );
       if (!uriMatch) {
-        return res.status(400).send('redirect_uri not registered');
+        return res.status(400).send(buildErrorPage({ lang, error: 'badRedirect' }));
       }
     }
 
     if (action === 'deny') {
       if (isOob) {
-        return res.send(buildOobPage({ code: null, error: 'access_denied' }));
+        return res.send(buildDonePage({ lang, approved: false }));
       }
       const url = new URL(redirect_uri);
       url.searchParams.set('error', 'access_denied');
@@ -427,7 +467,7 @@ router.post('/oauth/authorize', express.urlencoded({ extended: false }), async (
     }
 
     if (!userId) {
-      return res.status(401).send('Session expired. Please log in again.');
+      return res.status(401).send(buildErrorPage({ lang, error: 'session' }));
     }
 
     // Generate auth code
@@ -448,7 +488,7 @@ router.post('/oauth/authorize', express.urlencoded({ extended: false }), async (
     });
 
     if (isOob) {
-      return res.send(buildOobPage({ code, error: null }));
+      return res.send(buildOobCodePage({ lang, code }));
     }
 
     const url = new URL(redirect_uri);
@@ -457,7 +497,7 @@ router.post('/oauth/authorize', express.urlencoded({ extended: false }), async (
     return res.redirect(url.toString());
   } catch (err) {
     console.error('[OAuth] POST /oauth/authorize error', err);
-    return res.status(500).send('Internal server error');
+    return res.status(500).send(buildErrorPage({ lang, error: 'server' }));
   }
 });
 
@@ -683,6 +723,7 @@ router.post('/oauth/device/code', async (req, res) => {
 });
 
 router.get('/oauth/device', async (req, res) => {
+  const lang = langFrom(req.headers['accept-language']);
   const prefillCode = (req.query.code as string) || '';
   const tokenParam = req.query.token as string | undefined;
   const bearerHeader = req.headers.authorization?.replace(/^Bearer\s+/i, '');
@@ -697,11 +738,20 @@ router.get('/oauth/device', async (req, res) => {
   }
 
   if (!userId) {
-    return res.send(buildDeviceLoginPage(prefillCode));
+    return res.send(
+      buildDeviceLoginPage({
+        lang,
+        apiBase: API_BASE_URL,
+        prefillCode,
+        googleFailed: req.query.login_error === 'google',
+      })
+    );
   }
 
   if (!prefillCode) {
-    return res.send(buildDeviceCodeEntryPage(rawToken || ''));
+    return res.send(
+      buildDeviceCodeEntryPage({ lang, apiBase: API_BASE_URL, token: rawToken || '' })
+    );
   }
 
   // User is logged in and has a code — verify and show consent
@@ -710,15 +760,26 @@ router.get('/oauth/device', async (req, res) => {
     const record = await col.findOne({ userCode: prefillCode.toUpperCase(), status: 'pending' });
 
     if (!record) {
-      return res.send(buildDeviceErrorPage('Invalid or expired code. Please try again.'));
+      return res.send(
+        buildErrorPage({
+          lang,
+          error: 'deviceInvalid',
+          retryUrl: `${BASE_URL}/oauth/device?token=${encodeURIComponent(rawToken || '')}`,
+        })
+      );
     }
 
     if (new Date() > record.expiresAt) {
-      return res.send(buildDeviceErrorPage('This code has expired. Ask your agent for a new one.'));
+      return res.send(buildErrorPage({ lang, error: 'deviceExpired' }));
     }
+
+    const accountEmail = await emailOf(userId);
 
     return res.send(
       buildDeviceConsentPage({
+        lang,
+        action: `${BASE_URL}/oauth/device`,
+        accountEmail,
         clientName: record.clientName,
         userCode: record.userCode,
         scopes: record.scopes.join(' '),
@@ -727,15 +788,16 @@ router.get('/oauth/device', async (req, res) => {
     );
   } catch (err) {
     console.error('[OAuth] device page error', err);
-    return res.status(500).send('Internal server error');
+    return res.status(500).send(buildErrorPage({ lang, error: 'server' }));
   }
 });
 
 router.post('/oauth/device', express.urlencoded({ extended: false }), async (req, res) => {
   const { user_code, action, token } = req.body as Record<string, string>;
+  const lang = langFrom(req.headers['accept-language']);
 
   if (!user_code || !action) {
-    return res.status(400).send('Missing required parameters');
+    return res.status(400).send(buildErrorPage({ lang, error: 'missing' }));
   }
 
   let userId: string | null = null;
@@ -747,7 +809,13 @@ router.post('/oauth/device', express.urlencoded({ extended: false }), async (req
   }
 
   if (!userId) {
-    return res.status(401).send('Session expired. Please log in again.');
+    return res.status(401).send(
+      buildErrorPage({
+        lang,
+        error: 'session',
+        retryUrl: `${BASE_URL}/oauth/device?code=${encodeURIComponent(user_code)}`,
+      })
+    );
   }
 
   try {
@@ -755,12 +823,12 @@ router.post('/oauth/device', express.urlencoded({ extended: false }), async (req
     const record = await col.findOne({ userCode: user_code.toUpperCase(), status: 'pending' });
 
     if (!record || new Date() > record.expiresAt) {
-      return res.send(buildDeviceErrorPage('This code has expired or is invalid.'));
+      return res.send(buildErrorPage({ lang, error: 'deviceInvalid' }));
     }
 
     if (action === 'deny') {
       await col.updateOne({ userCode: user_code.toUpperCase() }, { $set: { status: 'denied' } });
-      return res.send(buildDeviceDonePage(false));
+      return res.send(buildDonePage({ lang, approved: false }));
     }
 
     await col.updateOne(
@@ -768,10 +836,10 @@ router.post('/oauth/device', express.urlencoded({ extended: false }), async (req
       { $set: { status: 'approved', userId } }
     );
 
-    return res.send(buildDeviceDonePage(true));
+    return res.send(buildDonePage({ lang, approved: true }));
   } catch (err) {
     console.error('[OAuth] device approval error', err);
-    return res.status(500).send('Internal server error');
+    return res.status(500).send(buildErrorPage({ lang, error: 'server' }));
   }
 });
 
@@ -885,252 +953,6 @@ router.post('/oauth/revoke', async (req, res) => {
 
 // ── Cleanup expired tokens (called periodically or on-demand) ─────────────
 
-// ── Device Flow HTML pages ───────────────────────────────────────────────────
-
-const devicePageSharedStyles = `
-  .code-input-group { margin: 1.5rem 0; }
-  .code-input {
-    width: 100%; padding: 0.75rem 1rem; border-radius: 8px;
-    border: 1px solid #27272a; background: #18181b; color: #fafafa;
-    font-family: 'SF Mono', 'Fira Code', monospace; font-size: 1.1rem;
-    text-align: center; letter-spacing: 0.25em; text-transform: uppercase;
-    outline: none; transition: border-color 0.15s;
-  }
-  .code-input:focus { border-color: #52ddeb; }
-  .code-input::placeholder { color: #3f3f46; letter-spacing: 0.1em; text-transform: none; font-size: 0.85rem; }
-  .status-icon {
-    width: 48px; height: 48px; border-radius: 50%;
-    display: inline-flex; align-items: center; justify-content: center;
-    margin-bottom: 1.5rem; font-size: 1.25rem;
-  }
-  .status-icon.success { background: rgba(82, 221, 235, 0.1); color: #52ddeb; }
-  .status-icon.denied { background: rgba(248, 113, 113, 0.1); color: #f87171; }
-  .status-icon.error { background: rgba(251, 191, 36, 0.1); color: #fbbf24; }
-`;
-
-function buildDeviceLoginPage(prefillCode: string): string {
-  const esc = (s: string) =>
-    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-  const apiBase = API_BASE_URL;
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Connect Device | Visant Labs</title>
-  <style>${oauthPageStyles()}${devicePageSharedStyles}</style>
-</head>
-<body>
-  <div class="card" style="text-align:center;">
-    <div class="brand">VISANT LABS&reg;</div>
-    <h1>Connect your agent</h1>
-    <p class="subtitle">Sign in to authorize the device code shown by your agent.</p>
-    <div class="divider"></div>
-    <div class="code-input-group">
-      <input class="code-input" id="deviceCode" type="text" maxlength="9" placeholder="ABCD-1234" value="${esc(
-        prefillCode
-      )}" />
-    </div>
-    <div class="divider"></div>
-    <div class="field">
-      <label>Email</label>
-      <input type="email" id="email" placeholder="you@example.com" />
-    </div>
-    <div class="field">
-      <label>Password</label>
-      <input type="password" id="password" />
-    </div>
-    <button class="btn btn-primary" id="submitBtn">Sign in & continue</button>
-    <div class="error" id="error"></div>
-    <div class="footer" style="margin-top:1.5rem;">
-      <a href="${apiBase}/oauth/device">Having trouble?</a>
-    </div>
-  </div>
-  <script>
-    document.getElementById('submitBtn').addEventListener('click', async function() {
-      var btn = this;
-      var errorEl = document.getElementById('error');
-      var code = document.getElementById('deviceCode').value.trim();
-      if (!code) { errorEl.textContent = 'Enter the code from your agent'; errorEl.style.display = 'block'; return; }
-      btn.disabled = true; btn.textContent = 'Signing in...'; errorEl.style.display = 'none';
-      try {
-        var res = await fetch('${apiBase}/api/auth/signin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: document.getElementById('email').value, password: document.getElementById('password').value }),
-        });
-        var data = await res.json();
-        if (!res.ok || !data.token) throw new Error(data.message || data.error || 'Invalid credentials');
-        window.location.href = '${apiBase}/oauth/device?code=' + encodeURIComponent(code) + '&token=' + encodeURIComponent(data.token);
-      } catch (err) {
-        errorEl.textContent = err.message; errorEl.style.display = 'block';
-        btn.disabled = false; btn.textContent = 'Sign in & continue';
-      }
-    });
-    document.getElementById('deviceCode').addEventListener('input', function() {
-      var v = this.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-      if (v.length > 4) v = v.slice(0, 4) + '-' + v.slice(4, 8);
-      this.value = v;
-    });
-  </script>
-</body>
-</html>`;
-}
-
-function buildDeviceCodeEntryPage(token: string): string {
-  const esc = (s: string) =>
-    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  const apiBase = API_BASE_URL;
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Enter Code | Visant Labs</title>
-  <style>${oauthPageStyles()}${devicePageSharedStyles}</style>
-</head>
-<body>
-  <div class="card" style="text-align:center;">
-    <div class="brand">VISANT LABS&reg;</div>
-    <h1>Enter device code</h1>
-    <p class="subtitle">Enter the code displayed by your agent to authorize access.</p>
-    <div class="code-input-group">
-      <input class="code-input" id="deviceCode" type="text" maxlength="9" placeholder="ABCD-1234" autofocus />
-    </div>
-    <button class="btn btn-primary" id="submitBtn">Continue</button>
-    <div class="error" id="error"></div>
-  </div>
-  <script>
-    document.getElementById('deviceCode').addEventListener('input', function() {
-      var v = this.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-      if (v.length > 4) v = v.slice(0, 4) + '-' + v.slice(4, 8);
-      this.value = v;
-    });
-    document.getElementById('submitBtn').addEventListener('click', function() {
-      var code = document.getElementById('deviceCode').value.trim();
-      if (!code) { document.getElementById('error').textContent = 'Enter the code from your agent'; document.getElementById('error').style.display = 'block'; return; }
-      window.location.href = '${apiBase}/oauth/device?code=' + encodeURIComponent(code) + '&token=' + encodeURIComponent('${esc(
-        token
-      )}');
-    });
-  </script>
-</body>
-</html>`;
-}
-
-function buildDeviceConsentPage(p: {
-  clientName: string;
-  userCode: string;
-  scopes: string;
-  token: string;
-}): string {
-  const esc = (s: string) =>
-    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Authorize | Visant Labs</title>
-  <style>${oauthPageStyles()}</style>
-</head>
-<body>
-  <div class="card">
-    <div class="brand">VISANT LABS&reg;</div>
-    <h1><span class="app-name">${esc(p.clientName)}</span> wants access</h1>
-    <p class="subtitle">This agent is requesting permission to access your Visant Labs account.</p>
-    <div class="divider"></div>
-    <div class="scopes">
-      ${
-        p.scopes.includes('read')
-          ? '<div class="scope-item"><span class="scope-dot"></span> Read your brand guidelines and projects</div>'
-          : ''
-      }
-      ${
-        p.scopes.includes('write')
-          ? '<div class="scope-item"><span class="scope-dot"></span> Write and update content on your behalf</div>'
-          : ''
-      }
-      ${
-        p.scopes.includes('generate')
-          ? '<div class="scope-item"><span class="scope-dot"></span> Generate images, mockups, and creatives</div>'
-          : ''
-      }
-    </div>
-    <div class="divider"></div>
-    <div class="actions">
-      <form method="POST" action="${BASE_URL}/oauth/device" style="flex:1;display:contents;">
-        <input type="hidden" name="user_code" value="${esc(p.userCode)}" />
-        <input type="hidden" name="token" value="${esc(p.token)}" />
-        <input type="hidden" name="action" value="deny" />
-        <button type="submit" class="btn btn-deny">Deny</button>
-      </form>
-      <form method="POST" action="${BASE_URL}/oauth/device" style="flex:1;display:contents;">
-        <input type="hidden" name="user_code" value="${esc(p.userCode)}" />
-        <input type="hidden" name="token" value="${esc(p.token)}" />
-        <input type="hidden" name="action" value="approve" />
-        <button type="submit" class="btn btn-approve">Approve</button>
-      </form>
-    </div>
-  </div>
-</body>
-</html>`;
-}
-
-function buildDeviceDonePage(approved: boolean): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${approved ? 'Connected' : 'Denied'} | Visant Labs</title>
-  <style>${oauthPageStyles()}${devicePageSharedStyles}</style>
-</head>
-<body>
-  <div class="card" style="text-align:center;">
-    <div class="brand">VISANT LABS&reg;</div>
-    <div class="status-icon ${approved ? 'success' : 'denied'}">${
-      approved ? '&#10003;' : '&#10005;'
-    }</div>
-    <h1>${approved ? 'Agent Connected' : 'Access Denied'}</h1>
-    <p class="subtitle">${
-      approved
-        ? 'Your agent is now connected. You can close this window and return to your conversation.'
-        : 'The authorization request was denied. You can close this window.'
-    }</p>
-  </div>
-</body>
-</html>`;
-}
-
-function buildDeviceErrorPage(message: string): string {
-  const esc = (s: string) =>
-    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Error | Visant Labs</title>
-  <style>${oauthPageStyles()}${devicePageSharedStyles}</style>
-</head>
-<body>
-  <div class="card" style="text-align:center;">
-    <div class="brand">VISANT LABS&reg;</div>
-    <div class="status-icon error">!</div>
-    <h1>Something went wrong</h1>
-    <p class="subtitle">${esc(message)}</p>
-    <a href="${BASE_URL}/oauth/device" class="btn btn-primary" style="display:inline-block;text-decoration:none;text-align:center;margin-top:1rem;">Try again</a>
-  </div>
-</body>
-</html>`;
-}
-
 async function cleanupExpiredOAuthData() {
   const now = new Date();
   const [codes, tokens] = await Promise.all([
@@ -1156,355 +978,6 @@ setInterval(cleanupExpiredOAuthData, 6 * 60 * 60 * 1000);
 cleanupExpiredOAuthData().catch((err) =>
   console.error('[OAuth] initial cleanup error:', err.message)
 );
-
-// ── Login HTML page (inline, no SPA dependency) ─────────────────────────────
-
-interface LoginPageParams {
-  clientName: string;
-  clientId: string;
-  redirectUri: string;
-  codeChallenge: string;
-  codeChallengeMethod: string;
-  state: string;
-  resource: string;
-  responseType: string;
-  scopes: string;
-}
-
-function oauthPageStyles(): string {
-  return `
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
-      background: #09090b;
-      color: #a1a1aa;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-    }
-    .card {
-      background: #09090b;
-      border: 1px solid #27272a;
-      border-radius: 16px;
-      padding: 2.5rem 2rem;
-      max-width: 400px;
-      width: 100%;
-    }
-    .brand {
-      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: #71717a;
-      margin-bottom: 2rem;
-    }
-    .divider { height: 1px; background: #27272a; margin: 1.5rem 0; }
-    h1 { font-size: 1.15rem; font-weight: 500; color: #fafafa; margin-bottom: 0.35rem; line-height: 1.4; }
-    .app-name { color: #fafafa; font-weight: 600; }
-    .subtitle { font-size: 0.85rem; color: #71717a; margin-bottom: 1.5rem; line-height: 1.5; }
-    .scopes { margin-bottom: 1.5rem; }
-    .scope-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 0; font-size: 0.85rem; color: #a1a1aa; }
-    .scope-dot { width: 4px; height: 4px; background: #52ddeb; border-radius: 50%; flex-shrink: 0; }
-    .actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
-    .btn {
-      flex: 1;
-      padding: 0.65rem 1rem;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      cursor: pointer;
-      border: none;
-      transition: all 0.15s;
-    }
-    .btn:hover { opacity: 0.85; }
-    .btn-approve { background: #52ddeb; color: #09090b; font-weight: 600; }
-    .btn-deny { background: transparent; color: #71717a; border: 1px solid #27272a; }
-    .btn-deny:hover { border-color: #3f3f46; color: #a1a1aa; }
-    .btn-primary { width: 100%; background: #52ddeb; color: #09090b; font-weight: 600; margin-top: 0.5rem; }
-    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-    .field { margin-bottom: 1rem; }
-    .field label { display: block; font-size: 0.75rem; font-weight: 500; color: #71717a; margin-bottom: 0.4rem; letter-spacing: 0.03em; }
-    .field input {
-      width: 100%;
-      padding: 0.6rem 0.75rem;
-      border-radius: 8px;
-      border: 1px solid #27272a;
-      background: #18181b;
-      color: #fafafa;
-      font-size: 0.85rem;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-    .field input:focus { border-color: #52ddeb; }
-    .field input::placeholder { color: #3f3f46; }
-    .error { color: #f87171; font-size: 0.8rem; margin-top: 0.75rem; display: none; }
-    .footer { text-align: center; margin-top: 1.5rem; font-size: 0.75rem; color: #3f3f46; }
-    .footer a { color: #52ddeb; text-decoration: none; }
-  `;
-}
-
-function buildOobPage(p: { code: string | null; error: string | null }): string {
-  const esc = (s: string) =>
-    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-  const oobStyles = `
-    .card { text-align: center; }
-    .status-icon {
-      width: 48px; height: 48px; border-radius: 50%;
-      display: inline-flex; align-items: center; justify-content: center;
-      margin-bottom: 1.5rem; font-size: 1.25rem;
-    }
-    .status-icon.success { background: rgba(82, 221, 235, 0.1); color: #52ddeb; }
-    .status-icon.denied { background: rgba(248, 113, 113, 0.1); color: #f87171; }
-    .code-container { margin: 1.5rem 0; }
-    .code-label {
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 0.65rem; font-weight: 500; letter-spacing: 0.1em;
-      text-transform: uppercase; color: #52ddeb; margin-bottom: 0.5rem;
-    }
-    .code-box {
-      background: #18181b; border: 1px solid #27272a; border-radius: 8px;
-      padding: 1rem 1.25rem; font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 0.8rem; word-break: break-all; color: #fafafa;
-      user-select: all; cursor: pointer; position: relative;
-      transition: border-color 0.15s;
-    }
-    .code-box:hover { border-color: #52ddeb; }
-    .copy-btn {
-      margin-top: 1rem; padding: 0.55rem 1.5rem; border-radius: 8px;
-      background: #52ddeb; color: #09090b; font-size: 0.8rem; font-weight: 600;
-      border: none; cursor: pointer; transition: opacity 0.15s;
-    }
-    .copy-btn:hover { opacity: 0.85; }
-    .copy-btn.copied { background: #27272a; color: #52ddeb; }
-    .hint {
-      color: #3f3f46; font-size: 0.7rem; margin-top: 1.5rem;
-      font-family: 'SF Mono', 'Fira Code', monospace; letter-spacing: 0.02em;
-    }
-  `;
-
-  if (p.error) {
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Access Denied | Visant Labs</title>
-  <style>${oauthPageStyles()}${oobStyles}</style>
-</head>
-<body>
-  <div class="card">
-    <div class="brand">VISANT LABS&reg;</div>
-    <div class="status-icon denied">&#10005;</div>
-    <h1>Access Denied</h1>
-    <p class="subtitle">The authorization request was denied. You can close this window.</p>
-  </div>
-</body>
-</html>`;
-  }
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Authorization Successful | Visant Labs</title>
-  <style>${oauthPageStyles()}${oobStyles}</style>
-</head>
-<body>
-  <div class="card">
-    <div class="brand">VISANT LABS&reg;</div>
-    <div class="status-icon success">&#10003;</div>
-    <h1>Authorization Successful</h1>
-    <p class="subtitle">Copy this code and paste it back into your agent to complete the connection.</p>
-    <div class="code-container">
-      <div class="code-label">Authorization Code</div>
-      <div class="code-box" id="code">${esc(p.code!)}</div>
-      <button class="copy-btn" id="copyBtn">Copy code</button>
-    </div>
-    <p class="hint">Expires in 10 minutes &middot; Close this window after pasting</p>
-  </div>
-  <script>
-    document.getElementById('copyBtn').addEventListener('click', function() {
-      var code = document.getElementById('code').textContent;
-      navigator.clipboard.writeText(code).then(function() {
-        var btn = document.getElementById('copyBtn');
-        btn.textContent = 'Copied';
-        btn.classList.add('copied');
-        setTimeout(function() { btn.textContent = 'Copy code'; btn.classList.remove('copied'); }, 2000);
-      });
-    });
-  </script>
-</body>
-</html>`;
-}
-
-function buildLoginPage(p: LoginPageParams): string {
-  const esc = (s: string) =>
-    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-  const apiBase = API_BASE_URL;
-  const authorizeParams = new URLSearchParams({
-    client_id: p.clientId,
-    redirect_uri: p.redirectUri,
-    code_challenge: p.codeChallenge,
-    code_challenge_method: p.codeChallengeMethod,
-    state: p.state,
-    response_type: p.responseType,
-    resource: p.resource,
-    scope: p.scopes,
-  }).toString();
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign in | Visant Labs</title>
-  <style>${oauthPageStyles()}</style>
-</head>
-<body>
-  <div class="card">
-    <div class="brand">VISANT LABS&reg;</div>
-    <h1>Sign in to continue</h1>
-    <p class="subtitle"><span class="app-name">${esc(
-      p.clientName
-    )}</span> wants to connect to your account.</p>
-
-    <form id="loginForm">
-      <div class="field">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required autocomplete="email" placeholder="name@company.com" autofocus />
-      </div>
-      <div class="field">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required autocomplete="current-password" />
-      </div>
-      <button type="submit" class="btn btn-primary" id="submitBtn">Sign in</button>
-      <div class="error" id="error"></div>
-    </form>
-    <div class="footer">
-      Don't have an account? <a href="https://visantlabs.com" target="_blank">Create one</a>
-    </div>
-  </div>
-  <script>
-    const form = document.getElementById('loginForm');
-    const errorEl = document.getElementById('error');
-    const btn = document.getElementById('submitBtn');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      errorEl.style.display = 'none';
-      btn.disabled = true;
-      btn.textContent = 'Signing in…';
-      try {
-        const res = await fetch('${esc(apiBase)}/api/auth/signin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: document.getElementById('email').value,
-            password: document.getElementById('password').value,
-          }),
-        });
-        const data = await res.json();
-        if (!res.ok || !data.token) {
-          throw new Error(data.message || data.error || 'Invalid credentials');
-        }
-        window.location.href = '${apiBase}/oauth/authorize?${authorizeParams}&token=' + encodeURIComponent(data.token);
-      } catch (err) {
-        errorEl.textContent = err.message;
-        errorEl.style.display = 'block';
-        btn.disabled = false;
-        btn.textContent = 'Sign in';
-      }
-    });
-  </script>
-</body>
-</html>`;
-}
-
-// ── Consent HTML page ─────────────────────────────────────────────────────────
-
-interface ConsentPageParams {
-  clientName: string;
-  clientId: string;
-  redirectUri: string;
-  codeChallenge: string;
-  codeChallengeMethod: string;
-  state: string;
-  resource: string;
-  scopes: string;
-  /** JWT passed through the consent form so POST can re-verify the session */
-  token?: string;
-}
-
-function buildConsentPage(p: ConsentPageParams): string {
-  const esc = (s: string) =>
-    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-  const hiddenFields = (action: string) => `
-        <input type="hidden" name="action" value="${action}" />
-        <input type="hidden" name="client_id" value="${esc(p.clientId)}" />
-        <input type="hidden" name="redirect_uri" value="${esc(p.redirectUri)}" />
-        <input type="hidden" name="code_challenge" value="${esc(p.codeChallenge)}" />
-        <input type="hidden" name="code_challenge_method" value="${esc(p.codeChallengeMethod)}" />
-        <input type="hidden" name="state" value="${esc(p.state)}" />
-        <input type="hidden" name="resource" value="${esc(p.resource)}" />
-        <input type="hidden" name="scopes" value="${esc(p.scopes)}" />
-        ${p.token ? `<input type="hidden" name="token" value="${esc(p.token)}" />` : ''}`;
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Authorize | Visant Labs</title>
-  <style>${oauthPageStyles()}</style>
-</head>
-<body>
-  <div class="card">
-    <div class="brand">VISANT LABS&reg;</div>
-    <h1><span class="app-name">${esc(p.clientName)}</span> wants access</h1>
-    <p class="subtitle">This application is requesting permission to access your Visant Labs account.</p>
-
-    <div class="divider"></div>
-
-    <div class="scopes">
-      ${
-        p.scopes.includes('read')
-          ? '<div class="scope-item"><span class="scope-dot"></span> Read your brand guidelines and projects</div>'
-          : ''
-      }
-      ${
-        p.scopes.includes('write')
-          ? '<div class="scope-item"><span class="scope-dot"></span> Write and update content on your behalf</div>'
-          : ''
-      }
-      ${
-        p.scopes.includes('generate')
-          ? '<div class="scope-item"><span class="scope-dot"></span> Generate images, mockups, and creatives</div>'
-          : ''
-      }
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="actions">
-      <form method="POST" action="${BASE_URL}/oauth/authorize" style="flex:1; display:contents;">
-        ${hiddenFields('deny')}
-        <button type="submit" class="btn btn-deny">Deny</button>
-      </form>
-      <form method="POST" action="${BASE_URL}/oauth/authorize" style="flex:1; display:contents;">
-        ${hiddenFields('approve')}
-        <button type="submit" class="btn btn-approve">Approve</button>
-      </form>
-    </div>
-  </div>
-</body>
-</html>`;
-}
 
 // ── Connected Apps (authorized OAuth grants) ─────────────────────────────────
 
