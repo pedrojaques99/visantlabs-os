@@ -215,8 +215,8 @@ cd visantlabs-os
 npm install
 
 # Configure
-cp env.example .env.local
-# Edit .env.local with your keys (see env.example for all options)
+cp .env.example .env.local
+# Edit .env.local with your keys (see .env.example for all options)
 
 # Run
 npm run dev:all    # Frontend (3000) + Backend (3001)

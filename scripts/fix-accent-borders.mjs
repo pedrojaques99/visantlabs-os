@@ -43,6 +43,7 @@ const ALLOW_PATTERNS = [
   /border-brand-cyan.*shadow-\[0_0/,            // glow effect on selected
   /DrawingText/,                                // drawing mode intentionally uses cyan
   /selected \? ['"].*border-brand-cyan/i,       // ternary selected state (any case)
+  /primary:\s*['"]border border-brand-cyan/,    // Button `primary`: o CTA da casa é ciano de propósito (ui/button.tsx)
 ];
 
 const REPLACEMENTS = [
@@ -110,8 +111,15 @@ for (const abs of FILES) {
     let next = src;
     for (const [pattern, replacement] of REPLACEMENTS) {
       // Skip lines that match allow patterns
-      const newLines = next.split('\n').map(line => {
-        const isAllowed = ALLOW_PATTERNS.some(p => p.test(line));
+      // Mesmo julgamento do --scan (comentário fora, linha anterior como
+      // contexto): sem isso o fix reescrevia o que o scan aprovava, e o build
+      // tirava a borda do `primary` do Button em produção.
+      const arr = next.split('\n');
+      const newLines = arr.map((line, i) => {
+        const code = line.trimStart();
+        if (code.startsWith('//') || code.startsWith('*') || code.startsWith('/*')) return line;
+        const context = (i > 0 ? arr[i - 1].trim() + ' ' : '') + line;
+        const isAllowed = ALLOW_PATTERNS.some(p => p.test(line) || p.test(context));
         if (isAllowed) return line;
         return line.replace(pattern, replacement);
       });

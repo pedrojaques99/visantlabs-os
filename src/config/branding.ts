@@ -6,7 +6,7 @@
  * your instance of the application.
  *
  * For more sensitive values (like private group links), use environment
- * variables instead (see env.example).
+ * variables instead (see .env.example).
  */
 
 export const branding = {
