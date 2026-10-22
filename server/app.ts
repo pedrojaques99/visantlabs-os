@@ -185,6 +185,8 @@ export function createApp() {
             // Vitrine @visant/ui (Brand Connect) receives the code at /callback.
             'https://ui.visantlabs.com',
             'http://localhost:*',
+            // Desktop MCP clients (OpenBot, etc.) use a loopback IP redirect (RFC 8252).
+            'http://127.0.0.1:*',
           ],
           objectSrc: ["'none'"],
         },
