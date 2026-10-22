@@ -36,4 +36,4 @@ This project implements:
 
 ## Environment Variables
 
-Never commit `.env` or `.env.local` files. Use `env.example` as a template and configure secrets through your hosting provider's environment management (Vercel, Coolify, etc.).
+Never commit `.env` or `.env.local` files. Use `.env.example` as a template and configure secrets through your hosting provider's environment management (Vercel, Coolify, etc.).

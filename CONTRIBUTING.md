@@ -7,7 +7,7 @@ Thanks for considering contributing! This document provides guidelines for contr
 1. Fork the repository
 2. Clone your fork: `git clone https://github.com/[YOUR-USER]/visantlabs-os.git`
 3. Install dependencies: `npm install`
-4. Copy `env.example` to `.env.local` and configure the required variables
+4. Copy `.env.example` to `.env.local` and configure the required variables
 5. Run `npm run dev:all` to start the dev server
 
 ## Code Standards

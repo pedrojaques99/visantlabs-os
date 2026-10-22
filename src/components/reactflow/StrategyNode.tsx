@@ -1392,7 +1392,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
               value={prompt}
               onChange={handlePromptChange}
               placeholder={t('canvasNodes.strategyNode.brandDescriptionPlaceholder')}
-              className="text-xs resize-none nodrag nopan bg-neutral-900/60 border-neutral-700/40 focus:border-neutral-600 focus:ring-1 "
+              className="text-xs resize-none nodrag nopan bg-neutral-900/60 border-neutral-700/40 focus:border-neutral-600 "
               rows={3}
               disabled={isGenerating}
             />
@@ -1736,7 +1736,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                             onChange={(e) =>
                               handleSectionContentChange(section.type, e.target.value)
                             }
-                            className="text-xs resize-none nodrag nopan w-full bg-neutral-900/60 border-neutral-700/40 focus:border-neutral-600 focus:ring-1 "
+                            className="text-xs resize-none nodrag nopan w-full bg-neutral-900/60 border-neutral-700/40 focus:border-neutral-600 "
                             minHeight={40}
                             maxHeight={400}
                             onWheel={(e) => {

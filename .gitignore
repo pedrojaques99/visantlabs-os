@@ -187,3 +187,7 @@ public/vsn-exporter/*.local.reg
 
 # gerado no prebuild por scripts/pack-vsn-exporter.mjs
 public/vsn-exporter.zip
+
+# Windows
+desktop.ini
+Thumbs.db
