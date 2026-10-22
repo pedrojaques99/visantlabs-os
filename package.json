@@ -75,7 +75,7 @@
     "audit:fix-diamonds": "node scripts/audit-visuals.mjs --replace",
     "preview": "vite preview",
     "server": "tsx server/index.ts",
-    "postinstall": "patch-package && prisma generate",
+    "postinstall": "prisma generate",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "lint": "eslint .",
@@ -155,7 +155,6 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
     "@react-three/postprocessing": "^3.0.4",
-    "@remotion/core": "^1.0.0-y.46",
     "@remotion/player": "^4.0.451",
     "@remotion/transitions": "^4.0.451",
     "@scena/event-emitter": "^1.0.5",
@@ -216,7 +215,6 @@
     "otplib": "^13.4.0",
     "p-limit": "^6.2.0",
     "papaparse": "^5.5.3",
-    "patch-package": "^8.0.1",
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^2.4.5",
     "perfect-freehand": "^1.2.2",
@@ -242,7 +240,7 @@
     "recharts": "^3.6.0",
     "remotion": "^4.0.451",
     "resend": "^4.0.0",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.5",
     "sonner": "^2.0.7",
     "stripe": "^19.3.1",
     "striptags": "^3.2.0",
@@ -313,7 +311,8 @@
     "phin": ">=3.7.1",
     "hono": ">=4.12.25",
     "@imgly/background-removal-node": {
-      "zod": ">=3.22.3"
+      "zod": "^3.25.76",
+      "sharp": "$sharp"
     }
   }
 }
