@@ -1,0 +1,5 @@
+# Entry Express legado: a API roda no Coolify (api.visantlabs.com) e o
+# vercel.json reescreve /api/* pra lá. Empacotado, ele virava a função
+# api/index de 251 MB (acima do limite de 250 MB) que reprovava todo deploy,
+# e respondia 500 em /api. Os webhooks em api/*/webhook.ts continuam aqui.
+/api/index.ts
