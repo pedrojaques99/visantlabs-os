@@ -1,5 +1,10 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { resolveFalEndpoint, useFalForKling, buildFalInput } from '../falVideoService.js';
+import {
+  resolveFalEndpoint,
+  useFalForKling,
+  buildFalInput,
+  centerCropBox,
+} from '../falVideoService.js';
 
 const base = { model: 'kling-v3', prompt: 'x' };
 
@@ -57,7 +62,7 @@ describe('buildFalInput', () => {
 
   it('v3 image-to-video: start_image_url, sem áudio por padrão, duração sem "s"', async () => {
     const input = await buildFalInput(
-      { ...base, startFrame: url, duration: '5s', aspectRatio: '9:16' },
+      { ...base, startFrame: url, duration: '5s' },
       'fal-ai/kling-video/v3/pro/image-to-video'
     );
     expect(input).toMatchObject({
@@ -92,5 +97,31 @@ describe('buildFalInput', () => {
     await expect(
       buildFalInput({ ...base, mode: 'image_to_video' }, 'fal-ai/kling-video/v3/pro/image-to-video')
     ).rejects.toThrow(/frame inicial/);
+  });
+});
+
+describe('centerCropBox', () => {
+  it('não corta quando a imagem já está na proporção (±2%)', () => {
+    expect(centerCropBox(960, 960, '1:1')).toBeNull();
+    expect(centerCropBox(1080, 1920, '9:16')).toBeNull();
+    expect(centerCropBox(1000, 1000, undefined)).toBeNull();
+    expect(centerCropBox(1000, 1000, 'xx')).toBeNull();
+  });
+
+  it('quadrado → 9:16 corta as laterais, ao centro', () => {
+    expect(centerCropBox(960, 960, '9:16')).toEqual({ left: 210, top: 0, width: 540, height: 960 });
+  });
+
+  it('quadrado → 16:9 corta topo e base, ao centro', () => {
+    expect(centerCropBox(960, 960, '16:9')).toEqual({ left: 0, top: 210, width: 960, height: 540 });
+  });
+
+  it('retrato → 1:1 corta topo e base', () => {
+    expect(centerCropBox(1080, 1920, '1:1')).toEqual({
+      left: 0,
+      top: 420,
+      width: 1080,
+      height: 1080,
+    });
   });
 });
