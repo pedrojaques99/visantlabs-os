@@ -6,7 +6,12 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 import { generateVideo } from '../services/videoService.js';
 import { generateKlingVideo } from '../services/klingService.js';
-import { generateKlingVideoViaFal, useFalForKling } from '../services/falVideoService.js';
+import {
+  generateKlingVideoViaFalDetailed,
+  getFalBalanceUsd,
+  useFalForKling,
+  type FalVideoResult,
+} from '../services/falVideoService.js';
 import { generateSeedanceVideo } from '../services/seedanceService.js';
 import { getVideoCreditsRequired } from '../utils/usageTracking.js';
 import {
@@ -94,6 +99,8 @@ router.post(
         sound,
         cfgScale,
         mode: generationMode,
+        // Rótulo livre pra relatório de custo (ex.: "VSN-860", cliente ou task)
+        costTag,
       } = req.body;
 
       // Validate and resolve seed: use provided seed or generate random
@@ -345,6 +352,7 @@ router.post(
 
       // Generate video — dispatch by provider
       let videoBase64: string;
+      let falMeta: FalVideoResult | null = null;
       try {
         console.log(`${logPrefix} [GENERATION] Starting video generation`, {
           userId: req.userId,
@@ -385,9 +393,13 @@ router.post(
             inputVideo,
           };
           // fal.ai (por segundo) quando há FAL_KEY; Kling direta é o fallback (KLING_PROVIDER=direct)
-          const videoUrl = useFalForKling(klingParams)
-            ? await generateKlingVideoViaFal(klingParams)
-            : await generateKlingVideo(klingParams);
+          let videoUrl: string;
+          if (useFalForKling(klingParams)) {
+            falMeta = await generateKlingVideoViaFalDetailed(klingParams);
+            videoUrl = falMeta.url;
+          } else {
+            videoUrl = await generateKlingVideo(klingParams);
+          }
           // Use URL path directly — skip base64 conversion
           videoBase64 = videoUrl;
         } else {
@@ -543,6 +555,17 @@ router.post(
         creditsRemaining,
         isAdmin,
         generationId: crypto.randomUUID(), // UUID for RAG feedback loop (👍/👎)
+        // Custo real cobrado pelo provedor (fal), em US$. Ausente fora do fal.
+        ...(falMeta
+          ? {
+              provider: 'fal',
+              providerCostUsd: falMeta.costUsd,
+              providerRequestId: falMeta.requestId,
+              providerEndpoint: falMeta.endpoint,
+              // saldo da conta fal logo após a geração (null sem escopo de billing)
+              providerBalanceUsd: await getFalBalanceUsd(),
+            }
+          : {}),
       };
 
       console.log(`${logPrefix} [RESPONSE] Sending response`, {
@@ -569,7 +592,24 @@ router.post(
           promptLength: prompt?.length || 0,
           hasInputImage: !!imageBase64,
           timestamp: new Date(),
-          cost: calculateVideoCost(1, normalizedModel.includes('fast') ? 'fast' : 'standard'),
+          // fal: custo real (segundos × preço do endpoint); demais: estimativa interna
+          cost:
+            falMeta?.costUsd ??
+            calculateVideoCost(1, normalizedModel.includes('fast') ? 'fast' : 'standard'),
+          ...(falMeta
+            ? {
+                provider: 'fal',
+                operation: 'video-generate',
+                videoSeconds: falMeta.seconds,
+                falEndpoint: falMeta.endpoint,
+                falRequestId: falMeta.requestId,
+                falUnitPriceUsd: falMeta.unitPriceUsd,
+                klingMode: klingMode ?? 'std',
+              }
+            : {}),
+          ...(typeof costTag === 'string' && costTag.trim()
+            ? { costTag: costTag.trim().slice(0, 80) }
+            : {}),
           creditsDeducted: actualCreditsDeducted,
           subscriptionStatus: updatedUser.subscriptionStatus || 'free',
           hasActiveSubscription: updatedUser.subscriptionStatus === 'active',

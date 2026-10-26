@@ -160,7 +160,76 @@ export async function buildFalInput(
   return input;
 }
 
-export async function generateKlingVideoViaFal(params: KlingGenerateParams): Promise<string> {
+/** Resultado + o que o fal cobrou, pra contabilidade (custo real, não estimativa interna). */
+export interface FalVideoResult {
+  url: string;
+  requestId: string | null;
+  endpoint: string;
+  seconds: number;
+  /** US$ por segundo do endpoint (API de pricing do fal); null se a consulta falhou. */
+  unitPriceUsd: number | null;
+  /** seconds × unitPriceUsd; null quando o preço não pôde ser lido. */
+  costUsd: number | null;
+}
+
+const PRICE_TTL_MS = 60 * 60 * 1000;
+const priceCache = new Map<string, { price: number; at: number }>();
+
+/**
+ * Preço unitário (US$/s) do endpoint, direto da API de pricing do fal
+ * (GET api.fal.ai/v1/models/pricing; qualquer chave serve, sem permissão extra).
+ * Cache de 1h. Falha de rede devolve null: contabilidade nunca derruba a geração.
+ */
+export async function getFalUnitPrice(endpoint: string): Promise<number | null> {
+  const hit = priceCache.get(endpoint);
+  if (hit && Date.now() - hit.at < PRICE_TTL_MS) return hit.price;
+  try {
+    const resp = await fetch(
+      `https://api.fal.ai/v1/models/pricing?endpoint_id=${encodeURIComponent(endpoint)}`,
+      { headers: { Authorization: `Key ${process.env.FAL_KEY}` } }
+    );
+    if (!resp.ok) return null;
+    const body = (await resp.json()) as {
+      prices?: Array<{ endpoint_id: string; unit_price: number; unit: string; currency: string }>;
+    };
+    const row = body.prices?.find((p) => p.endpoint_id === endpoint);
+    if (!row || row.currency !== 'USD' || !/second/i.test(row.unit)) return null;
+    priceCache.set(endpoint, { price: row.unit_price, at: Date.now() });
+    return row.unit_price;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Saldo de crédito da conta fal em US$ (GET api.fal.ai/v1/account/billing?expand=credits).
+ * Precisa de chave com escopo de billing; sem ele (ou em falha) devolve null.
+ * Cache de 30s: o saldo muda a cada geração e o painel não precisa de mais que isso.
+ */
+let balanceCache: { value: number; at: number } | null = null;
+export async function getFalBalanceUsd(): Promise<number | null> {
+  if (balanceCache && Date.now() - balanceCache.at < 30_000) return balanceCache.value;
+  if (!process.env.FAL_KEY) return null;
+  try {
+    const resp = await fetch('https://api.fal.ai/v1/account/billing?expand=credits', {
+      headers: { Authorization: `Key ${process.env.FAL_KEY}` },
+    });
+    if (!resp.ok) return null;
+    const body = (await resp.json()) as {
+      credits?: { current_balance?: number; currency?: string };
+    };
+    const value = body.credits?.current_balance;
+    if (typeof value !== 'number' || body.credits?.currency !== 'USD') return null;
+    balanceCache = { value, at: Date.now() };
+    return value;
+  } catch {
+    return null;
+  }
+}
+
+export async function generateKlingVideoViaFalDetailed(
+  params: KlingGenerateParams
+): Promise<FalVideoResult> {
   const endpoint = resolveFalEndpoint(params.model, params.klingMode, falKind(params));
   if (!endpoint) throw new Error(`Kling (fal): modelo ${params.model} sem endpoint mapeado.`);
   if (!process.env.FAL_KEY) throw new Error('FAL_KEY must be set in environment variables.');
@@ -170,5 +239,19 @@ export async function generateKlingVideoViaFal(params: KlingGenerateParams): Pro
   const result = await fal.subscribe(endpoint, { input, logs: false });
   const url = (result.data as { video?: { url?: string } })?.video?.url;
   if (!url) throw new Error(`Kling (fal): ${endpoint} terminou sem URL de vídeo.`);
-  return url;
+
+  const seconds = Number(input.duration) || 0;
+  const unitPriceUsd = await getFalUnitPrice(endpoint);
+  return {
+    url,
+    requestId: result.requestId ?? null,
+    endpoint,
+    seconds,
+    unitPriceUsd,
+    costUsd: unitPriceUsd === null ? null : Math.round(seconds * unitPriceUsd * 10000) / 10000,
+  };
+}
+
+export async function generateKlingVideoViaFal(params: KlingGenerateParams): Promise<string> {
+  return (await generateKlingVideoViaFalDetailed(params)).url;
 }
