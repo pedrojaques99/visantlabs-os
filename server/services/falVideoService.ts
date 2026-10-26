@@ -1,4 +1,5 @@
 import { fal } from '@fal-ai/client';
+import { safeFetch } from '../utils/securityValidation.js';
 import type { KlingGenerateParams } from './klingService.js';
 
 /**
@@ -95,7 +96,8 @@ export function centerCropBox(
 
 async function loadImageBytes(input: string): Promise<{ bytes: Buffer; mime: string }> {
   if (input.startsWith('http')) {
-    const resp = await fetch(input);
+    // URL vem do usuário: safeFetch bloqueia IP interno/metadata (SSRF)
+    const resp = await safeFetch(input);
     if (!resp.ok)
       throw new Error(`Kling (fal): não consegui baixar o frame (HTTP ${resp.status}).`);
     return {
