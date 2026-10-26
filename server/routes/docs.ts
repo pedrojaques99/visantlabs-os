@@ -258,7 +258,8 @@ router.get('/providers', (_req: Request, res: Response) => {
     seedream: has('BYTEPLUS_API_KEY'),
     ideogram: has('IDEOGRAM_API_KEY'),
     reve: has('REVE_API_KEY'),
-    kling: has('KLING_ACCESS_KEY') && has('KLING_SECRET_KEY'),
+    // Kling roda pelo fal.ai (FAL_KEY) ou pela API direta (par de chaves da Kling)
+    kling: has('FAL_KEY') || (has('KLING_ACCESS_KEY') && has('KLING_SECRET_KEY')),
     seedance: has('BYTEPLUS_API_KEY'),
     veo: has('GEMINI_API_KEY') || has('VITE_GEMINI_API_KEY'),
   });
