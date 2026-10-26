@@ -8,6 +8,7 @@ import { AuthRequest } from '../middleware/auth.js';
 import { ensureString } from '../utils/validation.js';
 import { redisClient } from '../lib/redis.js';
 import { CACHE_TTL, CacheKey } from '../lib/cache-utils.js';
+import { getFalBalanceUsd } from '../services/falVideoService.js';
 
 const router = express.Router();
 
@@ -459,6 +460,110 @@ router.get(
     } catch (error: any) {
       console.error('[admin-analytics] error:', error);
       return res.status(500).json({ error: 'Failed to fetch product analytics' });
+    }
+  }
+);
+
+/**
+ * GET /ai-costs?provider=fal&days=30&groupBy=tag|day|model|endpoint
+ * Gasto real por provedor, somado dos usage_records. Para o fal o `cost` é o que
+ * a conta paga (segundos × preço do endpoint na API de pricing do fal).
+ */
+router.get(
+  '/ai-costs',
+  analyticsLimiter,
+  validateAdmin,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const days = Math.min(
+        Math.max(parseInt(ensureString(req.query.days) || '30', 10) || 30, 1),
+        365
+      );
+      const provider = ensureString(req.query.provider) || 'fal';
+      const groupBy = ensureString(req.query.groupBy) || 'tag';
+      const keyByGroup: Record<string, unknown> = {
+        tag: { $ifNull: ['$costTag', '(sem tag)'] },
+        day: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+        model: '$model',
+        endpoint: { $ifNull: ['$falEndpoint', '$model'] },
+        user: { $ifNull: [{ $toString: '$userId' }, '(sem usuário)'] },
+      };
+      if (!(groupBy in keyByGroup)) {
+        return res
+          .status(400)
+          .json({ error: 'groupBy deve ser tag, day, model, endpoint ou user' });
+      }
+      await connectToMongoDB();
+      const db = getDb();
+      const since = new Date(Date.now() - days * 86_400_000);
+      const match = { provider: String(provider), timestamp: { $gte: since } };
+      const [rows, total] = await Promise.all([
+        db
+          .collection('usage_records')
+          .aggregate([
+            { $match: match },
+            {
+              $group: {
+                _id: keyByGroup[groupBy],
+                costUsd: { $sum: { $ifNull: ['$cost', 0] } },
+                generations: { $sum: 1 },
+                creditsDeducted: { $sum: { $ifNull: ['$creditsDeducted', 0] } },
+                videoSeconds: { $sum: { $ifNull: ['$videoSeconds', 0] } },
+                lastAt: { $max: '$timestamp' },
+              },
+            },
+            { $sort: { costUsd: -1 } },
+            { $limit: 200 },
+          ])
+          .toArray(),
+        db
+          .collection('usage_records')
+          .aggregate([
+            { $match: match },
+            {
+              $group: {
+                _id: null,
+                costUsd: { $sum: { $ifNull: ['$cost', 0] } },
+                generations: { $sum: 1 },
+              },
+            },
+          ])
+          .toArray(),
+      ]);
+      // por usuário: junta e-mail/plano pra o painel mostrar quem gastou
+      const userInfo = new Map<string, { email?: string; subscriptionTier?: string | null }>();
+      if (groupBy === 'user') {
+        const ids = rows.map((r) => String(r._id)).filter((id) => ObjectId.isValid(id));
+        const users = ids.length
+          ? await prisma.user.findMany({
+              where: { id: { in: ids } },
+              select: { id: true, email: true, subscriptionTier: true },
+            })
+          : [];
+        for (const u of users) {
+          userInfo.set(u.id, { email: u.email, subscriptionTier: u.subscriptionTier });
+        }
+      }
+      res.json({
+        provider,
+        days,
+        groupBy,
+        ...(provider === 'fal' ? { balanceUsd: await getFalBalanceUsd() } : {}),
+        totalCostUsd: Math.round((total[0]?.costUsd ?? 0) * 10000) / 10000,
+        generations: total[0]?.generations ?? 0,
+        groups: rows.map((r) => ({
+          key: r._id,
+          ...(groupBy === 'user' ? (userInfo.get(String(r._id)) ?? {}) : {}),
+          creditsDeducted: r.creditsDeducted,
+          costUsd: Math.round(r.costUsd * 10000) / 10000,
+          generations: r.generations,
+          videoSeconds: r.videoSeconds,
+          lastAt: r.lastAt,
+        })),
+      });
+    } catch (error) {
+      console.error('[admin-analytics] ai-costs failed:', (error as Error).message);
+      res.status(500).json({ error: 'Failed to load AI costs' });
     }
   }
 );

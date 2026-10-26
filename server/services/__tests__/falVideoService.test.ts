@@ -1,9 +1,11 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import {
   resolveFalEndpoint,
   useFalForKling,
   buildFalInput,
   centerCropBox,
+  getFalUnitPrice,
+  getFalBalanceUsd,
 } from '../falVideoService.js';
 
 const base = { model: 'kling-v3', prompt: 'x' };
@@ -123,5 +125,61 @@ describe('centerCropBox', () => {
       width: 1080,
       height: 1080,
     });
+  });
+});
+
+describe('getFalUnitPrice', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('lê o preço em US$/segundo da API de pricing do fal e usa cache', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        prices: [{ endpoint_id: 'ep/a', unit_price: 0.14, unit: 'seconds', currency: 'USD' }],
+      }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await getFalUnitPrice('ep/a')).toBe(0.14);
+    expect(await getFalUnitPrice('ep/a')).toBe(0.14);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('devolve null (sem lançar) quando a API falha ou a unidade não é segundo', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('rede')));
+    expect(await getFalUnitPrice('ep/b')).toBeNull();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          prices: [{ endpoint_id: 'ep/c', unit_price: 1, unit: 'video', currency: 'USD' }],
+        }),
+      })
+    );
+    expect(await getFalUnitPrice('ep/c')).toBeNull();
+  });
+});
+
+describe('getFalBalanceUsd', () => {
+  const original = { ...process.env };
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    process.env = { ...original };
+  });
+
+  it('lê o saldo em US$; sem FAL_KEY ou em falha devolve null', async () => {
+    delete process.env.FAL_KEY;
+    expect(await getFalBalanceUsd()).toBeNull();
+    process.env.FAL_KEY = 'k';
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
+    expect(await getFalBalanceUsd()).toBeNull();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ credits: { current_balance: 6.22, currency: 'USD' } }),
+      })
+    );
+    expect(await getFalBalanceUsd()).toBe(6.22);
   });
 });

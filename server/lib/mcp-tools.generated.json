@@ -4909,6 +4909,11 @@
           "type": "number",
           "minimum": 0,
           "maximum": 1
+        },
+        "costTag": {
+          "description": "Free label for cost reports, e.g. a task or client (\"VSN-860\").",
+          "type": "string",
+          "maxLength": 80
         }
       },
       "cost": "credits",

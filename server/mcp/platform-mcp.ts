@@ -1525,6 +1525,11 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         .max(1)
         .optional()
         .describe('CFG scale 0-1 (Kling v1.x only). 0=free, 1=strict prompt adherence.'),
+      costTag: z
+        .string()
+        .max(80)
+        .optional()
+        .describe('Free label for cost reports, e.g. a task or client ("VSN-860").'),
     },
     { title: 'Generate Video', destructiveHint: false },
     async ({
@@ -1543,6 +1548,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
       klingMode,
       sound,
       cfgScale,
+      costTag,
     }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
@@ -1565,6 +1571,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
             inputVideo,
             klingMode,
             sound,
+            costTag,
             cfgScale,
           }),
         });
