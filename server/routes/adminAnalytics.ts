@@ -486,9 +486,12 @@ router.get(
         day: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
         model: '$model',
         endpoint: { $ifNull: ['$falEndpoint', '$model'] },
+        user: { $ifNull: [{ $toString: '$userId' }, '(sem usuário)'] },
       };
       if (!(groupBy in keyByGroup)) {
-        return res.status(400).json({ error: 'groupBy deve ser tag, day, model ou endpoint' });
+        return res
+          .status(400)
+          .json({ error: 'groupBy deve ser tag, day, model, endpoint ou user' });
       }
       await connectToMongoDB();
       const db = getDb();
@@ -504,6 +507,7 @@ router.get(
                 _id: keyByGroup[groupBy],
                 costUsd: { $sum: { $ifNull: ['$cost', 0] } },
                 generations: { $sum: 1 },
+                creditsDeducted: { $sum: { $ifNull: ['$creditsDeducted', 0] } },
                 videoSeconds: { $sum: { $ifNull: ['$videoSeconds', 0] } },
                 lastAt: { $max: '$timestamp' },
               },
@@ -526,6 +530,20 @@ router.get(
           ])
           .toArray(),
       ]);
+      // por usuário: junta e-mail/plano pra o painel mostrar quem gastou
+      const userInfo = new Map<string, { email?: string; subscriptionTier?: string | null }>();
+      if (groupBy === 'user') {
+        const ids = rows.map((r) => String(r._id)).filter((id) => ObjectId.isValid(id));
+        const users = ids.length
+          ? await prisma.user.findMany({
+              where: { id: { in: ids } },
+              select: { id: true, email: true, subscriptionTier: true },
+            })
+          : [];
+        for (const u of users) {
+          userInfo.set(u.id, { email: u.email, subscriptionTier: u.subscriptionTier });
+        }
+      }
       res.json({
         provider,
         days,
@@ -535,6 +553,8 @@ router.get(
         generations: total[0]?.generations ?? 0,
         groups: rows.map((r) => ({
           key: r._id,
+          ...(groupBy === 'user' ? (userInfo.get(String(r._id)) ?? {}) : {}),
+          creditsDeducted: r.creditsDeducted,
           costUsd: Math.round(r.costUsd * 10000) / 10000,
           generations: r.generations,
           videoSeconds: r.videoSeconds,
