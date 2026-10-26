@@ -1,5 +1,4 @@
 import { fal } from '@fal-ai/client';
-import sharp from 'sharp';
 import type { KlingGenerateParams } from './klingService.js';
 
 /**
@@ -115,6 +114,8 @@ async function loadImageBytes(input: string): Promise<{ bytes: Buffer; mime: str
  */
 async function toFalImageUrl(input: string, aspectRatio?: string): Promise<string> {
   if (input.startsWith('http') && !aspectRatio) return input;
+  // import dinâmico: sharp no topo quebra o cold-start da Vercel (check:serverless-imports)
+  const { default: sharp } = await import('sharp');
   const { bytes, mime } = await loadImageBytes(input);
   const { width, height } = await sharp(bytes).metadata();
   const box = centerCropBox(width ?? 0, height ?? 0, aspectRatio);
