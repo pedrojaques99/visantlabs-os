@@ -1,4 +1,5 @@
 import { fal } from '@fal-ai/client';
+import { safeFetch } from '../utils/securityValidation.js';
 import type { KlingGenerateParams } from './klingService.js';
 
 /**
@@ -72,13 +73,57 @@ function falKind(params: KlingGenerateParams): FalKind {
   return needsImage(params) ? 'image-to-video' : 'text-to-video';
 }
 
-/** O fal só lê URL: base64/data URL sobe pro storage do fal antes. */
-async function toFalImageUrl(input: string): Promise<string> {
-  if (input.startsWith('http')) return input;
+const RATIOS: Record<string, number> = { '16:9': 16 / 9, '9:16': 9 / 16, '1:1': 1 };
+const RATIO_TOLERANCE = 0.02;
+
+/** Janela de corte centrada que deixa a imagem na proporção pedida; null se já está (±2%). */
+export function centerCropBox(
+  width: number,
+  height: number,
+  aspectRatio?: string
+): { left: number; top: number; width: number; height: number } | null {
+  const target = aspectRatio ? RATIOS[aspectRatio] : undefined;
+  if (!target || !width || !height) return null;
+  const current = width / height;
+  if (Math.abs(current - target) / target <= RATIO_TOLERANCE) return null;
+  if (current > target) {
+    const w = Math.round(height * target);
+    return { left: Math.floor((width - w) / 2), top: 0, width: w, height };
+  }
+  const h = Math.round(width / target);
+  return { left: 0, top: Math.floor((height - h) / 2), width, height: h };
+}
+
+async function loadImageBytes(input: string): Promise<{ bytes: Buffer; mime: string }> {
+  if (input.startsWith('http')) {
+    // URL vem do usuário: safeFetch bloqueia IP interno/metadata (SSRF)
+    const resp = await safeFetch(input);
+    if (!resp.ok)
+      throw new Error(`Kling (fal): não consegui baixar o frame (HTTP ${resp.status}).`);
+    return {
+      bytes: Buffer.from(await resp.arrayBuffer()),
+      mime: resp.headers.get('content-type') ?? 'image/png',
+    };
+  }
   const match = input.match(/^data:([^;]+);base64,(.+)$/);
-  const mime = match?.[1] ?? 'image/png';
-  const bytes = Buffer.from(match?.[2] ?? input, 'base64');
-  return fal.storage.upload(new Blob([bytes], { type: mime }));
+  return { bytes: Buffer.from(match?.[2] ?? input, 'base64'), mime: match?.[1] ?? 'image/png' };
+}
+
+/**
+ * O fal só lê URL, e o image-to-video NÃO tem aspect_ratio: a proporção do vídeo
+ * segue a do frame. Pra respeitar o aspectRatio pedido, o frame é cortado ao
+ * centro na proporção e sobe pro storage do fal. Sem aspectRatio, passa direto.
+ */
+async function toFalImageUrl(input: string, aspectRatio?: string): Promise<string> {
+  if (input.startsWith('http') && !aspectRatio) return input;
+  // import dinâmico: sharp no topo quebra o cold-start da Vercel (check:serverless-imports)
+  const { default: sharp } = await import('sharp');
+  const { bytes, mime } = await loadImageBytes(input);
+  const { width, height } = await sharp(bytes).metadata();
+  const box = centerCropBox(width ?? 0, height ?? 0, aspectRatio);
+  if (!box && input.startsWith('http')) return input;
+  const out = box ? await sharp(bytes).extract(box).jpeg({ quality: 95 }).toBuffer() : bytes;
+  return fal.storage.upload(new Blob([new Uint8Array(out)], { type: box ? 'image/jpeg' : mime }));
 }
 
 export async function buildFalInput(
@@ -99,8 +144,12 @@ export async function buildFalInput(
   } else {
     const start = params.startFrame ?? params.referenceImages?.[0];
     if (!start) throw new Error('Kling (fal): image-to-video precisa de um frame inicial.');
-    input[isOmni ? 'image_url' : 'start_image_url'] = await toFalImageUrl(start);
-    if (params.endFrame) input.end_image_url = await toFalImageUrl(params.endFrame);
+    input[isOmni ? 'image_url' : 'start_image_url'] = await toFalImageUrl(
+      start,
+      params.aspectRatio
+    );
+    if (params.endFrame)
+      input.end_image_url = await toFalImageUrl(params.endFrame, params.aspectRatio);
   }
 
   // O3 não documenta negative_prompt/cfg_scale; só a família v3.
