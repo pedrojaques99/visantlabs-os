@@ -6,6 +6,7 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 import { generateVideo } from '../services/videoService.js';
 import { generateKlingVideo } from '../services/klingService.js';
+import { generateKlingVideoViaFal, useFalForKling } from '../services/falVideoService.js';
 import { generateSeedanceVideo } from '../services/seedanceService.js';
 import { getVideoCreditsRequired } from '../utils/usageTracking.js';
 import {
@@ -368,7 +369,7 @@ router.post(
           videoBase64 = result.videoUrl;
         } else if (isKlingModel) {
           // Kling: returns a public URL directly (no base64 needed)
-          const videoUrl = await generateKlingVideo({
+          const klingParams = {
             model: normalizedModel,
             prompt,
             negativePrompt,
@@ -382,7 +383,11 @@ router.post(
             endFrame,
             referenceImages,
             inputVideo,
-          });
+          };
+          // fal.ai (por segundo) quando há FAL_KEY; Kling direta é o fallback (KLING_PROVIDER=direct)
+          const videoUrl = useFalForKling(klingParams)
+            ? await generateKlingVideoViaFal(klingParams)
+            : await generateKlingVideo(klingParams);
           // Use URL path directly — skip base64 conversion
           videoBase64 = videoUrl;
         } else {
