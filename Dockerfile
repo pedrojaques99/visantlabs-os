@@ -50,8 +50,12 @@ COPY packages ./packages/
 # (server/scripts/psd-render-worker.ts) e degrada sozinho se faltar. Versao
 # fixa para o build nao mudar sem alguem decidir; `--no-save --no-package-lock`
 # garante que ele nao suje o lock dentro da imagem.
+#
+# `--include=dev` tambem no segundo install: sem ele o npm 11 (node 24) poda as
+# devDependencies por causa do NODE_ENV=production do Coolify, e o `prepare` do
+# workspace @visant/extrude3d morre com `tsc: not found` (deploy de 26/10).
 RUN npm ci --include=dev && \
-    npm install @printmadehq/mockup-generator@1.0.5 --legacy-peer-deps --no-save --no-package-lock && \
+    npm install @printmadehq/mockup-generator@1.0.5 --include=dev --legacy-peer-deps --no-save --no-package-lock && \
     npx prisma generate
 
 COPY . .
