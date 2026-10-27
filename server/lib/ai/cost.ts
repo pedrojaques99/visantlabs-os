@@ -14,6 +14,7 @@ import {
   isHighResolution,
 } from '../../../src/utils/pricing.js';
 import { GEMINI_MODELS } from '../../../src/constants/geminiModels.js';
+import { CREDIT_COSTS } from '../pricing-data.js';
 
 /** Quanto a chamada consumiu. O que o provedor devolver, a gente mede; o resto vem declarado. */
 export interface MeteredUsage {
@@ -62,6 +63,35 @@ export function calculateTextGenerationCost(
   );
 }
 
+/**
+ * Custo de provedor (US$) de um clipe de vídeo. Antes TODO vídeo era contabilizado como Veo
+ * standard de 8s (US$ 3,20): 8 clipes Kling saíram a US$ 25,60 no relatório e o Seedance seguia
+ * o mesmo caminho. Aqui cada família usa a própria tarifa:
+ *  - Veo: US$/s × duração (lite 720p 0,05/s; fast e standard em pricing.ts);
+ *  - Kling e Seedance: preço do clipe-base de 5s em CREDIT_COSTS ÷ 5 × duração.
+ * Kling via fal tem custo exato em falVideoService (segundos × pricing do fal); este é o caminho
+ * dos demais.
+ */
+export function videoProviderCostUsd(
+  model: string,
+  opts?: { klingMode?: string; durationSec?: number; resolution?: string | null }
+): number {
+  const seconds = opts?.durationSec && opts.durationSec > 0 ? opts.durationSec : undefined;
+  if (model.startsWith('kling-') || model.startsWith('seedance-')) {
+    const mode = model.startsWith('kling-') ? (opts?.klingMode ?? 'std') : null;
+    const tiers = CREDIT_COSTS.filter((t) => t.category === 'video' && t.modelId === model);
+    const tier =
+      (mode &&
+        tiers.find((t) => t.model.toLowerCase().includes(`(${mode === 'std' ? 'std' : mode})`))) ||
+      tiers[0];
+    if (!tier) return 0;
+    return Math.round((tier.googlePriceUSD / 5) * (seconds ?? 5) * 10000) / 10000;
+  }
+  if (model.includes('lite')) return Math.round(0.05 * (seconds ?? 8) * 10000) / 10000;
+  const tier = model.includes('fast') ? 'fast' : 'standard';
+  return calculateVideoCost(1, tier, seconds ?? 8, isHighResolution(opts?.resolution));
+}
+
 /** true quando o modelo não cobra — único caso em que `cost: 0` é uma resposta, não um buraco. */
 export function isFreeModel(model: string): boolean {
   return /(?:^|[-/])(?:free|local)(?:$|[-/])/i.test(model);
@@ -79,6 +109,16 @@ export function computeCost(model: string, usage: MeteredUsage): number {
   let cost = 0;
 
   if (usage.videoSeconds || usage.videos) {
+    if (model.startsWith('kling-') || model.startsWith('seedance-')) {
+      return (
+        cost +
+        (usage.videos ?? 1) *
+          videoProviderCostUsd(model, {
+            durationSec: usage.videoSeconds,
+            resolution: usage.resolution,
+          })
+      );
+    }
     const tier = model.includes('fast') || model.includes('lite') ? 'fast' : 'standard';
     const seconds = usage.videoSeconds ?? 8;
     cost += calculateVideoCost(
