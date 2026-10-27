@@ -20,6 +20,7 @@ import { isReveModel } from '../../src/constants/reveModels.js';
 import { isSeedreamModel } from '../../src/constants/seedreamModels.js';
 import { isOpenAIImageModel } from '../../src/constants/openaiModels.js';
 import { isImagenModel } from '../../src/constants/imagenModels.js';
+import { resolveModelAlias } from '../../src/constants/modelAliases.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { completeText, parseJsonLoose } from '../lib/ai-providers/cheapText.js';
 import { rateLimit } from 'express-rate-limit';
@@ -166,6 +167,7 @@ async function generateImageWithProvider(
   aspectRatio: CreativeFormat,
   baseImage?: { base64?: string; url?: string; mimeType: string }
 ): Promise<string> {
+  model = resolveModelAlias(model);
   if (isIdeogramModel(model)) {
     if (baseImage) {
       const result = await remixIdeogramImage({

@@ -22,6 +22,7 @@ import { generateReveImage, editReveImage, remixReveImage } from '../services/re
 import { isSeedreamModel, SEEDREAM_MODELS } from '../../src/constants/seedreamModels.js';
 import { isOpenAIImageModel, OPENAI_IMAGE_MODELS } from '../../src/constants/openaiModels.js';
 import { isImagenModel } from '../../src/constants/imagenModels.js';
+import { resolveModelAlias } from '../../src/constants/modelAliases.js';
 import { isIdeogramModel, IDEOGRAM_MODELS } from '../../src/constants/ideogramModels.js';
 import { isReveModel } from '../../src/constants/reveModels.js';
 import { DEFAULT_IMAGE_MODEL_ID } from '../../src/constants/imageModelRegistry.js';
@@ -436,7 +437,7 @@ router.post(
       const {
         promptText,
         baseImage,
-        model = GEMINI_MODELS.IMAGE_FLASH,
+        model: requestedModel = GEMINI_MODELS.IMAGE_FLASH,
         resolution,
         aspectRatio,
         referenceImages,
@@ -448,6 +449,10 @@ router.post(
         seed: rawSeed, // Optional: seed for deterministic generation
         strategy: rawStrategy, // Optional: 'cost' | 'quality' — fallback ordering when the chosen model is unavailable
       } = req.body;
+
+      // Modelo aposentado (Imagen 4, previews, 2.5 Flash Image) vira o substituto antes de rotear e cobrar.
+      const model =
+        typeof requestedModel === 'string' ? resolveModelAlias(requestedModel) : requestedModel;
 
       // Fallback strategy governs ONLY the order other providers are tried in if
       // the requested model fails; the requested model is always attempted first.

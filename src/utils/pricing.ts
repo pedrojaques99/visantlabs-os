@@ -3,6 +3,7 @@
 
 import type { GeminiModel, Resolution } from '../types/types';
 import { GEMINI_MODELS } from '../constants/geminiModels.js';
+import { resolveModelAlias } from '../constants/modelAliases.js';
 
 /**
  * Pricing constants (in USD)
@@ -11,7 +12,8 @@ import { GEMINI_MODELS } from '../constants/geminiModels.js';
 export const PRICING = {
   IMAGE: {
     // Gemini 2.5 Flash (HD) - fixed resolution ~1K
-    GEMINI_2_5: 0.039, // gemini-2.5-flash-image
+    // Nano Banana 2 Lite (gemini-3.1-flash-lite-image), substituto do 2.5 Flash Image (US$ 0,039)
+    GEMINI_2_5: 0.0336,
     // Gemini 3.1 Flash (NB2) - variable resolution
     NB2_512: 0.045, // gemini-3.1-flash-image-preview 512px
     NB2_1K: 0.067, // gemini-3.1-flash-image-preview 1K (official: $0.067)
@@ -94,7 +96,8 @@ export function getImagePricing(
   // diferente por forma; para os modelos Gemini é ignorado.
   orientation?: 'square' | 'rect' | null
 ): number {
-  // Gemini 2.5 Flash (HD) - FLASH and IMAGE_FLASH are aliases
+  model = resolveModelAlias(model);
+  // Nano Banana 2 Lite (HD) - FLASH and IMAGE_FLASH are aliases
   if (model === GEMINI_MODELS.FLASH || model === GEMINI_MODELS.IMAGE_FLASH) {
     return PRICING.IMAGE.GEMINI_2_5;
   }

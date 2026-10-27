@@ -225,24 +225,15 @@ describe('Imagen model registry', () => {
     }
   });
 
-  it('includes all three tiers', () => {
-    expect(IMAGEN_MODEL_LIST).toHaveLength(3);
-    expect(IMAGEN_MODEL_LIST).toContain(IMAGEN_MODELS.IMAGEN_4_FAST);
-    expect(IMAGEN_MODEL_LIST).toContain(IMAGEN_MODELS.IMAGEN_4);
-    expect(IMAGEN_MODEL_LIST).toContain(IMAGEN_MODELS.IMAGEN_4_ULTRA);
+  it('Imagen 4 saiu da oferta: o Google desligou (API 404)', () => {
+    expect(IMAGEN_MODEL_LIST).toHaveLength(0);
+    expect(isImagenModel('imagen-4.0-generate-001')).toBe(false);
   });
 
-  it('isImagenModel detects correctly', () => {
-    expect(isImagenModel('imagen-4.0-generate-001')).toBe(true);
-    expect(isImagenModel('imagen-4.0-fast-generate-001')).toBe(true);
-    expect(isImagenModel('gemini-2.5-flash')).toBe(false);
-  });
-
-  it('credits: fast=1, standard=1-2, ultra=2', () => {
-    expect(getCreditsRequired(IMAGEN_MODELS.IMAGEN_4_FAST, '1K', 'imagen')).toBe(1);
-    expect(getCreditsRequired(IMAGEN_MODELS.IMAGEN_4, '1K', 'imagen')).toBe(1);
-    expect(getCreditsRequired(IMAGEN_MODELS.IMAGEN_4, '2K', 'imagen')).toBe(2);
-    expect(getCreditsRequired(IMAGEN_MODELS.IMAGEN_4_ULTRA, '1K', 'imagen')).toBe(2);
+  it('id Imagen antigo é cobrado pelo substituto (Nano Banana 2 Lite / Nano Banana 2)', () => {
+    expect(getCreditsRequired(IMAGEN_MODELS.IMAGEN_4_FAST, '1K')).toBe(1);
+    expect(getCreditsRequired(IMAGEN_MODELS.IMAGEN_4, '1K')).toBe(1);
+    expect(getCreditsRequired(IMAGEN_MODELS.IMAGEN_4_ULTRA, '1K')).toBe(2);
   });
 });
 
@@ -314,10 +305,11 @@ describe('Video model registry', () => {
     expect(VIDEO_MODEL_CONFIG[VIDEO_MODEL_IDS.VEO_3_1_LITE]).toBeDefined();
   });
 
-  it('includes Kling Video O1', () => {
-    expect(VIDEO_MODEL_LIST).toContain(VIDEO_MODEL_IDS.KLING_VIDEO_O1);
-    expect(VIDEO_MODEL_CONFIG[VIDEO_MODEL_IDS.KLING_VIDEO_O1]).toBeDefined();
-    expect(VIDEO_MODEL_CONFIG[VIDEO_MODEL_IDS.KLING_VIDEO_O1].badge).toBe('reasoning');
+  it('Kling legado (só API direta, sem pacote) saiu da lista; o v3/omni via fal ficam', () => {
+    expect(VIDEO_MODEL_LIST).not.toContain(VIDEO_MODEL_IDS.KLING_VIDEO_O1);
+    expect(VIDEO_MODEL_LIST).not.toContain(VIDEO_MODEL_IDS.KLING_V1);
+    expect(VIDEO_MODEL_LIST).toContain(VIDEO_MODEL_IDS.KLING_V3);
+    expect(VIDEO_MODEL_LIST).toContain(VIDEO_MODEL_IDS.KLING_V3_OMNI);
   });
 
   it('deprecated video models are marked', () => {
@@ -414,8 +406,9 @@ describe('Credit calculator', () => {
       expect(getVideoCreditsRequired('kling-v3', 'pro')).toBe(30);
       expect(getVideoCreditsRequired('kling-v3', '4k')).toBe(50);
       expect(getVideoCreditsRequired('kling-v2-5-turbo')).toBe(15);
-      expect(getVideoCreditsRequired('kling-v2-1-master')).toBe(30);
-      expect(getVideoCreditsRequired('kling-video-o1', 'pro')).toBe(35);
+      // legado vira v3 / v3-omni (src/constants/modelAliases.ts)
+      expect(getVideoCreditsRequired('kling-v2-1-master')).toBe(20);
+      expect(getVideoCreditsRequired('kling-video-o1', 'pro')).toBe(30);
     });
   });
 });

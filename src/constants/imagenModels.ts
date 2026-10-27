@@ -8,11 +8,9 @@ export const IMAGEN_MODELS = {
 
 export type ImagenModelId = (typeof IMAGEN_MODELS)[keyof typeof IMAGEN_MODELS];
 
-export const IMAGEN_MODEL_LIST: ImagenModelId[] = [
-  IMAGEN_MODELS.IMAGEN_4_FAST,
-  IMAGEN_MODELS.IMAGEN_4,
-  IMAGEN_MODELS.IMAGEN_4_ULTRA,
-];
+// Imagen 4 foi desligado pelo Google (API devolve 404 desde 17/ago/2026). Lista vazia tira os
+// modelos da UI e do roteamento; ids antigos viram Nano Banana via src/constants/modelAliases.ts.
+export const IMAGEN_MODEL_LIST: ImagenModelId[] = [];
 
 export interface ImagenModelConfig {
   label: string;

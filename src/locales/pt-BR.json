@@ -4547,13 +4547,13 @@
     "modelSelection": "0. Modelo_",
     "modelSelectionDescription": "Escolha o modelo de IA para a geração.",
     "models": {
-      "gemini-2.5-flash-image": {
+      "gemini-3.1-flash-lite-image": {
         "emoji": "⛏️",
         "features": ["Geração rápida", "1 crédito por imagem", "Proporção automática"],
         "name": "Standard (HD)",
         "version": "HD"
       },
-      "gemini-3-pro-image-preview": {
+      "gemini-3-pro-image": {
         "credits": "3-10 créditos",
         "emoji": "⛏️",
         "features": ["Resolução 4K", "Ferramentas avançadas", "Qualidade superior"],
