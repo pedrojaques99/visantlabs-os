@@ -14,13 +14,13 @@ import {
 } from '../services/falVideoService.js';
 import { generateSeedanceVideo } from '../services/seedanceService.js';
 import { getVideoCreditsRequired } from '../utils/usageTracking.js';
+import { videoProviderCostUsd } from '../lib/ai/cost.js';
 import {
   deductCreditsAtomically,
   refundCreditsWithRetry as refundCredits,
 } from '../lib/credits.js';
 import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { uploadCanvasVideo, isR2Configured } from '../services/r2Service.js';
-import { calculateVideoCost } from '../../src/utils/pricing.js';
 import { rateLimit } from 'express-rate-limit';
 import { redisClient } from '../lib/redis.js';
 import { CacheKey, CACHE_TTL, hashObject } from '../lib/cache-utils.js';
@@ -243,7 +243,8 @@ router.post(
       });
 
       // Calculate credits required based on model (30 for fast, 80 for standard)
-      const baseCreditsToDeduct = getVideoCreditsRequired(model);
+      const durationSec = parseInt(String(duration ?? '').replace(/s$/, ''), 10) || undefined;
+      const baseCreditsToDeduct = getVideoCreditsRequired(model, { klingMode, durationSec });
 
       // Check if generation is unlimited based on user's subscription plan
       const planMetadata = await getUserPlanMetadata(req.userId!);
@@ -594,8 +595,7 @@ router.post(
           timestamp: new Date(),
           // fal: custo real (segundos × preço do endpoint); demais: estimativa interna
           cost:
-            falMeta?.costUsd ??
-            calculateVideoCost(1, normalizedModel.includes('fast') ? 'fast' : 'standard'),
+            falMeta?.costUsd ?? videoProviderCostUsd(normalizedModel, { klingMode, durationSec }),
           ...(falMeta
             ? {
                 provider: 'fal',

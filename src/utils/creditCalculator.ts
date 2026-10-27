@@ -190,7 +190,23 @@ export function getTotalBrandingCredits(): number {
  * @param model - Veo model identifier
  * @returns Credits required (15 for fast, 40 for standard)
  */
-export function getVideoCreditsRequired(model?: string, mode?: string): number {
+export function getVideoCreditsRequired(
+  model?: string,
+  mode?: string,
+  durationSec?: number
+): number {
+  const base = baseVideoCredits(model, mode);
+  // Kling cobra do provedor POR SEGUNDO (fal: US$ 0,14/s); a tabela de créditos é por clipe de 5s.
+  // Sem escalar, um clipe de 15s custava o mesmo que um de 5s e dava prejuízo (US$ 2,10 de
+  // custo contra ~US$ 1,44 de receita). Até 5s o preço não muda.
+  if (model?.startsWith('kling-') && durationSec && durationSec > 5) {
+    return Math.ceil((base * durationSec) / 5);
+  }
+  return base;
+}
+
+/** Créditos de um clipe na duração-base (5s para Kling/Seedance, 8s para Veo). */
+function baseVideoCredits(model?: string, mode?: string): number {
   if (!model) return 20;
 
   // Seedance — v2 costs more than v1
