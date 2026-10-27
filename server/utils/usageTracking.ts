@@ -9,6 +9,7 @@ import { isImagenModel } from '../../src/constants/imagenModels.js';
 import { isIdeogramModel } from '../../src/constants/ideogramModels.js';
 import { isReveModel } from '../../src/constants/reveModels.js';
 import { lookupCredits } from '../lib/pricing-data.js';
+import { resolveModelAlias } from '../../src/constants/modelAliases.js';
 import { getVideoCreditsRequired as calcVideoCredits } from '../../src/utils/creditCalculator.js';
 import { computeCost, isFreeModel } from '../lib/ai/cost.js';
 
@@ -45,6 +46,7 @@ export type GenerationSurface = 'ui' | 'mcp' | 'copilot';
  * Derives values from CREDIT_COSTS in pricing-data.ts (single source of truth).
  */
 export function getCreditsRequired(model: GeminiModel | string, resolution?: Resolution): number {
+  model = resolveModelAlias(model);
   const lookup = lookupCredits(
     model,
     resolution
@@ -165,7 +167,7 @@ export function getVideoCreditsRequired(
 ): number {
   // Fonte única: a mesma conta que a UI mostra (src/utils/creditCalculator.ts). Antes o servidor
   // ignorava klingMode e cobrava 20 num clipe pro/4k que a UI anunciava a 30/40.
-  return calcVideoCredits(model, opts?.klingMode, opts?.durationSec);
+  return calcVideoCredits(resolveModelAlias(model), opts?.klingMode, opts?.durationSec);
 }
 
 /**

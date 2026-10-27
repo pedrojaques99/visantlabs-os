@@ -98,16 +98,16 @@ export const STORAGE_PLANS: StoragePlan[] = [
  */
 export const GOOGLE_OFFICIAL_PRICING = {
   image: {
-    'gemini-2.5-flash-image': {
-      '~1K': 0.039,
+    'gemini-3.1-flash-lite-image': {
+      '1K': 0.0336,
     },
-    'gemini-3.1-flash-image-preview': {
+    'gemini-3.1-flash-image': {
       '512px': 0.045,
       '1K': 0.067,
       '2K': 0.101,
       '4K': 0.151,
     },
-    'gemini-3-pro-image-preview': {
+    'gemini-3-pro-image': {
       '1K': 0.134,
       '2K': 0.134, // Google: "1K and up to 2K" same price
       '4K': 0.24,
@@ -132,12 +132,12 @@ export const GOOGLE_OFFICIAL_PRICING = {
  * Transparent mapping from credits to capabilities
  */
 export const CREDIT_COSTS: PricingTier[] = [
-  // Image Generation - Gemini 2.5 Flash
+  // Image Generation - Nano Banana 2 Lite (substitui o Gemini 2.5 Flash Image, aposentado)
   {
-    model: 'Gemini 2.5 Flash',
-    modelId: 'gemini-2.5-flash-image',
+    model: 'Nano Banana 2 Lite',
+    modelId: 'gemini-3.1-flash-lite-image',
     resolution: '~1K (HD)',
-    googlePriceUSD: 0.039,
+    googlePriceUSD: 0.0336,
     creditsRequired: 1,
     category: 'image',
   },
@@ -145,7 +145,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   // Image Generation - Gemini 3.1 Flash (NB2)
   {
     model: 'Gemini 3.1 Flash',
-    modelId: 'gemini-3.1-flash-image-preview',
+    modelId: 'gemini-3.1-flash-image',
     resolution: '512px',
     googlePriceUSD: 0.045,
     creditsRequired: 1,
@@ -153,7 +153,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Gemini 3.1 Flash',
-    modelId: 'gemini-3.1-flash-image-preview',
+    modelId: 'gemini-3.1-flash-image',
     resolution: '1K (HD)',
     googlePriceUSD: 0.067,
     creditsRequired: 2,
@@ -161,7 +161,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Gemini 3.1 Flash',
-    modelId: 'gemini-3.1-flash-image-preview',
+    modelId: 'gemini-3.1-flash-image',
     resolution: '2K',
     googlePriceUSD: 0.101,
     creditsRequired: 3,
@@ -169,7 +169,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Gemini 3.1 Flash',
-    modelId: 'gemini-3.1-flash-image-preview',
+    modelId: 'gemini-3.1-flash-image',
     resolution: '4K',
     googlePriceUSD: 0.151,
     creditsRequired: 4,
@@ -179,7 +179,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   // Image Generation - Gemini 3 Pro
   {
     model: 'Gemini 3 Pro',
-    modelId: 'gemini-3-pro-image-preview',
+    modelId: 'gemini-3-pro-image',
     resolution: '1K (HD)',
     googlePriceUSD: 0.134,
     creditsRequired: 3,
@@ -187,7 +187,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Gemini 3 Pro',
-    modelId: 'gemini-3-pro-image-preview',
+    modelId: 'gemini-3-pro-image',
     resolution: '2K',
     googlePriceUSD: 0.134,
     creditsRequired: 5,
@@ -195,7 +195,7 @@ export const CREDIT_COSTS: PricingTier[] = [
   },
   {
     model: 'Gemini 3 Pro',
-    modelId: 'gemini-3-pro-image-preview',
+    modelId: 'gemini-3-pro-image',
     resolution: '4K',
     googlePriceUSD: 0.24,
     creditsRequired: 7,
@@ -371,7 +371,7 @@ export function generatePricingMarkdown(): string {
   lines.push('');
   lines.push('| Model | Resolution | Google Price (USD) |');
   lines.push('|-------|------------|-------------------|');
-  lines.push('| Gemini 2.5 Flash Image | ~1K | $0.039 |');
+  lines.push('| Nano Banana 2 Lite | ~1K | $0.0336 |');
   lines.push('| Gemini 3.1 Flash Image | 512px | $0.045 |');
   lines.push('| Gemini 3.1 Flash Image | 1K | $0.067 |');
   lines.push('| Gemini 3.1 Flash Image | 2K | $0.101 |');

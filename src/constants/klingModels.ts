@@ -55,18 +55,13 @@ export type KlingDuration =
   | '15';
 
 // ── Ordered list for UI display ────────────────────────────────────────────────
+// Só o que roda no fal (server/services/falVideoService.ts). O legado (v1.x, v2.1, master,
+// video-o1) dependia da API direta e virou alias do v3 em src/constants/modelAliases.ts.
 export const KLING_VIDEO_MODEL_LIST: KlingVideoModelId[] = [
   KLING_VIDEO_MODELS.V3_OMNI,
   KLING_VIDEO_MODELS.V3,
   KLING_VIDEO_MODELS.V2_6,
   KLING_VIDEO_MODELS.V2_5_TURBO,
-  KLING_VIDEO_MODELS.V2_1_MASTER,
-  KLING_VIDEO_MODELS.V2_1,
-  KLING_VIDEO_MODELS.V2_MASTER,
-  KLING_VIDEO_MODELS.V1_6,
-  KLING_VIDEO_MODELS.V1_5,
-  KLING_VIDEO_MODELS.V1,
-  KLING_VIDEO_MODELS.VIDEO_O1,
 ];
 
 // ── Per-model configuration ────────────────────────────────────────────────────

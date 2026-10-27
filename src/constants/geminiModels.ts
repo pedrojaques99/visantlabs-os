@@ -2,9 +2,10 @@ import type { GeminiModel, Resolution, AspectRatio } from '../types/types';
 
 // ── Model IDs (single source of truth) ─────────────────────────────────────
 // Official names: https://ai.google.dev/gemini-api/docs/image-generation
-//   Nano Banana    = gemini-2.5-flash-image         (speed, no resolution control, up to 3 ref images)
-//   Nano Banana 2  = gemini-3.1-flash-image-preview (2K default, up to 10 ref images, 512px–4K)
-//   Nano Banana Pro = gemini-3-pro-image-preview    (reasoning, text rendering, up to 14 ref images, 1K–4K)
+//   Nano Banana 2 Lite = gemini-3.1-flash-lite-image (substitui o gemini-2.5-flash-image, aposentado)
+//   Nano Banana 2      = gemini-3.1-flash-image      (GA; 2K default, up to 10 ref images, 512px–4K)
+//   Nano Banana Pro    = gemini-3-pro-image          (GA; reasoning, text rendering, up to 14 ref images, 1K–4K)
+// Ids aposentados (preview, 2.5, Imagen 4) → src/constants/modelAliases.ts
 export const GEMINI_MODELS = {
   /** Gemini 3.5 Flash — Most intelligent, sustained frontier performance */
   FLASH_3_5: 'gemini-3.5-flash' as const,
@@ -13,21 +14,21 @@ export const GEMINI_MODELS = {
   /** Gemini 3 Flash - Optimized for performance and reasoning */
   FLASH_3: 'gemini-3-flash-preview' as const,
   /** Gemini 3.1 Flash Lite - Most cost-efficient high-volume model */
-  FLASH_3_LITE: 'gemini-3.1-flash-lite-preview' as const,
+  FLASH_3_LITE: 'gemini-3.1-flash-lite' as const,
   /** High-end intelligence for branding strategy & complex reasoning */
   PRO_2_0: 'gemini-3.1-pro-preview' as const,
   /** Gemini 2.5 Flash — Fast text/chat model */
   FLASH_2_5: 'gemini-2.5-flash' as const,
   /** Nano Banana — Fast image gen, no resolution control, up to 3 ref images */
-  IMAGE_FLASH: 'gemini-2.5-flash-image' as const,
+  IMAGE_FLASH: 'gemini-3.1-flash-lite-image' as const,
   /** Nano Banana 2 — High-perf 2K multimodal generation, up to 10 ref images, 512px–4K */
-  IMAGE_NB2: 'gemini-3.1-flash-image-preview' as const,
+  IMAGE_NB2: 'gemini-3.1-flash-image' as const,
   /** Nano Banana Pro — Reasoning + text rendering, up to 14 ref images, 1K–4K */
-  IMAGE_PRO: 'gemini-3-pro-image-preview' as const,
+  IMAGE_PRO: 'gemini-3-pro-image' as const,
   // Backward-compatible aliases (deprecated, use IMAGE_* variants)
-  FLASH: 'gemini-2.5-flash-image' as const,
-  NB2: 'gemini-3.1-flash-image-preview' as const,
-  PRO: 'gemini-3-pro-image-preview' as const,
+  FLASH: 'gemini-3.1-flash-lite-image' as const,
+  NB2: 'gemini-3.1-flash-image' as const,
+  PRO: 'gemini-3-pro-image' as const,
   // Text model alias (for chat/non-image generation)
   TEXT: 'gemini-3-flash-preview' as const,
 } as const;
@@ -147,7 +148,7 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     deprecated: true,
   },
   [GEMINI_MODELS.IMAGE_FLASH]: {
-    label: 'Nano Banana',
+    label: 'Nano Banana 2 Lite',
     badge: 'fast',
     emoji: '🎨',
     maxHandles: 2,

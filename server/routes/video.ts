@@ -15,6 +15,7 @@ import {
 import { generateSeedanceVideo } from '../services/seedanceService.js';
 import { getVideoCreditsRequired } from '../utils/usageTracking.js';
 import { videoProviderCostUsd } from '../lib/ai/cost.js';
+import { resolveModelAlias } from '../../src/constants/modelAliases.js';
 import {
   deductCreditsAtomically,
   refundCreditsWithRetry as refundCredits,
@@ -330,7 +331,8 @@ router.post(
       }
 
       // Normalize legacy Veo model names
-      let normalizedModel = model;
+      // Kling legado (v1.x, v2.1, master, o1) só rodava na API direta, sem pacote: vira v3 no fal.
+      let normalizedModel = resolveModelAlias(model);
       if (model === 'veo-3' || model === 'veo-2') {
         normalizedModel = 'veo-3.1-generate-preview';
         console.log(`${logPrefix} [Model Normalization] ${model} -> ${normalizedModel}`);

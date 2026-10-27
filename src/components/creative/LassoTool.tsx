@@ -90,7 +90,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
     try {
       const result = await mockupApi.generate({
         promptText: aiPrompt,
-        model: 'gemini-3.1-flash-image-preview',
+        model: 'gemini-3.1-flash-image',
         provider: 'gemini',
         aspectRatio: '1:1',
         feature: 'canvas',

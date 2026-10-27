@@ -3,6 +3,7 @@ import { GEMINI_MODELS, MODEL_CONFIG, AVAILABLE_IMAGE_MODELS } from '../constant
 import { isSeedreamModel } from '../constants/seedreamModels';
 import { isOpenAIImageModel } from '../constants/openaiModels';
 import { isImagenModel } from '../constants/imagenModels';
+import { resolveModelAlias } from '../constants/modelAliases';
 import { isIdeogramModel } from '../constants/ideogramModels';
 import { isReveModel } from '../constants/reveModels';
 
@@ -19,6 +20,7 @@ export function getCreditsRequired(
   if (!model) {
     return 2; // Default fallback
   }
+  model = resolveModelAlias(model);
 
   // Imagen 4 (Google, fixed price per image)
   if (provider === 'imagen' || isImagenModel(model)) {
@@ -195,6 +197,7 @@ export function getVideoCreditsRequired(
   mode?: string,
   durationSec?: number
 ): number {
+  model = resolveModelAlias(model);
   const base = baseVideoCredits(model, mode);
   // Kling cobra do provedor POR SEGUNDO (fal: US$ 0,14/s); a tabela de créditos é por clipe de 5s.
   // Sem escalar, um clipe de 15s custava o mesmo que um de 5s e dava prejuízo (US$ 2,10 de

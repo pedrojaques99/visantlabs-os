@@ -26,6 +26,7 @@ import type {
 } from '../../src/lib/figma-types.js';
 import { preprocessPrompt, type LinearIssue } from '../utils/linearParser.js';
 import { safeFetch } from '../utils/securityValidation.js';
+import { resolveModelAlias } from '../../src/constants/modelAliases.js';
 import { sanitizeForPrompt, sanitizePromptArray } from '../utils/promptSanitize.js';
 import { stripHtml } from '../utils/stripHtml.js';
 import { buildGeminiPromptInstructionsTemplate } from '../../src/utils/mockupPromptFormat.js';
@@ -307,6 +308,8 @@ export const generateMockup = async (
   onRetry?: (attempt: number, maxRetries: number, delay: number) => void,
   apiKey?: string
 ): Promise<string> => {
+  // id aposentado (2.5 Flash Image, previews) vira o substituto antes de chamar o Google
+  model = resolveModelAlias(model) as GeminiModel;
   return withRetry(
     async () => {
       const parts: any[] = [];
@@ -361,7 +364,7 @@ export const generateMockup = async (
       // Configure resolution / aspect ratio for image models
       // - Nano Banana 2 (3.1 Flash): uses imageConfig with aspectRatio + imageSize
       // - Nano Banana Pro (3 Pro): uses imageConfig with aspectRatio + imageSize
-      // - Nano Banana (2.5 Flash): uses outputImageDimensions (legacy)
+      // - Nano Banana 2 Lite (3.1 Flash Lite): imageConfig só com aspectRatio (1K fixo)
       if (isAdvancedModel(model)) {
         // Nano Banana 2 / Pro: use imageConfig API
         config.imageConfig = {} as any;
@@ -372,24 +375,8 @@ export const generateMockup = async (
           config.imageConfig.imageSize = resolution;
         }
       } else if (model === GEMINI_MODELS.IMAGE_FLASH && aspectRatio) {
-        // Nano Banana (legacy): uses outputImageDimensions
-        const maxDimension = 1210;
-        const [widthRatio, heightRatio] = aspectRatio.split(':').map(Number);
-        const ratio = widthRatio / heightRatio;
-
-        let width: number, height: number;
-        if (ratio >= 1) {
-          width = maxDimension;
-          height = Math.round(maxDimension / ratio);
-        } else {
-          height = maxDimension;
-          width = Math.round(maxDimension * ratio);
-        }
-
-        config.outputImageDimensions = {
-          width,
-          height,
-        };
+        // Nano Banana 2 Lite: aceita imageConfig.aspectRatio (testado na API em 2026-10-27), só 1K
+        config.imageConfig = { aspectRatio } as any;
       }
 
       const response = await getAI(apiKey, { operation: 'mockup-generate' }).models.generateContent(
