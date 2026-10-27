@@ -12,10 +12,12 @@ import { videoProviderCostUsd } from '../ai/cost.js';
  */
 const FLOOR_USD_PER_CREDIT = Math.min(...CREDIT_PACKAGES.map((p) => p.pricePerCreditUSD));
 
-// Tiers que HOJE vendem abaixo do custo (receita no piso < custo + infra). Cada um tem
-// recomendação no audit. Tier novo que entre abaixo do custo reprova o teste; ao corrigir
-// um destes, remova da lista.
-const KNOWN_UNDERWATER = new Set(['veo-3.1-lite-generate-preview:1080p (8s)', 'gpt-image-2:2K']);
+// Tiers vendidos abaixo do custo e ainda não corrigidos. Vazia desde o audit v2 (2026-10-27):
+// tier novo que entre abaixo do custo reprova o teste.
+const KNOWN_UNDERWATER = new Set<string>();
+
+// Taxa de pagamento + câmbio/IOF descontada da receita (AbacatePay PIX R$ 0,80; cartão ~3,5% + R$ 0,60).
+const PAYMENT_AND_FX_LOSS = 0.05;
 
 describe('guarda de margem dos créditos', () => {
   it('nenhum tier vende abaixo do custo (fora da lista conhecida)', () => {
@@ -24,11 +26,22 @@ describe('guarda de margem dos créditos', () => {
       if (t.category !== 'image' && t.category !== 'video') continue;
       const infra =
         t.category === 'video' ? VISANT_INFRA_COSTS.VIDEO_TOTAL : VISANT_INFRA_COSTS.IMAGE_TOTAL;
-      const revenue = t.creditsRequired * FLOOR_USD_PER_CREDIT;
+      const revenue = t.creditsRequired * FLOOR_USD_PER_CREDIT * (1 - PAYMENT_AND_FX_LOSS);
       if (revenue < t.googlePriceUSD + infra) underwater.push(`${t.modelId}:${t.resolution}`);
     }
     const unexpected = underwater.filter((k) => !KNOWN_UNDERWATER.has(k));
     expect(unexpected).toEqual([]);
+  });
+
+  it('créditos da tabela de vídeo = créditos que a UI mostra', () => {
+    const modo = (label: string) =>
+      label.includes('(4K)') ? '4k' : label.includes('(pro)') ? 'pro' : 'std';
+    for (const t of CREDIT_COSTS) {
+      if (t.category !== 'video') continue;
+      expect(uiCredits(t.modelId, modo(t.model)), `${t.model} ${t.resolution}`).toBe(
+        t.creditsRequired
+      );
+    }
   });
 
   it('a tabela bate com o preço do código nos modelos de imagem com preço publicado', () => {
@@ -64,7 +77,7 @@ describe('créditos de vídeo: UI e servidor cobram o mesmo', () => {
 
   it('Kling pro/4k deixam de ser cobrados como std (bug do servidor)', () => {
     expect(serverCredits('kling-v3', { klingMode: 'pro' })).toBe(30);
-    expect(serverCredits('kling-v3', { klingMode: '4k' })).toBe(40);
+    expect(serverCredits('kling-v3', { klingMode: '4k' })).toBe(50);
     expect(serverCredits('kling-v3', { klingMode: 'std' })).toBe(20);
   });
 
@@ -94,6 +107,13 @@ describe('videoProviderCostUsd', () => {
       4
     );
     expect(videoProviderCostUsd('seedance-2-0', { durationSec: 5 })).toBeCloseTo(0.92, 4);
+  });
+
+  it('Kling sem linha própria na tabela (omni, v2.6) usa a tarifa do v3 e nunca 0', () => {
+    expect(
+      videoProviderCostUsd('kling-v3-omni', { klingMode: 'pro', durationSec: 5 })
+    ).toBeGreaterThan(0);
+    expect(videoProviderCostUsd('kling-v2-6', { durationSec: 5 })).toBeGreaterThan(0);
   });
 
   it('Veo segue por segundo × duração', () => {

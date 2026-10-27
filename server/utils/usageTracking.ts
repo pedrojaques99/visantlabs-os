@@ -60,7 +60,7 @@ export function getCreditsRequired(model: GeminiModel | string, resolution?: Res
       case '1K':
         return 2;
       case '2K':
-        return 3;
+        return 4;
       case '4K':
         return 4;
       case '1080p':

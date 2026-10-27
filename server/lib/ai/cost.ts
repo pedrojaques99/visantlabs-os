@@ -79,7 +79,12 @@ export function videoProviderCostUsd(
   const seconds = opts?.durationSec && opts.durationSec > 0 ? opts.durationSec : undefined;
   if (model.startsWith('kling-') || model.startsWith('seedance-')) {
     const mode = model.startsWith('kling-') ? (opts?.klingMode ?? 'std') : null;
-    const tiers = CREDIT_COSTS.filter((t) => t.category === 'video' && t.modelId === model);
+    // Modelo sem linha própria na tabela (omni, v2.6...) usa a tarifa do kling-v3: melhor um custo
+    // plausível do que 0, que é o jeito de um gasto sumir do relatório.
+    const own = CREDIT_COSTS.filter((t) => t.category === 'video' && t.modelId === model);
+    const tiers = own.length
+      ? own
+      : CREDIT_COSTS.filter((t) => t.category === 'video' && t.modelId === 'kling-v3');
     const tier =
       (mode &&
         tiers.find((t) => t.model.toLowerCase().includes(`(${mode === 'std' ? 'std' : mode})`))) ||

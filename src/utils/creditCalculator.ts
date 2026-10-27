@@ -221,7 +221,7 @@ function baseVideoCredits(model?: string, mode?: string): number {
   if (model.startsWith('kling-')) {
     if (model === 'kling-video-o1') return mode === 'pro' ? 35 : 25;
     if (model.includes('v3-omni') || model.includes('v3')) {
-      if (mode === '4k') return 40;
+      if (mode === '4k') return 50;
       if (mode === 'pro') return 30;
       return 20;
     }
@@ -234,9 +234,9 @@ function baseVideoCredits(model?: string, mode?: string): number {
   // Veo — Fast/Standard bumped (15→20, 40→50) to match the corrected
   // server-side cost in server/utils/usageTracking.ts (both were sold below
   // Google's per-second cost).
-  if (model.includes('lite')) return 8;
-  if (model.includes('fast')) return 20;
-  return 50;
+  if (model.includes('lite')) return 12;
+  if (model.includes('fast')) return 24;
+  return 72;
 }
 
 /**
