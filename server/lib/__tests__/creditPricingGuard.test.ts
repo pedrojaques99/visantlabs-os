@@ -8,7 +8,7 @@ import { videoProviderCostUsd } from '../ai/cost.js';
 /**
  * Guarda de margem: o preço em créditos tem que cobrir o custo do provedor.
  * Referência de receita = o crédito mais barato vendido (pacote de 500). Veja
- * `.agent/plans/CREDIT-PRICING-AUDIT.md` pra metodologia e as recomendações.
+ * `docs/CREDIT-PRICING-AUDIT.md` pra metodologia e as recomendações.
  */
 const FLOOR_USD_PER_CREDIT = Math.min(...CREDIT_PACKAGES.map((p) => p.pricePerCreditUSD));
 
