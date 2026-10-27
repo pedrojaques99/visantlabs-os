@@ -1482,10 +1482,6 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           'kling-v3',
           'kling-v2.6',
           'kling-v2.5-turbo',
-          'kling-v2.1',
-          'kling-v1.6',
-          'kling-v1.5',
-          'kling-v1',
         ])
         .default('veo-3.1-generate-preview')
         .describe(

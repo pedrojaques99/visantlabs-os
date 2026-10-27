@@ -77,7 +77,7 @@ export async function generateCreative({
     const bgPrompt = plan.background?.prompt ?? prompt;
     const result = await mockupApi.generate({
       promptText: bgPrompt,
-      model: modelId || 'gemini-3.1-flash-image-preview',
+      model: modelId || 'gemini-3.1-flash-image',
       provider: (provider as any) || 'gemini',
       resolution,
       aspectRatio: format,

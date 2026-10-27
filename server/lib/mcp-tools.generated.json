@@ -144,17 +144,14 @@
           "description": "Full image description — style, composition, colors, lighting, mood."
         },
         "model": {
-          "default": "gemini-3.1-flash-image-preview",
+          "default": "gemini-3.1-flash-image",
           "description": "gpt-image-2=best, gemini=fast, seedream=photorealistic (requires your own BytePlus API key via Settings → BYOK).",
           "type": "string",
           "enum": [
             "gpt-image-1",
             "gpt-image-2",
-            "gemini-3.1-flash-image-preview",
-            "gemini-3-pro-image-preview",
-            "imagen-4.0-fast-generate-001",
-            "imagen-4.0-generate-001",
-            "imagen-4.0-ultra-generate-001",
+            "gemini-3.1-flash-image",
+            "gemini-3-pro-image",
             "seedream-5-0-260128",
             "seedream-4-5-250601",
             "seedream-4-0-250828",
@@ -3025,17 +3022,14 @@
           "enum": ["1:1", "16:9", "9:16", "4:5"]
         },
         "model": {
-          "default": "gemini-3.1-flash-image-preview",
+          "default": "gemini-3.1-flash-image",
           "description": "Model for background image generation.",
           "type": "string",
           "enum": [
             "gpt-image-1",
             "gpt-image-2",
-            "gemini-3.1-flash-image-preview",
-            "gemini-3-pro-image-preview",
-            "imagen-4.0-fast-generate-001",
-            "imagen-4.0-generate-001",
-            "imagen-4.0-ultra-generate-001",
+            "gemini-3.1-flash-image",
+            "gemini-3-pro-image",
             "seedream-5-0-260128",
             "seedream-4-5-250601",
             "seedream-4-0-250828",
@@ -3598,17 +3592,14 @@
           "type": "string"
         },
         "model": {
-          "default": "gemini-3.1-flash-image-preview",
+          "default": "gemini-3.1-flash-image",
           "description": "gpt-image-2=best quality (recommended), gemini=fast/creative, seedream=photorealistic (requires your own BytePlus API key via Settings → BYOK).",
           "type": "string",
           "enum": [
             "gpt-image-1",
             "gpt-image-2",
-            "gemini-3.1-flash-image-preview",
-            "gemini-3-pro-image-preview",
-            "imagen-4.0-fast-generate-001",
-            "imagen-4.0-generate-001",
-            "imagen-4.0-ultra-generate-001",
+            "gemini-3.1-flash-image",
+            "gemini-3-pro-image",
             "seedream-5-0-260128",
             "seedream-4-5-250601",
             "seedream-4-0-250828",
@@ -4222,17 +4213,14 @@
           "type": "string"
         },
         "model": {
-          "default": "gemini-3.1-flash-image-preview",
+          "default": "gemini-3.1-flash-image",
           "description": "Image model for the artPrompt path. Default is recommended.",
           "type": "string",
           "enum": [
             "gpt-image-1",
             "gpt-image-2",
-            "gemini-3.1-flash-image-preview",
-            "gemini-3-pro-image-preview",
-            "imagen-4.0-fast-generate-001",
-            "imagen-4.0-generate-001",
-            "imagen-4.0-ultra-generate-001",
+            "gemini-3.1-flash-image",
+            "gemini-3-pro-image",
             "seedream-5-0-260128",
             "seedream-4-5-250601",
             "seedream-4-0-250828",
@@ -4829,11 +4817,7 @@
             "kling-v3-omni",
             "kling-v3",
             "kling-v2.6",
-            "kling-v2.5-turbo",
-            "kling-v2.1",
-            "kling-v1.6",
-            "kling-v1.5",
-            "kling-v1"
+            "kling-v2.5-turbo"
           ]
         },
         "mode": {

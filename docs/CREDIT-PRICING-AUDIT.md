@@ -8,7 +8,7 @@ que batem entre si), **baixa** (um revendedor ou fonte contraditória).
 
 ## 1. Resumo
 
-- **A receita real é quase zero** e o gasto é quase todo interno. O produto está pré-receita: a
+- **A receita de clientes é zero:** os 56 registros de pagamento são checkouts de teste da sua conta admin (dez/2025), e o gasto é quase todo interno. O produto está pré-receita: a
   precificação precisa estar certa _antes_ de entrar volume.
 - **Os maiores vazamentos eram de cobrança e contabilidade, não de preço de tabela:** o servidor cobrava
   Kling pro/4k como std, o Kling não escalava com a duração, todo vídeo era contabilizado como Veo
@@ -16,7 +16,7 @@ que batem entre si), **baixa** (um revendedor ou fonte contraditória).
 - **Quatro tiers vendiam abaixo do custo ou no zero a zero** (Veo Lite, Veo Fast, Veo Standard, GPT Image 2
   2K). Corrigidos nesta versão, para ~30% de margem líquida de taxas.
 - **Dois riscos operacionais que não são de preço:** a conta da OpenAI está **sem crédito** desde 2/out
-  (GPT Image 2 falha 100%), e o Google marcou o modelo de imagem padrão como aposentado (2/out).
+  (GPT Image 2 falha 100%), e havia modelos aposentados no menu (Imagen 4 já dá 404): trocados na seção 5.1.
 
 ## 2. O que os dados internos mostram (produção, leitura)
 
@@ -129,14 +129,30 @@ Margem líquida de taxas, sobre a receita:
 - Contagens de vídeo dos pacotes na página de preços foram recalculadas (500 créditos: 20 Fast ou 6 Standard).
 - Referência de mercado: o Veo Standard a 72 créditos sai a ~US$ 0,65/s ao crédito mínimo, entre o Runway API (0,40) e o Luma (0,84).
 
+## 5.1 Modelos aposentados (2026-10-27)
+
+Conferido na página de deprecations do Google e com `GET /v1beta/models/<id>` na chave da casa.
+
+| Antes                                                        | Situação                                                              | Agora                                                                                                                     |
+| ------------------------------------------------------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Imagen 4 Fast / 4 / Ultra                                    | **404 na API** (desligado em 17/ago/2026), mas ainda no menu          | Fora da oferta; id antigo vira Nano Banana 2 Lite (Fast/4) ou Nano Banana 2 (Ultra)                                       |
+| `gemini-2.5-flash-image` (padrão "HD")                       | Aposentado, substituto indicado `gemini-3.1-flash-lite-image`         | **Nano Banana 2 Lite**, US$ 0,0336 em vez de 0,039 (1 crédito, margem 23% → 30%); aspect ratio via `imageConfig`, testado |
+| `gemini-3.1-flash-image-preview`                             | Preview com desligamento em 25/jun/2026                               | `gemini-3.1-flash-image` (GA, mesmo modelo e preço)                                                                       |
+| `gemini-3-pro-image-preview`                                 | Preview com desligamento em 25/jun/2026                               | `gemini-3-pro-image` (GA, mesmo modelo e preço)                                                                           |
+| `gemini-3.1-flash-lite-preview` (texto)                      | Desligamento em 25/mai/2026                                           | `gemini-3.1-flash-lite` (GA)                                                                                              |
+| Kling v1, v1.5, v1.6, v2.1, v2-master, v2.1-master, video-o1 | Só rodavam na API direta da Kling, que está sem pacote (falha sempre) | Fora da oferta; id antigo vira `kling-v3` (o1 → `kling-v3-omni`) no fal                                                   |
+
+- Canvas e presets salvos com id antigo continuam funcionando: `src/constants/modelAliases.ts` troca o id antes de gerar e de cobrar (servidor e UI).
+- **Ainda em risco, sem troca:** os três Veo 3.1 (`*-preview`) têm desligamento listado em 22/out/2026, já passou, mas ainda respondem. O substituto indicado, `gemini-omni-1.1-flash` (~US$ 0,10/s em 720p), usa outra API: é integração nova, não troca de id.
+- Oportunidade: o `gemini-nano-banana-2.1` custa metade do Nano Banana 2 (US$ 0,0336 / 0,0504 / 0,113 em 1K/2K/4K) e é o substituto que o Google indica. Não troquei: muda o modelo (qualidade), não só o id.
+
 ## 6. O que depende de você (não dá para eu fazer)
 
 1. **Recarregar a conta da OpenAI.** Todas as chamadas de GPT Image 2 desde 2/out falham com `429 You have no credits remaining`
    (7 de 7 nos últimos 30 dias). Painel: platform.openai.com/settings/organization/billing.
-2. **Migrar o modelo de imagem padrão.** O Google marca `gemini-2.5-flash-image` como aposentado em 2/out/2026 e o `gemini-3.1-flash-image-preview` em 25/jun/2026 (substituto: `gemini-3.1-flash-image`, já disponível na API).
-   Os dois ainda respondem, mas podem cair sem aviso. Trocar o id muda custo (0,039 → 0,067) e créditos (1 → 2): é decisão de produto.
+2. **Veo 3.1 → Gemini Omni.** Seção 5.1: o desligamento listado dos Veo preview já passou. Migrar para `gemini-omni-1.1-flash` é integração nova; decidir quando.
 3. **Avaliar um pacote da Kling direta** para o std (US$ 0,084/s contra 0,14 no fal, se o revendedor estiver certo). Exige comprar resource pack: não comprei nada.
-4. **Conferir os 44 pagamentos `PENDING` (R$ 1.284)** na AbacatePay e se o cron `POST /api/cron/reconcile-payments` está agendado no Coolify.
+4. **Os 56 registros de pagamento (incluindo os 44 `PENDING`) são todos da sua conta admin, entre 4 e 15/dez/2025:** checkouts de teste da integração, nenhum cliente. Não há receita perdida. Vale só limpar os registros de teste; e a chave da AbacatePay no `.env` local está inativa ("Invalid or inactive API key"), então confirmar que a de produção no Coolify é outra.
 5. **Conferir taxas reais da AbacatePay** e o câmbio/IOF do cartão que paga os provedores (premissa de 5%).
 6. **Conferir o preço do Seedance** no console da BytePlus (hoje não afeta ninguém: 0 uso).
 7. **Política do plano gratuito:** 126 usuários × ~23 créditos/mês. Pior caso (tudo em Veo Standard, agora 72 créditos): ~US$ 0,046/crédito de custo. Hoje o gasto observado é todo interno.

@@ -20,9 +20,10 @@ const FAL_EXPECTED = {
   'fal-ai/kling-video/v2.5-turbo/pro/image-to-video': 0.07,
 };
 const GEMINI_MODELS = [
-  'gemini-2.5-flash-image',
-  'gemini-3.1-flash-image-preview',
-  'gemini-3-pro-image-preview',
+  'gemini-3.1-flash-lite-image',
+  'gemini-3.1-flash-image',
+  'gemini-3-pro-image',
+  'gemini-3.1-flash-lite',
   'veo-3.1-generate-preview',
   'veo-3.1-fast-generate-preview',
   'veo-3.1-lite-generate-preview',

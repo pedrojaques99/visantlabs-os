@@ -7,7 +7,6 @@
  */
 
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
-import { IMAGEN_MODELS } from '../../src/constants/imagenModels.js';
 import { OPENAI_IMAGE_MODELS } from '../../src/constants/openaiModels.js';
 import { SEEDREAM_MODELS } from '../../src/constants/seedreamModels.js';
 import { REVE_MODELS } from '../../src/constants/reveModels.js';
@@ -89,7 +88,7 @@ export const STORAGE_PLANS: StoragePlan[] = [
 
 export const GOOGLE_OFFICIAL_PRICING = {
   image: {
-    [GEMINI_MODELS.IMAGE_FLASH]: { '~1K': 0.039 },
+    [GEMINI_MODELS.IMAGE_FLASH]: { '1K': 0.0336 },
     [GEMINI_MODELS.IMAGE_NB2]: { '512px': 0.045, '1K': 0.067, '2K': 0.101, '4K': 0.151 },
     [GEMINI_MODELS.IMAGE_PRO]: { '1K': 0.134, '2K': 0.134, '4K': 0.24 },
   },
@@ -104,10 +103,10 @@ export const GOOGLE_OFFICIAL_PRICING = {
 export const CREDIT_COSTS: PricingTier[] = [
   // ── Gemini Image ──
   {
-    model: 'Gemini 2.5 Flash',
+    model: 'Nano Banana 2 Lite',
     modelId: GEMINI_MODELS.IMAGE_FLASH,
     resolution: '~1K (HD)',
-    googlePriceUSD: 0.039,
+    googlePriceUSD: 0.0336,
     creditsRequired: 1,
     category: 'image',
   },
@@ -165,47 +164,6 @@ export const CREDIT_COSTS: PricingTier[] = [
     resolution: '4K',
     googlePriceUSD: 0.24,
     creditsRequired: 7,
-    category: 'image',
-  },
-  // ── Imagen 4 (Google, fixed price per image) ──
-  {
-    model: 'Imagen 4 Fast',
-    modelId: IMAGEN_MODELS.IMAGEN_4_FAST,
-    resolution: '1K',
-    googlePriceUSD: 0.02,
-    creditsRequired: 1,
-    category: 'image',
-  },
-  {
-    model: 'Imagen 4',
-    modelId: IMAGEN_MODELS.IMAGEN_4,
-    resolution: '1K',
-    googlePriceUSD: 0.04,
-    creditsRequired: 1,
-    category: 'image',
-  },
-  {
-    model: 'Imagen 4',
-    modelId: IMAGEN_MODELS.IMAGEN_4,
-    resolution: '2K',
-    googlePriceUSD: 0.04,
-    creditsRequired: 2,
-    category: 'image',
-  },
-  {
-    model: 'Imagen 4 Ultra',
-    modelId: IMAGEN_MODELS.IMAGEN_4_ULTRA,
-    resolution: '1K',
-    googlePriceUSD: 0.06,
-    creditsRequired: 2,
-    category: 'image',
-  },
-  {
-    model: 'Imagen 4 Ultra',
-    modelId: IMAGEN_MODELS.IMAGEN_4_ULTRA,
-    resolution: '2K',
-    googlePriceUSD: 0.06,
-    creditsRequired: 2,
     category: 'image',
   },
   // ── OpenAI Image (gpt-image-2, token-based, estimates per image) ──
@@ -447,14 +405,6 @@ export const CREDIT_COSTS: PricingTier[] = [
     resolution: '720p (5s)',
     googlePriceUSD: 0.35,
     creditsRequired: 15,
-    category: 'video',
-  },
-  {
-    model: 'Kling Video O1 (pro)',
-    modelId: 'kling-video-o1',
-    resolution: '1080p (5s)',
-    googlePriceUSD: 0.85,
-    creditsRequired: 35,
     category: 'video',
   },
   // ── Text / Chat / Analysis ──
