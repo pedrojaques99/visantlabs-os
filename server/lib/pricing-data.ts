@@ -221,7 +221,8 @@ export const CREDIT_COSTS: PricingTier[] = [
     model: 'GPT Image 2',
     modelId: OPENAI_IMAGE_MODELS.GPT_IMAGE_2,
     resolution: '2K',
-    googlePriceUSD: 0.12,
+    // 2K sai como quality=high na OpenAI (US$ 0,211 quadrado); estava 0,12 e escondia o prejuízo.
+    googlePriceUSD: 0.211,
     creditsRequired: 3,
     category: 'image',
   },
@@ -427,7 +428,8 @@ export const CREDIT_COSTS: PricingTier[] = [
     model: 'Kling v3 (std)',
     modelId: 'kling-v3',
     resolution: '720p (5s)',
-    googlePriceUSD: 0.5,
+    // fal.ai: US$ 0,14/s (API de pricing, 2026-10-26) = 0,70 por 5s. Antes 0,50.
+    googlePriceUSD: 0.7,
     creditsRequired: 20,
     category: 'video',
   },

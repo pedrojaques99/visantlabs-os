@@ -9,6 +9,7 @@ import { isImagenModel } from '../../src/constants/imagenModels.js';
 import { isIdeogramModel } from '../../src/constants/ideogramModels.js';
 import { isReveModel } from '../../src/constants/reveModels.js';
 import { lookupCredits } from '../lib/pricing-data.js';
+import { getVideoCreditsRequired as calcVideoCredits } from '../../src/utils/creditCalculator.js';
 import { computeCost, isFreeModel } from '../lib/ai/cost.js';
 
 export type FeatureType = 'brandingmachine' | 'mockupmachine' | 'canvas' | 'branding' | 'figma';
@@ -158,17 +159,13 @@ export function getCreditsRequired(model: GeminiModel | string, resolution?: Res
  * below cost (see pricing-data.ts CREDIT_COSTS for the per-model math) but are
  * intentionally left untouched pending explicit confirmation.
  */
-export function getVideoCreditsRequired(model?: string): number {
-  if (model?.startsWith('seedance-')) {
-    const isFast = model.includes('fast') || model.includes('lite');
-    return isFast ? 20 : 35;
-  }
-  if (model?.startsWith('kling-')) {
-    const isPro = model.includes('master') || model.includes('pro') || model.includes('4k');
-    return isPro ? 30 : 20;
-  }
-  const isFast = model?.includes('fast') ?? false;
-  return isFast ? 20 : 50;
+export function getVideoCreditsRequired(
+  model?: string,
+  opts?: { klingMode?: string; durationSec?: number }
+): number {
+  // Fonte única: a mesma conta que a UI mostra (src/utils/creditCalculator.ts). Antes o servidor
+  // ignorava klingMode e cobrava 20 num clipe pro/4k que a UI anunciava a 30/40.
+  return calcVideoCredits(model, opts?.klingMode, opts?.durationSec);
 }
 
 /**

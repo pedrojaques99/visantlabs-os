@@ -130,8 +130,8 @@ export const VideoNode = memo(
     const [isBrandActive, setIsBrandActive] = useState<boolean>(nodeData.isBrandActive ?? true);
     const [klingMode, setKlingMode] = useState<'std' | 'pro' | '4k'>(nodeData.klingMode || 'pro');
     const creditsRequired = useMemo(
-      () => getVideoCreditsRequired(model, klingMode),
-      [model, klingMode]
+      () => getVideoCreditsRequired(model, klingMode, parseInt(duration, 10) || undefined),
+      [model, klingMode, duration]
     );
     const [sound, setSound] = useState<'on' | 'off'>(nodeData.sound || 'off');
     const [cfgScale, setCfgScale] = useState<number>(nodeData.cfgScale ?? 0.5);
