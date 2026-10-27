@@ -390,16 +390,16 @@ describe('Credit calculator', () => {
   });
 
   describe('video credits', () => {
-    it('Veo 3.1 Standard = 50 credits', () => {
-      expect(getVideoCreditsRequired('veo-3.1-generate-preview')).toBe(50);
+    it('Veo 3.1 Standard = 72 credits', () => {
+      expect(getVideoCreditsRequired('veo-3.1-generate-preview')).toBe(72);
     });
 
-    it('Veo 3.1 Fast = 20 credits', () => {
-      expect(getVideoCreditsRequired('veo-3.1-fast-generate-preview')).toBe(20);
+    it('Veo 3.1 Fast = 24 credits', () => {
+      expect(getVideoCreditsRequired('veo-3.1-fast-generate-preview')).toBe(24);
     });
 
-    it('Veo 3.1 Lite = 8 credits', () => {
-      expect(getVideoCreditsRequired('veo-3.1-lite-generate-preview')).toBe(8);
+    it('Veo 3.1 Lite = 12 credits', () => {
+      expect(getVideoCreditsRequired('veo-3.1-lite-generate-preview')).toBe(12);
     });
 
     it('Seedance 2.0 = 35, fast = 20, lite = 10', () => {
@@ -412,7 +412,7 @@ describe('Credit calculator', () => {
     it('Kling mode-aware pricing', () => {
       expect(getVideoCreditsRequired('kling-v3', 'std')).toBe(20);
       expect(getVideoCreditsRequired('kling-v3', 'pro')).toBe(30);
-      expect(getVideoCreditsRequired('kling-v3', '4k')).toBe(40);
+      expect(getVideoCreditsRequired('kling-v3', '4k')).toBe(50);
       expect(getVideoCreditsRequired('kling-v2-5-turbo')).toBe(15);
       expect(getVideoCreditsRequired('kling-v2-1-master')).toBe(30);
       expect(getVideoCreditsRequired('kling-video-o1', 'pro')).toBe(35);
