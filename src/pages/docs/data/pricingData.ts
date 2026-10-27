@@ -115,8 +115,9 @@ export const GOOGLE_OFFICIAL_PRICING = {
   },
   video: {
     'veo-3.1-fast-generate-preview': {
-      '720p/1080p': 0.15, // per second
-      '4K': 0.35,
+      '720p': 0.1, // per second
+      '1080p': 0.12,
+      '4K': 0.3,
     },
     'veo-3.1-generate-preview': {
       '720p/1080p': 0.4, // per second
@@ -206,8 +207,8 @@ export const CREDIT_COSTS: PricingTier[] = [
     model: 'Veo 3.1 Fast',
     modelId: 'veo-3.1-fast-generate-preview',
     resolution: '720p/1080p (8s)',
-    googlePriceUSD: 1.2,
-    creditsRequired: 15,
+    googlePriceUSD: 0.96,
+    creditsRequired: 24,
     category: 'video',
   },
   {
@@ -215,7 +216,7 @@ export const CREDIT_COSTS: PricingTier[] = [
     modelId: 'veo-3.1-generate-preview',
     resolution: '720p/1080p (8s)',
     googlePriceUSD: 3.2,
-    creditsRequired: 40,
+    creditsRequired: 72,
     category: 'video',
   },
 
@@ -383,9 +384,9 @@ export function generatePricingMarkdown(): string {
   lines.push('');
   lines.push('| Model | Resolution | Google Price (USD/sec) | 8 sec video |');
   lines.push('|-------|------------|----------------------|-------------|');
-  lines.push('| Veo 3.1 Fast | 720p/1080p | $0.15 | $1.20 |');
+  lines.push('| Veo 3.1 Fast | 720p/1080p | $0.10 / $0.12 | $0.80 / $0.96 |');
   lines.push('| Veo 3.1 Standard | 720p/1080p | $0.40 | $3.20 |');
-  lines.push('| Veo 3.1 Fast | 4K | $0.35 | $2.80 |');
+  lines.push('| Veo 3.1 Fast | 4K | $0.30 | $2.40 |');
   lines.push('| Veo 3.1 Standard | 4K | $0.60 | $4.80 |');
   lines.push('');
 

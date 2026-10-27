@@ -95,7 +95,7 @@ export const GOOGLE_OFFICIAL_PRICING = {
   },
   video: {
     'veo-3.1-lite-generate-preview': { '720p': 0.05, '1080p': 0.08 },
-    'veo-3.1-fast-generate-preview': { '720p/1080p': 0.15, '4K': 0.35 },
+    'veo-3.1-fast-generate-preview': { '720p': 0.1, '1080p': 0.12, '4K': 0.3 },
     'veo-3.1-generate-preview': { '720p/1080p': 0.4, '4K': 0.6 },
   },
   defaultVideoDurationSec: 8,
@@ -223,7 +223,7 @@ export const CREDIT_COSTS: PricingTier[] = [
     resolution: '2K',
     // 2K sai como quality=high na OpenAI (US$ 0,211 quadrado); estava 0,12 e escondia o prejuízo.
     googlePriceUSD: 0.211,
-    creditsRequired: 3,
+    creditsRequired: 4,
     category: 'image',
   },
   {
@@ -363,23 +363,15 @@ export const CREDIT_COSTS: PricingTier[] = [
     modelId: 'veo-3.1-lite-generate-preview',
     resolution: '720p (8s)',
     googlePriceUSD: 0.4,
-    creditsRequired: 8,
-    category: 'video',
-  },
-  {
-    model: 'Veo 3.1 Lite',
-    modelId: 'veo-3.1-lite-generate-preview',
-    resolution: '1080p (8s)',
-    googlePriceUSD: 0.64,
-    creditsRequired: 10,
+    creditsRequired: 12,
     category: 'video',
   },
   {
     model: 'Veo 3.1 Fast',
     modelId: 'veo-3.1-fast-generate-preview',
     resolution: '720p/1080p (8s)',
-    googlePriceUSD: 1.2,
-    creditsRequired: 20,
+    googlePriceUSD: 0.96,
+    creditsRequired: 24,
     category: 'video',
   },
   {
@@ -387,7 +379,7 @@ export const CREDIT_COSTS: PricingTier[] = [
     modelId: 'veo-3.1-generate-preview',
     resolution: '720p/1080p (8s)',
     googlePriceUSD: 3.2,
-    creditsRequired: 50,
+    creditsRequired: 72,
     category: 'video',
   },
   // ── Seedance Video (ByteDance) ──
@@ -445,8 +437,8 @@ export const CREDIT_COSTS: PricingTier[] = [
     model: 'Kling v3 (4K)',
     modelId: 'kling-v3',
     resolution: '4K (5s)',
-    googlePriceUSD: 1.0,
-    creditsRequired: 40,
+    googlePriceUSD: 2.1,
+    creditsRequired: 50,
     category: 'video',
   },
   {
@@ -518,7 +510,7 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
     pricePerCreditUSD: 0.09,
     imagesHD: 10,
     images4K: 5,
-    videosFast: 1,
+    videosFast: 0,
     videosStandard: 0,
   },
   {
@@ -528,8 +520,8 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
     pricePerCreditUSD: 0.094,
     imagesHD: 25,
     images4K: 12,
-    videosFast: 3,
-    videosStandard: 1,
+    videosFast: 2,
+    videosStandard: 0,
   },
   {
     credits: 100,
@@ -538,8 +530,8 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
     pricePerCreditUSD: 0.0835,
     imagesHD: 50,
     images4K: 25,
-    videosFast: 6,
-    videosStandard: 2,
+    videosFast: 4,
+    videosStandard: 1,
   },
   {
     credits: 500,
@@ -548,8 +540,8 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
     pricePerCreditUSD: 0.072,
     imagesHD: 250,
     images4K: 125,
-    videosFast: 33,
-    videosStandard: 12,
+    videosFast: 20,
+    videosStandard: 6,
   },
 ];
 
