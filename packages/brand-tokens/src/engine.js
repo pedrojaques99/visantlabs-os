@@ -175,6 +175,20 @@ export function pickDarkNeutral(brand) {
   return candidates[0].hex;
 }
 
+// The brand's own light neutral, for a brand born dark: a low-chroma light it
+// publishes (Branco, Offwhite…). Of several, the least bright: an offwhite next
+// to a pure white is the ground the brand chose, white is usually text.
+const LIGHT_NEUTRAL = { minL: 0.85, maxC: 0.04 };
+const DARK_NATIVE_L = 0.5;
+export function pickLightNeutral(brand) {
+  const candidates = (brand.colors ?? [])
+    .map((c) => ({ hex: c.hex, o: c.hex ? toOklch(c.hex) : null }))
+    .filter(({ o }) => o && o.l >= LIGHT_NEUTRAL.minL && (o.c ?? 0) <= LIGHT_NEUTRAL.maxC);
+  if (!candidates.length) return null;
+  candidates.sort((a, b) => a.o.l - b.o.l);
+  return candidates[0].hex;
+}
+
 // Build one theme (light or dark) via Leonardo, returning hex tokens.
 function buildTheme({ bgHex, neutralKeys, brandKeys, mode }) {
   const ratiosNeutral = Object.values(NEUTRAL).map((r) => r[mode]);
@@ -218,9 +232,22 @@ export function compileBrandTokens(brand) {
   const secondary = pickColor(brand, 'secondary') ?? accent; // dark key → ink hits AA
   const bgO = toOklch(bg);
   const accentO = toOklch(accent);
-  const bgTint = neutralTint(bgO);
 
-  // --- LIGHT: neutral ramp anchored on the warm brand background --------------
+  // --- Which mode is the brand born in ------------------------------------------
+  // The engine assumed `background` is the LIGHT ground. A brand born dark
+  // (Visant, since 2026-10-28: background = Chumbo #0d0d0d, text = Branco) came
+  // out with a charcoal "light" theme. A dark ground stays the dark ground; the
+  // light ground is the brand's own light neutral (Branco), or synthesized from
+  // the ground's tint when the brand publishes none.
+  const darkNative = bgO.l < DARK_NATIVE_L;
+  const groundTint = neutralTint(bgO);
+  const lightBg = darkNative
+    ? (pickLightNeutral(brand) ??
+      hex({ mode: 'oklch', l: 0.97, c: Math.min(groundTint.c, 0.012), h: groundTint.h }))
+    : bg;
+  const bgTint = neutralTint(toOklch(lightBg));
+
+  // --- LIGHT: neutral ramp anchored on the brand's light ground -----------------
   const lightNeutralDark = hex({
     mode: 'oklch',
     l: 0.16,
@@ -228,8 +255,8 @@ export function compileBrandTokens(brand) {
     h: bgTint.h,
   });
   const light = buildTheme({
-    bgHex: bg,
-    neutralKeys: [bg, lightNeutralDark],
+    bgHex: lightBg,
+    neutralKeys: [lightBg, lightNeutralDark],
     brandKeys: [accent, secondary], // teal end lets brand-ink hit 4.7 on light
     mode: 'light',
   });

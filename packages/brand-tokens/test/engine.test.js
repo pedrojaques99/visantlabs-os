@@ -37,19 +37,42 @@ describe('contrast gate (AA) — the whole point', () => {
 
 // The "chosen neutral" — derived neutrals must carry the brand background's
 // warmth, not be pure grey (chroma 0). This is what escapes the shadcn default.
+// A brand born LIGHT with a warm ground: the Visant of 2026-07 (Offwhite #f3e9e9
+// as background, a neutral Chumbo beside it). Kept as its own case because the
+// live Visant is now born dark and no longer exercises this path.
+const warm = compileBrandTokens({
+  colors: [
+    { hex: '#0d0d0d', role: 'primary' },
+    { hex: '#52ddeb', role: 'accent' },
+    { hex: '#1f7878', role: 'secondary' },
+    { hex: '#f3e9e9', role: 'background' },
+    { hex: '#000000', role: 'text' },
+  ],
+  typography: brand.typography,
+});
+
 describe('neutral is chosen, not defaulted', () => {
-  it('light neutrals carry chroma from the warm brand background', () => {
-    const border = toOklch(compiled.themes.light.border);
-    const muted = toOklch(compiled.themes.light.muted);
+  it('light neutrals carry chroma from a warm brand background', () => {
+    const border = toOklch(warm.themes.light.border);
+    const muted = toOklch(warm.themes.light.muted);
     expect(border.c).toBeGreaterThan(0.002);
     expect(muted.c).toBeGreaterThan(0.002);
   });
 
+  // Visant since 2026-10-28: background = Chumbo, text = Branco. The engine used
+  // to take `background` as the LIGHT ground and painted the light theme charcoal.
+  it('a brand born dark keeps its dark ground and takes its own light for the light theme', () => {
+    expect(toOklch(compiled.themes.light.background).l).toBeGreaterThan(0.9);
+    for (const mode of ['light', 'dark']) {
+      expect(toOklch(compiled.themes[mode].background).c ?? 0, mode).toBeLessThan(0.004);
+    }
+  });
+
   // Visant declares a neutral Chumbo (#0d0d0d) and a rosy Offwhite. The dark ramp
   // used to borrow the Offwhite's hue and came out a rosy-brown grey.
-  it('dark neutrals take the tint of the brand OWN dark (Chumbo → grey)', () => {
+  it('dark neutrals take the tint of the brand OWN dark (Chumbo → grey), not the ground', () => {
     for (const k of ['background', 'card', 'border']) {
-      expect(toOklch(compiled.themes.dark[k]).c ?? 0, k).toBeLessThan(0.004);
+      expect(toOklch(warm.themes.dark[k]).c ?? 0, k).toBeLessThan(0.004);
     }
   });
 
@@ -82,7 +105,7 @@ describe('neutral is chosen, not defaulted', () => {
   });
 
   it('light ramp is untouched by the dark fix (Offwhite stays the ground)', () => {
-    expect(compiled.themes.light.background).toBe('#f3ebeb');
+    expect(warm.themes.light.background).toBe('#f3ebeb');
   });
 });
 

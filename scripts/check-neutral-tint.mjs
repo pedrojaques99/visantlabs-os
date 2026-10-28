@@ -52,7 +52,7 @@ for (const [modo, abertura] of [
 ]) {
   const motor = toOklch(temas[modo === 'claro' ? 'light' : 'dark'].background);
   const motorCinza = (motor.c ?? 0) < CINZA;
-  resumo.push(`${modo}: ${motorCinza ? 'chumbo neutro' : `matiz ${Math.round(motor.h)}`}`);
+  resumo.push(`${modo}: ${motorCinza ? 'neutro' : `matiz ${Math.round(motor.h)}`}`);
 
   for (const [, nome, l, c, h] of bloco(abertura).matchAll(
     /^\s*(--[\w-]+):\s*oklch\(([\d.]+) ([\d.]+) ([\d.]+)/gm

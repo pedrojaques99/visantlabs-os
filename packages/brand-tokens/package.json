@@ -1,6 +1,6 @@
 {
   "name": "@visant/brand-tokens",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "description": "Brand Token Engine — Layer 1 (brand identity) → Layer 2 (product craft), per-brand. Leonardo for contrast-driven color, a fixed craft skeleton for the invariants.",
   "license": "UNLICENSED",
