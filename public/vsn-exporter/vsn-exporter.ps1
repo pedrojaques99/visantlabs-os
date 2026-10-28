@@ -7,13 +7,22 @@
     [switch]$Rasterize,
     [switch]$ToFigma,
     [switch]$ToJPG,
-    [int]$JPGQuality = 90
+    [int]$JPGQuality = 90,
+    # Modo por arquivo (nao interativo): ver lib/actions.ps1
+    [string]$FilesJson,
+    [string[]]$Files,
+    [string]$Action,
+    [string]$Out,
+    [switch]$Json,
+    [switch]$ListActions
 )
 
 # --- SYSTEM SETUP ---
 $OutputEncoding = [System.Text.Encoding]::UTF8
-[console]::InputEncoding = [System.Text.Encoding]::UTF8
-[console]::OutputEncoding = [System.Text.Encoding]::UTF8
+# Chamado por outro app (stdin redirecionado), mexer no InputEncoding pode falhar: nao e fatal.
+try { [console]::InputEncoding = [System.Text.Encoding]::UTF8 } catch {}
+# UTF8 sem BOM: no 5.1 o UTF8 padrao solta um BOM no stdout redirecionado e suja o JSON.
+try { [console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false) } catch {}
 
 $script:Path = $Path
 $script:Counters = @{ Avatar = 0; Transparente = 0; Vetor = 0; Extensao = 0; PNG = 0; Separado = 0; JPG = 0; Webp = 0; OCR = 0; PDFImg = 0 }
@@ -29,7 +38,7 @@ if (Test-Path (Join-Path $PSScriptRoot "scripts")) { $script:ScriptsDir = Join-P
 # --- MODULES ---
 # Dot-source direto: $modPath como variavel ja lida com espaco e acento no caminho.
 $script:LibDir = Join-Path $PSScriptRoot "lib"
-foreach ($mod in @('log','tools','organize','pdf','image','delivery')) {
+foreach ($mod in @('log','tools','organize','pdf','image','delivery','actions')) {
     $modPath = Join-Path $script:LibDir "$mod.ps1"
     if (Test-Path -LiteralPath $modPath) {
         . $modPath
@@ -39,7 +48,41 @@ foreach ($mod in @('log','tools','organize','pdf','image','delivery')) {
 }
 
 Initialize-Log
-Write-Log "Session started | DryRun=$DryRun Merge=$Merge Convert=$Convert Split=$Split Rasterize=$Rasterize ToFigma=$ToFigma ToJPG=$ToJPG"
+Write-Log "Session started | DryRun=$DryRun Merge=$Merge Convert=$Convert Split=$Split Rasterize=$Rasterize ToFigma=$ToFigma ToJPG=$ToJPG Action=$Action"
+
+# --- MODO POR ARQUIVO (sem TUI) ---
+# Outro app chama com -FilesJson <arquivo.json com array de caminhos> -Action <id> [-Out <pasta>] -Json.
+# Caminho com acento e (R) nunca passa por argv: vem dentro do JSON (UTF-8).
+
+if ($ListActions) {
+    Write-ActionList
+    exit 0
+}
+
+if ($Action -or $FilesJson -or $Files) {
+    $fileList = @()
+    try {
+        if ($FilesJson) {
+            $fileList = @(Get-Content -LiteralPath $FilesJson -Raw -Encoding UTF8 -ErrorAction Stop | ConvertFrom-Json | ForEach-Object { $_ })
+        }
+        if ($Files) { $fileList += $Files }
+    } catch {
+        $fileList = $null
+        $readErr = "Nao consegui ler o -FilesJson: $FilesJson"
+    }
+    if ($null -eq $fileList) {
+        if ($Json) { [Console]::Out.WriteLine((ConvertTo-AsciiJson ([ordered]@{ ok = $false; action = $Action; outputs = [object[]]@(); error = $readErr }))) }
+        else { Write-Host "    [X] $readErr" -ForegroundColor Red }
+        exit 1
+    }
+    # No -Json, todo texto das funcoes de lib/ vai pro log: no stdout so sai a linha do JSON.
+    if ($Json) {
+        Invoke-FileAction -Id $Action -Paths $fileList -OutDir $Out -AsJson *>&1 | ForEach-Object { Write-Log "$_" -Level DEBUG }
+    } else {
+        Invoke-FileAction -Id $Action -Paths $fileList -OutDir $Out
+    }
+    if ($script:ActOk) { exit 0 } else { exit 1 }
+}
 
 # --- GLITCH LOADER ENGINE ---
 $script:GlitchSync = $null

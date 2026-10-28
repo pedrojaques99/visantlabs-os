@@ -57,6 +57,13 @@ function Get-SvgoPath {
     Find-Tool -CacheKey 'svgo' -Names @('svgo')
 }
 
+function Get-OcrMyPdfPath {
+    Find-Tool -CacheKey 'ocrmypdf' -Names @('ocrmypdf') -GlobPaths @(
+        "$env:APPDATA\Python\Python3*\Scripts\ocrmypdf.exe",
+        "$env:LOCALAPPDATA\Programs\Python\Python3*\Scripts\ocrmypdf.exe"
+    )
+}
+
 function Get-PdfImagesPath {
     Find-Tool -CacheKey 'pdfimages' -Names @('pdfimages') -GlobPaths @(
         "C:\Program Files\poppler*\Library\bin\pdfimages.exe",
