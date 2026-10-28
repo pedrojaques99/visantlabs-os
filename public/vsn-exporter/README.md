@@ -160,4 +160,4 @@ Imagem = tif, tiff, png, jpg, jpeg, webp, bmp (TIFF multipágina: só a 1ª pág
 | `lib/pdf.ps1`      | todas as operações de PDF + OCR + metadados                 |
 | `lib/image.ps1`    | JPG, WebP, EXIF, ICO                                        |
 | `lib/delivery.ps1` | INDEX e empacotamento                                       |
-| `lib/actions.ps1`  | modo por arquivo (`-FilesJson`/`-Action`), sem TUI           |
+| `lib/actions.ps1`  | modo por arquivo (`-FilesJson`/`-Action`), sem TUI          |
