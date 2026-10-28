@@ -1,6 +1,6 @@
 {
   "name": "@visant/brand-tokens",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "type": "module",
   "description": "Brand Token Engine — Layer 1 (brand identity) → Layer 2 (product craft), per-brand. Leonardo for contrast-driven color, a fixed craft skeleton for the invariants.",
   "license": "UNLICENSED",
@@ -15,6 +15,7 @@
   "//files": "Whitelist explícita: o que NÃO estiver aqui não vai para o npm. O pacote já carregou fixtures de marcas de cliente por acidente — publicar é irreversível, então a regra passou a ser incluir por decisão, nunca por sobra de diretório.",
   "files": [
     "src/engine.js",
+    "src/fonts.js",
     "src/fetch-brand.js",
     "src/registry-item.js",
     "src/fixtures/visant.json",
