@@ -44,6 +44,46 @@ describe('neutral is chosen, not defaulted', () => {
     expect(border.c).toBeGreaterThan(0.002);
     expect(muted.c).toBeGreaterThan(0.002);
   });
+
+  // Visant declares a neutral Chumbo (#0d0d0d) and a rosy Offwhite. The dark ramp
+  // used to borrow the Offwhite's hue and came out a rosy-brown grey.
+  it('dark neutrals take the tint of the brand OWN dark (Chumbo → grey)', () => {
+    for (const k of ['background', 'card', 'border']) {
+      expect(toOklch(compiled.themes.dark[k]).c ?? 0, k).toBeLessThan(0.004);
+    }
+  });
+
+  it('a brand with a tinted dark keeps that tint in the dark ramp', () => {
+    const green = compileBrandTokens({
+      colors: [
+        { role: 'background', hex: '#011301' },
+        { role: 'accent', hex: '#BFFF53' },
+      ],
+      typography: brand.typography,
+    });
+    const bg = toOklch(green.themes.dark.background);
+    expect(bg.c).toBeGreaterThan(0.006);
+    expect(bg.h).toBeGreaterThan(120);
+    expect(bg.h).toBeLessThan(170);
+  });
+
+  it('a grey brand stays grey: no invented chroma, no "warm default" hue', () => {
+    const grey = compileBrandTokens({
+      colors: [
+        { role: 'background', hex: '#f2f2f2' },
+        { role: 'accent', hex: '#0055ff' },
+      ],
+      typography: brand.typography,
+    });
+    for (const mode of ['light', 'dark']) {
+      expect(toOklch(grey.themes[mode].background).c ?? 0, mode).toBeLessThan(0.004);
+    }
+    expect(grey.shadow.light).toBe('0 0% 12%');
+  });
+
+  it('light ramp is untouched by the dark fix (Offwhite stays the ground)', () => {
+    expect(compiled.themes.light.background).toBe('#f3ebeb');
+  });
 });
 
 // Invariants come from craft.json verbatim — the engine must NEVER derive them.

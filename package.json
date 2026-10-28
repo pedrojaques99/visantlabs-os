@@ -58,6 +58,7 @@
     "fix:accent-borders": "node scripts/fix-accent-borders.mjs",
     "check:serverless-imports": "node scripts/check-serverless-imports.mjs",
     "check:design": "node scripts/scan-design-violations.mjs",
+    "check:neutral-tint": "node scripts/check-neutral-tint.mjs",
     "check:design:summary": "node scripts/scan-design-violations.mjs --summary --no-fail",
     "check:design:report": "node scripts/scan-design-violations.mjs --report",
     "check:naming-rdap": "tsx scripts/naming-availability-smoke.ts",
