@@ -149,6 +149,46 @@ function bestForeground(bg) {
   return wcagContrast('#ffffff', bg) >= wcagContrast('#0a0a0a', bg) ? '#ffffff' : '#0a0a0a';
 }
 
+// --- Neutral tint --------------------------------------------------------------
+// Below this chroma a colour reads as grey, and its hue is noise (a pure grey has
+// no hue at all). The engine used to replace a zero chroma with 0.006 and a
+// missing hue with 30 ("warm default"), which made a truly neutral brand
+// impossible by construction. A grey stays grey.
+const GREY_CHROMA = 0.004;
+export function neutralTint(o) {
+  const c = o?.c ?? 0;
+  if (c < GREY_CHROMA || !Number.isFinite(o?.h)) return { c: 0, h: 0 };
+  return { c, h: o.h };
+}
+
+// The brand's own dark neutral: a low-chroma dark it publishes (Chumbo, Escura,
+// ink…). Accents never qualify: a dark teal is not a neutral.
+const DARK_NEUTRAL = { maxL: 0.35, maxC: 0.04 };
+export function pickDarkNeutral(brand) {
+  const candidates = (brand.colors ?? [])
+    .map((c) => ({ hex: c.hex, o: c.hex ? toOklch(c.hex) : null }))
+    .filter(({ o }) => o && o.l <= DARK_NEUTRAL.maxL && (o.c ?? 0) <= DARK_NEUTRAL.maxC);
+  if (!candidates.length) return null;
+  // Lightest of the darks: pure black has no tint to give, and #000 sitting next
+  // to a #0d0d0d Chumbo should not win just for being darker.
+  candidates.sort((a, b) => b.o.l - a.o.l);
+  return candidates[0].hex;
+}
+
+// The brand's own light neutral, for a brand born dark: a low-chroma light it
+// publishes (Branco, Offwhite…). Of several, the least bright: an offwhite next
+// to a pure white is the ground the brand chose, white is usually text.
+const LIGHT_NEUTRAL = { minL: 0.85, maxC: 0.04 };
+const DARK_NATIVE_L = 0.5;
+export function pickLightNeutral(brand) {
+  const candidates = (brand.colors ?? [])
+    .map((c) => ({ hex: c.hex, o: c.hex ? toOklch(c.hex) : null }))
+    .filter(({ o }) => o && o.l >= LIGHT_NEUTRAL.minL && (o.c ?? 0) <= LIGHT_NEUTRAL.maxC);
+  if (!candidates.length) return null;
+  candidates.sort((a, b) => a.o.l - b.o.l);
+  return candidates[0].hex;
+}
+
 // Build one theme (light or dark) via Leonardo, returning hex tokens.
 function buildTheme({ bgHex, neutralKeys, brandKeys, mode }) {
   const ratiosNeutral = Object.values(NEUTRAL).map((r) => r[mode]);
@@ -192,29 +232,47 @@ export function compileBrandTokens(brand) {
   const secondary = pickColor(brand, 'secondary') ?? accent; // dark key → ink hits AA
   const bgO = toOklch(bg);
   const accentO = toOklch(accent);
-  const bgHue = Number.isFinite(bgO.h) ? bgO.h : 30; // warm default
 
-  // --- LIGHT: neutral ramp anchored on the warm brand background --------------
+  // --- Which mode is the brand born in ------------------------------------------
+  // The engine assumed `background` is the LIGHT ground. A brand born dark
+  // (Visant, since 2026-10-28: background = Chumbo #0d0d0d, text = Branco) came
+  // out with a charcoal "light" theme. A dark ground stays the dark ground; the
+  // light ground is the brand's own light neutral (Branco), or synthesized from
+  // the ground's tint when the brand publishes none.
+  const darkNative = bgO.l < DARK_NATIVE_L;
+  const groundTint = neutralTint(bgO);
+  const lightBg = darkNative
+    ? (pickLightNeutral(brand) ??
+      hex({ mode: 'oklch', l: 0.97, c: Math.min(groundTint.c, 0.012), h: groundTint.h }))
+    : bg;
+  const bgTint = neutralTint(toOklch(lightBg));
+
+  // --- LIGHT: neutral ramp anchored on the brand's light ground -----------------
   const lightNeutralDark = hex({
     mode: 'oklch',
     l: 0.16,
-    c: Math.min((bgO.c || 0.006) * 2, 0.02),
-    h: bgHue,
+    c: Math.min(bgTint.c * 2, 0.02),
+    h: bgTint.h,
   });
   const light = buildTheme({
-    bgHex: bg,
-    neutralKeys: [bg, lightNeutralDark],
+    bgHex: lightBg,
+    neutralKeys: [lightBg, lightNeutralDark],
     brandKeys: [accent, secondary], // teal end lets brand-ink hit 4.7 on light
     mode: 'light',
   });
 
-  // --- DARK: warm near-black ground, synthesized (auto; hand-refine later) -----
-  const darkBg = hex({ mode: 'oklch', l: 0.12, c: Math.min(bgO.c || 0.006, 0.012), h: bgHue });
+  // --- DARK: near-black ground, tinted like the brand's OWN dark ----------------
+  // The dark ramp used to borrow the light background's hue. Visant declares a
+  // neutral Chumbo (#0d0d0d) and a rosy Offwhite (#f3e9e9), and the dark came out
+  // a rosy-brown grey nobody chose. When the brand publishes a dark neutral, the
+  // dark ramp takes ITS tint; only without one does it fall back to the ground's.
+  const darkTint = neutralTint(toOklch(pickDarkNeutral(brand) ?? bg));
+  const darkBg = hex({ mode: 'oklch', l: 0.12, c: Math.min(darkTint.c, 0.012), h: darkTint.h });
   const darkNeutralLight = hex({
     mode: 'oklch',
     l: 0.95,
-    c: Math.min((bgO.c || 0.006) * 1.5, 0.014),
-    h: bgHue,
+    c: Math.min(darkTint.c * 1.5, 0.014),
+    h: darkTint.h,
   });
   const darkInkLight = hex({
     mode: 'oklch',
@@ -250,10 +308,13 @@ export function compileBrandTokens(brand) {
     ring: accent,
   });
 
-  const hslHue = Math.round(((bgHue % 360) + 360) % 360);
+  const hslHue = Math.round(((bgTint.h % 360) + 360) % 360);
+  // A grey ground casts a grey shadow: tinting it 30% would be the same invented
+  // warmth the neutral ramp no longer has.
+  const shadowSat = bgTint.c ? 30 : 0;
   return {
     themes: { light: pack(light), dark: pack(dark) },
-    shadow: { light: `${hslHue} 30% 12%`, dark: '0 0% 0%' },
+    shadow: { light: `${hslHue} ${shadowSat}% 12%`, dark: '0 0% 0%' },
     type: pickType(brand),
     // Carimbo de proveniência: quando alguém perguntar de onde veio a cor, a
     // resposta viaja junto com o token, não na memória de quem gerou.

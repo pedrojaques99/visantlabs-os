@@ -30,12 +30,26 @@ describe('papéis de tipografia resolvem por marca, sem vazamento', () => {
     expect(t.sans).not.toBe('Manrope');
   });
 
-  it('Visant® põe a face de 96px no display, não no corpo', () => {
-    // Regressão do mapeamento invertido: `primary` (Manrope, 96px) é display,
-    // `secondary` (Oswald, 16px) é corpo. O mapa antigo trocava os dois.
-    const t = compileBrandTokens(visant).type;
+  it('papéis primary/secondary: a face de 96px vai pro display, não pro corpo', () => {
+    // Regressão do mapeamento invertido, com a tipografia da Visant de 2026-07:
+    // `primary` (Manrope, 96px) é display, `secondary` (Oswald, 16px) é corpo.
+    // O mapa antigo trocava os dois. A Visant de hoje publica papéis explícitos
+    // (display/body), então o caso vive aqui, com os dados escritos.
+    const t = compileBrandTokens({
+      ...visant,
+      typography: [
+        { family: 'Manrope', style: 'Bold', role: 'primary', size: 96 },
+        { family: 'Oswald', style: 'Regular', role: 'secondary', size: 16 },
+      ],
+    }).type;
     expect(t.display).toBe('Manrope');
     expect(t.sans).toBe('Oswald');
+  });
+
+  it('Visant® de hoje: display e body explícitos, Manrope nos dois', () => {
+    const t = compileBrandTokens(visant).type;
+    expect(t.display).toBe('Manrope');
+    expect(t.sans).toBe('Manrope');
   });
 
   it('marca de uma face só usa a mesma nos dois papéis, sem inventar a segunda', () => {
