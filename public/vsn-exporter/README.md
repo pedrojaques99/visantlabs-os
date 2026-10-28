@@ -48,7 +48,7 @@ vsn-exporter/
 ├─ vsn-context-menu.reg   (opcional, integração com botão direito)
 ├─ lib/
 │  ├─ log.ps1  tools.ps1  organize.ps1
-│  ├─ image.ps1  pdf.ps1  delivery.ps1
+│  ├─ image.ps1  pdf.ps1  delivery.ps1  actions.ps1
 └─ scripts/               (comprimir PDF/JPG, PDF de gráfica, arte final CMYK)
 ```
 
@@ -97,6 +97,32 @@ Para scripts/automação, use as flags e ele executa direto e sai:
 
 Exemplo: `... vsn-exporter.ps1 -Path "D:\Entrega" -Merge`
 
+### Por arquivo (pra outro app chamar)
+
+Em vez de varrer a pasta, roda **uma ação nos arquivos que você escolheu**, sem menu, sem pergunta, sem cor:
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File vsn-exporter.ps1 -FilesJson <lista.json> -Action <id> [-Out <pasta>] -Json
+```
+
+- `-FilesJson`: arquivo UTF-8 com um array de caminhos absolutos. Caminho com `®`, acento e espaço vai **dentro do JSON**, nunca pela linha de comando. Na mão, dá pra usar `-Files "a.tif","b.tif"`.
+- `-Out`: opcional. Sem ele, a saída fica na pasta de cada original. **Nunca sobrescreve**: vira `nome (1).png`, `nome (2).png`.
+- `-Json`: a última linha do stdout é **uma** linha de JSON, `{"ok":true,"action":"to-png","outputs":["..."],"error":null}`. Se falhar, `ok:false`, o `error` diz o quê (ex.: qual ferramenta falta) e o exit code é 1.
+- `-ListActions -Json`: lista os ids com as extensões aceitas (`multi:true` = junta vários arquivos numa saída só).
+
+| Id                              | Entrada              | Saída                                                   |
+| ------------------------------- | -------------------- | ------------------------------------------------------- |
+| `to-png`                        | imagem, AI/EPS       | PNG sem perda, resolução máxima, mantém transparência   |
+| `to-pdf`                        | imagem               | PDF sem perda (pixel 1:1; 300 dpi só define a página)   |
+| `to-jpg` · `to-webp` · `to-ico` | imagem               | JPG Q90 · WebP Q80 · ICO 256→16                         |
+| `pdf-to-png`                    | PDF                  | PNG 300 dpi por página                                  |
+| `pdf-compress` · `pdf-mobile`   | PDF                  | `<nome> -.pdf` · `<nome> - MOBILE.pdf` (o do celular)   |
+| `pdf-ocr` · `pdf-split`         | PDF                  | `<nome> - OCR.pdf` (por+eng) · pasta `<nome> separated` |
+| `to-svg` · `to-figma`           | AI/EPS (Figma: +PDF) | SVG · pasta `Figma_Import_<nome>` (PNG + SVG)           |
+| `merge-pdf`                     | vários PDF/imagem    | `<primeiro> - unificado.pdf`, na ordem recebida         |
+
+Imagem = tif, tiff, png, jpg, jpeg, webp, bmp (TIFF multipágina: só a 1ª página). O texto das funções vai pro log (`%TEMP%\vsn-exporter`), não pro stdout.
+
 ---
 
 ## 5. O que cada grupo faz
@@ -134,3 +160,4 @@ Exemplo: `... vsn-exporter.ps1 -Path "D:\Entrega" -Merge`
 | `lib/pdf.ps1`      | todas as operações de PDF + OCR + metadados                 |
 | `lib/image.ps1`    | JPG, WebP, EXIF, ICO                                        |
 | `lib/delivery.ps1` | INDEX e empacotamento                                       |
+| `lib/actions.ps1`  | modo por arquivo (`-FilesJson`/`-Action`), sem TUI           |
