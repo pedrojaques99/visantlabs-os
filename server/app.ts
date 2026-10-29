@@ -208,6 +208,8 @@ export function createApp() {
     'https://visantlabs.com',
     'https://www.visantlabs.com',
     'https://app.visantlabs.com',
+    // Vitrine @visant/ui: troca o código PKCE em /oauth/token e lê /api/brand-guidelines do browser.
+    'https://ui.visantlabs.com',
   ];
 
   const claudeOrigins = [
