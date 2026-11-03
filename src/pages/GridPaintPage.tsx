@@ -1,3 +1,4 @@
+import { useInAppShell } from '@/components/shell/InAppShellContext';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   Download,
@@ -618,6 +619,7 @@ function hitTestErase(
 export const GridPaintPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const inShell = useInAppShell();
   const isMobile = useIsMobile();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -1058,19 +1060,27 @@ export const GridPaintPage: React.FC = () => {
       <AppShellTopBar
         left={
           <>
-            <Tooltip content="Back to Apps" position="bottom">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => navigate('/apps')}
-                aria-label="Back to Apps"
-              >
-                <ChevronLeft size={14} />
-              </Button>
-            </Tooltip>
-            <div className="w-px h-4 bg-border mx-1" />
-            <MicroTitle className="text-muted-foreground">Grid Paint</MicroTitle>
-            <MicroTitle className="text-muted-foreground ml-2">{activeCount} dots</MicroTitle>
+            {!inShell && (
+              <>
+                <Tooltip content="Back to Apps" position="bottom">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => navigate('/apps')}
+                    aria-label="Back to Apps"
+                  >
+                    <ChevronLeft size={14} />
+                  </Button>
+                </Tooltip>
+                <div className="w-px h-4 bg-border mx-1" />
+                <MicroTitle className="text-muted-foreground">Grid Paint</MicroTitle>
+              </>
+            )}
+            <MicroTitle
+              className={inShell ? 'text-muted-foreground' : 'text-muted-foreground ml-2'}
+            >
+              {activeCount} dots
+            </MicroTitle>
             {isMobile && (
               <MicroTitle className="text-muted-foreground ml-1.5">
                 {config.frameW}x{config.frameH}
