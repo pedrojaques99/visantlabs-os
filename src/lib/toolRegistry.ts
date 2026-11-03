@@ -97,7 +97,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
     id: 'mockupmachine',
     name: 'Mockup Machine',
     nameKey: 'apps.mockupMachine.name',
-    path: '/',
+    path: '/mockupmachine',
     icon: Crown,
     category: 'pro',
     accepts: ['image/*'],
