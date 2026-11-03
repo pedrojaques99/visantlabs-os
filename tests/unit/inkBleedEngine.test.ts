@@ -550,3 +550,15 @@ describe('cssString', () => {
     expect(out).toMatch(/^x\\5c \\27 /);
   });
 });
+
+describe('shuffle keeps the text readable', () => {
+  it('never rolls a blur that dissolves the default text', () => {
+    let blurred = 0;
+    for (let i = 0; i < 300; i++) {
+      const { defocus } = shuffleDoc(createDefaultDoc()).ink;
+      if (defocus > 0) blurred++;
+      expect(defocus).toBeLessThanOrEqual(20);
+    }
+    expect(blurred).toBeGreaterThan(0);
+  });
+});
