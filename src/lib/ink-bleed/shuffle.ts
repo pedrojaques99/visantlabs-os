@@ -43,7 +43,8 @@ function rollInk(rand: Random, keepColor: string | null): InkSettings {
     capillaryStreaks: between(rand, 0, 60),
     inkColor: keepColor ?? pair.ink,
     inkOpacity: 100,
-    defocus: lead === 0 ? between(rand, 20, 55) : 0,
+    // Above this the sample text at its default size stops being readable.
+    defocus: lead === 0 ? between(rand, 10, 20) : 0,
     halo: lead === 1 ? between(rand, 15, 50) : sometimes(rand, 0.2, () => between(rand, 8, 25)),
     drag: lead === 2 ? between(rand, 15, 45) : 0,
     dragAxis,
