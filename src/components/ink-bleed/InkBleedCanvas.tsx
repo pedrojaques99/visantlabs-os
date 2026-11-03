@@ -14,6 +14,8 @@ const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 4;
 // Keeps the artwork clear of the floating tools above it and the transport pill below.
 const FIT_INSET = { x: 48, top: 56, bottom: 88 };
+// The shell reserves this strip on desktop. The stage runs under it, to the window edge.
+const STAGE_BLEED = 40;
 
 export function clampZoom(value: number): number {
   return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, value));
@@ -31,20 +33,23 @@ export interface ArtworkViewport {
   moveTo: (x: number, y: number) => void;
   /** The part of the artwork in view, measured from its center. */
   visible: { x: number; y: number; width: number; height: number };
+  /** The stage extends under the strip the shell reserves at the bottom. */
+  bleed: boolean;
 }
 
 const limit = (value: number, max: number) => Math.min(max, Math.max(-max, value));
 
 /** The artwork does not follow the mouse. It only moves when someone asks it to. */
-export function useArtworkViewport(width: number, height: number): ArtworkViewport {
+export function useArtworkViewport(width: number, height: number, bleed = false): ArtworkViewport {
   const containerRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoomState] = useState(0.7);
   const [focus, setFocus] = useState({ x: 0, y: 0 });
   const [size, setSize] = useState({ width: 0, height: 0 });
   const fitted = useRef(true);
+  const insetBottom = FIT_INSET.bottom + (bleed ? STAGE_BLEED : 0);
 
   const availableW = Math.max(0, size.width - FIT_INSET.x * 2);
-  const availableH = Math.max(0, size.height - FIT_INSET.top - FIT_INSET.bottom);
+  const availableH = Math.max(0, size.height - FIT_INSET.top - insetBottom);
   // How far the view can travel before an edge of the artwork leaves the clear area.
   const roomX = Math.max(0, width * zoom - availableW) / 2 / zoom;
   const roomY = Math.max(0, height * zoom - availableH) / 2 / zoom;
@@ -56,11 +61,11 @@ export function useArtworkViewport(width: number, height: number): ArtworkViewpo
     const el = containerRef.current;
     if (!el) return;
     const fitW = el.clientWidth - FIT_INSET.x * 2;
-    const fitH = el.clientHeight - FIT_INSET.top - FIT_INSET.bottom;
+    const fitH = el.clientHeight - FIT_INSET.top - insetBottom;
     if (fitW <= 0 || fitH <= 0) return;
     setZoomState(clampZoom(Math.min(fitW / width, fitH / height, 1)));
     setFocus({ x: 0, y: 0 });
-  }, [width, height]);
+  }, [width, height, insetBottom]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -97,12 +102,13 @@ export function useArtworkViewport(width: number, height: number): ArtworkViewpo
     zoom,
     pan: {
       x: -focusX * zoom,
-      y: (FIT_INSET.top - FIT_INSET.bottom) / 2 - focusY * zoom,
+      y: (FIT_INSET.top - insetBottom) / 2 - focusY * zoom,
     },
     setZoom,
     fit,
     canMove: roomX > 0 || roomY > 0,
     moveTo,
+    bleed,
     visible: {
       x: focusX - visibleW / 2,
       y: focusY - visibleH / 2,
@@ -212,7 +218,8 @@ export const InkBleedCanvas: React.FC<InkBleedCanvasProps> = ({ viewport, onLogo
       ref={containerRef}
       onClick={moveToClick}
       className={cn(
-        'absolute inset-0 overflow-hidden select-none bg-background',
+        'absolute inset-x-0 top-0 overflow-hidden select-none bg-background',
+        viewport.bleed ? '-bottom-10' : 'bottom-0',
         canMove && modifierHeld && 'cursor-crosshair'
       )}
     >

@@ -99,7 +99,7 @@ export const InkBleedPage: React.FC = () => {
   const [isDragOver, setIsDragOver] = useState(false);
 
   const { width, height } = FORMATS[format];
-  const viewport = useArtworkViewport(width, height);
+  const viewport = useArtworkViewport(width, height, !isMobile);
   const { canUndo, canRedo } = useHistoryFlags();
   usePlayback();
 
