@@ -1,3 +1,4 @@
+import { useInAppShell } from '@/components/shell/InAppShellContext';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -850,6 +851,7 @@ function ControlsContent({
 export function WindTunnelPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const inShell = useInAppShell();
   const isMobile = useIsMobile();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   useEffect(() => {
@@ -1146,17 +1148,21 @@ export function WindTunnelPage() {
       <AppShellTopBar
         left={
           <>
-            <Tooltip content="Back to Labs" position="bottom">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => navigate('/labs')}
-                aria-label={t('wind.tunnel.back_to_labs')}
-              >
-                <ChevronLeft size={14} />
-              </Button>
-            </Tooltip>
-            <div className="w-px h-4 bg-border mx-1" />
+            {!inShell && (
+              <>
+                <Tooltip content="Back to Labs" position="bottom">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => navigate('/labs')}
+                    aria-label={t('wind.tunnel.back_to_labs')}
+                  >
+                    <ChevronLeft size={14} />
+                  </Button>
+                </Tooltip>
+                <div className="w-px h-4 bg-border mx-1" />
+              </>
+            )}
             <MicroTitle>{t('wind.tunnel.wind_tunnel')}</MicroTitle>
           </>
         }

@@ -1,3 +1,4 @@
+import { useInAppShell } from '@/components/shell/InAppShellContext';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -44,23 +45,28 @@ export const ToolEditorTopBar: React.FC<ToolEditorTopBarProps> = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const inShell = useInAppShell();
 
   return (
     <AppShellTopBar
       left={
         <>
-          <Tooltip content={t('common.backToApps')}>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t('common.backToApps')}
-              className="h-7 w-7 text-muted-foreground"
-              onClick={() => navigate(backTo)}
-            >
-              <ChevronLeft size={16} />
-            </Button>
-          </Tooltip>
-          <MicroTitle className="text-2xs text-muted-foreground ml-1">{title}</MicroTitle>
+          {!inShell && (
+            <>
+              <Tooltip content={t('common.backToApps')}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t('common.backToApps')}
+                  className="h-7 w-7 text-muted-foreground"
+                  onClick={() => navigate(backTo)}
+                >
+                  <ChevronLeft size={16} />
+                </Button>
+              </Tooltip>
+              <MicroTitle className="text-2xs text-muted-foreground ml-1">{title}</MicroTitle>
+            </>
+          )}
           {extraLeft}
         </>
       }
