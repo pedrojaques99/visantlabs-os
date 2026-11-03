@@ -200,6 +200,11 @@ const SHOTS = [
     settle: 4500,
   },
   {
+    file: 'ink-bleed',
+    route: '/ink-bleed',
+    settle: 3000,
+  },
+  {
     file: 'gridpaint',
     route: '/grid-paint',
     draw: true,

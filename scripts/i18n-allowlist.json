@@ -93,7 +93,10 @@
     "connect.chatgpt.step${n}",
     "connect.claude.step${n}",
     "connect.prompt${n}",
-    "miniTools.watermark.positions.${pos}"
+    "miniTools.watermark.positions.${pos}",
+    "inkBleed.motion.modes.${mode}",
+    "inkBleed.paper.stocks.${stock.type}",
+    "inkBleed.presets.${preset.id}"
   ],
   "comments": {
     "${...}": "All ${...} entries are dynamic key construction — t('prefix.' + var). Their resolved keys must be defined in the locale (we can't validate that statically).",
@@ -106,6 +109,9 @@
     "connect.chatgpt.step${n}": "passos 1-4, existem",
     "connect.claude.step${n}": "passos 1-4, existem",
     "connect.prompt${n}": "prompts 1-3, existem",
-    "miniTools.watermark.positions.${pos}": "9 posições do grid, existem"
+    "miniTools.watermark.positions.${pos}": "9 posições do grid, existem",
+    "inkBleed.motion.modes.${mode}": "Dynamic key: every value of the union exists in both locales.",
+    "inkBleed.paper.stocks.${stock.type}": "Dynamic key: every value of the union exists in both locales.",
+    "inkBleed.presets.${preset.id}": "Dynamic key: every value of the union exists in both locales."
   }
 }

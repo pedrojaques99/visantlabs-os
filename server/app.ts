@@ -137,6 +137,7 @@ export function createApp() {
           imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
           connectSrc: [
             "'self'",
+            'https://fonts.googleapis.com',
             'https://fonts.gstatic.com',
             'https://api.visantlabs.com',
             'https://www.visantlabs.com',

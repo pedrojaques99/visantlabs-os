@@ -814,6 +814,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           !location.pathname.startsWith('/cmyk-halftone') &&
           !location.pathname.startsWith('/image-lab') &&
           !location.pathname.startsWith('/grid-paint') &&
+          !location.pathname.startsWith('/ink-bleed') &&
           !location.pathname.startsWith('/grid-machine') &&
           !location.pathname.startsWith('/labs/wind-tunnel') &&
           !location.pathname.startsWith('/playground') &&

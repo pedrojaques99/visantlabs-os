@@ -21,6 +21,7 @@ export type AssetSource =
   | 'grid-machine'
   | '3d-studio'
   | 'grid-paint'
+  | 'ink-bleed'
   | 'shaders'
   | 'compress'
   | 'converter'

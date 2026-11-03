@@ -56,6 +56,7 @@ const FOCUS_TITLES: Record<string, string> = {
   '/moodboard': 'Moodboard',
   '/grid-machine': 'Grid Machine',
   '/grid-paint': 'Grid Paint',
+  '/ink-bleed': 'Ink Bleed Machine',
   '/playground': 'Playground',
   '/editor': 'Editor',
 };

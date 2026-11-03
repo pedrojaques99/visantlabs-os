@@ -1297,7 +1297,11 @@
     "hiddenToast": "App hidden. Only admins see it.",
     "shownToast": "App visible to everyone.",
     "undo": "Undo",
-    "visibilityFailed": "Couldn't change visibility. Try again."
+    "visibilityFailed": "Couldn't change visibility. Try again.",
+    "inkBleed": {
+      "name": "Ink Bleed Machine",
+      "description": "Ink bleeding into paper. Text or logo as PNG, SVG, MP4 and GIF, on your brand."
+    }
   },
   "auth": {
     "accountCreatedSuccess": "Account created successfully!",
@@ -8913,5 +8917,152 @@
     "copyExamplesHint": "Real copy the brand has shipped. The AI matches its register when writing new copy.",
     "copyExamplePlaceholder": "\"The city paints. We frame it.\"",
     "removeCopyExample": "Remove copy example"
+  },
+  "inkBleed": {
+    "tabs": {
+      "aria": "Ink Bleed sections",
+      "styles": "Styles",
+      "content": "Content",
+      "ink": "Ink",
+      "paper": "Paper",
+      "motion": "Motion",
+      "panel": "Settings"
+    },
+    "presets": {
+      "old-ink": "Old ink",
+      "zine": "90s zine",
+      "rubber-stamp": "Worn stamp",
+      "risograph": "Risograph",
+      "letterpress": "Letterpress",
+      "sumi": "Wet sumi",
+      "photostat": "Photostat negative",
+      "manuscript": "Gothic manuscript",
+      "scan-glow": "Scanner glow",
+      "soft-focus": "Out of focus",
+      "xerox-collage": "Xerox collage"
+    },
+    "content": {
+      "source": "Artwork source",
+      "text": "Text",
+      "logo": "Logo",
+      "textPlaceholder": "Write here",
+      "align": "Alignment",
+      "alignLeft": "Align left",
+      "alignCenter": "Center",
+      "alignRight": "Align right",
+      "uppercase": "Uppercase",
+      "size": "Size",
+      "tracking": "Letter spacing",
+      "leading": "Line height",
+      "fit": "Fit to artwork",
+      "format": "Format"
+    },
+    "font": {
+      "title": "Font",
+      "search": "Search Google Fonts",
+      "weight": "Font weight",
+      "loadTyped": "Load \"{family}\" from Google Fonts",
+      "notFound": "\"{family}\" is not on Google Fonts. Check the name.",
+      "brandMissing": "The brand font {family} is not on Google Fonts, so the current one stays."
+    },
+    "logo": {
+      "drop": "Drop your logo here",
+      "upload": "Upload logo",
+      "replace": "Replace logo",
+      "useBrand": "Use brand logo",
+      "size": "Size",
+      "hint": "The logo becomes one shape in the ink color. In a file without transparency, the corner color is treated as background.",
+      "failed": "Could not read this image. Try a PNG or SVG."
+    },
+    "ink": {
+      "color": "Ink color",
+      "bleedTitle": "Bleed",
+      "spread": "Spread",
+      "roughness": "Roughness",
+      "feather": "Softness",
+      "variation": "New variation",
+      "fiberTitle": "Paper fibers",
+      "frequency": "Vein fineness",
+      "streaks": "Fiber direction",
+      "detail": "Detail",
+      "wearTitle": "Wear",
+      "core": "Letter core",
+      "erosion": "Dropouts",
+      "grit": "Grain",
+      "opacity": "Opacity",
+      "opticsTitle": "Optics",
+      "defocus": "Defocus",
+      "halo": "Halo",
+      "drag": "Drag",
+      "dragAxis": "Drag direction",
+      "dragVertical": "Vertical",
+      "dragHorizontal": "Horizontal",
+      "ghost": "Ghost"
+    },
+    "paper": {
+      "stocks": {
+        "newspaper-vintage": "Newsprint",
+        "aged-parchment": "Parchment",
+        "kraft": "Kraft",
+        "cotton-fine-art": "Cotton",
+        "photostat-dark": "Photostat",
+        "transparent": "Transparent"
+      },
+      "color": "Paper color",
+      "sepia": "Yellowing",
+      "grain": "Grain",
+      "vignette": "Burned edges",
+      "transparentHint": "Ink only, no background. Good for placing over other artwork.",
+      "collageTitle": "Collage and scanner",
+      "patches": "Pasted paper",
+      "veil": "Cover the ink",
+      "patchColor": "Paper color",
+      "scanLines": "Lines",
+      "dust": "Dust"
+    },
+    "motion": {
+      "modes": {
+        "bleed-in": "Ink bleeding",
+        "pulse": "Pulse",
+        "capillary-flow": "Flow",
+        "xerox-burn": "Xerox"
+      },
+      "duration": "Duration",
+      "speed": "Speed"
+    },
+    "transport": {
+      "play": "Play (Space)",
+      "pause": "Pause (Space)",
+      "timeline": "Timeline",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "fit": "Fit to screen"
+    },
+    "export": {
+      "title": "Export",
+      "format": "File format",
+      "size": "Size",
+      "sizeDetail": "{width} × {height} px · {widthCm} × {heightCm} cm at 300 dpi",
+      "background": "Background",
+      "withPaper": "With paper",
+      "transparent": "Transparent",
+      "svgHint": "Text stays editable. The ink is a filter applied by whatever opens the file: it works in browsers and may not show in other programs. For print, use PNG.",
+      "mp4Hint": "{seconds}s at 30 frames per second.",
+      "gifHint": "{seconds}s at 15 frames per second, up to 640 px.",
+      "motionNoAlpha": "Video has no transparency: the background uses the paper color.",
+      "download": "Download {format}",
+      "rendering": "Rendering {percent}%",
+      "done": "{format} downloaded",
+      "failed": "Could not create the file. Try again.",
+      "fontFailed": "Could not download the font. Check your connection and try again.",
+      "tooLarge": "This browser can't render the ink at that size. Switched to {scale}×: click Download again."
+    },
+    "brandApplied": "Colors, font and name of {brand} applied",
+    "brandRelease": "Release brand",
+    "shuffle": "Shuffle",
+    "shuffleHint": "Rolls effects and parameters (S). Text and font stay.",
+    "saveBlocked": "The browser is out of space. Your artwork won't be kept if you reload: export it before leaving.",
+    "minimapHint": "Ctrl or ⌘ + click the artwork to position",
+    "varyPreset": "Vary this style"
   }
 }
