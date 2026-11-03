@@ -186,6 +186,7 @@ const BRAND_EDITOR_PREFIXES = [
   '/moodboard',
   '/grid-machine',
   '/grid-paint',
+  '/ink-bleed',
   '/playground',
   '/labs',
   '/naming',

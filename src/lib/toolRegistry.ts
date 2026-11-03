@@ -22,6 +22,7 @@ import {
   Grid3X3,
   FileDown,
   Library,
+  Droplet,
   type LucideIcon,
 } from '@/lib/ui/icons';
 
@@ -156,6 +157,19 @@ export const TOOL_REGISTRY: ToolDef[] = [
     outputs: ['image/png', 'image/jpeg', 'image/webp'],
     supportsBatch: false,
     supportsBrandContext: false,
+    isPipelineTarget: true,
+  },
+  {
+    id: 'ink-bleed',
+    name: 'Ink Bleed Machine',
+    nameKey: 'apps.inkBleed.name',
+    path: '/ink-bleed',
+    icon: Droplet,
+    category: 'creative',
+    accepts: ['image/*'],
+    outputs: ['image/png', 'image/svg+xml'],
+    supportsBatch: false,
+    supportsBrandContext: true,
     isPipelineTarget: true,
   },
   {

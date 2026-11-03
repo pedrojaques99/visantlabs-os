@@ -419,6 +419,16 @@ export const AppsPage: React.FC = () => {
         free: true,
       },
       {
+        id: 'ink-bleed',
+        name: t('apps.inkBleed.name'),
+        desc: t('apps.inkBleed.description'),
+        link: '/ink-bleed',
+        thumbnail: '/tools/ink-bleed.webp',
+        badgeVariant: 'free',
+        category: 'creative',
+        free: true,
+      },
+      {
         id: 'grid-paint',
         name: t('apps.gridPaint.name'),
         desc: t('apps.gridPaint.description'),

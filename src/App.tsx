@@ -199,6 +199,9 @@ const MoodboardStudioPage = lazyWithRetry(() =>
 const ReferencesPage = lazyWithRetry(() =>
   import('./pages/ReferencesPage').then((m) => ({ default: m.ReferencesPage }))
 );
+const InkBleedPage = lazyWithRetry(() =>
+  import('./pages/InkBleedPage').then((m) => ({ default: m.InkBleedPage }))
+);
 const GridPaintPage = lazyWithRetry(() =>
   import('./pages/GridPaintPage').then((m) => ({ default: m.GridPaintPage }))
 );
@@ -399,6 +402,7 @@ const App: React.FC = () => {
                     />
                     <Route path="/qrcode" element={<QRCodePage />} />
                     <Route path="/grid-paint" element={<GridPaintPage />} />
+                    <Route path="/ink-bleed" element={<InkBleedPage />} />
                     <Route path="/3d-studio" element={<Studio3DPage />} />
                     <Route path="/image-lab" element={<ImageLabPage />} />
                     <Route path="/editor" element={<EditorPage />} />

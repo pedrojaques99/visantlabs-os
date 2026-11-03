@@ -1297,7 +1297,11 @@
     "hiddenToast": "App escondido. Só admin vê.",
     "shownToast": "App visível pra todo mundo.",
     "undo": "Desfazer",
-    "visibilityFailed": "Não deu pra mudar a visibilidade. Tente de novo."
+    "visibilityFailed": "Não deu pra mudar a visibilidade. Tente de novo.",
+    "inkBleed": {
+      "name": "Ink Bleed Machine",
+      "description": "Tinta sangrando no papel. Texto ou logo em PNG, SVG, MP4 e GIF, com a sua marca."
+    }
   },
   "auth": {
     "accountCreatedSuccess": "Conta criada com sucesso!",
@@ -8913,5 +8917,152 @@
     "copyExamplesHint": "Copy real que a marca já publicou. A IA imita o registro ao escrever copy nova.",
     "copyExamplePlaceholder": "\"A cidade pinta. A gente emoldura.\"",
     "removeCopyExample": "Remover exemplo de copy"
+  },
+  "inkBleed": {
+    "tabs": {
+      "aria": "Seções do Ink Bleed",
+      "styles": "Estilos",
+      "content": "Conteúdo",
+      "ink": "Tinta",
+      "paper": "Papel",
+      "motion": "Movimento",
+      "panel": "Ajustes"
+    },
+    "presets": {
+      "old-ink": "Tinta antiga",
+      "zine": "Zine anos 90",
+      "rubber-stamp": "Carimbo gasto",
+      "risograph": "Risografia",
+      "letterpress": "Letterpress",
+      "sumi": "Sumi molhado",
+      "photostat": "Fotostato negativo",
+      "manuscript": "Manuscrito gótico",
+      "scan-glow": "Brilho de scanner",
+      "soft-focus": "Fora de foco",
+      "xerox-collage": "Colagem xerox"
+    },
+    "content": {
+      "source": "Origem da arte",
+      "text": "Texto",
+      "logo": "Logo",
+      "textPlaceholder": "Escreva aqui",
+      "align": "Alinhamento",
+      "alignLeft": "Alinhar à esquerda",
+      "alignCenter": "Centralizar",
+      "alignRight": "Alinhar à direita",
+      "uppercase": "Maiúsculas",
+      "size": "Tamanho",
+      "tracking": "Espaço entre letras",
+      "leading": "Altura da linha",
+      "fit": "Ajustar ao quadro",
+      "format": "Formato"
+    },
+    "font": {
+      "title": "Fonte",
+      "search": "Buscar no Google Fonts",
+      "weight": "Peso da fonte",
+      "loadTyped": "Carregar \"{family}\" do Google Fonts",
+      "notFound": "\"{family}\" não está no Google Fonts. Confira o nome.",
+      "brandMissing": "A fonte {family} da marca não está no Google Fonts, então mantive a atual."
+    },
+    "logo": {
+      "drop": "Solte o logo aqui",
+      "upload": "Enviar logo",
+      "replace": "Trocar logo",
+      "useBrand": "Usar logo da marca",
+      "size": "Tamanho",
+      "hint": "O logo vira uma forma só, na cor da tinta. Em arquivo sem transparência, a cor dos cantos é tratada como fundo.",
+      "failed": "Não consegui ler essa imagem. Tente um PNG ou SVG."
+    },
+    "ink": {
+      "color": "Cor da tinta",
+      "bleedTitle": "Sangramento",
+      "spread": "Expansão",
+      "roughness": "Rugosidade",
+      "feather": "Suavidade",
+      "variation": "Nova variação",
+      "fiberTitle": "Fibras do papel",
+      "frequency": "Finura dos veios",
+      "streaks": "Direção das fibras",
+      "detail": "Detalhe",
+      "wearTitle": "Desgaste",
+      "core": "Miolo da letra",
+      "erosion": "Falhas",
+      "grit": "Grão",
+      "opacity": "Opacidade",
+      "opticsTitle": "Óptica",
+      "defocus": "Desfoque",
+      "halo": "Halo",
+      "drag": "Arrasto",
+      "dragAxis": "Direção do arrasto",
+      "dragVertical": "Vertical",
+      "dragHorizontal": "Horizontal",
+      "ghost": "Fantasma"
+    },
+    "paper": {
+      "stocks": {
+        "newspaper-vintage": "Jornal",
+        "aged-parchment": "Pergaminho",
+        "kraft": "Kraft",
+        "cotton-fine-art": "Algodão",
+        "photostat-dark": "Fotostato",
+        "transparent": "Transparente"
+      },
+      "color": "Cor do papel",
+      "sepia": "Amarelado",
+      "grain": "Grão",
+      "vignette": "Bordas queimadas",
+      "transparentHint": "Só a tinta, sem fundo. Bom para aplicar sobre outra arte.",
+      "collageTitle": "Colagem e scanner",
+      "patches": "Papéis colados",
+      "veil": "Cobrir a tinta",
+      "patchColor": "Cor dos papéis",
+      "scanLines": "Riscos",
+      "dust": "Poeira"
+    },
+    "motion": {
+      "modes": {
+        "bleed-in": "Tinta vazando",
+        "pulse": "Pulso",
+        "capillary-flow": "Fluxo",
+        "xerox-burn": "Xerox"
+      },
+      "duration": "Duração",
+      "speed": "Velocidade"
+    },
+    "transport": {
+      "play": "Reproduzir (Espaço)",
+      "pause": "Pausar (Espaço)",
+      "timeline": "Linha do tempo",
+      "zoomIn": "Aproximar",
+      "zoomOut": "Afastar",
+      "fit": "Ajustar à tela"
+    },
+    "export": {
+      "title": "Exportar",
+      "format": "Formato do arquivo",
+      "size": "Tamanho",
+      "sizeDetail": "{width} × {height} px · {widthCm} × {heightCm} cm a 300 dpi",
+      "background": "Fundo",
+      "withPaper": "Com papel",
+      "transparent": "Transparente",
+      "svgHint": "O texto continua editável. A tinta é um filtro aplicado por quem abre o arquivo: funciona no navegador e pode não aparecer em outros programas. Para impressão, use PNG.",
+      "mp4Hint": "{seconds}s a 30 quadros por segundo.",
+      "gifHint": "{seconds}s a 15 quadros por segundo, até 640 px.",
+      "motionNoAlpha": "Vídeo não tem transparência: o fundo sai na cor do papel.",
+      "download": "Baixar {format}",
+      "rendering": "Gerando {percent}%",
+      "done": "{format} baixado",
+      "failed": "Não consegui gerar o arquivo. Tente de novo.",
+      "fontFailed": "Não consegui baixar a fonte. Confira a conexão e tente de novo.",
+      "tooLarge": "Este navegador não gera a tinta nesse tamanho. Mudei para {scale}×: clique em Baixar de novo."
+    },
+    "brandApplied": "Cores, fonte e nome de {brand} aplicados",
+    "brandRelease": "Soltar marca",
+    "shuffle": "Embaralhar",
+    "shuffleHint": "Sorteia efeitos e parâmetros (S). Texto e fonte ficam.",
+    "saveBlocked": "O navegador está sem espaço. Sua arte não será salva se você recarregar a página: exporte antes de sair.",
+    "minimapHint": "Ctrl ou ⌘ + clique na arte para posicionar",
+    "varyPreset": "Variar este estilo"
   }
 }

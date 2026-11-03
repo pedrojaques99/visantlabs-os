@@ -73,6 +73,7 @@ describe('classifyRoute', () => {
       '/mockupmachine',
       '/3d-studio',
       '/image-lab',
+      '/ink-bleed',
       '/create',
       '/canvas/abc',
       '/qrcode',
