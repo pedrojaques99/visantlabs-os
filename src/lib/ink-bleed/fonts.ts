@@ -65,6 +65,14 @@ function blobToDataUrl(blob: Blob): Promise<string> {
   });
 }
 
+/**
+ * The family can come from a brand, and this CSS lands inside the exported SVG, in a
+ * <style> a browser will run. Everything but plain name characters becomes a CSS escape.
+ */
+export function cssString(value: string): string {
+  return value.replace(/[^\w -]/g, (c) => `\\${(c.codePointAt(0) ?? 0).toString(16)} `);
+}
+
 const embedded = new Map<string, string>();
 
 /** Only the glyphs in `text` are embedded, so the SVG stays small. */
@@ -84,7 +92,7 @@ export async function embedFontCss(family: string, weight: number, text: string)
   if (!res.ok) throw new Error(`Font not available: ${family}`);
   const data = await blobToDataUrl(await res.blob());
 
-  const face = `@font-face{font-family:'${family.replace(/'/g, "\\'")}';font-weight:${weight};font-style:normal;src:url(${data}) format('woff2');}`;
+  const face = `@font-face{font-family:'${cssString(family)}';font-weight:${weight};font-style:normal;src:url(${data}) format('woff2');}`;
   embedded.set(key, face);
   return face;
 }

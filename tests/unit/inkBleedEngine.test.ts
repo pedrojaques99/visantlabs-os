@@ -10,6 +10,7 @@ import {
 } from '@/lib/ink-bleed/engine';
 import { toAlphaMask } from '@/lib/ink-bleed/logoMask';
 import { createDocStorage } from '@/lib/ink-bleed/docStorage';
+import { cssString } from '@/lib/ink-bleed/fonts';
 import { luminance, patchRects } from '@/lib/ink-bleed/paper';
 import { PRESETS, createDefaultDoc } from '@/lib/ink-bleed/presets';
 import { inkPaperContrast, shuffleDoc, varyDoc } from '@/lib/ink-bleed/shuffle';
@@ -514,5 +515,19 @@ describe('drag', () => {
 
   it('adds no extra work when the effect is off', () => {
     expect(svg(0)).not.toContain('dragPatch');
+  });
+});
+
+describe('cssString', () => {
+  it('leaves ordinary family names alone', () => {
+    expect(cssString('Space Grotesk')).toBe('Space Grotesk');
+    expect(cssString('Noto-Sans_2')).toBe('Noto-Sans_2');
+  });
+
+  it('cannot close the CSS string or the style tag', () => {
+    const out = cssString(`x\\';}</style><script>alert(1)</script>`);
+    expect(out).not.toMatch(/['<>;}]/);
+    // Only the backslashes of the escapes themselves remain.
+    expect(out).toMatch(/^x\\5c \\27 /);
   });
 });
