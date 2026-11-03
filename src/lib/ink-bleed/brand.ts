@@ -36,14 +36,23 @@ export function pickBrandColors(
   const lightest = byLuminance[byLuminance.length - 1].hex;
   const darkest = byLuminance[0].hex;
 
-  const primary = valid.find((c) => c.role === 'primary')?.hex ?? valid[0].hex;
-  const background = valid.find((c) => c.role === 'background' || c.role === 'light')?.hex;
+  const withRole = (role: string) => valid.find((c) => c.role === role)?.hex;
+  const background = withRole('background') ?? withRole('light');
 
   // Paper stays light unless the brand is dark-only: this is an ink-on-paper effect.
   const paper = background ?? (luminance(lightest) > 0.5 ? lightest : '#f4f1ea');
-  if (contrast(primary, paper) >= MIN_CONTRAST) return { ink: primary, paper };
-  if (contrast(darkest, paper) >= MIN_CONTRAST) return { ink: darkest, paper };
-  return { ink: '#171719', paper };
+  // The role that means "ink" first, then the rest of the palette. Many brands have no
+  // primary, and their first color is the background itself.
+  const candidates = [
+    withRole('primary'),
+    withRole('text'),
+    withRole('accent'),
+    ...valid.map((c) => c.hex),
+    darkest,
+    lightest,
+  ];
+  const ink = candidates.find((hex) => hex && contrast(hex, paper) >= MIN_CONTRAST);
+  return { ink: ink ?? (luminance(paper) > 0.18 ? '#171719' : '#f2f2ee'), paper };
 }
 
 export function brandHeadingFont(brand: BrandGuideline): string | null {

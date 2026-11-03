@@ -239,6 +239,25 @@ describe('brand as input', () => {
     expect(contrast(pair!.ink, pair!.paper)).toBeGreaterThanOrEqual(3);
   });
 
+  it('reads on real dark palettes that have no primary role', () => {
+    const pair = pickBrandColors([
+      { hex: '#0d0d0d', role: 'background' },
+      { hex: '#ffffff', role: 'text' },
+      { hex: '#161616', role: 'secondary' },
+      { hex: '#8a8a8a', role: 'muted' },
+      { hex: '#52ddeb', role: 'accent' },
+    ]);
+    expect(pair).toEqual({ ink: '#ffffff', paper: '#0d0d0d' });
+  });
+
+  it('never uses a near-black fallback on near-black paper', () => {
+    const pair = pickBrandColors([
+      { hex: '#0d0d0d', role: 'background' },
+      { hex: '#161616', role: 'secondary' },
+    ]);
+    expect(contrast(pair!.ink, pair!.paper)).toBeGreaterThanOrEqual(3);
+  });
+
   it('survives an empty or invalid palette', () => {
     expect(pickBrandColors([])).toBeNull();
     expect(pickBrandColors(undefined)).toBeNull();
