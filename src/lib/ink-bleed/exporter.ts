@@ -91,7 +91,8 @@ function drawSvg(
 
 function toBlob(canvas: HTMLCanvasElement, type: string): Promise<Blob> {
   return new Promise((resolve, reject) => {
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Could not create the file'))), type);
+    // A null blob means the canvas passed what this device can hold.
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new InkTooLargeError())), type);
   });
 }
 

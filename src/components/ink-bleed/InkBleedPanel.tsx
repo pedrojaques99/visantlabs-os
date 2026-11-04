@@ -163,7 +163,7 @@ const StylesSection: React.FC = () => {
               aria-label={`${t('inkBleed.varyPreset')}: ${t(`inkBleed.presets.${preset.id}`)}`}
               onClick={() => varyPreset(preset)}
               className={cn(
-                'absolute right-1 top-1 h-7 w-7 rounded-md border border-border bg-card text-foreground hover:bg-card',
+                'absolute right-1 top-1 h-7 w-7 rounded-md border border-border bg-card text-foreground hover:bg-card [@media(pointer:coarse)]:h-10 [@media(pointer:coarse)]:w-10',
                 'opacity-0 transition-opacity group-hover/preset:opacity-100 focus-visible:opacity-100',
                 '[@media(hover:none)]:opacity-100'
               )}
@@ -230,7 +230,7 @@ const FontList: React.FC = () => {
           }}
           placeholder={t('inkBleed.font.search')}
           aria-label={t('inkBleed.font.search')}
-          className="h-8 pl-7 text-xs"
+          className="h-8 pl-7 text-xs [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:text-base"
         />
       </div>
 
@@ -344,7 +344,7 @@ const ContentSection: React.FC<ContentSectionProps> = ({ onLogoFiles, onLogoUrl 
             onChange={(e) => setTypography({ text: e.target.value })}
             aria-label={t('inkBleed.content.text')}
             placeholder={t('inkBleed.content.textPlaceholder')}
-            className="resize-none text-sm"
+            className="resize-none text-sm [@media(pointer:coarse)]:text-base"
           />
 
           <div className="flex items-center justify-between gap-3">

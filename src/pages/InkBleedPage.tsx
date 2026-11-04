@@ -27,7 +27,15 @@ import { exportPngDataUrl } from '@/lib/ink-bleed/exporter';
 import { ensureFont, measureLines } from '@/lib/ink-bleed/fonts';
 import { createLogoMask } from '@/lib/ink-bleed/logoMask';
 import { shuffleDoc } from '@/lib/ink-bleed/shuffle';
-import { Eraser, PanelRightClose, PanelRightOpen, Redo2, Shuffle, Undo2 } from '@/lib/ui/icons';
+import {
+  Download,
+  Eraser,
+  PanelRightClose,
+  PanelRightOpen,
+  Redo2,
+  Shuffle,
+  Undo2,
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useInkBleedStore } from '@/stores/inkBleedStore';
 import { copyImageAsPng } from '@/utils/clipboard';
@@ -92,14 +100,17 @@ export const InkBleedPage: React.FC = () => {
   const setTypography = useInkBleedStore((s) => s.setTypography);
   const reset = useInkBleedStore((s) => s.reset);
 
-  const [panelVisible, setPanelVisible] = useState(true);
+  // A phone on its side: the panel would leave no room for the artwork it controls.
+  const [panelVisible, setPanelVisible] = useState(
+    () => !window.matchMedia('(max-height: 500px)').matches
+  );
   const [exportOpen, setExportOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const isMobile = useIsMobile();
   const [isDragOver, setIsDragOver] = useState(false);
 
   const { width, height } = FORMATS[format];
-  const viewport = useArtworkViewport(width, height, !isMobile);
+  const viewport = useArtworkViewport(width, height, isMobile);
   const { canUndo, canRedo } = useHistoryFlags();
   usePlayback();
 
@@ -248,6 +259,16 @@ export const InkBleedPage: React.FC = () => {
 
   const awaitingLogo = source === 'logo' && !hasLogo;
 
+  const sendTo = (
+    <SendToButton
+      source="ink-bleed"
+      outputMime="image/png"
+      mimeType="image/png"
+      label={t('apps.inkBleed.name')}
+      getImageBase64={artworkForPipeline}
+    />
+  );
+
   const controlsPanel = (
     <ToolPanel>
       {activeBrand && (
@@ -271,21 +292,16 @@ export const InkBleedPage: React.FC = () => {
         </ToolPanelHeader>
       )}
       <InkBleedSections onLogoFiles={handleLogoFiles} onLogoUrl={loadLogo} />
-      <ToolPanelExportActions
-        onExport={() => setExportOpen(true)}
-        isExporting={false}
-        disabled={awaitingLogo}
-        onCopyAsPng={() => void copyArtwork()}
-        sendTo={
-          <SendToButton
-            source="ink-bleed"
-            outputMime="image/png"
-            mimeType="image/png"
-            label={t('apps.inkBleed.name')}
-            getImageBase64={artworkForPipeline}
-          />
-        }
-      />
+      {/* On a phone these go to the tools row and the export dialog: the sheet needs the room. */}
+      {!isMobile && (
+        <ToolPanelExportActions
+          onExport={() => setExportOpen(true)}
+          isExporting={false}
+          disabled={awaitingLogo}
+          onCopyAsPng={() => void copyArtwork()}
+          sendTo={sendTo}
+        />
+      )}
     </ToolPanel>
   );
 
@@ -320,11 +336,13 @@ export const InkBleedPage: React.FC = () => {
               variant="ghost"
               size="sm"
               aria-label={t('inkBleed.shuffle')}
-              className="h-7 gap-1.5 px-2 text-xs"
+              className="h-7 gap-1.5 px-2 text-xs [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:min-w-11"
               onClick={shuffle}
             >
               <Shuffle size={14} />
-              {t('inkBleed.shuffle')}
+              <span className="max-[359px]:hidden [@media(max-height:500px)]:hidden">
+                {t('inkBleed.shuffle')}
+              </span>
             </Button>
           </Tooltip>
           <span className="mx-0.5 h-4 w-px bg-border" aria-hidden />
@@ -333,7 +351,7 @@ export const InkBleedPage: React.FC = () => {
               variant="ghost"
               size="icon"
               aria-label={t('toolEditor.undo')}
-              className="h-7 w-7 text-muted-foreground disabled:opacity-30"
+              className="h-7 w-7 text-muted-foreground disabled:opacity-30 [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
               disabled={!canUndo}
               onClick={undo}
             >
@@ -345,7 +363,7 @@ export const InkBleedPage: React.FC = () => {
               variant="ghost"
               size="icon"
               aria-label={t('toolEditor.redo')}
-              className="h-7 w-7 text-muted-foreground disabled:opacity-30"
+              className="h-7 w-7 text-muted-foreground disabled:opacity-30 [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
               disabled={!canRedo}
               onClick={redo}
             >
@@ -357,7 +375,7 @@ export const InkBleedPage: React.FC = () => {
               variant="ghost"
               size="icon"
               aria-label={t('common.resetSettingsTitle')}
-              className="h-7 w-7 text-muted-foreground"
+              className="h-7 w-7 text-muted-foreground [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
               onClick={() => setConfirmReset(true)}
             >
               <Eraser size={14} />
@@ -371,17 +389,35 @@ export const InkBleedPage: React.FC = () => {
                 variant="ghost"
                 size="icon"
                 aria-label={panelVisible ? t('common.hidePanel') : t('common.showPanel')}
-                className="h-7 w-7 text-muted-foreground"
+                className="h-7 w-7 text-muted-foreground [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
                 onClick={() => setPanelVisible(!panelVisible)}
               >
                 {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
               </Button>
             </Tooltip>
           )}
+          {(isMobile || !panelVisible) && (
+            <Tooltip content={t('inkBleed.export.title')}>
+              <Button
+                variant="primary"
+                size="icon"
+                aria-label={t('inkBleed.export.title')}
+                disabled={awaitingLogo}
+                className="ml-0.5 h-7 w-7 [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
+                onClick={() => setExportOpen(true)}
+              >
+                <Download size={14} />
+              </Button>
+            </Tooltip>
+          )}
         </div>
         <InkBleedTransport viewport={viewport} onTogglePlay={togglePlay} />
       </div>
-      <InkBleedExportDialog isOpen={exportOpen} onClose={() => setExportOpen(false)} />
+      <InkBleedExportDialog
+        isOpen={exportOpen}
+        onClose={() => setExportOpen(false)}
+        sendTo={isMobile ? sendTo : undefined}
+      />
       <ConfirmationModal
         isOpen={confirmReset}
         onClose={() => setConfirmReset(false)}

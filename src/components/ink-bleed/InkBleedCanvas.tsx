@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useGesture } from '@use-gesture/react';
 import { Dropzone } from '@/components/ui/Dropzone';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { useTranslation } from '@/hooks/useTranslation';
 import { FORMATS, buildArtworkSvg, inkBlendMode } from '@/lib/ink-bleed/engine';
 import { drawPaper, drawVeil } from '@/lib/ink-bleed/paper';
@@ -9,11 +11,24 @@ import { InkBleedMinimap } from './InkBleedMinimap';
 
 /** Preview resolution while something moves. Exports never use it. */
 const DRAFT_SCALE = 0.5;
+// A slow phone trades preview detail for motion. Exports never use these.
+const DRAFT_STEPS = [0.5, 0.33, 0.25];
+const SLOW_FRAME_MS = 45;
+const FRAMES_TO_JUDGE = 12;
 const DRAFT_SETTLE_MS = 180;
 const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 4;
 // Keeps the artwork clear of the floating tools above it and the transport pill below.
 const FIT_INSET = { x: 48, top: 56, bottom: 88 };
+// On a phone the artwork is the point: it gets the width.
+const PHONE_INSET_X = 12;
+// A phone on its side has no height to spare, and the tools float beside the artwork.
+const SHORT_VIEW = 420;
+const SHORT_INSET_TOP = 12;
+const SHORT_INSET_BOTTOM = 76;
+// With the sheet open, the row of tools stays above and the sheet covers the transport.
+const SHEET_INSET_TOP = 68;
+const SHEET_INSET_BOTTOM = 12;
 // The shell reserves this strip on desktop. The stage runs under it, to the window edge.
 const STAGE_BLEED = 40;
 
@@ -35,21 +50,45 @@ export interface ArtworkViewport {
   visible: { x: number; y: number; width: number; height: number };
   /** The stage extends under the strip the shell reserves at the bottom. */
   bleed: boolean;
+  /** Fingers are the pointer: gestures on, and the artwork takes them instead of the page. */
+  isTouch: boolean;
 }
 
 const limit = (value: number, max: number) => Math.min(max, Math.max(-max, value));
 
 /** The artwork does not follow the mouse. It only moves when someone asks it to. */
-export function useArtworkViewport(width: number, height: number, bleed = false): ArtworkViewport {
+export function useArtworkViewport(
+  width: number,
+  height: number,
+  isMobile = false
+): ArtworkViewport {
+  const bleed = !isMobile;
+  const isTouch = useMediaQuery('(pointer: coarse)');
   const containerRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoomState] = useState(0.7);
   const [focus, setFocus] = useState({ x: 0, y: 0 });
   const [size, setSize] = useState({ width: 0, height: 0 });
   const fitted = useRef(true);
-  const insetBottom = FIT_INSET.bottom + (bleed ? STAGE_BLEED : 0);
+  const insetX = isMobile ? PHONE_INSET_X : FIT_INSET.x;
+  const insets = useCallback(
+    (viewHeight: number) => {
+      const short = viewHeight > 0 && viewHeight < SHORT_VIEW;
+      if (isMobile) {
+        return short
+          ? { top: SHEET_INSET_TOP, bottom: SHEET_INSET_BOTTOM }
+          : { top: SHEET_INSET_TOP, bottom: FIT_INSET.bottom };
+      }
+      return {
+        top: short ? SHORT_INSET_TOP : FIT_INSET.top,
+        bottom: (short ? SHORT_INSET_BOTTOM : FIT_INSET.bottom) + (bleed ? STAGE_BLEED : 0),
+      };
+    },
+    [bleed, isMobile]
+  );
+  const { top: insetTop, bottom: insetBottom } = insets(size.height);
 
-  const availableW = Math.max(0, size.width - FIT_INSET.x * 2);
-  const availableH = Math.max(0, size.height - FIT_INSET.top - insetBottom);
+  const availableW = Math.max(0, size.width - insetX * 2);
+  const availableH = Math.max(0, size.height - insetTop - insetBottom);
   // How far the view can travel before an edge of the artwork leaves the clear area.
   const roomX = Math.max(0, width * zoom - availableW) / 2 / zoom;
   const roomY = Math.max(0, height * zoom - availableH) / 2 / zoom;
@@ -60,12 +99,13 @@ export function useArtworkViewport(width: number, height: number, bleed = false)
     fitted.current = true;
     const el = containerRef.current;
     if (!el) return;
-    const fitW = el.clientWidth - FIT_INSET.x * 2;
-    const fitH = el.clientHeight - FIT_INSET.top - insetBottom;
+    const { top, bottom } = insets(el.clientHeight);
+    const fitW = el.clientWidth - insetX * 2;
+    const fitH = el.clientHeight - top - bottom;
     if (fitW <= 0 || fitH <= 0) return;
     setZoomState(clampZoom(Math.min(fitW / width, fitH / height, 1)));
     setFocus({ x: 0, y: 0 });
-  }, [width, height, insetBottom]);
+  }, [width, height, insetX, insets]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -102,13 +142,14 @@ export function useArtworkViewport(width: number, height: number, bleed = false)
     zoom,
     pan: {
       x: -focusX * zoom,
-      y: (FIT_INSET.top - insetBottom) / 2 - focusY * zoom,
+      y: (insetTop - insetBottom) / 2 - focusY * zoom,
     },
     setZoom,
     fit,
     canMove: roomX > 0 || roomY > 0,
     moveTo,
     bleed,
+    isTouch,
     visible: {
       x: focusX - visibleW / 2,
       y: focusY - visibleH / 2,
@@ -159,7 +200,27 @@ export const InkBleedCanvas: React.FC<InkBleedCanvasProps> = ({ viewport, onLogo
     const timer = setTimeout(() => setSettling(false), DRAFT_SETTLE_MS);
     return () => clearTimeout(timer);
   }, [doc, progress]);
-  const previewScale = isPlaying || settling ? DRAFT_SCALE : 1;
+
+  const [draftStep, setDraftStep] = useState(0);
+  const frames = useRef({ last: 0, count: 0, total: 0 });
+  useEffect(() => {
+    if (!isPlaying) {
+      frames.current = { last: 0, count: 0, total: 0 };
+      return;
+    }
+    const f = frames.current;
+    const now = performance.now();
+    if (f.last) {
+      f.total += now - f.last;
+      f.count += 1;
+    }
+    f.last = now;
+    if (f.count < FRAMES_TO_JUDGE) return;
+    const slow = f.total / f.count > SLOW_FRAME_MS;
+    frames.current = { last: now, count: 0, total: 0 };
+    if (slow) setDraftStep((step) => Math.min(step + 1, DRAFT_STEPS.length - 1));
+  }, [progress, isPlaying]);
+  const previewScale = isPlaying || settling ? (DRAFT_STEPS[draftStep] ?? DRAFT_SCALE) : 1;
 
   const artwork = useMemo(
     () =>
@@ -190,6 +251,30 @@ export const InkBleedCanvas: React.FC<InkBleedCanvasProps> = ({ viewport, onLogo
     return () => el.removeEventListener('wheel', onWheel);
   }, [containerRef, setZoom]);
 
+  // Fingers: pinch zooms, one finger moves a zoomed artwork. A mouse stays pinned.
+  useGesture(
+    {
+      onPinch: ({ offset: [scale] }) => setZoom(scale),
+      onDrag: ({ delta: [dx, dy], pinching, event }) => {
+        if (pinching || !canMove || (event as PointerEvent).pointerType !== 'touch') return;
+        const { visible } = viewport;
+        moveTo(
+          visible.x + visible.width / 2 - dx / zoom,
+          visible.y + visible.height / 2 - dy / zoom
+        );
+      },
+    },
+    {
+      target: containerRef,
+      enabled: viewport.isTouch,
+      pinch: {
+        from: () => [zoomRef.current, 0],
+        scaleBounds: { min: MIN_ZOOM, max: MAX_ZOOM },
+        pinchOnWheel: false,
+      },
+    }
+  );
+
   const [modifierHeld, setModifierHeld] = useState(false);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => setModifierHeld(e.ctrlKey || e.metaKey);
@@ -217,6 +302,8 @@ export const InkBleedCanvas: React.FC<InkBleedCanvasProps> = ({ viewport, onLogo
     <div
       ref={containerRef}
       onClick={moveToClick}
+      onDoubleClick={() => viewport.isTouch && viewport.fit()}
+      style={viewport.isTouch ? { touchAction: 'none' } : undefined}
       className={cn(
         'absolute inset-x-0 top-0 overflow-hidden select-none bg-background',
         viewport.bleed ? '-bottom-10' : 'bottom-0',

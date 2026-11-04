@@ -26,16 +26,26 @@ const SCALES = [1, 2, 4] as const;
 interface InkBleedExportDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  /** On a phone the send-to action lives here, because the panel has no room for it. */
+  sendTo?: React.ReactNode;
 }
 
-export const InkBleedExportDialog: React.FC<InkBleedExportDialogProps> = ({ isOpen, onClose }) => {
+export const InkBleedExportDialog: React.FC<InkBleedExportDialogProps> = ({
+  isOpen,
+  onClose,
+  sendTo,
+}) => {
   const { t } = useTranslation();
   const doc = useInkBleedStore((s) => s.doc);
   const logo = useInkBleedStore((s) => s.logo);
   const progress = useInkBleedStore((s) => s.progress);
 
   const [format, setFormat] = useState<Format>('png');
-  const [scale, setScale] = useState<(typeof SCALES)[number]>(4);
+  // 4× passes the canvas limit of many phones, and most of them cannot use it anyway.
+  // Read directly: useIsMobile only answers after the first render, too late for a default.
+  const [scale, setScale] = useState<(typeof SCALES)[number]>(() =>
+    window.matchMedia('(max-width: 767px), (max-height: 500px)').matches ? 2 : 4
+  );
   const [background, setBackground] = useState<Background>('paper');
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(0);
@@ -107,6 +117,7 @@ export const InkBleedExportDialog: React.FC<InkBleedExportDialogProps> = ({ isOp
       mobileDrawer
       footer={
         <div className="flex items-center justify-end gap-2">
+          {sendTo && <div className="mr-auto">{sendTo}</div>}
           {busy && isMotion && (
             <Button
               variant="ghost"
