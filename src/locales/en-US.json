@@ -7359,7 +7359,8 @@
       "export_svg": "Download SVG",
       "copy_state": "Copy state",
       "eraser": "Eraser",
-      "clear_canvas": "Clear canvas"
+      "clear_canvas": "Clear canvas",
+      "clear_canvas_message": "All the dots on this canvas are erased."
     },
     "machine": {
       "this_will_remove_the_current_svg_and_": "This removes the current SVG and resets the settings.",
@@ -8996,7 +8997,20 @@
     "zoom": "Zoom",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
-    "fit": "Fit to screen"
+    "fit": "Fit to screen",
+    "snap": "Snap to grid",
+    "shortcuts": "Shortcuts (?)",
+    "presets": {
+      "title": "My presets",
+      "name": "Preset name",
+      "save": "Save",
+      "saved": "Preset saved",
+      "saveFailed": "Could not save the preset",
+      "applied": "{name} applied",
+      "delete": "Delete {name}"
+    },
+    "clearAll": "Clear everything",
+    "clearAllMessage": "What you added is removed and the settings return to defaults."
   },
   "toolEditor": {
     "export": {

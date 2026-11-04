@@ -2266,3 +2266,9 @@ select.w-full.font-mono.node-interactive {
   --control-h: 2rem;
   --gap-zone: 0.75rem;
 }
+
+/* Slider rows always take the whole width: a grid of them reads as one table. */
+.grid:has(> [data-slider-row]) {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.25rem;
+}

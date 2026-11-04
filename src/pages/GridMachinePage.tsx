@@ -1,7 +1,6 @@
-import React, { useRef, useCallback, useEffect, useState } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Info, PanelRightClose, PanelRightOpen, RotateCcw, Upload } from '@/lib/ui/icons';
-import { ConfirmationModal } from '@/components/ConfirmationModal';
+import { Info, PanelRightClose, PanelRightOpen, Upload } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Dropzone } from '@/components/ui/Dropzone';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -9,15 +8,17 @@ import {
   StageDock,
   StageDockDivider,
   StageDockGroup,
+  StageDockReset,
   StageDockText,
   stageDockButton,
 } from '@/components/shared/StageDock';
+import { StageDockPresets } from '@/components/shared/StageDockPresets';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { BrandFunnelBanner } from '@/components/funnel/BrandFunnelBanner';
 import { GridCanvas, type GridCanvasHandle } from '@/components/grid-machine/GridCanvas';
 import { GridMachineControls } from '@/components/grid-machine/ControlsPanel';
-import { useGridMachineStore } from '@/stores/gridMachineStore';
+import { DEFAULTS, useGridMachineStore } from '@/stores/gridMachineStore';
 import { analyzeSvg } from '@/components/grid-machine/SvgAnalyzer';
 import { downloadBlob } from '@/utils/clipboard';
 import { useExportCanvas } from '@/hooks/useExportCanvas';
@@ -31,7 +32,6 @@ export const GridMachinePage: React.FC = () => {
   const gridRef = useRef<GridCanvasHandle>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
-  const [confirmClear, setConfirmClear] = useState(false);
 
   const panelVisible = store((s) => s.panelVisible);
   const setPanelVisible = store((s) => s.setPanelVisible);
@@ -235,17 +235,22 @@ export const GridMachinePage: React.FC = () => {
           </Tooltip>
           {svgContent && (
             <>
-              <Tooltip content={t('grid.machine.clear_workspace')}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label={t('grid.machine.clear_workspace')}
-                  className={stageDockButton}
-                  onClick={() => setConfirmClear(true)}
-                >
-                  <RotateCcw size={14} />
-                </Button>
-              </Tooltip>
+              <StageDockPresets
+                toolId="grid-machine"
+                getData={(): Record<string, any> => {
+                  const state = store.getState();
+                  return Object.fromEntries(
+                    Object.keys(DEFAULTS).map((key) => [key, state[key as keyof typeof DEFAULTS]])
+                  );
+                }}
+                applyData={(data) => store.setState(data)}
+              />
+              <StageDockReset
+                onReset={clear}
+                title={t('grid.machine.clear_workspace')}
+                message={t('grid.machine.this_will_remove_the_current_svg_and_')}
+                confirmText={t('grid.machine.clear')}
+              />
               <StageDockDivider />
               <StageDockGroup icon={<Info size={14} />} label={t('toolDock.details')}>
                 {statusItems.map((item) => (
@@ -274,18 +279,6 @@ export const GridMachinePage: React.FC = () => {
           )}
         </StageDock>
       </div>
-      <ConfirmationModal
-        isOpen={confirmClear}
-        onClose={() => setConfirmClear(false)}
-        onConfirm={() => {
-          clear();
-          setConfirmClear(false);
-        }}
-        title={t('grid.machine.clear_workspace')}
-        message={t('grid.machine.this_will_remove_the_current_svg_and_')}
-        confirmText={t('grid.machine.clear')}
-        variant="warning"
-      />
     </ToolEditorShell>
   );
 };

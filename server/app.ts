@@ -31,6 +31,7 @@ import renderRoutes from './routes/render.js';
 import sequencerRoutes from './routes/sequencer.js';
 import moodboardRoutes from './routes/moodboard.js';
 import communityRoutes from './routes/community.js';
+import toolPresetsRoutes from './routes/toolPresets.js';
 import storageRoutes from './routes/storage.js';
 import usersRoutes from './routes/users.js';
 import expertRoutes from './routes/expert.js';
@@ -364,6 +365,7 @@ export function createApp() {
     ['/sequencer', sequencerRoutes],
     ['/moodboard', moodboardRoutes],
     ['/community', communityRoutes],
+    ['/tool-presets', toolPresetsRoutes],
     ['/storage', storageRoutes],
     ['/users', usersRoutes],
     ['/apps', appRoutes],

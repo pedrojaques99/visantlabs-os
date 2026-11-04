@@ -193,6 +193,18 @@ export const QRCodePage: React.FC = () => {
       toolId="qrcode"
       documentTitle={t('apps.qrCode.name')}
       onReset={handleReset}
+      presets={{
+        toolId: 'qrcode',
+        getData: () => ({ size, errorCorrectionLevel, bgColor, fgColor, marginSize }),
+        applyData: (data) => {
+          const next = { size, errorCorrectionLevel, bgColor, fgColor, marginSize, ...data };
+          setSize(next.size);
+          setErrorCorrectionLevel(next.errorCorrectionLevel);
+          setBgColor(next.bgColor);
+          setFgColor(next.fgColor);
+          setMarginSize(next.marginSize);
+        },
+      }}
       panel={panel}
     >
       <AnimatePresence mode="wait">

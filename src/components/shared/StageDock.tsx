@@ -8,39 +8,37 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Maximize2, Pause, Play, Search, ZoomIn, ZoomOut } from '@/lib/ui/icons';
+import { ConfirmationModal } from '@/components/ConfirmationModal';
+import { Broom, Maximize2, Pause, Play, Search, ZoomIn, ZoomOut } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
-import { Tooltip } from '@/components/ui/Tooltip';
+import { Tooltip, TooltipPositionContext } from '@/components/ui/Tooltip';
+import { useIsMobile } from '@/hooks/use-media-query';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
 
 /**
- * StageDock: the one row of controls over a tool's stage. It shows what is in use and hides the rest.
+ * StageDock: the one set of controls over a tool's stage. The single place that decides where they
+ * live: a column on the left on desktop, a row at the bottom on a phone.
  *
- * It stays centered as it grows. While a mouse is over it, it holds its place and grows to the
- * right instead, so the button under the pointer never moves away; it recenters when the mouse
- * leaves.
- * `ToolDock` is the Canvas dock, themed by hex. This one uses the design tokens.
+ * What is not in use stays closed, and opening never resizes the dock: a group opens in a flyout
+ * beside it, so nothing moves under the pointer. `ToolDock` is the Canvas dock, themed by hex.
+ * This one uses the design tokens.
  */
 
 /** How long a group stays open after someone stops using it. */
 const HOLD_MS = 1800;
 /** A pointer passing over the dock on its way somewhere else should not open anything. */
-const HOVER_INTENT_MS = 150;
+const HOVER_INTENT_MS = 250;
 const IDLE_MS = 3000;
-/** A little over `--dur-base`, the time a stretch of the dock takes to open. */
+/** A little over `--dur-base`, the time a stretch of the row takes to open on a phone. */
 const SETTLE_MS = 220;
 /** Changes while the stage first fits the window are not someone using the control. */
 const MOUNT_QUIET_MS = 1000;
+/** From the edge of the stage to the column. */
+const COLUMN_INSET = 12;
 
-interface StageDockContextValue {
-  /** The pointer is inside the dock: nothing collapses under it. */
-  hovered: boolean;
-}
-
-const StageDockContext = createContext<StageDockContextValue>({
-  hovered: false,
-});
+/** The pointer is inside the dock: nothing closes under it. */
+const StageDockHoverContext = createContext(false);
 
 /** True while `active`, and for a moment after. */
 function useHeld(active: boolean, holdMs = HOLD_MS): boolean {
@@ -77,69 +75,70 @@ function useHoverIntent() {
 export const stageDockButton =
   'h-7 w-7 shrink-0 text-muted-foreground disabled:opacity-30 [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11';
 
+/** For a popover of something in the dock: above it on a phone, beside it on desktop. */
+export const stageDockPopover =
+  'absolute z-40 bottom-full left-1/2 mb-2 -translate-x-1/2 md:bottom-auto md:left-full md:top-0 md:mb-0 md:ml-2 md:translate-x-0';
+
 interface StageDockProps {
   children: React.ReactNode;
-  /** Vertical position and any page-specific placement. */
+  /** Height above the stage's bottom edge on a phone. */
   className?: string;
-  /** For a position that depends on a value, such as the height of an open sheet. */
+  /** For a phone position that depends on a value, such as the height of an open sheet. */
   bottom?: string;
 }
 
 export const StageDock: React.FC<StageDockProps> = ({ children, className, bottom }) => {
+  const isMobile = useIsMobile();
   const pillRef = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState<number | null>(null);
-  // Where it sat when the mouse came in. Null means centered.
-  const [heldAt, setHeldAt] = useState<number | null>(null);
-  const hovered = heldAt !== null;
+  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+  const [hovered, setHovered] = useState(false);
 
   useLayoutEffect(() => {
     const pill = pillRef.current;
     if (!pill) return;
-    const measure = () => setWidth(pill.offsetWidth);
+    const measure = () => setSize({ width: pill.offsetWidth, height: pill.offsetHeight });
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(pill);
     return () => observer.disconnect();
   }, []);
 
-  const value = useMemo(() => ({ hovered }), [hovered]);
-  const halfWidth = heldAt ?? (width ?? 0) / 2;
+  // Margins, not a transform: a transform would break the fixed position of the tooltips.
+  const place: React.CSSProperties = isMobile
+    ? { left: '50%', bottom, marginLeft: -(size?.width ?? 0) / 2, maxWidth: 'calc(100% - 16px)' }
+    : { left: COLUMN_INSET, top: '50%', bottom: 'auto', marginTop: -(size?.height ?? 0) / 2 };
 
   return (
-    <StageDockContext.Provider value={value}>
-      <div
-        ref={pillRef}
-        data-canvas-ui
-        data-testid="stage-dock"
-        onPointerEnter={(e) => {
-          if (e.pointerType === 'mouse') setHeldAt(e.currentTarget.offsetWidth / 2);
-        }}
-        onPointerLeave={() => setHeldAt(null)}
-        className={cn(
-          'absolute left-1/2 z-30 flex items-center gap-0.5 rounded-xl p-1 cursor-default',
-          'border border-border bg-card shadow-lg',
-          className
-        )}
-        // A margin, not a transform: a transform would break the fixed position of the tooltips.
-        style={
-          width === null
-            ? { transform: 'translateX(-50%)', bottom }
-            : {
-                bottom,
-                marginLeft: -halfWidth,
-                maxWidth: `calc(50% + ${halfWidth}px - 8px)`,
-                transition: 'margin-left var(--dur-base) ease-out, bottom var(--dur-base) ease-out',
-              }
-        }
-      >
-        {children}
-      </div>
-    </StageDockContext.Provider>
+    <StageDockHoverContext.Provider value={hovered}>
+      <TooltipPositionContext.Provider value={isMobile ? 'top' : 'right'}>
+        <div
+          ref={pillRef}
+          data-canvas-ui
+          data-testid="stage-dock"
+          onPointerEnter={(e) => e.pointerType === 'mouse' && setHovered(true)}
+          onPointerLeave={() => setHovered(false)}
+          className={cn(
+            'absolute z-30 flex items-center gap-0.5 rounded-xl p-1 cursor-default',
+            'border border-border bg-card shadow-lg',
+            'md:[&_[data-send-menu]]:!bottom-0 md:[&_[data-send-menu]]:!left-full md:[&_[data-send-menu]]:!right-auto md:[&_[data-send-menu]]:!mb-0 md:[&_[data-send-menu]]:ml-2',
+            !isMobile && 'flex-col',
+            size === null && 'invisible',
+            className
+          )}
+          style={place}
+        >
+          {children}
+        </div>
+      </TooltipPositionContext.Provider>
+    </StageDockHoverContext.Provider>
   );
 };
 
 export const StageDockDivider: React.FC<{ className?: string }> = ({ className }) => (
-  <span className={cn('mx-0.5 h-4 w-px shrink-0 bg-border', className)} aria-hidden />
+  <span
+    className={cn('mx-0.5 h-4 w-px shrink-0 bg-border md:mx-0 md:my-0.5 md:h-px md:w-4', className)}
+    aria-hidden
+  />
 );
 
 interface StageDockRevealProps {
@@ -148,7 +147,7 @@ interface StageDockRevealProps {
   className?: string;
 }
 
-/** A stretch of the dock that opens sideways. Closed, it takes no room and no focus. */
+/** Controls that make way on a phone, where the row is short. Closed, no room and no focus. */
 export const StageDockReveal: React.FC<StageDockRevealProps> = ({ open, children, className }) => {
   // It clips only while it moves, so a popover from something inside it is not cut off.
   const [settled, setSettled] = useState(open);
@@ -172,7 +171,7 @@ export const StageDockReveal: React.FC<StageDockRevealProps> = ({ open, children
     >
       <div
         className={cn(
-          'flex min-w-0 items-center gap-0.5 whitespace-nowrap',
+          'flex min-w-0 items-center gap-0.5 whitespace-nowrap md:flex-col',
           !settled && 'overflow-hidden'
         )}
       >
@@ -181,6 +180,28 @@ export const StageDockReveal: React.FC<StageDockRevealProps> = ({ open, children
     </div>
   );
 };
+
+/** What a group opens: a small surface beside the dock that fades in and pushes nothing. */
+const StageDockFlyout: React.FC<{ open: boolean; children: React.ReactNode }> = ({
+  open,
+  children,
+}) => (
+  <TooltipPositionContext.Provider value="top">
+    <div
+      inert={!open || undefined}
+      className={cn(
+        'absolute z-40 flex w-max items-center gap-0.5 whitespace-nowrap rounded-xl border border-border bg-card p-1 shadow-lg',
+        'transition-[opacity,visibility] duration-[var(--dur-fast)] ease-out',
+        // On a phone it centers over the whole row, so it is measured against the dock.
+        'bottom-full left-1/2 mb-2 max-w-[calc(100vw-24px)] -translate-x-1/2 overflow-x-auto',
+        'md:bottom-auto md:left-full md:top-0 md:mb-0 md:ml-3 md:max-w-none md:translate-x-0 md:overflow-visible',
+        open ? 'visible opacity-100' : 'invisible opacity-0'
+      )}
+    >
+      {children}
+    </div>
+  </TooltipPositionContext.Provider>
+);
 
 interface StageDockTransportProps {
   playing: boolean;
@@ -206,7 +227,8 @@ export const StageDockTransport: React.FC<StageDockTransportProps> = ({
   onOpenChange,
 }) => {
   const { t } = useTranslation();
-  const { hovered: dockHovered } = useContext(StageDockContext);
+  const isMobile = useIsMobile();
+  const dockHovered = useContext(StageDockHoverContext);
   const { hovered, hoverProps } = useHoverIntent();
   const [touched, setTouched] = useState(0);
   const [recent, setRecent] = useState(false);
@@ -225,8 +247,30 @@ export const StageDockTransport: React.FC<StageDockTransportProps> = ({
   useEffect(() => onOpenChange?.(open), [open, onOpenChange]);
 
   const label = t(playing ? 'toolDock.pause' : 'toolDock.play');
+  const timeline = (
+    <>
+      <input
+        type="range"
+        min={0}
+        max={max}
+        step={step}
+        value={value}
+        aria-label={t('toolDock.timeline')}
+        onPointerDown={() => setTouched((n) => n + 1)}
+        onChange={(e) => {
+          setTouched((n) => n + 1);
+          onSeek(parseFloat(e.target.value));
+        }}
+        className="mx-1.5 h-1 w-[240px] min-w-0 shrink cursor-pointer appearance-none rounded-full bg-muted bg-clip-content accent-foreground max-md:w-[147px] [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:py-5"
+      />
+      <span className="shrink-0 whitespace-nowrap pr-1.5 text-2xs font-mono tabular-nums text-muted-foreground">
+        {readout}
+      </span>
+    </>
+  );
+
   return (
-    <div className="flex min-w-0 items-center gap-0.5" {...hoverProps}>
+    <div className="flex min-w-0 items-center gap-0.5 md:relative" {...hoverProps}>
       <Tooltip content={label}>
         <Button
           variant="ghost"
@@ -238,25 +282,13 @@ export const StageDockTransport: React.FC<StageDockTransportProps> = ({
           {playing ? <Pause size={14} /> : <Play size={14} />}
         </Button>
       </Tooltip>
-      <StageDockReveal open={open}>
-        <input
-          type="range"
-          min={0}
-          max={max}
-          step={step}
-          value={value}
-          aria-label={t('toolDock.timeline')}
-          onPointerDown={() => setTouched((n) => n + 1)}
-          onChange={(e) => {
-            setTouched((n) => n + 1);
-            onSeek(parseFloat(e.target.value));
-          }}
-          className="mx-1.5 h-1 w-[240px] min-w-0 max-md:w-[147px] shrink cursor-pointer appearance-none rounded-full bg-muted bg-clip-content accent-foreground [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:py-5"
-        />
-        <span className="shrink-0 whitespace-nowrap pr-1.5 text-2xs font-mono tabular-nums text-muted-foreground">
-          {readout}
-        </span>
-      </StageDockReveal>
+      {isMobile ? (
+        <StageDockReveal open={open} className="[&>div]:flex-row">
+          {timeline}
+        </StageDockReveal>
+      ) : (
+        <StageDockFlyout open={open}>{timeline}</StageDockFlyout>
+      )}
     </div>
   );
 };
@@ -270,7 +302,7 @@ interface StageDockGroupProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-/** One small button at rest. The rest opens on click, on hover, and when `pulse` changes. */
+/** One small button. The rest opens beside the dock on click, on hover, and when `pulse` changes. */
 export const StageDockGroup: React.FC<StageDockGroupProps> = ({
   icon,
   label,
@@ -278,7 +310,7 @@ export const StageDockGroup: React.FC<StageDockGroupProps> = ({
   pulse,
   onOpenChange,
 }) => {
-  const { hovered: dockHovered } = useContext(StageDockContext);
+  const dockHovered = useContext(StageDockHoverContext);
   const { hovered, hoverProps } = useHoverIntent();
   const [asked, setAsked] = useState(false);
   const wasOpen = useRef(false);
@@ -306,20 +338,20 @@ export const StageDockGroup: React.FC<StageDockGroupProps> = ({
   }, [asked, pulse]);
 
   return (
-    <div className="flex min-w-0 items-center gap-0.5" {...hoverProps}>
+    <div className="flex min-w-0 shrink-0 items-center md:relative" {...hoverProps}>
       <Tooltip content={label}>
         <Button
           variant="ghost"
           size="icon"
           aria-label={label}
           aria-expanded={open}
-          className={stageDockButton}
+          className={cn(stageDockButton, open && 'bg-accent text-foreground')}
           onClick={() => setAsked((value) => !value)}
         >
           {icon}
         </Button>
       </Tooltip>
-      <StageDockReveal open={open}>{children}</StageDockReveal>
+      <StageDockFlyout open={open}>{children}</StageDockFlyout>
     </div>
   );
 };
@@ -398,3 +430,50 @@ export const StageDockText: React.FC<{ children: React.ReactNode }> = ({ childre
     {children}
   </span>
 );
+
+interface StageDockResetProps {
+  onReset: () => void;
+  /** Says what goes away, when it is more than the settings. */
+  title?: string;
+  message?: string;
+  confirmText?: string;
+}
+
+/** Back to the start. A broom, so it is never mistaken for undo, and it always asks first. */
+export const StageDockReset: React.FC<StageDockResetProps> = ({
+  onReset,
+  title,
+  message,
+  confirmText,
+}) => {
+  const { t } = useTranslation();
+  const [asking, setAsking] = useState(false);
+  const label = title ?? t('common.resetSettingsTitle');
+  return (
+    <>
+      <Tooltip content={label}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={label}
+          className={stageDockButton}
+          onClick={() => setAsking(true)}
+        >
+          <Broom size={14} />
+        </Button>
+      </Tooltip>
+      <ConfirmationModal
+        isOpen={asking}
+        onClose={() => setAsking(false)}
+        onConfirm={() => {
+          onReset();
+          setAsking(false);
+        }}
+        title={label}
+        message={message ?? t('common.resetSettingsMessage')}
+        confirmText={confirmText ?? t('common.reset')}
+        variant="warning"
+      />
+    </>
+  );
+};

@@ -23,7 +23,7 @@ export interface GridMachineSettings {
   baseGridSpacing: number;
 }
 
-const DEFAULTS: GridMachineSettings = {
+export const DEFAULTS: GridMachineSettings = {
   showAnchors: true,
   showHandles: true,
   showHLines: true,

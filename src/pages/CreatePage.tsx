@@ -14,7 +14,8 @@ export const CreatePage: React.FC = () => {
   const { t } = useTranslation();
   const projectId = params.get('project');
   const brandIdParam = params.get('brandId');
-  const { activeBrand } = useActiveBrand();
+  const { activeBrand, setActiveBrand } = useActiveBrand();
+  const projectBrandId = useCreativeStore((s) => s.brandId);
   const loadedRef = useRef<string | null>(null);
   const currentCreativeId = useCreativeStore((s) => s.creativeId);
   const projectName = useCreativeStore((s) => s.projectName);
@@ -27,6 +28,11 @@ export const CreatePage: React.FC = () => {
     if (brandIdParam) setBrandId(brandIdParam);
     else if (!projectId && activeBrand?.id) setBrandId(activeBrand.id);
   }, [brandIdParam, projectId, activeBrand?.id, setBrandId]);
+
+  // An opened project brings its brand to the app bar, so the bar always tells the truth.
+  useEffect(() => {
+    if (projectId && projectBrandId) setActiveBrand(projectBrandId);
+  }, [projectId, projectBrandId, setActiveBrand]);
 
   useEffect(() => {
     // 1. Sync Store -> URL: Only when no projectId in URL (don't override intentional navigation)

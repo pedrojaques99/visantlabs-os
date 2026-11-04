@@ -318,3 +318,4 @@ export { MagnifyingGlassMinus as ZoomOut } from '@phosphor-icons/react';
 // ---- Types (isolatedModules on, no verbatimModuleSyntax) ----
 export type { Icon as IconComponent } from '@phosphor-icons/react';
 export type { Icon as LucideIcon } from '@phosphor-icons/react';
+export { Broom } from '@phosphor-icons/react';

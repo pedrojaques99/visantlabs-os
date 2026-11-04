@@ -1,9 +1,8 @@
 /**
  * Shared ImageLab preset application.
  *
- * Both the community preset library (`ImageLabPresetLibrary`) and the personal
- * saved-presets panel (`ImageLabSavePreset`) previously carried byte-identical
- * copies of this apply logic. It lives here once.
+ * The community preset library (`ImageLabPresetLibrary`) and the personal presets
+ * in the stage dock share this apply logic.
  *
  * Community/saved presets are arbitrary JSON — a hostile or stale preset can
  * carry out-of-range numeric values (e.g. `frequency: 1e9`, negative `dotSize`)
@@ -18,11 +17,11 @@ import { useTextureFilterStore } from '@/stores/textureFilterStore';
 import { useRisoStore } from '@/stores/risoStore';
 import { useShaderLabStore } from '@/stores/shaderLabStore';
 
-export interface ImageLabPresetData {
+export type ImageLabPresetData = {
   mode: ImageLabMode | 'shaders';
   settings: Record<string, any>;
   layers?: any[];
-}
+};
 
 type Bound = readonly [min: number, max: number];
 
@@ -91,6 +90,19 @@ export function clampSettings(settings: Record<string, any>): Record<string, any
     }
   }
   return out;
+}
+
+/** The active effect's settings, in the shape `applyImageLabPreset` reads. */
+export function collectImageLabPreset(): ImageLabPresetData {
+  const mode = useImageLabStore.getState().mode;
+  if (mode === 'halftone') return { mode, settings: useHalftoneStore.getState().getSettings() };
+  if (mode === 'texture') return { mode, settings: useTextureFilterStore.getState().getSettings() };
+  if (mode === 'riso') {
+    const riso = useRisoStore.getState();
+    return { mode, settings: riso.getSettings(), layers: riso.layers };
+  }
+  const shaders = useShaderLabStore.getState();
+  return { mode, settings: shaders.shaderEnabled ? shaders.getShaderSettings() : {} };
 }
 
 /**

@@ -177,7 +177,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
     const baseStyles =
       variant === 'node'
         ? 'w-full px-3 py-2 bg-background/40 border border-border rounded-md text-xs text-foreground'
-        : 'w-full px-3 py-2.5 bg-muted border border-border rounded-md text-foreground text-sm';
+        : 'w-full px-3 py-2.5 bg-muted border border-border rounded-md text-foreground text-sm in-data-[tool-panel]:h-8 in-data-[tool-panel]:border-transparent in-data-[tool-panel]:px-2.5 in-data-[tool-panel]:py-0 in-data-[tool-panel]:text-xs';
 
     const focusStyles = 'focus:outline-none focus:border-ring';
 

@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useOgImageStore, type OgTemplate } from '@/stores/ogImageStore';
 import { MiniAppShell } from '@/components/shared/MiniAppShell';
-import { BrandToolSelect } from '@/components/shared/BrandToolSelect';
 import { QuickActions } from '@/components/shared/QuickActions';
 import { InlineColorPicker } from '@/components/shared/ToolPanel';
 import { useBrandDefaults } from '@/hooks/useBrandDefaults';
@@ -223,7 +222,6 @@ export const OgImagePage: React.FC = () => {
 
   const {
     brandId,
-    setBrandId,
     defaults: brandDefaults,
     isExplicit: brandIsExplicit,
   } = useBrandDefaults('og-image');
@@ -332,7 +330,6 @@ export const OgImagePage: React.FC = () => {
   const panel = (
     <div className="space-y-5">
       {/* Brand select */}
-      <BrandToolSelect value={brandId} onChange={setBrandId} />
 
       {/* Template selector */}
       <div className="space-y-1.5">
@@ -530,6 +527,17 @@ export const OgImagePage: React.FC = () => {
       toolId="og-image"
       documentTitle={t('apps.ogImage.name')}
       onReset={handleReset}
+      presets={{
+        toolId: 'og-image',
+        getData: () => ({ template, backgroundColor, accentColor, textColor }),
+        applyData: (data) => {
+          const next = { template, backgroundColor, accentColor, textColor, ...data };
+          setTemplate(next.template);
+          setBackgroundColor(next.backgroundColor);
+          setAccentColor(next.accentColor);
+          setTextColor(next.textColor);
+        },
+      }}
       panel={panel}
       statusBar={statusBar}
     >

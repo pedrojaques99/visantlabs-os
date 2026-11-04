@@ -1,9 +1,21 @@
+import { createPortal } from 'react-dom';
+import { Button } from '@/components/ui/button';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { useMiniAppDockSlot } from '@/components/shared/MiniAppShell';
+import {
+  StageDockDivider,
+  StageDockGroup,
+  StageDockText,
+  StageDockZoom,
+  stageDockButton,
+} from '@/components/shared/StageDock';
 import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { analyzeSvg, type Point, type Segment } from '@/components/grid-machine/SvgAnalyzer';
 import {
   MousePointer2,
   Eraser,
+  Eye,
   Lasso,
   Undo2,
   Trash2,
@@ -631,6 +643,8 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
     return () => el.removeEventListener('keydown', handler);
   }, [selectedIndices, visibleElements, deleteElements, undo]);
 
+  const dockSlot = useMiniAppDockSlot();
+
   const cursorClass =
     tool === 'eraser'
       ? 'cursor-crosshair'
@@ -645,78 +659,82 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
       className={cn('flex flex-col h-full outline-none', className)}
       onFocus={() => {}}
     >
-      {/* Toolbar */}
-      <div className="flex items-center gap-1 p-2 border-b border-neutral-800 flex-wrap">
-        <ToolBtn active={tool === 'select'} onClick={() => setTool('select')} title="Select (V)">
-          <MousePointer2 size={12} />
-        </ToolBtn>
-        <ToolBtn active={tool === 'eraser'} onClick={() => setTool('eraser')} title="Eraser (E)">
-          <Eraser size={12} />
-        </ToolBtn>
-        <ToolBtn active={tool === 'lasso'} onClick={() => setTool('lasso')} title="Lasso (L)">
-          <Lasso size={12} />
-        </ToolBtn>
-
-        <div className="w-px h-4 bg-neutral-800 mx-1" />
-
-        <ToolBtn active={showOutline} onClick={() => setShowOutline(!showOutline)} title="Outlines">
-          <Spline size={12} />
-        </ToolBtn>
-        <ToolBtn active={showAnchors} onClick={() => setShowAnchors(!showAnchors)} title="Anchors">
-          <span className="text-2xs font-mono font-bold">A</span>
-        </ToolBtn>
-        <ToolBtn active={showHandles} onClick={() => setShowHandles(!showHandles)} title="Handles">
-          <Circle size={10} />
-        </ToolBtn>
-
-        <div className="w-px h-4 bg-neutral-800 mx-1" />
-
-        <ToolBtn onClick={undo} disabled={undoStack.length === 0} title="Undo (Ctrl+Z)">
-          <Undo2 size={12} />
-        </ToolBtn>
-        <ToolBtn
-          onClick={() => deleteElements(selectedIndices)}
-          disabled={selectedIndices.size === 0}
-          title="Delete selected (Del)"
-          danger
-        >
-          <Trash2 size={12} />
-        </ToolBtn>
-
-        <div className="w-px h-4 bg-neutral-800 mx-1" />
-
-        <ToolBtn onClick={() => setZoom((z) => Math.max(0.1, z * 0.8))} title="Zoom out">
-          <ZoomOut size={12} />
-        </ToolBtn>
-        <span className="text-2xs font-mono text-neutral-500 w-8 text-center">
-          {Math.round(zoom * 100)}%
-        </span>
-        <ToolBtn onClick={() => setZoom((z) => Math.min(20, z * 1.25))} title="Zoom in">
-          <ZoomIn size={12} />
-        </ToolBtn>
-        <ToolBtn
-          onClick={() => {
-            setZoom(1);
-            setPanX(0);
-            setPanY(0);
-          }}
-          title="Reset view"
-        >
-          <RotateCcw size={10} />
-        </ToolBtn>
-
-        <div className="flex-1" />
-        {selectedIndices.size > 0 && (
-          <span className="text-2xs font-mono text-foreground">
-            {selectedIndices.size} selected
-          </span>
+      {/* Joins the tool's dock. */}
+      {dockSlot &&
+        createPortal(
+          <>
+            <ToolBtn
+              active={tool === 'select'}
+              onClick={() => setTool('select')}
+              title="Select (V)"
+            >
+              <MousePointer2 size={14} />
+            </ToolBtn>
+            <ToolBtn
+              active={tool === 'eraser'}
+              onClick={() => setTool('eraser')}
+              title="Eraser (E)"
+            >
+              <Eraser size={14} />
+            </ToolBtn>
+            <ToolBtn active={tool === 'lasso'} onClick={() => setTool('lasso')} title="Lasso (L)">
+              <Lasso size={14} />
+            </ToolBtn>
+            <StageDockDivider />
+            <ToolBtn onClick={undo} disabled={undoStack.length === 0} title="Undo (Ctrl+Z)">
+              <Undo2 size={14} />
+            </ToolBtn>
+            <ToolBtn
+              onClick={() => deleteElements(selectedIndices)}
+              disabled={selectedIndices.size === 0}
+              title="Delete selected (Del)"
+            >
+              <Trash2 size={14} />
+            </ToolBtn>
+            <StageDockDivider />
+            <StageDockGroup icon={<Eye size={14} />} label="View">
+              <ToolBtn
+                active={showOutline}
+                onClick={() => setShowOutline(!showOutline)}
+                title="Outline"
+              >
+                <Spline size={14} />
+              </ToolBtn>
+              <ToolBtn
+                active={showAnchors}
+                onClick={() => setShowAnchors(!showAnchors)}
+                title="Anchors"
+              >
+                <span className="text-2xs font-mono font-bold">A</span>
+              </ToolBtn>
+              <ToolBtn
+                active={showHandles}
+                onClick={() => setShowHandles(!showHandles)}
+                title="Handles"
+              >
+                <Circle size={12} />
+              </ToolBtn>
+              {selectedIndices.size > 0 && (
+                <StageDockText>{selectedIndices.size} selected</StageDockText>
+              )}
+              {deletedIndices.size > 0 && (
+                <StageDockText>{deletedIndices.size} removed</StageDockText>
+              )}
+            </StageDockGroup>
+            <StageDockZoom
+              zoom={zoom}
+              onZoomIn={() => setZoom((z) => Math.min(20, z * 1.25))}
+              onZoomOut={() => setZoom((z) => Math.max(0.1, z * 0.8))}
+              onFit={() => {
+                setZoom(1);
+                setPanX(0);
+                setPanY(0);
+              }}
+            />
+            <StageDockDivider />
+          </>,
+          dockSlot
         )}
-        {deletedIndices.size > 0 && (
-          <span className="text-2xs font-mono text-warning ml-2">
-            {deletedIndices.size} removed
-          </span>
-        )}
-      </div>
 
       {/* Canvas */}
       <div
@@ -767,22 +785,20 @@ const ToolBtn: React.FC<{
   active?: boolean;
   onClick: () => void;
   disabled?: boolean;
-  title?: string;
-  danger?: boolean;
+  title: string;
   children: React.ReactNode;
-}> = ({ active, onClick, disabled, title, danger, children }) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    className={cn(
-      'flex items-center justify-center w-6 h-6 rounded transition-[color,background-color,border-color,opacity] text-neutral-500',
-      active && !danger && 'bg-brand-cyan/20 text-brand-cyan',
-      danger && 'hover:text-destructive',
-      !active && !danger && 'hover:bg-neutral-800 hover:text-neutral-300',
-      disabled && 'opacity-30 pointer-events-none'
-    )}
-  >
-    {children}
-  </button>
+}> = ({ active, onClick, disabled, title, children }) => (
+  <Tooltip content={title} position="right">
+    <Button
+      variant="ghost"
+      size="icon"
+      aria-label={title}
+      aria-pressed={active}
+      disabled={disabled}
+      className={cn(stageDockButton, active && 'bg-accent text-foreground')}
+      onClick={onClick}
+    >
+      {children}
+    </Button>
+  </Tooltip>
 );

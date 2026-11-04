@@ -10,8 +10,7 @@ import {
   Palette,
   PanelRightClose,
   PanelRightOpen,
-  RotateCcw,
-  Trash2,
+  Undo2,
 } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -25,11 +24,13 @@ import {
   StageDock,
   StageDockDivider,
   StageDockGroup,
+  StageDockReset,
   StageDockReveal,
   StageDockText,
   StageDockZoom,
   stageDockButton,
 } from '@/components/shared/StageDock';
+import { StageDockPresets } from '@/components/shared/StageDockPresets';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
 import {
   InlineColorPicker,
@@ -1371,28 +1372,28 @@ export const GridPaintPage: React.FC = () => {
                 className={stageDockButton}
                 onClick={undo}
               >
-                <RotateCcw size={14} />
+                <Undo2 size={14} />
               </Button>
             </Tooltip>
-            <Tooltip content={t('grid.paint.clear_canvas')}>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={t('grid.paint.clear_canvas')}
-                className={stageDockButton}
-                onClick={() => {
-                  pushHistory();
-                  setGrid((prev) => ({
-                    ...prev,
-                    cells: createGrid(prev.cols, prev.rows),
-                    ligaments: new Set<string>(),
-                    blocked: new Set<string>(),
-                  }));
-                }}
-              >
-                <Trash2 size={14} />
-              </Button>
-            </Tooltip>
+            <StageDockPresets
+              toolId="grid-paint"
+              getData={() => ({ ...config })}
+              applyData={updateConfig}
+            />
+            <StageDockReset
+              title={t('grid.paint.clear_canvas')}
+              message={t('grid.paint.clear_canvas_message')}
+              confirmText={t('grid.machine.clear')}
+              onReset={() => {
+                pushHistory();
+                setGrid((prev) => ({
+                  ...prev,
+                  cells: createGrid(prev.cols, prev.rows),
+                  ligaments: new Set<string>(),
+                  blocked: new Set<string>(),
+                }));
+              }}
+            />
           </StageDockReveal>
           <StageDockDivider />
           <StageDockGroup

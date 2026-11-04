@@ -20,12 +20,11 @@ const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 4;
 // Fitting may go below the zoom buttons' floor, so the artwork stays clear of a tall sheet.
 const MIN_FIT_ZOOM = 0.05;
-// Keeps the artwork clear of the dock below it.
-const FIT_INSET = { x: 48, top: 24, bottom: 88 };
+// Keeps the artwork clear of the dock on its left, and centered.
+const FIT_INSET = { x: 64, top: 24, bottom: 24 };
 // On a phone the artwork is the point: it gets the width.
 const PHONE_INSET_X = 12;
 // A phone on its side has no height to spare.
-const SHORT_VIEW = 420;
 const SHORT_INSET_TOP = 12;
 const SHORT_INSET_BOTTOM = 76;
 // On a phone the dock is 56 px tall and sits 12 px above the sheet.
@@ -54,8 +53,6 @@ export interface ArtworkViewport {
   bleed: boolean;
   /** Fingers are the pointer: gestures on, and the artwork takes them instead of the page. */
   isTouch: boolean;
-  /** A window with no height to spare: the dock drops into the strip the shell reserves. */
-  short: boolean;
   /** A phone on its side. */
   lyingDown: boolean;
 }
@@ -81,7 +78,6 @@ export function useArtworkViewport(
   const insetX = isMobile ? PHONE_INSET_X : FIT_INSET.x;
   const insets = useCallback(
     (viewHeight: number) => {
-      const short = viewHeight > 0 && viewHeight < SHORT_VIEW;
       if (isMobile && lyingDown) {
         // With the sheet open the dock steps aside, so the artwork takes its place.
         return {
@@ -90,14 +86,11 @@ export function useArtworkViewport(
         };
       }
       if (isMobile) return { top: PHONE_INSET_TOP, bottom: PHONE_INSET_BOTTOM };
-      return short
-        ? { top: SHORT_INSET_TOP, bottom: SHORT_INSET_BOTTOM }
-        : { top: FIT_INSET.top, bottom: FIT_INSET.bottom + (bleed ? STAGE_BLEED : 0) };
+      return { top: FIT_INSET.top, bottom: FIT_INSET.bottom + (bleed ? STAGE_BLEED : 0) };
     },
     [bleed, isMobile, lyingDown, sheetOpen]
   );
   const { top: insetTop, bottom: insetBottom } = insets(size.height);
-  const short = !isMobile && size.height > 0 && size.height < SHORT_VIEW;
 
   const availableW = Math.max(0, size.width - insetX * 2);
   const availableH = Math.max(0, size.height - insetTop - insetBottom);
@@ -162,7 +155,6 @@ export function useArtworkViewport(
     moveTo,
     bleed,
     isTouch,
-    short,
     lyingDown,
     visible: {
       x: focusX - visibleW / 2,
