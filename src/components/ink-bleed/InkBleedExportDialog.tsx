@@ -36,7 +36,7 @@ interface InkBleedExportDialogProps {
   onClose: () => void;
   /** On a phone the send-to action lives here, because the panel has no room for it. */
   sendTo?: React.ReactNode;
-  onCopyAsPng?: () => void;
+  onCopyAsPng?: (transparent: boolean) => void;
 }
 
 export const InkBleedExportDialog: React.FC<InkBleedExportDialogProps> = ({
@@ -165,7 +165,7 @@ export const InkBleedExportDialog: React.FC<InkBleedExportDialogProps> = ({
                   title={t('common.copyAsPng')}
                   className="h-7 w-7 text-muted-foreground [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
                   disabled={busy}
-                  onClick={onCopyAsPng}
+                  onClick={() => onCopyAsPng(transparent)}
                 >
                   <Copy size={14} />
                 </Button>

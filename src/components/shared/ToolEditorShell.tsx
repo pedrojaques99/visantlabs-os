@@ -79,6 +79,7 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const [mobileSheetHeight, setMobileSheetHeight] = useState(45);
   const [confirmReset, setConfirmReset] = useState(false);
 
   useEffect(() => {
@@ -96,12 +97,12 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
   const canvasPadding = useMemo(
     () => ({
       paddingRight: !isMobile && panelVisible ? controlsPanelWidth + 16 : 0,
-      // A percentage in padding is measured against the width, and the sheet is 45% of the
-      // height. `bottom` is measured against the height, so the two line up.
-      bottom: isMobile && mobileSheetOpen ? '45%' : undefined,
+      // A percentage in padding is measured against the width, and the sheet's height is a
+      // percentage of the height. `bottom` is measured against the height, so the two line up.
+      bottom: isMobile && mobileSheetOpen ? `${mobileSheetHeight}%` : undefined,
       paddingBottom: isMobile ? (mobileSheetOpen ? 0 : 48) : 40,
     }),
-    [isMobile, panelVisible, controlsPanelWidth, mobileSheetOpen]
+    [isMobile, panelVisible, controlsPanelWidth, mobileSheetOpen, mobileSheetHeight]
   );
 
   // NOTE (motion): this padding is LAYOUT, not decoration — it reserves the strip
@@ -162,6 +163,8 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
             onMobileSheetChange?.(!mobileSheetOpen);
           }}
           label={mobileSheetLabel || title}
+          height={`${mobileSheetHeight}%`}
+          onHeightChange={setMobileSheetHeight}
         >
           {controlsPanel}
         </AppShellMobileSheet>

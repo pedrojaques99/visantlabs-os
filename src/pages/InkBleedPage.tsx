@@ -198,18 +198,21 @@ export const InkBleedPage: React.FC = () => {
     toast.success(t('inkBleed.brandApplied', { brand: brandName(activeBrand) ?? '' }));
   }, [activeBrand, setDoc, t]);
 
-  const copyArtwork = useCallback(async () => {
-    const { doc, logo, progress } = useInkBleedStore.getState();
-    try {
-      // Safari only accepts a write started inside the tap, so the image goes in as a promise.
-      const png = exportPng({ doc, logo, progress, scale: 1, transparent: false });
-      await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
-      toast.success(t('miniTools.copied'));
-    } catch (error) {
-      console.error('[ink-bleed] copy failed', error);
-      toast.error(t('miniTools.copyFailed'));
-    }
-  }, [t]);
+  const copyArtwork = useCallback(
+    async (transparent = false) => {
+      const { doc, logo, progress } = useInkBleedStore.getState();
+      try {
+        // Safari only accepts a write started inside the tap, so the image goes in as a promise.
+        const png = exportPng({ doc, logo, progress, scale: 1, transparent });
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
+        toast.success(t('miniTools.copied'));
+      } catch (error) {
+        console.error('[ink-bleed] copy failed', error);
+        toast.error(t('miniTools.copyFailed'));
+      }
+    },
+    [t]
+  );
 
   const artworkForPipeline = useCallback(async () => {
     const { doc, logo, progress } = useInkBleedStore.getState();
@@ -426,7 +429,7 @@ export const InkBleedPage: React.FC = () => {
         isOpen={exportOpen}
         onClose={() => setExportOpen(false)}
         sendTo={isMobile ? sendTo : undefined}
-        onCopyAsPng={isMobile ? () => void copyArtwork() : undefined}
+        onCopyAsPng={isMobile ? (transparent) => void copyArtwork(transparent) : undefined}
       />
       <ConfirmationModal
         isOpen={confirmReset}
