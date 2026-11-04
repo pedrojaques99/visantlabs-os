@@ -141,7 +141,7 @@ const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
           aria-hidden
           className={cn(
             'pointer-events-none absolute inset-y-0 transition-colors duration-[var(--dur-fast)]',
-            dragging ? 'bg-foreground/25' : 'bg-foreground/15 group-hover:bg-foreground/20'
+            dragging ? 'bg-border-hover' : 'bg-border group-hover:bg-border-hover'
           )}
           style={{
             left: `${Math.min(origin, percentage)}%`,
@@ -150,14 +150,14 @@ const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
         />
         <span
           aria-hidden
-          className="pointer-events-none absolute inset-y-1 w-px bg-foreground/50"
+          className="pointer-events-none absolute inset-y-1 w-px bg-muted-foreground"
           style={{ left: `${percentage}%` }}
         />
         {hasReset && (
           <span
             aria-hidden
             data-slider-default
-            className="pointer-events-none absolute bottom-0 h-1 w-px bg-muted-foreground"
+            className="pointer-events-none absolute bottom-0 h-1 w-px bg-foreground"
             style={{ left: `${toPercent(resetValue)}%` }}
           />
         )}

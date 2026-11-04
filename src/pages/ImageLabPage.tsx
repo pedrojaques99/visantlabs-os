@@ -981,7 +981,7 @@ export const ImageLabPage: React.FC = () => {
                     </Button>
                     {thumb && !isActive && (
                       <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 opacity-0 transition-opacity duration-200 group-hover/fx:opacity-100">
-                        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-xl shadow-black/60">
+                        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-lg">
                           <Thumb src={thumb} alt="" className="h-28 w-28 object-cover" />
                           <div className="bg-popover/90 px-2 py-1 text-center text-2xs text-muted-foreground">
                             {m.label}
