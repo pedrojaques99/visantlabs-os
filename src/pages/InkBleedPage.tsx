@@ -350,7 +350,7 @@ export const InkBleedPage: React.FC = () => {
         >
           <InkBleedTransport onTogglePlay={togglePlay} onOpenChange={setTimelineOpen} />
           {/* On a phone the timeline needs the row, so the tools make way for it. */}
-          <StageDockReveal atRest open={!isMobile || !timelineOpen}>
+          <StageDockReveal open={!isMobile || !timelineOpen}>
             <StageDockDivider />
             <Tooltip content={t('inkBleed.shuffleHint')}>
               <Button

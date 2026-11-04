@@ -4747,7 +4747,8 @@
       "imageStep4": "Refining",
       "imageStep5": "Shaping",
       "imageStep6": "Polishing"
-    }
+    },
+    "noBrandThisGeneration": "No brand this generation"
   },
   "mockupsPage": {
     "cannotConnectServer": "Cannot connect to server. Please check your connection and try again.",
@@ -6546,7 +6547,10 @@
       "loaded": "Loaded {fileName}",
       "converted": "Converted {fileName} to SVG",
       "processFailed": "Failed to process image",
-      "dropModel": "Click or drop GLB / GLTF"
+      "dropModel": "Click or drop GLB / GLTF",
+      "model": "3D Model",
+      "pickLogo": "Pick logo",
+      "font": "Font"
     },
     "geometry": {
       "title": "Geometry",
@@ -6588,14 +6592,27 @@
       "renderQuality": "Render Quality",
       "qualityPerformance": "Fast",
       "qualityBalanced": "Balanced",
-      "qualityHigh": "Quality"
+      "qualityHigh": "Quality",
+      "chainOn": "on"
     },
     "scenePresets": {
       "title": "Scene presets",
       "surprise": "Scene shuffled",
       "random": "Random",
       "brandScenes": "{name} scenes",
-      "brand": "Brand"
+      "brand": "Brand",
+      "names": {
+        "Product Shot": "Product Shot",
+        "Hero Banner": "Hero Banner",
+        "Social Media": "Social Media",
+        "Dark Studio": "Dark Studio",
+        "Neon": "Neon",
+        "Clay Render": "Clay Render",
+        "Chrome Badge": "Chrome Badge",
+        "Liquid Metal": "Liquid Metal",
+        "Candy": "Candy",
+        "Y2K": "Y2K"
+      }
     },
     "material": {
       "title": "Material",
@@ -6605,6 +6622,36 @@
         "surfaces": "Surfaces",
         "glass": "Glass & Gem",
         "special": "Special"
+      },
+      "presets": {
+        "default": "Default",
+        "plastic": "Plastic",
+        "clay": "Clay",
+        "emissive": "Emissive",
+        "chrome": "Chrome",
+        "brushedSteel": "Brushed Steel",
+        "gold": "Gold",
+        "roseGold": "Rose Gold",
+        "copper": "Copper",
+        "marble": "Marble",
+        "wood": "Wood",
+        "leather": "Leather",
+        "carbonFiber": "Carbon Fiber",
+        "carPaint": "Car Paint",
+        "glass": "Glass",
+        "frostedGlass": "Frosted",
+        "diamond": "Diamond",
+        "pearl": "Pearl",
+        "obsidian": "Obsidian",
+        "holographic": "Holo",
+        "y2kGloss": "Y2K Gloss",
+        "liquidChrome": "Liquid Chrome",
+        "titanium": "Titanium",
+        "candyInflate": "Candy",
+        "soapBubble": "Soap Bubble",
+        "opal": "Opal",
+        "neonTube": "Neon Tube",
+        "resin": "Resin"
       }
     },
     "color": {
@@ -6616,21 +6663,67 @@
       "opacity": "Opacity",
       "repeat": "Repeat",
       "regenerate": "Regenerate",
-      "remove": "Remove"
+      "remove": "Remove",
+      "mapLoaded": "Map loaded",
+      "uploadMap": "Upload {name}",
+      "opacityHint": "Texture opacity",
+      "repeatHint": "Tiling repeat",
+      "rotationHint": "Rotation in radians",
+      "procedural": {
+        "grain": "Grain",
+        "scratch": "Scratch",
+        "noise": "Noise",
+        "stucco": "Stucco"
+      }
     },
     "properties": {
       "title": "Properties",
       "metalness": "Metalness",
       "roughness": "Roughness",
       "opacity": "Opacity",
-      "wireframe": "Wireframe"
+      "wireframe": "Wireframe",
+      "metalnessHint": "Metallic reflectivity: 0 dielectric, 1 full metal",
+      "roughnessHint": "Surface roughness: 0 mirror, 1 matte",
+      "opacityHint": "Material opacity: 0 transparent, 1 solid",
+      "fresnel": "Fresnel",
+      "fresnelHint": "Fresnel edge intensity: 0 off, 1 full",
+      "fresnelColor": "Fresnel color",
+      "normalMap": "Normal Map",
+      "roughnessMap": "Roughness Map",
+      "metalnessMap": "Metalness Map",
+      "envReflection": "Environment reflection",
+      "envReflectionHint": "Environment map intensity. Higher is glossier",
+      "blendMode": "Blend Mode",
+      "blendModes": {
+        "normal": "Normal",
+        "additive": "Additive",
+        "subtractive": "Subtractive",
+        "multiply": "Multiply"
+      }
     },
     "lighting": {
       "title": "Lighting",
       "keyLight": "Key Light",
       "ambient": "Ambient",
       "shadows": "Shadows",
-      "grid": "Grid"
+      "grid": "Grid",
+      "selectPreset": "Select preset…",
+      "fillLight": "Fill Light",
+      "bounceLight": "Bounce Light",
+      "topLight": "Top Light",
+      "shadowQuality": "Shadow quality",
+      "shadowQualities": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      },
+      "presets": {
+        "3-Point Studio": "3-Point Studio",
+        "Rim Light": "Rim Light",
+        "Dramatic": "Dramatic",
+        "Flat": "Flat",
+        "Cinematic": "Cinematic"
+      }
     },
     "camera": {
       "title": "Camera",
@@ -6640,7 +6733,8 @@
       "back": "Back",
       "iso": "Iso",
       "reset": "Reset",
-      "fov": "Field of View"
+      "fov": "Field of View",
+      "fovHint": "Field of view. Lower is telephoto, higher is wide-angle"
     },
     "background": {
       "title": "Background",
@@ -6648,7 +6742,8 @@
       "types": {
         "solid": "Solid",
         "linear": "Linear",
-        "radial": "Radial"
+        "radial": "Radial",
+        "image": "Image"
       },
       "angle": "Angle",
       "color1": "Color 1",
@@ -6678,6 +6773,16 @@
         "friction": "Friction",
         "size": "Logo Size",
         "reset": "Reset / Trigger Fall"
+      },
+      "presets": {
+        "none": "None",
+        "spin": "Spin",
+        "float": "Float",
+        "pulse": "Pulse",
+        "wobble": "Wobble",
+        "swing": "Swing",
+        "spinFloat": "Spin + Float",
+        "physicsFall": "Physics Fall"
       }
     },
     "export": {
@@ -6702,7 +6807,26 @@
       "hdriBackground": "HDRI as Background",
       "customLoaded": "Custom HDRI loaded",
       "uploadHdr": "Upload .HDR",
-      "removeCustom": "Remove custom HDRI"
+      "removeCustom": "Remove custom HDRI",
+      "hdriCustom": "HDRI (custom)",
+      "hdriActive": "HDRI ({name})",
+      "selectHdri": "Select HDRI…",
+      "uploadHdriAria": "Upload custom HDRI",
+      "tooLarge": "HDRI too large ({size}MB). Max {max}MB.",
+      "loading": "Loading HDRI...",
+      "loaded": "HDRI loaded",
+      "presets": {
+        "studio": "Studio",
+        "city": "City",
+        "sunset": "Sunset",
+        "dawn": "Dawn",
+        "night": "Night",
+        "forest": "Forest",
+        "apartment": "Apartment",
+        "warehouse": "Warehouse",
+        "park": "Park",
+        "lobby": "Lobby"
+      }
     },
     "panels": {
       "surface": "Surface",
@@ -6728,7 +6852,35 @@
       "physics": "Physics",
       "controls": "Controls",
       "lightPositions": "Light Positions",
-      "toneMapping": "Tone Mapping"
+      "toneMapping": "Tone Mapping",
+      "advanced": "Advanced",
+      "enable": "Enable",
+      "exposure": "Exposure",
+      "exposureHint": "Scene brightness, to match your lighting",
+      "fogColor": "Fog color",
+      "fogNear": "Near",
+      "fogFar": "Far",
+      "rotation": "Rotation",
+      "blur": "Blur",
+      "groundReflection": "Ground reflection",
+      "beforeAfter": "Before / After",
+      "toggleAllEffects": "Toggle all effects",
+      "bloomIntensityHint": "Bloom glow strength",
+      "threshold": "Threshold",
+      "bloomThresholdHint": "Pixels brighter than this glow",
+      "amount": "Amount",
+      "darkness": "Darkness",
+      "brightness": "Brightness",
+      "contrast": "Contrast",
+      "hue": "Hue",
+      "saturation": "Saturation",
+      "dofFocus": "Focus",
+      "dofFocusHint": "Objects at this depth stay sharp",
+      "dofBokeh": "Bokeh",
+      "dofBokehHint": "Blur intensity for out-of-focus areas",
+      "offset": "Offset",
+      "chromaticOffsetHint": "RGB fringe at edges, like a real lens",
+      "aoIntensityHint": "Ambient occlusion darkens crevices and contact areas"
     },
     "shortcuts": {
       "title": "Keyboard Shortcuts"
@@ -6738,7 +6890,41 @@
     "randomizeMessage": "This will randomize all scene parameters (material, color, lighting, animation, etc). Your current settings will be lost.",
     "randomizeConfirm": "Let's go!",
     "dropGlb": "Drop GLB / GLTF",
-    "dropHere": "Drop file here"
+    "dropHere": "Drop file here",
+    "scenes": {
+      "title": "Scenes",
+      "namePlaceholder": "Scene name...",
+      "nameAria": "Scene name",
+      "save": "Save scene",
+      "saved": "Scene saved",
+      "saveFailed": "Failed to save scene",
+      "loading": "Loading scenes...",
+      "loaded": "Loaded \"{name}\"",
+      "loadFailed": "Failed to load scene",
+      "load": "Load scene",
+      "deleted": "Scene deleted",
+      "delete": "Delete scene",
+      "browsePublic": "Browse public scenes",
+      "noPublic": "No public scenes yet",
+      "forked": "Scene forked!",
+      "forkFailed": "Failed to fork"
+    },
+    "trace": {
+      "title": "SVG Refine",
+      "badge": "trace",
+      "preset": "Preset",
+      "presets": {
+        "logo": "Logo",
+        "lettering": "Lettering",
+        "lineArt": "Line Art",
+        "stamp": "Stamp",
+        "custom": "Custom"
+      },
+      "noise": "Noise",
+      "simplify": "Simplify",
+      "corners": "Corners",
+      "retrace": "Re-trace"
+    }
   },
   "imagelab": {
     "title": "Image lab",
@@ -6793,7 +6979,204 @@
       "communityPresets": "Community presets",
       "help": "This help"
     },
-    "effectOpacity": "Effect intensity {value}%"
+    "effectOpacity": "Effect intensity {value}%",
+    "controls": {
+      "halftone": "Halftone",
+      "frequency": "Freq",
+      "dot": "Dot",
+      "space": "Space",
+      "channels": "Channels",
+      "channelNames": {
+        "Cyan": "Cyan",
+        "Magenta": "Magenta",
+        "Yellow": "Yellow",
+        "Black": "Black"
+      },
+      "opacity": "Opacity",
+      "angle": "Angle",
+      "paperAndBlend": "Paper & Blend",
+      "paper": "Paper",
+      "paperColor": "Paper color",
+      "paperOpacity": "Paper Opacity",
+      "blend": "Blend",
+      "blendModes": {
+        "0": "Subtractive (CMYK)",
+        "1": "Additive",
+        "2": "Normal"
+      },
+      "imageAndTexture": "Image & Texture",
+      "contrast": "Contrast",
+      "light": "Light",
+      "blur": "Blur",
+      "grain": "Grain",
+      "inkNoise": "Ink Noise",
+      "dotAdvanced": "Dot Advanced",
+      "rough": "Rough",
+      "fuzz": "Fuzz",
+      "random": "Random",
+      "threshold": "Thresh",
+      "mode": "Mode",
+      "shape": "Shape"
+    },
+    "riso": {
+      "screening": "Screening",
+      "dither": {
+        "stochastic": "Stochastic",
+        "auto": "Auto (global)"
+      },
+      "shapes": {
+        "circle": "Circle",
+        "line": "Line",
+        "cross": "Cross",
+        "ellipse": "Ellipse"
+      },
+      "gain": "Gain",
+      "misregistration": "Misreg",
+      "inkLayers": "Ink Layers",
+      "setInkLayerCount": "Set ink layer count to {count}",
+      "soloLayer": "Solo layer {index}",
+      "inkCatalog": "Riso Ink Catalog",
+      "searchInks": "Search inks...",
+      "allInks": "All",
+      "noInks": "No inks found",
+      "exportLayer": "Export Layer Separation",
+      "paperAndTexture": "Paper & Texture",
+      "noise": "Noise",
+      "dropout": "Dropout",
+      "bleed": "Bleed",
+      "inkPalettes": "Ink Palettes",
+      "exportSvg": "Export SVG (Vector)",
+      "exportHiRes": "Export Hi-Res PNG (2x)",
+      "aiEnhance": "AI Enhance",
+      "inkCategories": {
+        "Reds": "Reds",
+        "Pinks": "Pinks",
+        "Blues": "Blues",
+        "Greens": "Greens",
+        "Teals": "Teals",
+        "Purples": "Purples",
+        "Yellows": "Yellows",
+        "Oranges": "Oranges",
+        "Golds": "Golds",
+        "Neutrals": "Neutrals"
+      },
+      "palettes": {
+        "Classic": "Classic",
+        "Fluorescent": "Fluorescent",
+        "Earth": "Earth",
+        "Cool Duo": "Cool Duo",
+        "Warm Duo": "Warm Duo"
+      }
+    },
+    "texture": {
+      "title": "Texture",
+      "custom": "Custom texture",
+      "uploadCustom": "Upload custom texture",
+      "loaded": "Texture: {name}",
+      "mask": "Mask",
+      "invert": "Invert",
+      "appearance": "Appearance",
+      "scale": "Scale",
+      "position": "Position",
+      "rotation": "Rotation",
+      "tile": "Tile",
+      "repeat": "Repeat",
+      "gapX": "Gap X",
+      "gapY": "Gap Y",
+      "color": "Color",
+      "originalColor": "Original color",
+      "blendModes": {
+        "multiply": "Multiply",
+        "screen": "Screen",
+        "overlay": "Overlay",
+        "soft-light": "Soft Light",
+        "hard-light": "Hard Light",
+        "color-burn": "Color Burn",
+        "color-dodge": "Color Dodge"
+      },
+      "presets": {
+        "Visant Grid": "Visant Grid",
+        "Film Grain": "Film Grain",
+        "Paper": "Paper",
+        "Canvas Weave": "Canvas Weave",
+        "Dust & Scratches": "Dust & Scratches",
+        "Concrete": "Concrete",
+        "Diagonal Lines": "Diagonal Lines",
+        "Crosshatch": "Crosshatch",
+        "Soft Noise": "Soft Noise",
+        "Halftone Dots": "Halftone Dots"
+      }
+    },
+    "shader": {
+      "title": "Shader",
+      "enableHint": "Enable the shader effect to edit its parameters.",
+      "labels": {
+        "Halftone": "Halftone",
+        "Style": "Style",
+        "Ellipse": "Ellipse",
+        "Square": "Square",
+        "Lines": "Lines",
+        "Dot Size": "Dot Size",
+        "Angle": "Angle",
+        "Contrast": "Contrast",
+        "Spacing": "Spacing",
+        "Threshold": "Threshold",
+        "Invert": "Invert",
+        "VHS": "VHS",
+        "Tape Wave": "Tape Wave",
+        "Tape Crease": "Tape Crease",
+        "Switching Noise": "Switching Noise",
+        "Bloom": "Bloom",
+        "AC Beat": "AC Beat",
+        "ASCII": "ASCII",
+        "Char Size": "Char Size",
+        "Brightness": "Brightness",
+        "Char Set": "Char Set",
+        "Blocks": "Blocks",
+        "Dots": "Dots",
+        "Classic": "Classic",
+        "Matrix": "Matrix",
+        "Braille": "Braille",
+        "Colored": "Colored",
+        "Matrix Dither": "Matrix Dither",
+        "Matrix Size": "Matrix Size",
+        "Bias": "Bias",
+        "Dither": "Dither",
+        "Size": "Size",
+        "Offset": "Offset",
+        "Bit Depth": "Bit Depth",
+        "Palette": "Palette",
+        "Monochrome": "Monochrome",
+        "Gameboy": "Gameboy",
+        "CRT Amber": "CRT Amber",
+        "CRT Green": "CRT Green",
+        "Sepia": "Sepia",
+        "Custom": "Custom",
+        "Custom Color": "Custom Color",
+        "Film Grain": "Film Grain",
+        "Strength": "Strength",
+        "Grain Size": "Grain Size",
+        "Duotone": "Duotone",
+        "Shadow": "Shadow",
+        "Highlight": "Highlight",
+        "Intensity": "Intensity",
+        "Pixelate": "Pixelate",
+        "Pixel Size": "Pixel Size",
+        "Posterize": "Posterize",
+        "Color Levels": "Color Levels",
+        "Chromatic": "Chromatic",
+        "CRT": "CRT",
+        "Line Width": "Line Width",
+        "Vignette": "Vignette",
+        "Curvature": "Curvature",
+        "Edge Detect": "Edge Detect",
+        "Overlay Mode": "Overlay Mode",
+        "Glitch": "Glitch",
+        "Amount": "Amount",
+        "Speed": "Speed",
+        "Block Size": "Block Size"
+      }
+    }
   },
   "wind": {
     "tunnel": {
@@ -6804,7 +7187,7 @@
       "drop_image_to_use_as_obstacle": "Drop an image to use as an obstacle",
       "preset_deleted": "Preset deleted.",
       "export_failed": "Export failed.",
-      "png_exported_at_multiplierx": "PNG exported at ${multiplier}x.",
+      "png_exported_at_multiplierx": "PNG exported at {multiplier}x.",
       "failed_to_load_image": "Could not load the image.",
       "unsupported_format_use_png_svg_jpeg_or": "Format not supported. Use PNG, SVG, JPEG or WebP.",
       "reset_all": "Reset All",
@@ -6835,7 +7218,86 @@
       "upload_obstacle_image": "Upload obstacle image",
       "obstacle": "Obstacle",
       "preset_saved": "Preset \"{name}\" saved.",
-      "preset_loaded": "Loaded \"{name}\"."
+      "preset_loaded": "Loaded \"{name}\".",
+      "tabs": {
+        "aria": "Wind Tunnel sections",
+        "panel": "Settings",
+        "presets": "Presets"
+      },
+      "preset_names": {
+        "classic_airfoil": "Classic airfoil",
+        "neon_vortex": "Neon vortex",
+        "blueprint": "Blueprint",
+        "fire_storm": "Fire storm",
+        "tunnel_3d": "3D tunnel"
+      },
+      "shapes": {
+        "text": "Text",
+        "circle": "Circle",
+        "triangle": "Triangle",
+        "square": "Square",
+        "diamond": "Diamond",
+        "airfoil": "Airfoil",
+        "image": "Image"
+      },
+      "color_modes": {
+        "rainbow": "Rainbow",
+        "velocity": "Velocity",
+        "density": "Density",
+        "uniform": "Single color"
+      },
+      "render_modes": {
+        "streamlines": "Stream",
+        "particles": "Dots"
+      },
+      "field_modes": {
+        "none": "None",
+        "velocity": "Velocity",
+        "pressure": "Pressure",
+        "vorticity": "Vorticity"
+      },
+      "scales": {
+        "screen": "Screen",
+        "hd": "HD",
+        "print": "Print"
+      },
+      "saved_presets": "Saved",
+      "delete_preset": "Delete preset {name}",
+      "save_current": "Save current",
+      "copy_json": "Copy JSON",
+      "import_json": "Paste JSON",
+      "shortcuts_hint": "Space: pause · Tab: panel · R: restart · Ctrl+E: export · Drag: inject · Right-drag: walls · Scroll: wind",
+      "image": "Image",
+      "replace_image": "Replace image",
+      "upload_image": "Upload SVG or PNG",
+      "text": "Text",
+      "bold": "Bold",
+      "size": "Size",
+      "color": "Color",
+      "effects": "Effects",
+      "scene": "Scene",
+      "export_metadata": "Export with metadata",
+      "field_overlay": "Field overlay",
+      "opacity": "Opacity",
+      "vector_arrows": "Vector arrows",
+      "restart_hint": "Restart simulation (R)",
+      "stop_recording": "Stop recording",
+      "record_hint": "Record 10s of video",
+      "share_url": "Copy share link",
+      "particles_count": "{count} particles",
+      "rec": "REC",
+      "paused": "Paused",
+      "preset_name_prompt": "Preset name:",
+      "share_url_copied": "Link copied",
+      "copy_this_url": "Copy this link:",
+      "config_copied": "JSON copied",
+      "copy_this_json": "Copy this JSON:",
+      "config_imported_clipboard": "Settings imported from clipboard",
+      "invalid_config": "That JSON is not a Wind Tunnel config",
+      "paste_config_prompt": "Paste the settings JSON:",
+      "config_imported": "Settings imported",
+      "invalid_json": "Invalid JSON",
+      "preset_loaded_from_url": "Preset loaded from link"
     }
   },
   "grid": {
@@ -6863,7 +7325,41 @@
       "rand": "Rand",
       "seeds": "Seeds",
       "svg_exported": "SVG exported",
-      "png_exported": "PNG exported"
+      "png_exported": "PNG exported",
+      "presets": {
+        "molecular": "Molecular",
+        "neon": "Neon",
+        "blueprint": "Blueprint",
+        "brutalist": "Brutalist",
+        "warm": "Warm",
+        "mono": "Mono"
+      },
+      "seed_names": {
+        "cross": "Cross",
+        "diamond": "Diamond",
+        "ring": "Ring",
+        "grid": "Grid",
+        "diagonal": "Diagonal",
+        "molecule": "Molecule"
+      },
+      "tabs": {
+        "aria": "Grid Paint sections",
+        "panel": "Settings",
+        "style": "Style",
+        "shape": "Shape"
+      },
+      "presets_title": "Presets",
+      "color": "Color",
+      "background": "Background",
+      "grid_size": "{cols}×{rows} dots",
+      "dots_count": "{count} dots",
+      "spacing": "Spacing",
+      "tension": "Tension",
+      "connections": "Connections",
+      "export_svg": "Download SVG",
+      "copy_state": "Copy state",
+      "eraser": "Eraser",
+      "clear_canvas": "Clear canvas"
     },
     "machine": {
       "this_will_remove_the_current_svg_and_": "This removes the current SVG and resets the settings.",
@@ -6883,7 +7379,32 @@
       "handlesCount": "{count} handles",
       "clear": "Clear",
       "openSvg": "Open SVG",
-      "openSvgShortcut": "Open SVG (Ctrl+O)"
+      "openSvgShortcut": "Open SVG (Ctrl+O)",
+      "display": "Display",
+      "outline": "Outline",
+      "anchors": "Anchors",
+      "handles": "Handles",
+      "hLines": "H-Lines",
+      "vLines": "V-Lines",
+      "diagonals": "Diagonals",
+      "minSpacing": "Min Spacing",
+      "all": "All",
+      "baseGrid": "Base Grid",
+      "showHiddenLine": "Show {count} hidden line",
+      "showHiddenLines": "Show {count} hidden lines",
+      "style": "Style",
+      "lineOpacity": "Line Opacity",
+      "logoOpacity": "Logo Opacity",
+      "pointSize": "Point Size",
+      "gridSpacing": "Grid Spacing",
+      "background": "Background",
+      "bg": {
+        "dark": "dark",
+        "light": "light"
+      },
+      "colors": "Colors",
+      "lines": "Lines",
+      "exportSvg": "Export SVG"
     }
   },
   "extractor": {
@@ -7743,6 +8264,23 @@
       "configure": "Set up your OG image in the panel",
       "preview": "Preview",
       "previewAlt": "OG image preview"
+    },
+    "brandSelect": {
+      "none": "No brand",
+      "untitled": "Untitled"
+    },
+    "qr": {
+      "text": "Text or URL",
+      "size": "Size",
+      "errorCorrection": "Error correction",
+      "levelL": "L - Low (~7%)",
+      "levelM": "M - Medium (~15%)",
+      "levelQ": "Q - Quartile (~25%)",
+      "levelH": "H - High (~30%)",
+      "background": "Background",
+      "foreground": "Foreground",
+      "margin": "Margin",
+      "ready": "QR code ready"
     }
   },
   "fullScreenViewer": {

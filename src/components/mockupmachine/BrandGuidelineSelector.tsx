@@ -5,6 +5,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useMockup } from './MockupContext';
 import { BrandGuidelineWizardModal } from './BrandGuidelineWizardModal';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
+import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
 import { ChevronRight, Plus, Check, Pencil, Gem, Search } from '@/lib/ui/icons';
@@ -30,7 +31,8 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
   const isMinimal = variant === 'minimal' || asButton;
   const { t } = useTranslation();
   const { theme } = useTheme();
-  const { selectedBrandGuideline, setSelectedBrandGuideline } = useMockup();
+  const { selectedBrandGuideline, setSelectedBrandGuideline, adoptBrand } = useMockup();
+  const hasActiveBrand = !!useActiveBrandSafe()?.activeBrand;
 
   const [searchQuery, setSearchQuery] = useState('');
   const { data: guidelines = [], isLoading, refetch } = useBrandGuidelines(true);
@@ -51,7 +53,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
   const handleWizardSuccess = (id: string) => {
     setIsWizardOpen(false);
     setEditingGuideline(null);
-    setSelectedBrandGuideline(id);
+    adoptBrand(id);
     refetch();
     setIsSelectionModalOpen(false);
   };
@@ -67,8 +69,11 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
     setIsWizardOpen(true);
   };
 
+  // Outra marca muda a barra do app também (marca é uma só). "Nenhuma" vale só para esta
+  // geração: a barra continua onde está.
   const handleSelect = (id: string | null) => {
-    setSelectedBrandGuideline(id);
+    if (id) adoptBrand(id);
+    else setSelectedBrandGuideline(null);
     setIsSelectionModalOpen(false);
   };
 
@@ -83,14 +88,16 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
             'flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors text-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
             selectedBrandGuideline
               ? 'bg-brand-cyan/10 text-foreground border-brand-cyan/40'
-              : 'bg-neutral-900/60 border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+              : 'bg-muted/60 border-border text-muted-foreground hover:bg-muted hover:text-foreground'
           )}
         >
           <Gem size={10} />
           <span>
             {selectedBrandGuideline
-              ? selectedGuidelineObj?.identity?.name
-              : t('mockup.brandButton')}
+              ? selectedGuidelineObj?.identity?.name || t('mockup.brandButton')
+              : hasActiveBrand
+                ? t('mockup.noBrandThisGeneration')
+                : t('mockup.brandButton')}
           </span>
         </button>
       ) : (

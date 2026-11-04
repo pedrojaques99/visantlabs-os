@@ -17,7 +17,9 @@ import { cn } from '@/lib/utils';
 /**
  * StageDock: the one row of controls over a tool's stage. It shows what is in use and hides the rest.
  *
- * It grows to the right from where it rests, so the button under the pointer never moves away.
+ * It stays centered as it grows. While a mouse is over it, it holds its place and grows to the
+ * right instead, so the button under the pointer never moves away; it recenters when the mouse
+ * leaves.
  * `ToolDock` is the Canvas dock, themed by hex. This one uses the design tokens.
  */
 
@@ -34,13 +36,10 @@ const MOUNT_QUIET_MS = 1000;
 interface StageDockContextValue {
   /** The pointer is inside the dock: nothing collapses under it. */
   hovered: boolean;
-  /** A group that grows the dock opened or closed. */
-  reportGrowth: (delta: number) => void;
 }
 
 const StageDockContext = createContext<StageDockContextValue>({
   hovered: false,
-  reportGrowth: () => {},
 });
 
 /** True while `active`, and for a moment after. */
@@ -82,30 +81,29 @@ interface StageDockProps {
   children: React.ReactNode;
   /** Vertical position and any page-specific placement. */
   className?: string;
+  /** For a position that depends on a value, such as the height of an open sheet. */
+  bottom?: string;
 }
 
-export const StageDock: React.FC<StageDockProps> = ({ children, className }) => {
+export const StageDock: React.FC<StageDockProps> = ({ children, className, bottom }) => {
   const pillRef = useRef<HTMLDivElement>(null);
-  const growing = useRef(0);
-  const [restWidth, setRestWidth] = useState<number | null>(null);
-  const [hovered, setHovered] = useState(false);
+  const [width, setWidth] = useState<number | null>(null);
+  // Where it sat when the mouse came in. Null means centered.
+  const [heldAt, setHeldAt] = useState<number | null>(null);
+  const hovered = heldAt !== null;
 
   useLayoutEffect(() => {
     const pill = pillRef.current;
     if (!pill) return;
-    const measure = () => {
-      if (growing.current === 0) setRestWidth(pill.offsetWidth);
-    };
+    const measure = () => setWidth(pill.offsetWidth);
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(pill);
     return () => observer.disconnect();
   }, []);
 
-  const reportGrowth = useCallback((delta: number) => {
-    growing.current += delta;
-  }, []);
-  const value = useMemo(() => ({ hovered, reportGrowth }), [hovered, reportGrowth]);
+  const value = useMemo(() => ({ hovered }), [hovered]);
+  const halfWidth = heldAt ?? (width ?? 0) / 2;
 
   return (
     <StageDockContext.Provider value={value}>
@@ -113,20 +111,24 @@ export const StageDock: React.FC<StageDockProps> = ({ children, className }) => 
         ref={pillRef}
         data-canvas-ui
         data-testid="stage-dock"
-        onPointerEnter={(e) => e.pointerType === 'mouse' && setHovered(true)}
-        onPointerLeave={() => setHovered(false)}
+        onPointerEnter={(e) => {
+          if (e.pointerType === 'mouse') setHeldAt(e.currentTarget.offsetWidth / 2);
+        }}
+        onPointerLeave={() => setHeldAt(null)}
         className={cn(
           'absolute left-1/2 z-30 flex items-center gap-0.5 rounded-xl p-1 cursor-default',
           'border border-border bg-card shadow-lg',
           className
         )}
-        // Anchored by its resting width, so what opens pushes only what is to its right.
+        // A margin, not a transform: a transform would break the fixed position of the tooltips.
         style={
-          restWidth === null
-            ? { transform: 'translateX(-50%)' }
+          width === null
+            ? { transform: 'translateX(-50%)', bottom }
             : {
-                marginLeft: -restWidth / 2,
-                maxWidth: `calc(50% + ${restWidth / 2}px - 8px)`,
+                bottom,
+                marginLeft: -halfWidth,
+                maxWidth: `calc(50% + ${halfWidth}px - 8px)`,
+                transition: 'margin-left var(--dur-base) ease-out, bottom var(--dur-base) ease-out',
               }
         }
       >
@@ -143,25 +145,11 @@ export const StageDockDivider: React.FC<{ className?: string }> = ({ className }
 interface StageDockRevealProps {
   open: boolean;
   children: React.ReactNode;
-  /** Open is the resting state, so closing it does not count as the dock growing. */
-  atRest?: boolean;
   className?: string;
 }
 
 /** A stretch of the dock that opens sideways. Closed, it takes no room and no focus. */
-export const StageDockReveal: React.FC<StageDockRevealProps> = ({
-  open,
-  children,
-  atRest = false,
-  className,
-}) => {
-  const { reportGrowth } = useContext(StageDockContext);
-  useLayoutEffect(() => {
-    if (atRest || !open) return;
-    reportGrowth(1);
-    return () => reportGrowth(-1);
-  }, [atRest, open, reportGrowth]);
-
+export const StageDockReveal: React.FC<StageDockRevealProps> = ({ open, children, className }) => {
   // It clips only while it moves, so a popover from something inside it is not cut off.
   const [settled, setSettled] = useState(open);
   useEffect(() => {

@@ -26,14 +26,17 @@ import {
 
 const FILTER_PRESET_ITEMS = Object.keys(FILTER_PRESETS).map((name) => ({ name }));
 
-const ResetBtn: React.FC<{ onClick: () => void }> = ({ onClick }) => (
-  <button
-    onClick={onClick}
-    className="text-2xs text-muted-foreground hover:text-muted-foreground transition-colors uppercase tracking-wider"
-  >
-    Reset
-  </button>
-);
+const ResetBtn: React.FC<{ onClick: () => void }> = ({ onClick }) => {
+  const { t } = useTranslation();
+  return (
+    <button
+      onClick={onClick}
+      className="text-2xs text-muted-foreground hover:text-muted-foreground transition-colors uppercase tracking-wider"
+    >
+      {t('common.reset')}
+    </button>
+  );
+};
 
 interface TextureFilterControlsProps {
   onExport: () => void;
@@ -42,7 +45,7 @@ interface TextureFilterControlsProps {
 
 export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React.memo(
   ({ onExport, onCopyAsPng }) => {
-    const { t } = useTranslation();
+    const { t, tOr } = useTranslation();
     const store = useTextureFilterStore();
 
     const update = useCallback(
@@ -55,32 +58,37 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
     const tabs: PanelTab[] = [
       {
         id: 'texture',
-        label: 'Texture',
+        label: t('imagelab.texture.title'),
         icon: <Layers size={16} />,
         content: (
           <div className="space-y-3">
             <Select
-              options={TEXTURE_PRESETS.map((p) => ({ value: p.name, label: p.name }))}
+              options={TEXTURE_PRESETS.map((p) => ({
+                value: p.name,
+                label: tOr(`imagelab.texture.presets.${p.name}`, p.name),
+              }))}
               value={store.textureName}
               onChange={(name) => {
-                const p = TEXTURE_PRESETS.find((t) => t.name === name);
+                const p = TEXTURE_PRESETS.find((preset) => preset.name === name);
                 if (p) store.applyPreset(p);
               }}
               variant="node"
             />
             <label className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-muted-foreground transition-colors">
               <UploadIcon size={12} />
-              <span className="text-2xs uppercase tracking-widest">Custom texture</span>
+              <span className="text-2xs uppercase tracking-widest">
+                {t('imagelab.texture.custom')}
+              </span>
               <input
                 type="file"
                 accept="image/*,.svg"
                 className="hidden"
-                aria-label="Upload custom texture"
+                aria-label={t('imagelab.texture.uploadCustom')}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {
                     store.setTexture(URL.createObjectURL(file), file.name);
-                    toast.success(`Texture: ${file.name}`);
+                    toast.success(t('imagelab.texture.loaded', { name: file.name }));
                   }
                   if (e.target) e.target.value = '';
                 }}
@@ -91,7 +99,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
       },
       {
         id: 'mode',
-        label: 'Mode',
+        label: t('imagelab.controls.mode'),
         icon: <Blend size={16} />,
         action: (
           <ResetBtn
@@ -104,11 +112,11 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
         ),
         content: (
           <div className="space-y-3">
-            <ToolPanelRow label="Mode">
+            <ToolPanelRow label={t('imagelab.controls.mode')}>
               <Select
                 options={[
-                  { value: 'blend', label: 'Blend' },
-                  { value: 'mask', label: 'Mask' },
+                  { value: 'blend', label: t('imagelab.controls.blend') },
+                  { value: 'mask', label: t('imagelab.texture.mask') },
                 ]}
                 value={store.maskMode ? 'mask' : 'blend'}
                 onChange={(v) => update('maskMode', v === 'mask')}
@@ -116,16 +124,19 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
               />
             </ToolPanelRow>
             {!store.maskMode ? (
-              <ToolPanelRow label="Blend">
+              <ToolPanelRow label={t('imagelab.controls.blend')}>
                 <Select
-                  options={BLEND_MODES.map((m) => ({ value: m.id, label: m.label }))}
+                  options={BLEND_MODES.map((m) => ({
+                    value: m.id,
+                    label: tOr(`imagelab.texture.blendModes.${m.id}`, m.label),
+                  }))}
                   value={store.blendMode}
                   onChange={(v) => update('blendMode', v)}
                   variant="node"
                 />
               </ToolPanelRow>
             ) : (
-              <ToolPanelRow label="Invert">
+              <ToolPanelRow label={t('imagelab.texture.invert')}>
                 <Switch
                   checked={store.maskInvert}
                   onCheckedChange={(v) => update('maskInvert', v)}
@@ -137,7 +148,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
       },
       {
         id: 'appearance',
-        label: 'Appearance',
+        label: t('imagelab.texture.appearance'),
         icon: <RotateCw size={16} />,
         action: (
           <ResetBtn
@@ -150,7 +161,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
         content: (
           <div className="grid grid-cols-2 gap-1.5">
             <ScrubInput
-              label="Opacity"
+              label={t('imagelab.controls.opacity')}
               value={store.opacity}
               min={0}
               max={1}
@@ -158,7 +169,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
               onChange={(v) => update('opacity', v)}
             />
             <ScrubInput
-              label="Scale"
+              label={t('imagelab.texture.scale')}
               value={store.scale}
               min={0.1}
               max={5}
@@ -170,7 +181,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
       },
       {
         id: 'position',
-        label: 'Position',
+        label: t('imagelab.texture.position'),
         icon: <Move size={16} />,
         action: (
           <ResetBtn
@@ -200,7 +211,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
               />
             </div>
             <ScrubInput
-              label="Rotation"
+              label={t('imagelab.texture.rotation')}
               value={store.rotation}
               min={0}
               max={360}
@@ -233,7 +244,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
       },
       {
         id: 'tile',
-        label: 'Tile',
+        label: t('imagelab.texture.tile'),
         icon: <Grid size={16} />,
         action: (
           <ResetBtn
@@ -245,13 +256,13 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
         ),
         content: (
           <div className="space-y-3">
-            <ToolPanelRow label="Repeat">
+            <ToolPanelRow label={t('imagelab.texture.repeat')}>
               <Switch checked={store.tileMode} onCheckedChange={(v) => update('tileMode', v)} />
             </ToolPanelRow>
             {store.tileMode && (
               <ToolPanelGrid>
                 <ScrubInput
-                  label="Gap X"
+                  label={t('imagelab.texture.gapX')}
                   value={store.tileGapX}
                   min={-100}
                   max={200}
@@ -260,7 +271,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
                   onChange={(v) => update('tileGapX', v)}
                 />
                 <ScrubInput
-                  label="Gap Y"
+                  label={t('imagelab.texture.gapY')}
                   value={store.tileGapY}
                   min={-100}
                   max={200}
@@ -275,21 +286,22 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
       },
       {
         id: 'color',
-        label: 'Color',
+        label: t('imagelab.texture.color'),
         icon: <Palette size={16} />,
         content: (
           <div className="space-y-3">
-            <ToolPanelRow label="Original color">
+            <ToolPanelRow label={t('imagelab.texture.originalColor')}>
               <Switch
                 checked={store.useOriginalColor}
                 onCheckedChange={(v) => update('useOriginalColor', v)}
               />
             </ToolPanelRow>
             {!store.useOriginalColor && (
-              <ToolPanelRow label="Color">
+              <ToolPanelRow label={t('imagelab.texture.color')}>
                 <InlineColorPicker
                   value={store.textureColor}
                   onChange={(v) => update('textureColor', v)}
+                  label={t('imagelab.texture.color')}
                 />
               </ToolPanelRow>
             )}
@@ -308,7 +320,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
             Object.entries(preset).forEach(([k, v]) => {
               store.updateSetting(k as keyof TextureFilterSettings, v as any);
             });
-            toast.success(`Applied "${name}"`);
+            toast.success(t('toolEditor.presets.applied', { name }));
           }}
         />
 

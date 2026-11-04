@@ -1,10 +1,19 @@
-import React, { useRef, useCallback, useEffect } from 'react';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Upload } from '@/lib/ui/icons';
+import { Info, PanelRightClose, PanelRightOpen, RotateCcw, Upload } from '@/lib/ui/icons';
+import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { Button } from '@/components/ui/button';
 import { Dropzone } from '@/components/ui/Dropzone';
 import { Tooltip } from '@/components/ui/Tooltip';
+import {
+  StageDock,
+  StageDockDivider,
+  StageDockGroup,
+  StageDockText,
+  stageDockButton,
+} from '@/components/shared/StageDock';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
+import { useIsMobile } from '@/hooks/use-media-query';
 import { BrandFunnelBanner } from '@/components/funnel/BrandFunnelBanner';
 import { GridCanvas, type GridCanvasHandle } from '@/components/grid-machine/GridCanvas';
 import { GridMachineControls } from '@/components/grid-machine/ControlsPanel';
@@ -21,6 +30,8 @@ export const GridMachinePage: React.FC = () => {
   const store = useGridMachineStore;
   const gridRef = useRef<GridCanvasHandle>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isMobile = useIsMobile();
+  const [confirmClear, setConfirmClear] = useState(false);
 
   const panelVisible = store((s) => s.panelVisible);
   const setPanelVisible = store((s) => s.setPanelVisible);
@@ -166,22 +177,7 @@ export const GridMachinePage: React.FC = () => {
       panelVisible={panelVisible && !!svgContent}
       setPanelVisible={setPanelVisible}
       onReset={clear}
-      resetTitle={t('grid.machine.clear_workspace')}
-      resetMessage={t('grid.machine.this_will_remove_the_current_svg_and_')}
-      resetConfirmText={t('grid.machine.clear')}
-      extraTopBarRight={
-        <Tooltip content={t('grid.machine.openSvgShortcut')}>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t('grid.machine.openSvg')}
-            className="h-7 w-7 text-muted-foreground"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Upload size={14} />
-          </Button>
-        </Tooltip>
-      }
+      hideTopBar
       controlsPanel={
         <GridMachineControls
           onExportPng={handleExportPng}
@@ -189,8 +185,6 @@ export const GridMachinePage: React.FC = () => {
           getCanvasPng={() => gridRef.current?.getCanvas()?.toDataURL('image/png')}
         />
       }
-      statusItems={statusItems}
-      fileName={svgContent ? fileName : undefined}
       dragProps={{
         onDrop: (e: React.DragEvent) => {
           handleDrop(e);
@@ -212,20 +206,86 @@ export const GridMachinePage: React.FC = () => {
         className="hidden"
         onChange={handleFileSelect}
       />
-      {svgContent ? (
-        <GridCanvas ref={gridRef} />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center px-4">
-          <Dropzone
-            onFiles={(files) => readSvgFile(files[0])}
-            accept=".svg,image/svg+xml"
-            label={t('grid.machine.drop_an_svg_file_here')}
-            hint={t('grid.machine.or_click_ctrlv_to_paste')}
-            dropTarget={false}
-            className="max-w-md"
-          />
-        </div>
-      )}
+      <div className="relative h-full w-full">
+        {svgContent ? (
+          <GridCanvas ref={gridRef} />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center px-4">
+            <Dropzone
+              onFiles={(files) => readSvgFile(files[0])}
+              accept=".svg,image/svg+xml"
+              label={t('grid.machine.drop_an_svg_file_here')}
+              hint={t('grid.machine.or_click_ctrlv_to_paste')}
+              dropTarget={false}
+              className="max-w-md"
+            />
+          </div>
+        )}
+        <StageDock className="bottom-3">
+          <Tooltip content={t('grid.machine.openSvgShortcut')}>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={t('grid.machine.openSvg')}
+              className={stageDockButton}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload size={14} />
+            </Button>
+          </Tooltip>
+          {svgContent && (
+            <>
+              <Tooltip content={t('grid.machine.clear_workspace')}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t('grid.machine.clear_workspace')}
+                  className={stageDockButton}
+                  onClick={() => setConfirmClear(true)}
+                >
+                  <RotateCcw size={14} />
+                </Button>
+              </Tooltip>
+              <StageDockDivider />
+              <StageDockGroup icon={<Info size={14} />} label={t('toolDock.details')}>
+                {statusItems.map((item) => (
+                  <StageDockText key={item.label}>{item.label}</StageDockText>
+                ))}
+                {fileName && <StageDockText>{fileName}</StageDockText>}
+              </StageDockGroup>
+              {!isMobile && (
+                <Tooltip
+                  content={
+                    panelVisible ? t('toolEditor.hidePanelHint') : t('toolEditor.showPanelHint')
+                  }
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={panelVisible ? t('common.hidePanel') : t('common.showPanel')}
+                    className={stageDockButton}
+                    onClick={() => setPanelVisible(!panelVisible)}
+                  >
+                    {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
+                  </Button>
+                </Tooltip>
+              )}
+            </>
+          )}
+        </StageDock>
+      </div>
+      <ConfirmationModal
+        isOpen={confirmClear}
+        onClose={() => setConfirmClear(false)}
+        onConfirm={() => {
+          clear();
+          setConfirmClear(false);
+        }}
+        title={t('grid.machine.clear_workspace')}
+        message={t('grid.machine.this_will_remove_the_current_svg_and_')}
+        confirmText={t('grid.machine.clear')}
+        variant="warning"
+      />
     </ToolEditorShell>
   );
 };

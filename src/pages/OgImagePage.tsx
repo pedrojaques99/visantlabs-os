@@ -7,6 +7,7 @@ import { useOgImageStore, type OgTemplate } from '@/stores/ogImageStore';
 import { MiniAppShell } from '@/components/shared/MiniAppShell';
 import { BrandToolSelect } from '@/components/shared/BrandToolSelect';
 import { QuickActions } from '@/components/shared/QuickActions';
+import { InlineColorPicker } from '@/components/shared/ToolPanel';
 import { useBrandDefaults } from '@/hooks/useBrandDefaults';
 import { useToolInput } from '@/hooks/useToolInput';
 import { loadImage } from '@/utils/imageUtils';
@@ -220,16 +221,26 @@ export const OgImagePage: React.FC = () => {
   const setTextColor = useOgImageStore((s) => s.setTextColor);
   const reset = useOgImageStore((s) => s.reset);
 
-  const { brandId, setBrandId, defaults: brandDefaults } = useBrandDefaults('og-image');
+  const {
+    brandId,
+    setBrandId,
+    defaults: brandDefaults,
+    isExplicit: brandIsExplicit,
+  } = useBrandDefaults('og-image');
   useToolInput('og-image');
 
   /* --- Apply brand defaults when brand is selected --- */
   useEffect(() => {
     if (!brandDefaults) return;
-    if (brandDefaults.bgColor) setBackgroundColor(brandDefaults.bgColor);
-    if (brandDefaults.textColor) setTextColor(brandDefaults.textColor);
-    if (brandDefaults.logoUrl) setLogoUrl(brandDefaults.logoUrl);
-  }, [brandDefaults, setBackgroundColor, setTextColor, setLogoUrl]);
+    // Marca ativa só preenche o que está no padrão: não desfaz o ajuste que a pessoa já fez.
+    const current = useOgImageStore.getState();
+    const initial = useOgImageStore.getInitialState();
+    const fill = (field: 'backgroundColor' | 'textColor' | 'logoUrl') =>
+      brandIsExplicit || current[field] === initial[field];
+    if (brandDefaults.bgColor && fill('backgroundColor')) setBackgroundColor(brandDefaults.bgColor);
+    if (brandDefaults.textColor && fill('textColor')) setTextColor(brandDefaults.textColor);
+    if (brandDefaults.logoUrl && fill('logoUrl')) setLogoUrl(brandDefaults.logoUrl);
+  }, [brandDefaults, brandIsExplicit, setBackgroundColor, setTextColor, setLogoUrl]);
 
   // Debounced re-render
   useEffect(() => {
@@ -457,7 +468,7 @@ export const OgImagePage: React.FC = () => {
         <span className="block text-xs font-medium text-muted-foreground">
           {t('miniTools.og.colors')}
         </span>
-        <div className="flex gap-3">
+        <div className="space-y-3">
           <ColorInput
             label={t('miniTools.og.colorBg')}
             value={backgroundColor}
@@ -498,21 +509,12 @@ export const OgImagePage: React.FC = () => {
   /*  Status bar                                                       */
   /* ---------------------------------------------------------------- */
 
+  // Download and copy live in the panel. Only copying the tags has no place there.
   const statusBar = previewUrl ? (
-    <div className="flex items-center gap-1">
-      <Button type="button" variant="ghost" size="xs" onClick={handleDownload}>
-        <Download className="w-3.5 h-3.5" />
-        {t('miniTools.og.downloadPng')}
-      </Button>
-      <Button type="button" variant="ghost" size="xs" onClick={handleCopy}>
-        <Copy className="w-3.5 h-3.5" />
-        {t('miniTools.og.copyImage')}
-      </Button>
-      <Button type="button" variant="ghost" size="xs" onClick={handleCopyMeta}>
-        <Code className="w-3.5 h-3.5" />
-        {t('miniTools.og.copyMeta')}
-      </Button>
-    </div>
+    <Button type="button" variant="ghost" size="xs" onClick={handleCopyMeta}>
+      <Code className="w-3.5 h-3.5" />
+      {t('miniTools.og.copyMeta')}
+    </Button>
   ) : (
     <span className="text-xs text-muted-foreground">{t('miniTools.og.configure')}</span>
   );
@@ -574,24 +576,9 @@ function ColorInput({
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-1.5">
-      <input
-        type="color"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        aria-label={label}
-        className="w-6 h-6 rounded border border-border bg-transparent cursor-pointer p-0"
-      />
-      <div className="flex flex-col">
-        <span className="text-2xs font-medium text-muted-foreground">{label}</span>
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          aria-label={label}
-          className="w-[72px] bg-transparent text-2xs font-mono text-foreground border-none outline-none p-0 rounded-md focus-visible:ring-1 focus-visible:ring-ring"
-        />
-      </div>
+    <div className="space-y-1">
+      <span className="block text-2xs font-medium text-muted-foreground">{label}</span>
+      <InlineColorPicker value={value} onChange={onChange} label={label} />
     </div>
   );
 }

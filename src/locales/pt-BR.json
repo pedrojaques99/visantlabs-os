@@ -4747,7 +4747,8 @@
       "imageStep4": "Refinando",
       "imageStep5": "Moldando",
       "imageStep6": "Lapidando"
-    }
+    },
+    "noBrandThisGeneration": "Sem marca nesta geração"
   },
   "mockupsPage": {
     "cannotConnectServer": "Não foi possível conectar ao servidor. Por favor, verifique sua conexão e tente novamente.",
@@ -6546,7 +6547,10 @@
       "loaded": "{fileName} carregado",
       "converted": "{fileName} convertido para SVG",
       "processFailed": "Falha ao processar imagem",
-      "dropModel": "Clique ou arraste GLB / GLTF"
+      "dropModel": "Clique ou arraste GLB / GLTF",
+      "model": "Modelo 3D",
+      "pickLogo": "Escolher logo",
+      "font": "Fonte"
     },
     "geometry": {
       "title": "Geometria",
@@ -6577,7 +6581,7 @@
       "bailOffset": "Offset da Argola",
       "chainOffset": "Offset da Corrente",
       "chainColor": "Cor da Corrente",
-      "shapeColor": "Cor do Shape",
+      "shapeColor": "Cor do formato",
       "reliefDepth": "Espessura do Relevo",
       "depth": "Profundidade",
       "bevel": "Chanfro",
@@ -6588,14 +6592,27 @@
       "renderQuality": "Qualidade de Render",
       "qualityPerformance": "Rápido",
       "qualityBalanced": "Balanceado",
-      "qualityHigh": "Qualidade"
+      "qualityHigh": "Qualidade",
+      "chainOn": "ligada"
     },
     "scenePresets": {
       "title": "Presets de cena",
       "surprise": "Cena sorteada",
       "random": "Aleatório",
       "brandScenes": "Cenas de {name}",
-      "brand": "Marca"
+      "brand": "Marca",
+      "names": {
+        "Product Shot": "Foto de produto",
+        "Hero Banner": "Banner de destaque",
+        "Social Media": "Redes sociais",
+        "Dark Studio": "Estúdio escuro",
+        "Neon": "Neon",
+        "Clay Render": "Render de argila",
+        "Chrome Badge": "Emblema cromado",
+        "Liquid Metal": "Metal líquido",
+        "Candy": "Bala",
+        "Y2K": "Y2K"
+      }
     },
     "material": {
       "title": "Material",
@@ -6605,6 +6622,36 @@
         "surfaces": "Superfícies",
         "glass": "Vidro & Gema",
         "special": "Especial"
+      },
+      "presets": {
+        "default": "Padrão",
+        "plastic": "Plástico",
+        "clay": "Argila",
+        "emissive": "Emissivo",
+        "chrome": "Cromo",
+        "brushedSteel": "Aço escovado",
+        "gold": "Ouro",
+        "roseGold": "Ouro rosé",
+        "copper": "Cobre",
+        "marble": "Mármore",
+        "wood": "Madeira",
+        "leather": "Couro",
+        "carbonFiber": "Fibra de carbono",
+        "carPaint": "Pintura de carro",
+        "glass": "Vidro",
+        "frostedGlass": "Fosco",
+        "diamond": "Diamante",
+        "pearl": "Pérola",
+        "obsidian": "Obsidiana",
+        "holographic": "Holográfico",
+        "y2kGloss": "Brilho Y2K",
+        "liquidChrome": "Cromo líquido",
+        "titanium": "Titânio",
+        "candyInflate": "Bala",
+        "soapBubble": "Bolha de sabão",
+        "opal": "Opala",
+        "neonTube": "Tubo de neon",
+        "resin": "Resina"
       }
     },
     "color": {
@@ -6616,21 +6663,67 @@
       "opacity": "Opacidade",
       "repeat": "Repetir",
       "regenerate": "Regenerar",
-      "remove": "Remover"
+      "remove": "Remover",
+      "mapLoaded": "Mapa carregado",
+      "uploadMap": "Enviar {name}",
+      "opacityHint": "Opacidade da textura",
+      "repeatHint": "Quantas vezes a textura se repete",
+      "rotationHint": "Rotação em radianos",
+      "procedural": {
+        "grain": "Grão",
+        "scratch": "Riscos",
+        "noise": "Ruído",
+        "stucco": "Reboco"
+      }
     },
     "properties": {
       "title": "Propriedades",
       "metalness": "Metalicidade",
       "roughness": "Rugosidade",
       "opacity": "Opacidade",
-      "wireframe": "Wireframe"
+      "wireframe": "Wireframe",
+      "metalnessHint": "Reflexo metálico: 0 sem metal, 1 metal puro",
+      "roughnessHint": "Textura da superfície: 0 espelho, 1 fosco",
+      "opacityHint": "Opacidade do material: 0 transparente, 1 sólido",
+      "fresnel": "Fresnel",
+      "fresnelHint": "Brilho nas bordas: 0 desligado, 1 no máximo",
+      "fresnelColor": "Cor do Fresnel",
+      "normalMap": "Mapa normal",
+      "roughnessMap": "Mapa de rugosidade",
+      "metalnessMap": "Mapa de metalicidade",
+      "envReflection": "Reflexo do ambiente",
+      "envReflectionHint": "Força do reflexo do ambiente. Quanto maior, mais brilhante",
+      "blendMode": "Modo de mesclagem",
+      "blendModes": {
+        "normal": "Normal",
+        "additive": "Aditivo",
+        "subtractive": "Subtrativo",
+        "multiply": "Multiplicar"
+      }
     },
     "lighting": {
       "title": "Iluminação",
       "keyLight": "Luz Principal",
       "ambient": "Ambiente",
       "shadows": "Sombras",
-      "grid": "Grade"
+      "grid": "Grade",
+      "selectPreset": "Escolher preset…",
+      "fillLight": "Luz de preenchimento",
+      "bounceLight": "Luz rebatida",
+      "topLight": "Luz de topo",
+      "shadowQuality": "Qualidade da sombra",
+      "shadowQualities": {
+        "low": "Baixa",
+        "medium": "Média",
+        "high": "Alta"
+      },
+      "presets": {
+        "3-Point Studio": "Estúdio 3 pontos",
+        "Rim Light": "Luz de recorte",
+        "Dramatic": "Dramática",
+        "Flat": "Chapada",
+        "Cinematic": "Cinematográfica"
+      }
     },
     "camera": {
       "title": "Câmera",
@@ -6640,7 +6733,8 @@
       "back": "Trás",
       "iso": "Iso",
       "reset": "Resetar",
-      "fov": "Campo de Visão"
+      "fov": "Campo de Visão",
+      "fovHint": "Campo de visão. Menor fecha como teleobjetiva, maior abre como grande-angular"
     },
     "background": {
       "title": "Fundo",
@@ -6648,7 +6742,8 @@
       "types": {
         "solid": "Sólido",
         "linear": "Linear",
-        "radial": "Radial"
+        "radial": "Radial",
+        "image": "Imagem"
       },
       "angle": "Ângulo",
       "color1": "Cor 1",
@@ -6666,7 +6761,7 @@
       "easings": {
         "linear": "Linear",
         "easeIn": "Ease In",
-        "easeOut": "Easy Out",
+        "easeOut": "Ease Out",
         "easeInOut": "Ease In Out"
       },
       "reverse": "Inverter",
@@ -6678,6 +6773,16 @@
         "friction": "Atrito",
         "size": "Tamanho do Logo",
         "reset": "Resetar / Jogar Logos"
+      },
+      "presets": {
+        "none": "Nenhuma",
+        "spin": "Girar",
+        "float": "Flutuar",
+        "pulse": "Pulsar",
+        "wobble": "Balançar",
+        "swing": "Pêndulo",
+        "spinFloat": "Girar + Flutuar",
+        "physicsFall": "Queda com física"
       }
     },
     "export": {
@@ -6702,7 +6807,26 @@
       "hdriBackground": "HDRI como Fundo",
       "customLoaded": "HDRI customizado carregado",
       "uploadHdr": "Enviar .HDR",
-      "removeCustom": "Remover HDRI customizado"
+      "removeCustom": "Remover HDRI customizado",
+      "hdriCustom": "HDRI (personalizado)",
+      "hdriActive": "HDRI ({name})",
+      "selectHdri": "Escolher HDRI…",
+      "uploadHdriAria": "Enviar HDRI próprio",
+      "tooLarge": "HDRI grande demais ({size}MB). O máximo é {max}MB.",
+      "loading": "Carregando HDRI...",
+      "loaded": "HDRI carregado",
+      "presets": {
+        "studio": "Estúdio",
+        "city": "Cidade",
+        "sunset": "Pôr do sol",
+        "dawn": "Amanhecer",
+        "night": "Noite",
+        "forest": "Floresta",
+        "apartment": "Apartamento",
+        "warehouse": "Galpão",
+        "park": "Parque",
+        "lobby": "Saguão"
+      }
     },
     "panels": {
       "surface": "Superfície",
@@ -6723,12 +6847,40 @@
       "depthOfField": "Profundidade de Campo",
       "filmGrain": "Grão de Filme",
       "vignette": "Vinheta",
-      "colorGrading": "Graduação de Cor",
+      "colorGrading": "Correção de cor",
       "shaderFx": "Shader FX",
       "physics": "Física",
       "controls": "Controles",
       "lightPositions": "Posições de Luz",
-      "toneMapping": "Mapeamento Tonal"
+      "toneMapping": "Mapeamento Tonal",
+      "advanced": "Avançado",
+      "enable": "Ativar",
+      "exposure": "Exposição",
+      "exposureHint": "Brilho da cena, pra combinar com a sua luz",
+      "fogColor": "Cor da neblina",
+      "fogNear": "Perto",
+      "fogFar": "Longe",
+      "rotation": "Rotação",
+      "blur": "Desfoque",
+      "groundReflection": "Reflexo do chão",
+      "beforeAfter": "Antes / depois",
+      "toggleAllEffects": "Ligar ou desligar todos os efeitos",
+      "bloomIntensityHint": "Força do brilho do Bloom",
+      "threshold": "Limiar",
+      "bloomThresholdHint": "O que for mais claro que isso brilha",
+      "amount": "Quantidade",
+      "darkness": "Escuridão",
+      "brightness": "Brilho",
+      "contrast": "Contraste",
+      "hue": "Matiz",
+      "saturation": "Saturação",
+      "dofFocus": "Foco",
+      "dofFocusHint": "O que está nessa distância fica nítido",
+      "dofBokeh": "Bokeh",
+      "dofBokehHint": "Quanto desfoca o que está fora de foco",
+      "offset": "Deslocamento",
+      "chromaticOffsetHint": "Franja de cor nas bordas, como numa lente de verdade",
+      "aoIntensityHint": "Escurece cantos e pontos de contato"
     },
     "shortcuts": {
       "title": "Atalhos de Teclado"
@@ -6738,7 +6890,41 @@
     "randomizeMessage": "Isso vai randomizar todos os parâmetros da cena (material, cor, iluminação, animação, etc). Suas configurações atuais serão perdidas.",
     "randomizeConfirm": "Vamos lá!",
     "dropGlb": "Solte GLB / GLTF",
-    "dropHere": "Solte o arquivo aqui"
+    "dropHere": "Solte o arquivo aqui",
+    "scenes": {
+      "title": "Cenas",
+      "namePlaceholder": "Nome da cena...",
+      "nameAria": "Nome da cena",
+      "save": "Salvar cena",
+      "saved": "Cena salva",
+      "saveFailed": "Não deu pra salvar a cena",
+      "loading": "Carregando cenas...",
+      "loaded": "\"{name}\" carregada",
+      "loadFailed": "Não deu pra abrir a cena",
+      "load": "Abrir cena",
+      "deleted": "Cena excluída",
+      "delete": "Excluir cena",
+      "browsePublic": "Ver cenas públicas",
+      "noPublic": "Nenhuma cena pública ainda",
+      "forked": "Cena copiada pra você",
+      "forkFailed": "Não deu pra copiar a cena"
+    },
+    "trace": {
+      "title": "Ajustar SVG",
+      "badge": "traçado",
+      "preset": "Preset",
+      "presets": {
+        "logo": "Logo",
+        "lettering": "Lettering",
+        "lineArt": "Traço",
+        "stamp": "Carimbo",
+        "custom": "Personalizado"
+      },
+      "noise": "Ruído",
+      "simplify": "Simplificar",
+      "corners": "Cantos",
+      "retrace": "Traçar de novo"
+    }
   },
   "imagelab": {
     "title": "Image lab",
@@ -6793,7 +6979,204 @@
       "communityPresets": "Presets da comunidade",
       "help": "Esta ajuda"
     },
-    "effectOpacity": "Intensidade do efeito {value}%"
+    "effectOpacity": "Intensidade do efeito {value}%",
+    "controls": {
+      "halftone": "Halftone",
+      "frequency": "Freq.",
+      "dot": "Ponto",
+      "space": "Espaço",
+      "channels": "Canais",
+      "channelNames": {
+        "Cyan": "Ciano",
+        "Magenta": "Magenta",
+        "Yellow": "Amarelo",
+        "Black": "Preto"
+      },
+      "opacity": "Opacidade",
+      "angle": "Ângulo",
+      "paperAndBlend": "Papel e mesclagem",
+      "paper": "Papel",
+      "paperColor": "Cor do papel",
+      "paperOpacity": "Opacidade do papel",
+      "blend": "Mesclagem",
+      "blendModes": {
+        "0": "Subtrativo (CMYK)",
+        "1": "Aditivo",
+        "2": "Normal"
+      },
+      "imageAndTexture": "Imagem e textura",
+      "contrast": "Contraste",
+      "light": "Luz",
+      "blur": "Desfoque",
+      "grain": "Grão",
+      "inkNoise": "Ruído da tinta",
+      "dotAdvanced": "Ponto avançado",
+      "rough": "Rugosidade",
+      "fuzz": "Borrão",
+      "random": "Aleatório",
+      "threshold": "Limiar",
+      "mode": "Modo",
+      "shape": "Forma"
+    },
+    "riso": {
+      "screening": "Retícula",
+      "dither": {
+        "stochastic": "Estocástico",
+        "auto": "Automático (geral)"
+      },
+      "shapes": {
+        "circle": "Círculo",
+        "line": "Linha",
+        "cross": "Cruz",
+        "ellipse": "Elipse"
+      },
+      "gain": "Ganho",
+      "misregistration": "Desalinho",
+      "inkLayers": "Camadas de tinta",
+      "setInkLayerCount": "Usar {count} camadas de tinta",
+      "soloLayer": "Ver só a camada {index}",
+      "inkCatalog": "Catálogo de tintas Riso",
+      "searchInks": "Buscar tintas...",
+      "allInks": "Todas",
+      "noInks": "Nenhuma tinta encontrada",
+      "exportLayer": "Exportar separação da camada",
+      "paperAndTexture": "Papel e textura",
+      "noise": "Ruído",
+      "dropout": "Falha de tinta",
+      "bleed": "Vazamento",
+      "inkPalettes": "Paletas de tinta",
+      "exportSvg": "Exportar SVG (vetor)",
+      "exportHiRes": "Exportar PNG em alta (2x)",
+      "aiEnhance": "Melhorar com IA",
+      "inkCategories": {
+        "Reds": "Vermelhos",
+        "Pinks": "Rosas",
+        "Blues": "Azuis",
+        "Greens": "Verdes",
+        "Teals": "Verde-azulados",
+        "Purples": "Roxos",
+        "Yellows": "Amarelos",
+        "Oranges": "Laranjas",
+        "Golds": "Dourados",
+        "Neutrals": "Neutros"
+      },
+      "palettes": {
+        "Classic": "Clássica",
+        "Fluorescent": "Fluorescente",
+        "Earth": "Terra",
+        "Cool Duo": "Dupla fria",
+        "Warm Duo": "Dupla quente"
+      }
+    },
+    "texture": {
+      "title": "Textura",
+      "custom": "Textura própria",
+      "uploadCustom": "Enviar textura própria",
+      "loaded": "Textura: {name}",
+      "mask": "Máscara",
+      "invert": "Inverter",
+      "appearance": "Aparência",
+      "scale": "Escala",
+      "position": "Posição",
+      "rotation": "Rotação",
+      "tile": "Repetição",
+      "repeat": "Repetir",
+      "gapX": "Espaço X",
+      "gapY": "Espaço Y",
+      "color": "Cor",
+      "originalColor": "Cor original",
+      "blendModes": {
+        "multiply": "Multiplicar",
+        "screen": "Tela",
+        "overlay": "Sobrepor",
+        "soft-light": "Luz suave",
+        "hard-light": "Luz dura",
+        "color-burn": "Queimar cor",
+        "color-dodge": "Clarear cor"
+      },
+      "presets": {
+        "Visant Grid": "Grade Visant",
+        "Film Grain": "Grão de filme",
+        "Paper": "Papel",
+        "Canvas Weave": "Trama de tela",
+        "Dust & Scratches": "Poeira e riscos",
+        "Concrete": "Concreto",
+        "Diagonal Lines": "Linhas diagonais",
+        "Crosshatch": "Hachura cruzada",
+        "Soft Noise": "Ruído suave",
+        "Halftone Dots": "Pontos de Halftone"
+      }
+    },
+    "shader": {
+      "title": "Shader",
+      "enableHint": "Ligue o efeito de shader pra ajustar os parâmetros.",
+      "labels": {
+        "Halftone": "Halftone",
+        "Style": "Estilo",
+        "Ellipse": "Elipse",
+        "Square": "Quadrado",
+        "Lines": "Linhas",
+        "Dot Size": "Tamanho do ponto",
+        "Angle": "Ângulo",
+        "Contrast": "Contraste",
+        "Spacing": "Espaçamento",
+        "Threshold": "Limiar",
+        "Invert": "Inverter",
+        "VHS": "VHS",
+        "Tape Wave": "Onda da fita",
+        "Tape Crease": "Vinco da fita",
+        "Switching Noise": "Ruído de troca",
+        "Bloom": "Bloom",
+        "AC Beat": "Batida AC",
+        "ASCII": "ASCII",
+        "Char Size": "Tamanho do caractere",
+        "Brightness": "Brilho",
+        "Char Set": "Caracteres",
+        "Blocks": "Blocos",
+        "Dots": "Pontos",
+        "Classic": "Clássico",
+        "Matrix": "Matrix",
+        "Braille": "Braille",
+        "Colored": "Colorido",
+        "Matrix Dither": "Matrix Dither",
+        "Matrix Size": "Tamanho da matriz",
+        "Bias": "Viés",
+        "Dither": "Dither",
+        "Size": "Tamanho",
+        "Offset": "Deslocamento",
+        "Bit Depth": "Profundidade de bits",
+        "Palette": "Paleta",
+        "Monochrome": "Monocromático",
+        "Gameboy": "Gameboy",
+        "CRT Amber": "CRT âmbar",
+        "CRT Green": "CRT verde",
+        "Sepia": "Sépia",
+        "Custom": "Personalizado",
+        "Custom Color": "Cor personalizada",
+        "Film Grain": "Grão de filme",
+        "Strength": "Força",
+        "Grain Size": "Tamanho do grão",
+        "Duotone": "Duotone",
+        "Shadow": "Sombra",
+        "Highlight": "Luz",
+        "Intensity": "Intensidade",
+        "Pixelate": "Pixelar",
+        "Pixel Size": "Tamanho do pixel",
+        "Posterize": "Posterizar",
+        "Color Levels": "Níveis de cor",
+        "Chromatic": "Cromático",
+        "CRT": "CRT",
+        "Line Width": "Espessura da linha",
+        "Vignette": "Vinheta",
+        "Curvature": "Curvatura",
+        "Edge Detect": "Detectar bordas",
+        "Overlay Mode": "Modo sobreposição",
+        "Glitch": "Glitch",
+        "Amount": "Quantidade",
+        "Speed": "Velocidade",
+        "Block Size": "Tamanho do bloco"
+      }
+    }
   },
   "wind": {
     "tunnel": {
@@ -6804,7 +7187,7 @@
       "drop_image_to_use_as_obstacle": "Solte uma imagem pra usar como obstáculo",
       "preset_deleted": "Preset excluído.",
       "export_failed": "Falha ao exportar.",
-      "png_exported_at_multiplierx": "PNG exportado em ${multiplier}x.",
+      "png_exported_at_multiplierx": "PNG exportado em {multiplier}x.",
       "failed_to_load_image": "Não foi possível carregar a imagem.",
       "unsupported_format_use_png_svg_jpeg_or": "Formato não aceito. Use PNG, SVG, JPEG ou WebP.",
       "reset_all": "Restaurar tudo",
@@ -6835,7 +7218,86 @@
       "upload_obstacle_image": "Enviar imagem de obstáculo",
       "obstacle": "Obstáculo",
       "preset_saved": "Preset \"{name}\" salvo.",
-      "preset_loaded": "\"{name}\" carregado."
+      "preset_loaded": "\"{name}\" carregado.",
+      "tabs": {
+        "aria": "Seções do Wind Tunnel",
+        "panel": "Ajustes",
+        "presets": "Presets"
+      },
+      "preset_names": {
+        "classic_airfoil": "Aerofólio clássico",
+        "neon_vortex": "Vórtice neon",
+        "blueprint": "Planta",
+        "fire_storm": "Tempestade de fogo",
+        "tunnel_3d": "Túnel 3D"
+      },
+      "shapes": {
+        "text": "Texto",
+        "circle": "Círculo",
+        "triangle": "Triângulo",
+        "square": "Quadrado",
+        "diamond": "Losango",
+        "airfoil": "Aerofólio",
+        "image": "Imagem"
+      },
+      "color_modes": {
+        "rainbow": "Arco-íris",
+        "velocity": "Velocidade",
+        "density": "Densidade",
+        "uniform": "Cor única"
+      },
+      "render_modes": {
+        "streamlines": "Linhas",
+        "particles": "Pontos"
+      },
+      "field_modes": {
+        "none": "Nenhum",
+        "velocity": "Velocidade",
+        "pressure": "Pressão",
+        "vorticity": "Vorticidade"
+      },
+      "scales": {
+        "screen": "Tela",
+        "hd": "HD",
+        "print": "Impressão"
+      },
+      "saved_presets": "Salvos",
+      "delete_preset": "Excluir o preset {name}",
+      "save_current": "Salvar o atual",
+      "copy_json": "Copiar JSON",
+      "import_json": "Colar JSON",
+      "shortcuts_hint": "Espaço: pausa · Tab: painel · R: reinicia · Ctrl+E: exporta · Arrastar: injeta vento · Botão direito: desenha parede · Scroll: vento",
+      "image": "Imagem",
+      "replace_image": "Trocar imagem",
+      "upload_image": "Enviar SVG ou PNG",
+      "text": "Texto",
+      "bold": "Negrito",
+      "size": "Tamanho",
+      "color": "Cor",
+      "effects": "Efeitos",
+      "scene": "Cena",
+      "export_metadata": "Exportar com metadados",
+      "field_overlay": "Campo sobreposto",
+      "opacity": "Opacidade",
+      "vector_arrows": "Setas de vetor",
+      "restart_hint": "Reiniciar simulação (R)",
+      "stop_recording": "Parar gravação",
+      "record_hint": "Gravar 10s de vídeo",
+      "share_url": "Copiar link de compartilhar",
+      "particles_count": "{count} partículas",
+      "rec": "GRAVANDO",
+      "paused": "Pausado",
+      "preset_name_prompt": "Nome do preset:",
+      "share_url_copied": "Link copiado",
+      "copy_this_url": "Copie este link:",
+      "config_copied": "JSON copiado",
+      "copy_this_json": "Copie este JSON:",
+      "config_imported_clipboard": "Ajustes importados da área de transferência",
+      "invalid_config": "Esse JSON não é de Wind Tunnel",
+      "paste_config_prompt": "Cole o JSON dos ajustes:",
+      "config_imported": "Ajustes importados",
+      "invalid_json": "JSON inválido",
+      "preset_loaded_from_url": "Preset carregado do link"
     }
   },
   "grid": {
@@ -6863,7 +7325,41 @@
       "rand": "Aleat.",
       "seeds": "Sementes",
       "svg_exported": "SVG exportado",
-      "png_exported": "PNG exportado"
+      "png_exported": "PNG exportado",
+      "presets": {
+        "molecular": "Molecular",
+        "neon": "Neon",
+        "blueprint": "Planta",
+        "brutalist": "Brutalista",
+        "warm": "Quente",
+        "mono": "Mono"
+      },
+      "seed_names": {
+        "cross": "Cruz",
+        "diamond": "Losango",
+        "ring": "Anel",
+        "grid": "Grade",
+        "diagonal": "Diagonal",
+        "molecule": "Molécula"
+      },
+      "tabs": {
+        "aria": "Seções do Grid Paint",
+        "panel": "Ajustes",
+        "style": "Estilo",
+        "shape": "Forma"
+      },
+      "presets_title": "Presets",
+      "color": "Cor",
+      "background": "Fundo",
+      "grid_size": "{cols}×{rows} pontos",
+      "dots_count": "{count} pontos",
+      "spacing": "Espaçamento",
+      "tension": "Tensão",
+      "connections": "Conexões",
+      "export_svg": "Baixar SVG",
+      "copy_state": "Copiar estado",
+      "eraser": "Borracha",
+      "clear_canvas": "Limpar tudo"
     },
     "machine": {
       "this_will_remove_the_current_svg_and_": "Isso remove o SVG atual e zera os ajustes.",
@@ -6883,7 +7379,32 @@
       "handlesCount": "{count} alças",
       "clear": "Limpar",
       "openSvg": "Abrir SVG",
-      "openSvgShortcut": "Abrir SVG (Ctrl+O)"
+      "openSvgShortcut": "Abrir SVG (Ctrl+O)",
+      "display": "Exibição",
+      "outline": "Contorno",
+      "anchors": "Âncoras",
+      "handles": "Alças",
+      "hLines": "Linhas horizontais",
+      "vLines": "Linhas verticais",
+      "diagonals": "Diagonais",
+      "minSpacing": "Espaçamento mínimo",
+      "all": "Todas",
+      "baseGrid": "Grade base",
+      "showHiddenLine": "Mostrar {count} linha oculta",
+      "showHiddenLines": "Mostrar {count} linhas ocultas",
+      "style": "Estilo",
+      "lineOpacity": "Opacidade das linhas",
+      "logoOpacity": "Opacidade do logo",
+      "pointSize": "Tamanho do ponto",
+      "gridSpacing": "Espaçamento da grade",
+      "background": "Fundo",
+      "bg": {
+        "dark": "Escuro",
+        "light": "Claro"
+      },
+      "colors": "Cores",
+      "lines": "Linhas",
+      "exportSvg": "Exportar SVG"
     }
   },
   "extractor": {
@@ -7743,6 +8264,23 @@
       "configure": "Ajuste a sua OG image no painel",
       "preview": "Prévia",
       "previewAlt": "Prévia da OG image"
+    },
+    "brandSelect": {
+      "none": "Sem marca",
+      "untitled": "Sem nome"
+    },
+    "qr": {
+      "text": "Texto ou URL",
+      "size": "Tamanho",
+      "errorCorrection": "Correção de erro",
+      "levelL": "L - Baixa (~7%)",
+      "levelM": "M - Média (~15%)",
+      "levelQ": "Q - Alta (~25%)",
+      "levelH": "H - Máxima (~30%)",
+      "background": "Fundo",
+      "foreground": "Código",
+      "margin": "Margem",
+      "ready": "QR Code pronto"
     }
   },
   "fullScreenViewer": {

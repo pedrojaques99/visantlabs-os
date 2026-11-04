@@ -2,12 +2,11 @@ import React, { useState, useCallback } from 'react';
 import { useMockup } from './MockupContext';
 import { VibeGrid } from './VibeGrid';
 import { BrandGuidelineSelector } from './BrandGuidelineSelector';
-import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { getCombinedVibeConfig } from '@/constants/mockupVibes';
 import { MicroTitle } from '../ui/MicroTitle';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
-import { Gem, Diamond, ChevronRight, MessageSquareText } from '@/lib/ui/icons';
+import { Diamond, ChevronRight, MessageSquareText } from '@/lib/ui/icons';
 import { MockupOutputConfig } from './MockupOutputConfig';
 import { motion, AnimatePresence } from 'framer-motion';
 import { glassSurface } from '@/lib/ui/glass';
@@ -22,7 +21,6 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
   isSurpriseMeActive,
 }) => {
   const { t } = useTranslation();
-  const { data: guidelines = [] } = useBrandGuidelines(true);
   const {
     setSelectedTags,
     setSelectedLocationTags,
@@ -32,10 +30,7 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
     setSelectedMaterialTags,
     instructions,
     setInstructions,
-    selectedBrandGuideline,
   } = useMockup();
-
-  const selectedBrandName = guidelines.find((g) => g.id === selectedBrandGuideline)?.identity?.name;
 
   const { selectedVibeSegment, setSelectedVibeSegment, selectedVibeStyle, setSelectedVibeStyle } =
     useMockup();
@@ -87,21 +82,7 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
   return (
     <div className="flex flex-col gap-6 sm:gap-8 lg:gap-10 animate-in fade-in slide-in-from-right-4 duration-700">
       {/* 1. BRAND SELECTION */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-neutral-900 border border-neutral-800/50 flex items-center justify-center shadow-inner">
-            <Gem
-              size={14}
-              className={cn(
-                'transition-colors',
-                selectedBrandGuideline ? 'text-foreground' : 'text-neutral-600'
-              )}
-            />
-          </div>
-          {selectedBrandName && (
-            <MicroTitle className="text-neutral-400">{selectedBrandName}</MicroTitle>
-          )}
-        </div>
+      <div className="flex items-center justify-end">
         <BrandGuidelineSelector variant="minimal" />
       </div>
 

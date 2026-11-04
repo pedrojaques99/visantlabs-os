@@ -13,12 +13,6 @@ import {
 } from '@/components/shared/ToolPanel';
 import { MaterialCategoryTabs, TextureControls, PbrMapUpload, type StoreState } from './_shared';
 
-// Blend Mode options for the shared <Select> (mapped from the store SSoT).
-const BLEND_MODE_SELECT_OPTIONS: SelectOption[] = BLEND_MODE_OPTIONS.map((o) => ({
-  value: o.id,
-  label: o.label,
-}));
-
 // Fine-grained subscription: only the material / surface / texture / PBR slice
 // (was a full-store subscription). Includes the fields the shared
 // MaterialCategoryTabs and TextureControls children read off `store`.
@@ -60,8 +54,14 @@ const lookPanelSelector = (s: StoreState) => ({
 });
 
 export const LookTab: React.FC = React.memo(() => {
-  const { t } = useTranslation();
+  const { t, tOr } = useTranslation();
   const store = useStudio3DStore(useShallow(lookPanelSelector));
+
+  // Blend Mode options for the shared <Select> (mapped from the store SSoT).
+  const blendModeOptions: SelectOption[] = BLEND_MODE_OPTIONS.map((o) => ({
+    value: o.id,
+    label: tOr(`studio3d.properties.blendModes.${o.id}`, o.label),
+  }));
 
   const [metalness, setMetalness] = useDebouncedSlider(store.metalness, store.setMetalness);
   const [roughness, setRoughness] = useDebouncedSlider(store.roughness, store.setRoughness);
@@ -94,35 +94,35 @@ export const LookTab: React.FC = React.memo(() => {
         <ExpandableColorPicker
           color={store.color}
           onChange={store.setColor}
-          label="Material color"
+          label={t('studio3d.basics.materialColor')}
         />
         <div className="grid grid-cols-3 gap-1.5">
           <ScrubInput
-            label="Metal"
+            label={t('studio3d.properties.metalness')}
             value={metalness}
             min={0}
             max={1}
             step={0.01}
             onChange={setMetalness}
-            hint="Metallic reflectivity: 0 dielectric, 1 full metal"
+            hint={t('studio3d.properties.metalnessHint')}
           />
           <ScrubInput
-            label="Rough"
+            label={t('studio3d.properties.roughness')}
             value={roughness}
             min={0}
             max={1}
             step={0.01}
             onChange={setRoughness}
-            hint="Surface roughness: 0 mirror, 1 matte"
+            hint={t('studio3d.properties.roughnessHint')}
           />
           <ScrubInput
-            label="Alpha"
+            label={t('studio3d.properties.opacity')}
             value={opacity}
             min={0}
             max={1}
             step={0.01}
             onChange={setOpacity}
-            hint="Material opacity: 0 transparent, 1 solid"
+            hint={t('studio3d.properties.opacityHint')}
           />
         </div>
       </ToolPanelDisclosure>
@@ -139,61 +139,61 @@ export const LookTab: React.FC = React.memo(() => {
       </ToolPanelDisclosure>
 
       {/* Advanced — over-senior controls, flat (no nesting), collapsed by default */}
-      <ToolPanelDisclosure label="Advanced" defaultOpen={false}>
+      <ToolPanelDisclosure label={t('studio3d.panels.advanced')} defaultOpen={false}>
         <ToolPanelRow label={t('studio3d.properties.wireframe')}>
           <Switch
             checked={store.wireframe}
             onCheckedChange={store.setWireframe}
-            aria-label="Wireframe"
+            aria-label={t('studio3d.properties.wireframe')}
           />
         </ToolPanelRow>
 
         <ScrubInput
-          label="Fresnel"
+          label={t('studio3d.properties.fresnel')}
           value={fresnelStrength}
           min={0}
           max={1}
           step={0.01}
           onChange={setFresnelStrength}
-          hint="Fresnel edge intensity: 0 off, 1 full"
+          hint={t('studio3d.properties.fresnelHint')}
         />
         {fresnelStrength > 0 && (
           <ExpandableColorPicker
             color={store.fresnelColor || '#000000'}
             onChange={store.setFresnelColor}
-            label="Fresnel color"
+            label={t('studio3d.properties.fresnelColor')}
           />
         )}
 
         <PbrMapUpload
-          label="Normal Map"
+          label={t('studio3d.properties.normalMap')}
           value={store.normalMapUrl}
           onChange={store.setNormalMapUrl}
         />
         <PbrMapUpload
-          label="Roughness Map"
+          label={t('studio3d.properties.roughnessMap')}
           value={store.roughnessMapUrl}
           onChange={store.setRoughnessMapUrl}
         />
         <PbrMapUpload
-          label="Metalness Map"
+          label={t('studio3d.properties.metalnessMap')}
           value={store.metalnessMapUrl}
           onChange={store.setMetalnessMapUrl}
         />
 
         <ScrubInput
-          label="Env Reflect"
+          label={t('studio3d.properties.envReflection')}
           value={envMapIntensity}
           min={0}
           max={5}
           step={0.1}
           onChange={setEnvMapIntensity}
-          hint="Environment map intensity. Higher is glossier"
+          hint={t('studio3d.properties.envReflectionHint')}
         />
 
-        <span className="text-2xs text-muted-foreground">Blend Mode</span>
+        <span className="text-2xs text-muted-foreground">{t('studio3d.properties.blendMode')}</span>
         <Select
-          options={BLEND_MODE_SELECT_OPTIONS}
+          options={blendModeOptions}
           value={store.blendMode}
           onChange={(v) => store.setBlendMode(v as typeof store.blendMode)}
         />

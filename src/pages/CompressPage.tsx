@@ -16,10 +16,8 @@ import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Dropzone } from '@/components/ui/Dropzone';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { QuickActions } from '@/components/shared/QuickActions';
-import { BrandToolSelect } from '@/components/shared/BrandToolSelect';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToolInput } from '@/hooks/useToolInput';
-import { useBrandDefaults } from '@/hooks/useBrandDefaults';
 import { formatBytes } from '@/utils/formatUtils';
 import JSZip from 'jszip';
 import { glassSurface } from '@/lib/ui/glass';
@@ -106,7 +104,6 @@ export const CompressPage: React.FC = () => {
   const reset = useCompressStore((s) => s.reset);
 
   const { pendingAsset, acceptAsset } = useToolInput('compress');
-  const { brandId, setBrandId, defaults: brandDefaults } = useBrandDefaults('compress');
 
   useEffect(() => {
     if (!pendingAsset) return;
@@ -115,12 +112,6 @@ export const CompressPage: React.FC = () => {
     const url = asset.imageUrl || asset.imageBase64 || '';
     if (url) addFiles([{ url, name: asset.label || 'pipeline-asset.png', size: 0 }]);
   }, [pendingAsset, acceptAsset, addFiles]);
-
-  useEffect(() => {
-    if (!brandDefaults) return;
-    setQuality(brandDefaults.quality);
-    setOutputFormat(brandDefaults.outputFormat);
-  }, [brandDefaults, setQuality, setOutputFormat]);
 
   const hasItems = items.length > 0;
   const doneCount = items.filter((i) => i.status === 'done').length;
@@ -288,8 +279,6 @@ export const CompressPage: React.FC = () => {
 
       {/* Controls */}
       <div className="space-y-4">
-        <BrandToolSelect value={brandId} onChange={setBrandId} />
-
         {/* Quality slider */}
         <NodeSlider
           label={t('miniTools.quality')}

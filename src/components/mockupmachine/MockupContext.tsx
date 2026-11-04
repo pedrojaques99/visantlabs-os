@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useMemo,
   useCallback,
+  useRef,
   Dispatch,
   SetStateAction,
 } from 'react';
@@ -23,6 +24,7 @@ import {
   type SurpriseMeSelectedTags,
 } from '@/utils/surpriseMeSettings';
 import { getPreferredImageProvider, setModelPreference } from '@/utils/modelPreferences';
+import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
 
 interface MockupContextState {
   uploadedImage: UploadedImage | null;
@@ -129,6 +131,8 @@ interface MockupContextActions {
   setAspectRatio: Dispatch<SetStateAction<AspectRatio>>;
   setImageProvider: Dispatch<SetStateAction<ImageProvider>>;
   setSelectedBrandGuideline: Dispatch<SetStateAction<string | null>>;
+  /** Escolhe uma marca de verdade: vale para esta geração e passa a ser a da barra do app. */
+  adoptBrand: (id: string) => void;
   setSelectedVibeSegment: Dispatch<SetStateAction<string | null>>;
   setSelectedVibeStyle: Dispatch<SetStateAction<string | null>>;
   setMockups: Dispatch<SetStateAction<(string | null)[]>>;
@@ -207,7 +211,33 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [selectedModel, setSelectedModel] = useState<GeminiModel | null>(null);
   const [resolution, setResolution] = useState<Resolution>('1K');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
-  const [selectedBrandGuideline, setSelectedBrandGuideline] = useState<string | null>(null);
+  // A marca da geração nasce da barra do app e segue a barra quando ela muda. Só troca o
+  // estado: nada aqui gera, analisa ou cobra crédito. null = "sem marca nesta geração".
+  const activeBrandCtx = useActiveBrandSafe();
+  const activeBrandId = activeBrandCtx?.activeBrand?.id ?? null;
+  const [selectedBrandGuideline, setSelectedBrandGuideline] = useState<string | null>(
+    activeBrandId
+  );
+  const followedBrandRef = useRef(activeBrandId);
+  useEffect(() => {
+    if (followedBrandRef.current === activeBrandId) return;
+    followedBrandRef.current = activeBrandId;
+    setSelectedBrandGuideline(activeBrandId);
+  }, [activeBrandId]);
+
+  // Marca escolhida na página (seletor, ?brand=, marca recém-criada) sobe para a barra, mas
+  // só quando já está na lista: antes disso o provider a trocaria por outra marca.
+  const [brandToAdopt, setBrandToAdopt] = useState<string | null>(null);
+  const adoptBrand = useCallback((id: string) => {
+    setSelectedBrandGuideline(id);
+    setBrandToAdopt(id);
+  }, []);
+  useEffect(() => {
+    if (!brandToAdopt || !activeBrandCtx) return;
+    if (!activeBrandCtx.brands.some((g) => g.id === brandToAdopt)) return;
+    setBrandToAdopt(null);
+    if (activeBrandCtx.activeBrandId !== brandToAdopt) activeBrandCtx.setActiveBrand(brandToAdopt);
+  }, [brandToAdopt, activeBrandCtx]);
   const [selectedVibeSegment, setSelectedVibeSegment] = useState<string | null>(null);
   const [selectedVibeStyle, setSelectedVibeStyle] = useState<string | null>(null);
 
@@ -310,7 +340,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setUploadedImage(null);
     setReferenceImages([]);
     setDesignType('layout');
-    setSelectedBrandGuideline(null);
+    setSelectedBrandGuideline(activeBrandId);
     setSelectedVibeSegment(null);
     setSelectedVibeStyle(null);
     setSelectedTags([]);
@@ -386,6 +416,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       setImageProvider,
       selectedBrandGuideline,
       setSelectedBrandGuideline,
+      adoptBrand,
       selectedVibeSegment,
       setSelectedVibeSegment,
       selectedVibeStyle,

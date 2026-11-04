@@ -1,30 +1,25 @@
-import { useInAppShell } from '@/components/shell/InAppShellContext';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
-  Download,
-  Trash2,
-  RotateCcw,
+  Circle,
   Copy,
-  Eraser,
-  ChevronLeft,
-  Maximize2,
-  ZoomIn,
-  ZoomOut,
-  Shuffle,
   Dices,
+  Download,
+  Eraser,
+  Frame,
+  Info,
+  Palette,
+  PanelRightClose,
+  PanelRightOpen,
+  RotateCcw,
+  Trash2,
 } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { GlassPanel } from '@/components/ui/GlassPanel';
-import { MicroTitle } from '@/components/ui/MicroTitle';
 import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Tooltip } from '@/components/ui/Tooltip';
-import { AppShell, AppShellTopBar, AppShellPanel } from '@/components/ui/AppShell';
-import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
-import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
+import { PanelSectionTabs, type PanelTab } from '@/components/shared/PanelSectionTabs';
 import { SendToButton } from '@/components/shared/SendToButton';
 import {
   StageDock,
@@ -35,8 +30,17 @@ import {
   StageDockZoom,
   stageDockButton,
 } from '@/components/shared/StageDock';
+import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
+import {
+  InlineColorPicker,
+  ToolPanel,
+  ToolPanelChip,
+  ToolPanelExportActions,
+  ToolPanelGrid,
+  ToolPanelRow,
+  ToolPanelSection,
+} from '@/components/shared/ToolPanel';
 import { BrandFunnelBanner } from '@/components/funnel/BrandFunnelBanner';
-import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
@@ -618,17 +622,39 @@ function hitTestErase(
   return bestKey ? { type: 'ligament', key: bestKey } : null;
 }
 
+const PRESET_LABELS: Record<string, string> = {
+  Molecular: 'grid.paint.presets.molecular',
+  Neon: 'grid.paint.presets.neon',
+  Blueprint: 'grid.paint.presets.blueprint',
+  Brutalist: 'grid.paint.presets.brutalist',
+  Warm: 'grid.paint.presets.warm',
+  Mono: 'grid.paint.presets.mono',
+};
+
+const SEED_LABELS: Record<string, string> = {
+  Cross: 'grid.paint.seed_names.cross',
+  Diamond: 'grid.paint.seed_names.diamond',
+  Ring: 'grid.paint.seed_names.ring',
+  Grid: 'grid.paint.seed_names.grid',
+  Diagonal: 'grid.paint.seed_names.diagonal',
+  Random: 'grid.paint.rand',
+  Molecule: 'grid.paint.seed_names.molecule',
+};
+
+/** No status bar here, so the stage takes the strip the shell keeps for one. Desktop only. */
+const FULL_BLEED_STAGE = 'absolute inset-0 !pb-0 transition-[padding] duration-[var(--dur-slow)]';
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export const GridPaintPage: React.FC = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const inShell = useInAppShell();
   const isMobile = useIsMobile();
-  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [zoomOpen, setZoomOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const redrawRef = useRef<() => void>(() => {});
   const isDrawing = useRef(false);
   const pencilLastCell = useRef<{ r: number; c: number } | null>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -641,10 +667,6 @@ export const GridPaintPage: React.FC = () => {
   const [zoom, setZoom] = useState(1);
   const [showPanel, setShowPanel] = useState(true);
   const [activeCount, setActiveCount] = useState(0);
-
-  useEffect(() => {
-    document.title = 'Grid Paint';
-  }, []);
 
   const [config, setConfig] = useState<VisualConfig>(DEFAULT_CONFIG);
   const [grid, setGrid] = useState<GridState>(() => {
@@ -662,20 +684,26 @@ export const GridPaintPage: React.FC = () => {
     setConfig((prev) => ({ ...prev, ...partial }));
   }, []);
 
-  // Resize canvas
+  // The canvas fills the box the shell leaves beside the panel and above the sheet. Sizing it
+  // clears it, so it redraws in the same step or the artwork would blink while the panel slides.
   useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
     const resize = () => {
       const canvas = canvasRef.current;
-      if (!canvas) return;
+      const { clientWidth: width, clientHeight: height } = stage;
+      if (!canvas || !width || !height) return;
       const dpr = window.devicePixelRatio || 1;
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
-      canvas.style.width = window.innerWidth + 'px';
-      canvas.style.height = window.innerHeight + 'px';
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      redrawRef.current();
     };
     resize();
-    window.addEventListener('resize', resize);
-    return () => window.removeEventListener('resize', resize);
+    const observer = new ResizeObserver(resize);
+    observer.observe(stage);
+    return () => observer.disconnect();
   }, []);
 
   // Render
@@ -689,6 +717,7 @@ export const GridPaintPage: React.FC = () => {
   }, [grid, config, zoom, eraseHover]);
 
   useEffect(() => {
+    redrawRef.current = redraw;
     redraw();
   }, [redraw]);
 
@@ -1015,6 +1044,23 @@ export const GridPaintPage: React.FC = () => {
     toast.success(t('grid.paint.svg_exported'));
   };
 
+  const copyPNG = useCallback(async () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    try {
+      // Safari only accepts a write started inside the tap, so the image goes in as a promise.
+      const png = new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('empty'))), 'image/png');
+      });
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
+      toast.success(t('miniTools.copied'));
+    } catch {
+      toast.error(t('miniTools.copyFailed'));
+    }
+  }, [t]);
+
+  const copyState = () => copyToClipboard(JSON.stringify({ grid: grid.cells, config }));
+
   // Keyboard shortcuts
   useToolEditorHotkeys({
     onExport: exportPNG,
@@ -1036,11 +1082,245 @@ export const GridPaintPage: React.FC = () => {
     return () => window.removeEventListener('wheel', handler);
   }, []);
 
-  // Editor sempre escuro: `dark` escopa os tokens escuros (ver ToolEditorShell).
+  const title = t('apps.gridPaint.name');
+  const getPng = () => canvasRef.current?.toDataURL('image/png');
+
+  const tabs: PanelTab[] = [
+    {
+      id: 'style',
+      icon: <Palette size={15} />,
+      label: t('grid.paint.tabs.style'),
+      content: (
+        <>
+          <ToolPanelSection title={t('grid.paint.presets_title')}>
+            <ToolPanelGrid cols={3}>
+              {Object.entries(PRESETS).map(([name, preset]) => (
+                <ToolPanelChip
+                  key={name}
+                  onClick={() => updateConfig(preset)}
+                  className="truncate text-2xs"
+                >
+                  {t(PRESET_LABELS[name])}
+                </ToolPanelChip>
+              ))}
+            </ToolPanelGrid>
+          </ToolPanelSection>
+          <ToolPanelSection title={t('grid.paint.color')}>
+            <InlineColorPicker
+              label={t('grid.paint.dot')}
+              value={config.dotColor}
+              onChange={(dotColor) => updateConfig({ dotColor })}
+            />
+            <InlineColorPicker
+              label={t('grid.paint.background')}
+              value={config.bgColor}
+              onChange={(bgColor) => updateConfig({ bgColor })}
+            />
+          </ToolPanelSection>
+        </>
+      ),
+    },
+    {
+      id: 'seeds',
+      icon: <Dices size={15} />,
+      label: t('grid.paint.seeds'),
+      content: (
+        <ToolPanelGrid cols={3}>
+          {Object.keys(SEEDS).map((name) => (
+            <ToolPanelChip key={name} onClick={() => applySeed(name)} className="truncate text-2xs">
+              {t(SEED_LABELS[name])}
+            </ToolPanelChip>
+          ))}
+        </ToolPanelGrid>
+      ),
+    },
+    {
+      id: 'frame',
+      icon: <Frame size={15} />,
+      label: t('grid.paint.frame'),
+      action: (
+        <span className="text-2xs font-mono tabular-nums text-muted-foreground">
+          {t('grid.paint.grid_size', { cols: grid.cols, rows: grid.rows })}
+        </span>
+      ),
+      content: (
+        <>
+          <ToolPanelGrid cols={3}>
+            {Object.entries(FRAME_PRESETS).map(([label, [w, h]]) => (
+              <ToolPanelChip
+                key={label}
+                active={config.frameW === w && config.frameH === h}
+                onClick={() => updateConfig({ frameW: w, frameH: h })}
+                className="truncate px-1.5 text-center text-2xs tabular-nums"
+              >
+                {label}
+              </ToolPanelChip>
+            ))}
+          </ToolPanelGrid>
+          <NodeSlider
+            label={t('grid.paint.width')}
+            value={config.frameW}
+            resetValue={DEFAULT_CONFIG.frameW}
+            min={200}
+            max={4000}
+            step={10}
+            onChange={(v) => updateConfig({ frameW: v })}
+            formatValue={(v) => `${v}px`}
+          />
+          <NodeSlider
+            label={t('grid.paint.height')}
+            value={config.frameH}
+            resetValue={DEFAULT_CONFIG.frameH}
+            min={200}
+            max={4000}
+            step={10}
+            onChange={(v) => updateConfig({ frameH: v })}
+            formatValue={(v) => `${v}px`}
+          />
+          <NodeSlider
+            label={t('grid.paint.spacing')}
+            value={config.spacing}
+            resetValue={DEFAULT_CONFIG.spacing}
+            min={20}
+            max={200}
+            step={1}
+            onChange={(v) => updateConfig({ spacing: v })}
+            formatValue={(v) => `${v}px`}
+          />
+        </>
+      ),
+    },
+    {
+      id: 'shape',
+      icon: <Circle size={15} />,
+      label: t('grid.paint.tabs.shape'),
+      content: (
+        <>
+          <NodeSlider
+            label={t('grid.paint.dot_radius')}
+            value={config.dotRadius}
+            resetValue={DEFAULT_CONFIG.dotRadius}
+            min={2}
+            max={40}
+            step={1}
+            onChange={(v) => updateConfig({ dotRadius: v })}
+            formatValue={(v) => `${v}px`}
+          />
+          <NodeSlider
+            label={t('grid.paint.blob')}
+            value={config.blobFactor}
+            resetValue={DEFAULT_CONFIG.blobFactor}
+            min={0.05}
+            max={1}
+            step={0.05}
+            onChange={(v) => updateConfig({ blobFactor: v })}
+          />
+          <NodeSlider
+            label={t('grid.paint.glow')}
+            value={config.glow}
+            resetValue={DEFAULT_CONFIG.glow}
+            min={0}
+            max={30}
+            step={1}
+            onChange={(v) => updateConfig({ glow: v })}
+            formatValue={(v) => `${v}px`}
+          />
+          <NodeSlider
+            label={t('grid.paint.tension')}
+            value={config.curveTension}
+            resetValue={DEFAULT_CONFIG.curveTension}
+            min={0.05}
+            max={1}
+            step={0.05}
+            onChange={(v) => updateConfig({ curveTension: v })}
+          />
+          <ToolPanelSection title={t('grid.paint.stroke')}>
+            <ToolPanelRow label={t('grid.paint.outline_mode')}>
+              <Switch
+                aria-label={t('grid.paint.outline_mode')}
+                checked={config.strokeOnly}
+                onCheckedChange={(v) => updateConfig({ strokeOnly: v })}
+              />
+            </ToolPanelRow>
+            {config.strokeOnly && (
+              <NodeSlider
+                label={t('grid.paint.width_2')}
+                value={config.strokeWidth}
+                resetValue={DEFAULT_CONFIG.strokeWidth}
+                min={0.5}
+                max={5}
+                step={0.25}
+                onChange={(v) => updateConfig({ strokeWidth: v })}
+                formatValue={(v) => `${v}px`}
+              />
+            )}
+          </ToolPanelSection>
+          <ToolPanelSection title={t('grid.paint.connections')}>
+            <ToolPanelRow label={t('grid.paint.diagonals')}>
+              <Switch
+                aria-label={t('grid.paint.diagonals')}
+                checked={config.connectDiagonals}
+                onCheckedChange={(v) => updateConfig({ connectDiagonals: v })}
+              />
+            </ToolPanelRow>
+          </ToolPanelSection>
+        </>
+      ),
+    },
+  ];
+
+  const controlsPanel = (
+    <ToolPanel>
+      <PanelSectionTabs tabs={tabs} defaultId="style" ariaLabel={t('grid.paint.tabs.aria')} />
+      {/* On a phone these go to the tools row: the sheet needs the room. */}
+      {!isMobile && (
+        <ToolPanelExportActions
+          onExport={exportPNG}
+          isExporting={false}
+          disabled={false}
+          onCopyAsPng={() => void copyPNG()}
+          sendTo={
+            <SendToButton
+              source="grid-paint"
+              outputMime="image/png"
+              mimeType="image/png"
+              label={title}
+              getImageBase64={getPng}
+            />
+          }
+        >
+          <div className="flex gap-2">
+            <Button variant="surface" size="xs" className="flex-1" onClick={exportSVG}>
+              {t('grid.paint.export_svg')}
+            </Button>
+            <Button variant="ghost" size="xs" className="flex-1" onClick={copyState}>
+              {t('grid.paint.copy_state')}
+            </Button>
+          </div>
+        </ToolPanelExportActions>
+      )}
+    </ToolPanel>
+  );
+
   return (
-    <AppShell className="dark text-foreground">
-      {/* Full-screen canvas */}
-      <CanvasErrorBoundary>
+    <ToolEditorShell
+      title={title}
+      documentTitle={title}
+      panelVisible={showPanel}
+      setPanelVisible={setShowPanel}
+      onReset={() => setConfig(DEFAULT_CONFIG)}
+      hideTopBar
+      controlsPanel={controlsPanel}
+      controlsPanelWidth={340}
+      mobileSheetLabel={t('grid.paint.tabs.panel')}
+      canvasClassName={isMobile ? undefined : FULL_BLEED_STAGE}
+    >
+      {/* Funil de marca (Fase 5). Dentro do AppShell (zIndex 40) de propósito:
+          o banner é z-30 e sumiria por baixo do shell se ficasse fora. */}
+      <BrandFunnelBanner toolId="grid-paint" />
+
+      {/* The shell reserves the panel with padding: everything here lives in that box. */}
+      <div ref={stageRef} className="relative h-full w-full">
         <canvas
           ref={canvasRef}
           className={cn(
@@ -1056,602 +1336,126 @@ export const GridPaintPage: React.FC = () => {
           onTouchMove={onTouchMove}
           onTouchEnd={onPointerUp}
         />
-      </CanvasErrorBoundary>
 
-      {/* Funil de marca (Fase 5). Dentro do AppShell (zIndex 40) de propósito —
-          o banner é z-30 e sumiria por baixo do shell se ficasse fora. */}
-      <BrandFunnelBanner toolId="grid-paint" />
-
-      {/* In the app the rail already says where we are and holds the legal links. */}
-      {!inShell && (
-        <AppShellTopBar
-          left={
-            <>
-              <Tooltip content="Back to Apps" position="bottom">
+        <StageDock className="bottom-3">
+          <StageDockZoom
+            zoom={zoom}
+            onZoomIn={() => setZoom((z) => Math.min(3, z + 0.15))}
+            onZoomOut={() => setZoom((z) => Math.max(0.3, z - 0.15))}
+            onFit={() => setZoom(1)}
+            onOpenChange={setZoomOpen}
+          />
+          {/* On a phone an open group needs the row, so the tools make way for it. */}
+          <StageDockReveal open={!isMobile || (!zoomOpen && !detailsOpen && !exportOpen)}>
+            <StageDockDivider />
+            <Tooltip content={t('grid.paint.eraser')}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t('grid.paint.eraser')}
+                aria-pressed={eraseMode}
+                className={cn(
+                  stageDockButton,
+                  eraseMode && 'bg-accent text-foreground ring-1 ring-ring'
+                )}
+                onClick={() => setEraseMode((m) => !m)}
+              >
+                <Eraser size={14} />
+              </Button>
+            </Tooltip>
+            <Tooltip content={t('toolEditor.undoHint')}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t('toolEditor.undo')}
+                className={stageDockButton}
+                onClick={undo}
+              >
+                <RotateCcw size={14} />
+              </Button>
+            </Tooltip>
+            <Tooltip content={t('grid.paint.clear_canvas')}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t('grid.paint.clear_canvas')}
+                className={stageDockButton}
+                onClick={() => {
+                  pushHistory();
+                  setGrid((prev) => ({
+                    ...prev,
+                    cells: createGrid(prev.cols, prev.rows),
+                    ligaments: new Set<string>(),
+                    blocked: new Set<string>(),
+                  }));
+                }}
+              >
+                <Trash2 size={14} />
+              </Button>
+            </Tooltip>
+          </StageDockReveal>
+          <StageDockDivider />
+          <StageDockGroup
+            icon={<Info size={14} />}
+            label={t('toolDock.details')}
+            onOpenChange={setDetailsOpen}
+          >
+            <StageDockText>{t('grid.paint.dots_count', { count: activeCount })}</StageDockText>
+            <StageDockText>
+              {config.frameW} × {config.frameH}
+            </StageDockText>
+          </StageDockGroup>
+          {/* A phone opens the sheet with its own handle. */}
+          {!isMobile && (
+            <Tooltip
+              content={showPanel ? t('toolEditor.hidePanelHint') : t('toolEditor.showPanelHint')}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={showPanel ? t('common.hidePanel') : t('common.showPanel')}
+                className={stageDockButton}
+                onClick={() => setShowPanel(!showPanel)}
+              >
+                {showPanel ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
+              </Button>
+            </Tooltip>
+          )}
+          {(isMobile || !showPanel) && (
+            <StageDockGroup
+              icon={<Download size={14} />}
+              label={t('toolDock.export')}
+              onOpenChange={setExportOpen}
+            >
+              <Button variant="surface" size="xs" className="shrink-0 gap-1.5" onClick={exportSVG}>
+                SVG
+              </Button>
+              <Button variant="surface" size="xs" className="shrink-0 gap-1.5" onClick={exportPNG}>
+                PNG
+              </Button>
+              <Tooltip content={t('grid.paint.copy_state')}>
                 <Button
                   variant="ghost"
-                  size="icon-sm"
-                  onClick={() => navigate('/apps')}
-                  aria-label="Back to Apps"
+                  size="icon"
+                  className={stageDockButton}
+                  onClick={copyState}
+                  aria-label={t('grid.paint.copy_state')}
                 >
-                  <ChevronLeft size={14} />
+                  <Copy size={14} />
                 </Button>
               </Tooltip>
-              <div className="w-px h-4 bg-border mx-1" />
-              <MicroTitle className="text-muted-foreground">Grid Paint</MicroTitle>
-            </>
-          }
-          right={<AppShellLegalMenu />}
-        />
-      )}
-
-      <StageDock
-        className={cn(
-          'transition-[bottom] duration-[var(--dur-base)]',
-          isMobile ? (mobileSheetOpen ? 'bottom-[calc(45%+8px)]' : 'bottom-[56px]') : 'bottom-3'
-        )}
-      >
-        <StageDockZoom
-          zoom={zoom}
-          onZoomIn={() => setZoom((z) => Math.min(3, z + 0.15))}
-          onZoomOut={() => setZoom((z) => Math.max(0.3, z - 0.15))}
-          onFit={() => setZoom(1)}
-          onOpenChange={setZoomOpen}
-        />
-        {/* On a phone an open group needs the row, so the tools make way for it. */}
-        <StageDockReveal atRest open={!isMobile || (!zoomOpen && !exportOpen)}>
-          <StageDockDivider />
-          <Tooltip content="Eraser">
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Eraser"
-              aria-pressed={eraseMode}
-              className={cn(
-                stageDockButton,
-                eraseMode && 'bg-accent text-foreground ring-1 ring-ring'
-              )}
-              onClick={() => setEraseMode((m) => !m)}
-            >
-              <Eraser size={14} />
-            </Button>
-          </Tooltip>
-          <Tooltip content="Undo (Ctrl+Z)">
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Undo"
-              className={stageDockButton}
-              onClick={undo}
-            >
-              <RotateCcw size={14} />
-            </Button>
-          </Tooltip>
-          <Tooltip content="Clear canvas">
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Clear canvas"
-              className={stageDockButton}
-              onClick={() => {
-                pushHistory();
-                setGrid((prev) => ({
-                  ...prev,
-                  cells: createGrid(prev.cols, prev.rows),
-                  ligaments: new Set<string>(),
-                  blocked: new Set<string>(),
-                }));
-              }}
-            >
-              <Trash2 size={14} />
-            </Button>
-          </Tooltip>
-        </StageDockReveal>
-        <StageDockDivider />
-        <StageDockGroup
-          icon={<Download size={14} />}
-          label={t('toolDock.export')}
-          onOpenChange={setExportOpen}
-        >
-          <StageDockText>{activeCount} dots</StageDockText>
-          <Button variant="surface" size="xs" className="shrink-0 gap-1.5" onClick={exportSVG}>
-            SVG
-          </Button>
-          <Button variant="surface" size="xs" className="shrink-0 gap-1.5" onClick={exportPNG}>
-            PNG
-          </Button>
-          <Tooltip content="Copy state to clipboard">
-            <Button
-              variant="ghost"
-              size="icon"
-              className={stageDockButton}
-              onClick={() => copyToClipboard(JSON.stringify({ grid: grid.cells, config }))}
-              aria-label="Copy state to clipboard"
-            >
-              <Copy size={14} />
-            </Button>
-          </Tooltip>
-          <SendToButton
-            source="grid-paint"
-            outputMime="image/png"
-            mimeType="image/png"
-            variant="node"
-            getImageBase64={() => canvasRef.current?.toDataURL('image/png')}
-          />
-        </StageDockGroup>
-      </StageDock>
-
-      {/* Right panel – desktop */}
-      {!isMobile && (
-        <AppShellPanel visible={showPanel} width={300}>
-          <GlassPanel className="h-full overflow-y-auto bg-card scrollbar-none rounded-xl">
-            {/* Presets */}
-            <div className="p-3 space-y-2 border-b border-border">
-              <MicroTitle className="text-muted-foreground text-2xs">Presets</MicroTitle>
-              <div className="grid grid-cols-3 gap-1">
-                {Object.entries(PRESETS).map(([name, preset]) => (
-                  <Button
-                    key={name}
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => updateConfig(preset)}
-                    className="text-2xs text-muted-foreground hover:text-foreground font-medium"
-                  >
-                    {name}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            {/* Seeds */}
-            <div className="p-3 space-y-2 border-b border-border">
-              <MicroTitle className="text-muted-foreground text-2xs">
-                {t('grid.paint.seeds')}
-              </MicroTitle>
-              <div className="grid grid-cols-3 gap-1">
-                {Object.keys(SEEDS).map((name) => (
-                  <Button
-                    key={name}
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => applySeed(name)}
-                    className="text-2xs text-muted-foreground hover:text-foreground font-medium"
-                  >
-                    {name === 'Random' ? (
-                      <>
-                        <Dices size={10} className="mr-0.5" /> {t('grid.paint.rand')}
-                      </>
-                    ) : (
-                      name
-                    )}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            {/* Colors */}
-            <div className="p-3 space-y-2.5 border-b border-border">
-              <MicroTitle className="text-muted-foreground text-2xs">Color</MicroTitle>
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <div className="relative w-9 h-9 rounded-xl border border-border overflow-hidden shadow-inner">
-                    <input
-                      type="color"
-                      value={config.dotColor}
-                      onChange={(e) => updateConfig({ dotColor: e.target.value })}
-                      className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
-                    />
-                    <div
-                      className="w-full h-full rounded-xl"
-                      style={{ background: config.dotColor }}
-                    />
-                  </div>
-                  <MicroTitle className="text-muted-foreground group-hover:text-foreground text-2xs">
-                    {t('grid.paint.dot')}
-                  </MicroTitle>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <div className="relative w-9 h-9 rounded-xl border border-border overflow-hidden shadow-inner">
-                    <input
-                      type="color"
-                      value={config.bgColor}
-                      onChange={(e) => updateConfig({ bgColor: e.target.value })}
-                      className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
-                    />
-                    <div
-                      className="w-full h-full rounded-xl"
-                      style={{ background: config.bgColor }}
-                    />
-                  </div>
-                  <MicroTitle className="text-muted-foreground group-hover:text-foreground text-2xs">
-                    BG
-                  </MicroTitle>
-                </label>
-              </div>
-            </div>
-
-            {/* Frame */}
-            <div className="p-3 space-y-2 border-b border-border">
-              <div className="flex items-center justify-between">
-                <MicroTitle className="text-muted-foreground text-2xs">
-                  {t('grid.paint.frame')}
-                </MicroTitle>
-                <MicroTitle className="text-muted-foreground text-2xs">
-                  {grid.cols}×{grid.rows} dots
-                </MicroTitle>
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {Object.entries(FRAME_PRESETS).map(([label, [w, h]]) => (
-                  <Button
-                    key={label}
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => updateConfig({ frameW: w, frameH: h })}
-                    className={cn(
-                      'text-2xs font-medium',
-                      config.frameW === w && config.frameH === h
-                        ? 'text-foreground bg-accent'
-                        : 'text-muted-foreground'
-                    )}
-                  >
-                    {label}
-                  </Button>
-                ))}
-              </div>
-              <NodeSlider
-                label={t('grid.paint.width')}
-                value={config.frameW}
-                resetValue={DEFAULT_CONFIG.frameW}
-                min={200}
-                max={4000}
-                step={10}
-                onChange={(v) => updateConfig({ frameW: v })}
-                formatValue={(v) => `${v}px`}
+              <SendToButton
+                source="grid-paint"
+                outputMime="image/png"
+                mimeType="image/png"
+                variant="node"
+                label={title}
+                getImageBase64={getPng}
               />
-              <NodeSlider
-                label={t('grid.paint.height')}
-                value={config.frameH}
-                resetValue={DEFAULT_CONFIG.frameH}
-                min={200}
-                max={4000}
-                step={10}
-                onChange={(v) => updateConfig({ frameH: v })}
-                formatValue={(v) => `${v}px`}
-              />
-              <NodeSlider
-                label="Spacing"
-                value={config.spacing}
-                resetValue={DEFAULT_CONFIG.spacing}
-                min={20}
-                max={200}
-                step={1}
-                onChange={(v) => updateConfig({ spacing: v })}
-                formatValue={(v) => `${v}px`}
-              />
-            </div>
-
-            {/* Shape */}
-            <div className="p-3 space-y-1 border-b border-border">
-              {/* EXCEÇÃO ao ruido-scan/mesma-info-dois-tamanhos: painel desktop e sheet mobile renderizam a mesma seção, nunca juntos */}
-              <MicroTitle className="text-muted-foreground text-2xs">Shape</MicroTitle>
-              <NodeSlider
-                label={t('grid.paint.dot_radius')}
-                value={config.dotRadius}
-                resetValue={DEFAULT_CONFIG.dotRadius}
-                min={2}
-                max={40}
-                step={1}
-                onChange={(v) => updateConfig({ dotRadius: v })}
-                formatValue={(v) => `${v}px`}
-              />
-              <NodeSlider
-                label={t('grid.paint.blob')}
-                value={config.blobFactor}
-                resetValue={DEFAULT_CONFIG.blobFactor}
-                min={0.05}
-                max={1}
-                step={0.05}
-                onChange={(v) => updateConfig({ blobFactor: v })}
-              />
-              <NodeSlider
-                label={t('grid.paint.glow')}
-                value={config.glow}
-                resetValue={DEFAULT_CONFIG.glow}
-                min={0}
-                max={30}
-                step={1}
-                onChange={(v) => updateConfig({ glow: v })}
-                formatValue={(v) => `${v}px`}
-              />
-              <NodeSlider
-                label="Tension"
-                value={config.curveTension}
-                resetValue={DEFAULT_CONFIG.curveTension}
-                min={0.05}
-                max={1}
-                step={0.05}
-                onChange={(v) => updateConfig({ curveTension: v })}
-              />
-            </div>
-
-            {/* Stroke */}
-            <div className="p-3 space-y-2.5 border-b border-border">
-              <MicroTitle className="text-muted-foreground text-2xs">
-                {t('grid.paint.stroke')}
-              </MicroTitle>
-              <div className="flex items-center justify-between">
-                <MicroTitle className="text-muted-foreground text-2xs">
-                  {t('grid.paint.outline_mode')}
-                </MicroTitle>
-                <Switch
-                  checked={config.strokeOnly}
-                  onCheckedChange={(v) => updateConfig({ strokeOnly: v })}
-                />
-              </div>
-              {config.strokeOnly && (
-                <NodeSlider
-                  label={t('grid.paint.width_2')}
-                  value={config.strokeWidth}
-                  resetValue={DEFAULT_CONFIG.strokeWidth}
-                  min={0.5}
-                  max={5}
-                  step={0.25}
-                  onChange={(v) => updateConfig({ strokeWidth: v })}
-                  formatValue={(v) => `${v}px`}
-                />
-              )}
-            </div>
-
-            {/* Connections */}
-            <div className="p-3 space-y-2.5">
-              <MicroTitle className="text-muted-foreground text-2xs">Connections</MicroTitle>
-              <div className="flex items-center justify-between">
-                <MicroTitle className="text-muted-foreground text-2xs">
-                  {t('grid.paint.diagonals')}
-                </MicroTitle>
-                <Switch
-                  checked={config.connectDiagonals}
-                  onCheckedChange={(v) => updateConfig({ connectDiagonals: v })}
-                />
-              </div>
-            </div>
-          </GlassPanel>
-        </AppShellPanel>
-      )}
-
-      {/* Mobile bottom sheet */}
-      {isMobile && (
-        <AppShellMobileSheet
-          open={mobileSheetOpen}
-          onToggle={() => setMobileSheetOpen(!mobileSheetOpen)}
-        >
-          <GlassPanel className="bg-transparent scrollbar-none">
-            {/* Presets */}
-            <div className="p-3 space-y-2 border-b border-border">
-              <MicroTitle className="text-muted-foreground text-2xs">Presets</MicroTitle>
-              <div className="grid grid-cols-3 gap-1">
-                {Object.entries(PRESETS).map(([name, preset]) => (
-                  <Button
-                    key={name}
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => updateConfig(preset)}
-                    className="text-2xs text-muted-foreground hover:text-foreground font-medium"
-                  >
-                    {name}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            {/* Seeds */}
-            <div className="p-3 space-y-2 border-b border-border">
-              <MicroTitle className="text-muted-foreground text-2xs">
-                {t('grid.paint.seeds_2')}
-              </MicroTitle>
-              <div className="grid grid-cols-3 gap-1">
-                {Object.keys(SEEDS).map((name) => (
-                  <Button
-                    key={name}
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => applySeed(name)}
-                    className="text-2xs text-muted-foreground hover:text-foreground font-medium"
-                  >
-                    {name === 'Random' ? (
-                      <>
-                        <Dices size={10} className="mr-0.5" /> {t('grid.paint.rand_2')}
-                      </>
-                    ) : (
-                      name
-                    )}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            {/* Colors */}
-            <div className="p-3 space-y-2.5 border-b border-border">
-              <MicroTitle className="text-muted-foreground text-2xs">Color</MicroTitle>
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <div className="relative w-9 h-9 rounded-xl border border-border overflow-hidden shadow-inner">
-                    <input
-                      type="color"
-                      value={config.dotColor}
-                      onChange={(e) => updateConfig({ dotColor: e.target.value })}
-                      className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
-                    />
-                    <div
-                      className="w-full h-full rounded-xl"
-                      style={{ background: config.dotColor }}
-                    />
-                  </div>
-                  <MicroTitle className="text-muted-foreground group-hover:text-foreground text-2xs">
-                    {t('grid.paint.dot')}
-                  </MicroTitle>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <div className="relative w-9 h-9 rounded-xl border border-border overflow-hidden shadow-inner">
-                    <input
-                      type="color"
-                      value={config.bgColor}
-                      onChange={(e) => updateConfig({ bgColor: e.target.value })}
-                      className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
-                    />
-                    <div
-                      className="w-full h-full rounded-xl"
-                      style={{ background: config.bgColor }}
-                    />
-                  </div>
-                  <MicroTitle className="text-muted-foreground group-hover:text-foreground text-2xs">
-                    BG
-                  </MicroTitle>
-                </label>
-              </div>
-            </div>
-            {/* Frame */}
-            <div className="p-3 space-y-2 border-b border-border">
-              <div className="flex items-center justify-between">
-                <MicroTitle className="text-muted-foreground text-2xs">
-                  {t('grid.paint.frame')}
-                </MicroTitle>
-                <MicroTitle className="text-muted-foreground text-2xs">
-                  {grid.cols}x{grid.rows} dots
-                </MicroTitle>
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {Object.entries(FRAME_PRESETS).map(([label, [w, h]]) => (
-                  <Button
-                    key={label}
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => updateConfig({ frameW: w, frameH: h })}
-                    className={cn(
-                      'text-2xs font-medium',
-                      config.frameW === w && config.frameH === h
-                        ? 'text-foreground bg-accent'
-                        : 'text-muted-foreground'
-                    )}
-                  >
-                    {label}
-                  </Button>
-                ))}
-              </div>
-              <NodeSlider
-                label={t('grid.paint.width')}
-                value={config.frameW}
-                resetValue={DEFAULT_CONFIG.frameW}
-                min={200}
-                max={4000}
-                step={10}
-                onChange={(v) => updateConfig({ frameW: v })}
-                formatValue={(v) => `${v}px`}
-              />
-              <NodeSlider
-                label={t('grid.paint.height')}
-                value={config.frameH}
-                resetValue={DEFAULT_CONFIG.frameH}
-                min={200}
-                max={4000}
-                step={10}
-                onChange={(v) => updateConfig({ frameH: v })}
-                formatValue={(v) => `${v}px`}
-              />
-              <NodeSlider
-                label="Spacing"
-                value={config.spacing}
-                resetValue={DEFAULT_CONFIG.spacing}
-                min={20}
-                max={200}
-                step={1}
-                onChange={(v) => updateConfig({ spacing: v })}
-                formatValue={(v) => `${v}px`}
-              />
-            </div>
-            {/* Shape */}
-            <div className="p-3 space-y-1 border-b border-border">
-              <MicroTitle className="text-muted-foreground text-2xs">Shape</MicroTitle>
-              <NodeSlider
-                label={t('grid.paint.dot_radius_2')}
-                value={config.dotRadius}
-                resetValue={DEFAULT_CONFIG.dotRadius}
-                min={2}
-                max={40}
-                step={1}
-                onChange={(v) => updateConfig({ dotRadius: v })}
-                formatValue={(v) => `${v}px`}
-              />
-              <NodeSlider
-                label={t('grid.paint.blob_2')}
-                value={config.blobFactor}
-                resetValue={DEFAULT_CONFIG.blobFactor}
-                min={0.05}
-                max={1}
-                step={0.05}
-                onChange={(v) => updateConfig({ blobFactor: v })}
-              />
-              <NodeSlider
-                label={t('grid.paint.glow_2')}
-                value={config.glow}
-                resetValue={DEFAULT_CONFIG.glow}
-                min={0}
-                max={30}
-                step={1}
-                onChange={(v) => updateConfig({ glow: v })}
-                formatValue={(v) => `${v}px`}
-              />
-              <NodeSlider
-                label="Tension"
-                value={config.curveTension}
-                resetValue={DEFAULT_CONFIG.curveTension}
-                min={0.05}
-                max={1}
-                step={0.05}
-                onChange={(v) => updateConfig({ curveTension: v })}
-              />
-            </div>
-            {/* Stroke */}
-            <div className="p-3 space-y-2.5 border-b border-border">
-              <MicroTitle className="text-muted-foreground text-2xs">
-                {t('grid.paint.stroke_2')}
-              </MicroTitle>
-              <div className="flex items-center justify-between">
-                <MicroTitle className="text-muted-foreground text-2xs">
-                  {t('grid.paint.outline_mode_2')}
-                </MicroTitle>
-                <Switch
-                  checked={config.strokeOnly}
-                  onCheckedChange={(v) => updateConfig({ strokeOnly: v })}
-                />
-              </div>
-              {config.strokeOnly && (
-                <NodeSlider
-                  label={t('grid.paint.width_3')}
-                  value={config.strokeWidth}
-                  resetValue={DEFAULT_CONFIG.strokeWidth}
-                  min={0.5}
-                  max={5}
-                  step={0.25}
-                  onChange={(v) => updateConfig({ strokeWidth: v })}
-                  formatValue={(v) => `${v}px`}
-                />
-              )}
-            </div>
-            {/* Connections */}
-            <div className="p-3 space-y-2.5">
-              <MicroTitle className="text-muted-foreground text-2xs">Connections</MicroTitle>
-              <div className="flex items-center justify-between">
-                <MicroTitle className="text-muted-foreground text-2xs">
-                  {t('grid.paint.diagonals_2')}
-                </MicroTitle>
-                <Switch
-                  checked={config.connectDiagonals}
-                  onCheckedChange={(v) => updateConfig({ connectDiagonals: v })}
-                />
-              </div>
-            </div>
-          </GlassPanel>
-        </AppShellMobileSheet>
-      )}
-    </AppShell>
+            </StageDockGroup>
+          )}
+        </StageDock>
+      </div>
+    </ToolEditorShell>
   );
 };
