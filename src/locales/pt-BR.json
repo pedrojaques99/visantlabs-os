@@ -9051,11 +9051,13 @@
       "gifHint": "{seconds}s a 15 quadros por segundo, até 640 px.",
       "motionNoAlpha": "Vídeo não tem transparência: o fundo sai na cor do papel.",
       "download": "Baixar {format}",
+      "share": "Salvar ou compartilhar",
+      "shareReady": "Pronto: toque para salvar",
       "rendering": "Gerando {percent}%",
       "done": "{format} baixado",
       "failed": "Não consegui gerar o arquivo. Tente de novo.",
       "fontFailed": "Não consegui baixar a fonte. Confira a conexão e tente de novo.",
-      "tooLarge": "Este navegador não gera a tinta nesse tamanho. Mudei para {scale}×: clique em Baixar de novo."
+      "tooLarge": "Este navegador não gera a tinta nesse tamanho. Mudei para {scale}×: tente de novo."
     },
     "brandApplied": "Cores, fonte e nome de {brand} aplicados",
     "brandRelease": "Soltar marca",

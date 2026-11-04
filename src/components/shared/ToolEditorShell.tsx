@@ -34,6 +34,7 @@ export interface ToolEditorShellProps {
   controlsPanel: React.ReactNode;
   controlsPanelWidth?: number;
   mobileSheetLabel?: string;
+  onMobileSheetChange?: (open: boolean) => void;
 
   statusItems?: StatusItem[];
   fileName?: string;
@@ -65,6 +66,7 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
   controlsPanel,
   controlsPanelWidth = 300,
   mobileSheetLabel,
+  onMobileSheetChange,
   statusItems,
   fileName,
   isDragOver = false,
@@ -94,7 +96,10 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
   const canvasPadding = useMemo(
     () => ({
       paddingRight: !isMobile && panelVisible ? controlsPanelWidth + 16 : 0,
-      paddingBottom: isMobile ? (mobileSheetOpen ? '45%' : 48) : 40,
+      // A percentage in padding is measured against the width, and the sheet is 45% of the
+      // height. `bottom` is measured against the height, so the two line up.
+      bottom: isMobile && mobileSheetOpen ? '45%' : undefined,
+      paddingBottom: isMobile ? (mobileSheetOpen ? 0 : 48) : 40,
     }),
     [isMobile, panelVisible, controlsPanelWidth, mobileSheetOpen]
   );
@@ -152,7 +157,10 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
       {isMobile && (
         <AppShellMobileSheet
           open={mobileSheetOpen}
-          onToggle={() => setMobileSheetOpen(!mobileSheetOpen)}
+          onToggle={() => {
+            setMobileSheetOpen(!mobileSheetOpen);
+            onMobileSheetChange?.(!mobileSheetOpen);
+          }}
           label={mobileSheetLabel || title}
         >
           {controlsPanel}

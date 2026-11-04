@@ -26,7 +26,7 @@ const PHONE_INSET_X = 12;
 const SHORT_VIEW = 420;
 const SHORT_INSET_TOP = 12;
 const SHORT_INSET_BOTTOM = 76;
-// With the sheet open, the row of tools stays above and the sheet covers the transport.
+// With the sheet open, the row of tools stays above and the transport steps aside.
 const SHEET_INSET_TOP = 68;
 const SHEET_INSET_BOTTOM = 12;
 // The shell reserves this strip on desktop. The stage runs under it, to the window edge.
@@ -60,7 +60,8 @@ const limit = (value: number, max: number) => Math.min(max, Math.max(-max, value
 export function useArtworkViewport(
   width: number,
   height: number,
-  isMobile = false
+  isMobile = false,
+  sheetOpen = false
 ): ArtworkViewport {
   const bleed = !isMobile;
   const isTouch = useMediaQuery('(pointer: coarse)');
@@ -74,7 +75,7 @@ export function useArtworkViewport(
     (viewHeight: number) => {
       const short = viewHeight > 0 && viewHeight < SHORT_VIEW;
       if (isMobile) {
-        return short
+        return short || sheetOpen
           ? { top: SHEET_INSET_TOP, bottom: SHEET_INSET_BOTTOM }
           : { top: SHEET_INSET_TOP, bottom: FIT_INSET.bottom };
       }
@@ -83,7 +84,7 @@ export function useArtworkViewport(
         bottom: (short ? SHORT_INSET_BOTTOM : FIT_INSET.bottom) + (bleed ? STAGE_BLEED : 0),
       };
     },
-    [bleed, isMobile]
+    [bleed, isMobile, sheetOpen]
   );
   const { top: insetTop, bottom: insetBottom } = insets(size.height);
 

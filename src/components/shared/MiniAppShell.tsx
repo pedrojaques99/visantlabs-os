@@ -120,7 +120,10 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
   const canvasPadding = useMemo(
     () => ({
       paddingRight: !isMobile && hasPanel && panelVisible ? panelWidth + 24 : 0,
-      paddingBottom: isMobile ? (mobileSheetOpen ? '45%' : 56) : statusBar ? 56 : 16,
+      // A percentage in padding is measured against the width, and the sheet is 45% of the
+      // height. `bottom` is measured against the height, so the two line up.
+      bottom: isMobile && mobileSheetOpen ? '45%' : undefined,
+      paddingBottom: isMobile ? (mobileSheetOpen ? 0 : 56) : statusBar ? 56 : 16,
     }),
     [isMobile, hasPanel, panelVisible, panelWidth, statusBar, mobileSheetOpen]
   );
