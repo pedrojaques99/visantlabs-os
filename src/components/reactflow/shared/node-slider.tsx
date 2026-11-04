@@ -112,10 +112,14 @@ const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
           className={cn(
             'w-full h-1.5 bg-neutral-800 rounded-md appearance-none cursor-pointer',
             'transition-colors duration-150',
+            // iOS only drags by the thumb, so a taller row alone would not help a finger.
+            '[@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:-my-3 [@media(pointer:coarse)]:bg-transparent [@media(pointer:coarse)]:bg-center [@media(pointer:coarse)]:bg-no-repeat [@media(pointer:coarse)]:[background-size:100%_6px] [@media(pointer:coarse)]:touch-pan-y',
+            '[@media(pointer:coarse)]:[&::-webkit-slider-thumb]:appearance-none [@media(pointer:coarse)]:[&::-webkit-slider-thumb]:h-6 [@media(pointer:coarse)]:[&::-webkit-slider-thumb]:w-6 [@media(pointer:coarse)]:[&::-webkit-slider-thumb]:rounded-full [@media(pointer:coarse)]:[&::-webkit-slider-thumb]:bg-foreground',
+            '[@media(pointer:coarse)]:[&::-moz-range-thumb]:h-6 [@media(pointer:coarse)]:[&::-moz-range-thumb]:w-6 [@media(pointer:coarse)]:[&::-moz-range-thumb]:rounded-full [@media(pointer:coarse)]:[&::-moz-range-thumb]:border-0 [@media(pointer:coarse)]:[&::-moz-range-thumb]:bg-foreground',
             className
           )}
           style={{
-            background: `linear-gradient(to right, #a3a3a3 0%, #a3a3a3 ${percentage}%, #3f3f46 ${percentage}%, #3f3f46 100%)`,
+            backgroundImage: `linear-gradient(to right, #a3a3a3 0%, #a3a3a3 ${percentage}%, #3f3f46 ${percentage}%, #3f3f46 100%)`,
           }}
           {...props}
         />

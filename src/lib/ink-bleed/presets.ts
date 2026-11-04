@@ -1,4 +1,4 @@
-import type { InkDoc, InkPreset, InkSettings, PaperSettings } from './types';
+import type { FormatId, InkDoc, InkPreset, InkSettings, PaperSettings } from './types';
 
 /** Off by default, so a style only has to name the effects it uses. */
 export const NO_INK_EFFECTS: Pick<InkSettings, 'defocus' | 'halo' | 'drag' | 'dragAxis' | 'ghost'> =
@@ -403,11 +403,11 @@ export const PRESETS: InkPreset[] = STYLES.map((style) => ({
   paper: { ...NO_PAPER_EFFECTS, ...style.paper },
 }));
 
-export function createDefaultDoc(): InkDoc {
+export function createDefaultDoc(format: FormatId = '4:3'): InkDoc {
   const preset = PRESETS[0];
   return {
     source: 'text',
-    format: '4:3',
+    format,
     seed: 42,
     logoScale: 60,
     typography: preset.typography,

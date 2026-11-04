@@ -23,7 +23,7 @@ import { useToolInput } from '@/hooks/useToolInput';
 import { useTranslation } from '@/hooks/useTranslation';
 import { applyBrandToDoc, brandName } from '@/lib/ink-bleed/brand';
 import { FORMATS, fitFontSize, motionStart } from '@/lib/ink-bleed/engine';
-import { exportPngDataUrl } from '@/lib/ink-bleed/exporter';
+import { exportPng, exportPngDataUrl } from '@/lib/ink-bleed/exporter';
 import { ensureFont, measureLines } from '@/lib/ink-bleed/fonts';
 import { createLogoMask } from '@/lib/ink-bleed/logoMask';
 import { shuffleDoc } from '@/lib/ink-bleed/shuffle';
@@ -38,7 +38,6 @@ import {
 } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useInkBleedStore } from '@/stores/inkBleedStore';
-import { copyImageAsPng } from '@/utils/clipboard';
 import { validateFile } from '@/utils/fileUtils';
 
 const history = useInkBleedStore.temporal;
@@ -110,7 +109,8 @@ export const InkBleedPage: React.FC = () => {
   const [isDragOver, setIsDragOver] = useState(false);
 
   const { width, height } = FORMATS[format];
-  const viewport = useArtworkViewport(width, height, isMobile);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const viewport = useArtworkViewport(width, height, isMobile, sheetOpen);
   const { canUndo, canRedo } = useHistoryFlags();
   usePlayback();
 
@@ -200,10 +200,15 @@ export const InkBleedPage: React.FC = () => {
 
   const copyArtwork = useCallback(async () => {
     const { doc, logo, progress } = useInkBleedStore.getState();
-    const dataUrl = await exportPngDataUrl({ doc, logo, progress, scale: 1, transparent: false });
-    const result = await copyImageAsPng(dataUrl);
-    if (result.success) toast.success(t('miniTools.copied'));
-    else toast.error(result.error || t('miniTools.copyFailed'));
+    try {
+      // Safari only accepts a write started inside the tap, so the image goes in as a promise.
+      const png = exportPng({ doc, logo, progress, scale: 1, transparent: false });
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
+      toast.success(t('miniTools.copied'));
+    } catch (error) {
+      console.error('[ink-bleed] copy failed', error);
+      toast.error(t('miniTools.copyFailed'));
+    }
   }, [t]);
 
   const artworkForPipeline = useCallback(async () => {
@@ -317,6 +322,7 @@ export const InkBleedPage: React.FC = () => {
       controlsPanel={controlsPanel}
       controlsPanelWidth={340}
       mobileSheetLabel={t('inkBleed.tabs.panel')}
+      onMobileSheetChange={setSheetOpen}
       isDragOver={isDragOver}
       dragProps={dragProps}
       dropMessage={t('inkBleed.logo.drop')}
@@ -411,12 +417,16 @@ export const InkBleedPage: React.FC = () => {
             </Tooltip>
           )}
         </div>
-        <InkBleedTransport viewport={viewport} onTogglePlay={togglePlay} />
+        {/* Hidden, not removed: the artwork keeps playing while the sheet is open. */}
+        <div className={cn(isMobile && sheetOpen && 'hidden')}>
+          <InkBleedTransport viewport={viewport} onTogglePlay={togglePlay} />
+        </div>
       </div>
       <InkBleedExportDialog
         isOpen={exportOpen}
         onClose={() => setExportOpen(false)}
         sendTo={isMobile ? sendTo : undefined}
+        onCopyAsPng={isMobile ? () => void copyArtwork() : undefined}
       />
       <ConfirmationModal
         isOpen={confirmReset}

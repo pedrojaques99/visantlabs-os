@@ -9051,11 +9051,13 @@
       "gifHint": "{seconds}s at 15 frames per second, up to 640 px.",
       "motionNoAlpha": "Video has no transparency: the background uses the paper color.",
       "download": "Download {format}",
+      "share": "Save or share",
+      "shareReady": "Ready: tap to save",
       "rendering": "Rendering {percent}%",
       "done": "{format} downloaded",
       "failed": "Could not create the file. Try again.",
       "fontFailed": "Could not download the font. Check your connection and try again.",
-      "tooLarge": "This browser can't render the ink at that size. Switched to {scale}×: click Download again."
+      "tooLarge": "This browser can't render the ink at that size. Switched to {scale}×: try again."
     },
     "brandApplied": "Colors, font and name of {brand} applied",
     "brandRelease": "Release brand",

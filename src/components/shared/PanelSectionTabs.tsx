@@ -42,7 +42,7 @@ export const PanelSectionTabs: React.FC<PanelSectionTabsProps> = ({
   >
     <TabsPrimitive.List
       aria-label={ariaLabel}
-      className="shrink-0 flex flex-col items-center gap-1 py-3 px-1.5 border-r border-border bg-background/50"
+      className="shrink-0 flex flex-col items-center gap-1 py-3 px-1.5 border-r border-border bg-background/50 overflow-y-auto scrollbar-none [@media(pointer:coarse)]:px-1"
     >
       {tabs.map((t) => (
         <TabsPrimitive.Trigger
@@ -51,7 +51,7 @@ export const PanelSectionTabs: React.FC<PanelSectionTabsProps> = ({
           title={t.label}
           aria-label={t.label}
           className={cn(
-            'w-8 h-8 flex items-center justify-center rounded-xl transition-colors',
+            'w-8 h-8 shrink-0 flex items-center justify-center rounded-xl transition-colors [@media(pointer:coarse)]:w-11 [@media(pointer:coarse)]:h-11',
             'text-muted-foreground hover:text-foreground hover:bg-accent',
             'data-[state=active]:bg-accent data-[state=active]:text-foreground',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan/60'

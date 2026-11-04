@@ -5,7 +5,8 @@ import { Modal } from '@/components/ui/Modal';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { SectionLabel } from '@/components/shared/ToolPanel';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Download } from '@/lib/ui/icons';
+import { cn } from '@/lib/utils';
+import { Copy, Download, Share2 } from '@/lib/ui/icons';
 import { downloadBlob } from '@/utils/clipboard';
 import {
   describeSize,
@@ -16,24 +17,33 @@ import {
   exportSvg,
   isMp4Supported,
 } from '@/lib/ink-bleed/exporter';
+import { canShareFile, shareFile } from '@/lib/ink-bleed/share';
 import { useInkBleedStore } from '@/stores/inkBleedStore';
 
 type Format = 'png' | 'svg' | 'mp4' | 'gif';
 type Background = 'paper' | 'transparent';
 
 const SCALES = [1, 2, 4] as const;
+const MIME: Record<Format, string> = {
+  png: 'image/png',
+  svg: 'image/svg+xml',
+  mp4: 'video/mp4',
+  gif: 'image/gif',
+};
 
 interface InkBleedExportDialogProps {
   isOpen: boolean;
   onClose: () => void;
   /** On a phone the send-to action lives here, because the panel has no room for it. */
   sendTo?: React.ReactNode;
+  onCopyAsPng?: () => void;
 }
 
 export const InkBleedExportDialog: React.FC<InkBleedExportDialogProps> = ({
   isOpen,
   onClose,
   sendTo,
+  onCopyAsPng,
 }) => {
   const { t } = useTranslation();
   const doc = useInkBleedStore((s) => s.doc);
@@ -49,6 +59,8 @@ export const InkBleedExportDialog: React.FC<InkBleedExportDialogProps> = ({
   const [background, setBackground] = useState<Background>('paper');
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(0);
+  // A rendered file waiting for a second tap, when the browser refused the first one.
+  const [ready, setReady] = useState<{ file: File; options: string } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const paperIsTransparent = doc.paper.paperType === 'transparent';
@@ -57,34 +69,59 @@ export const InkBleedExportDialog: React.FC<InkBleedExportDialogProps> = ({
   const isMotion = format === 'mp4' || format === 'gif';
   const size = describeSize(doc, scale);
   const seconds = doc.motion.duration / doc.motion.speed;
+  const shareable = canShareFile(MIME[format], `ink-bleed.${format}`);
+  // Changing an option makes the waiting file stale.
+  const options = `${format}|${scale}|${background}`;
+  const readyFile = ready?.options === options ? ready.file : null;
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
-  const handleClose = () => {
-    abortRef.current?.abort();
+  const close = () => {
+    setReady(null);
     onClose();
   };
 
-  const run = async () => {
+  const handleClose = () => {
+    abortRef.current?.abort();
+    close();
+  };
+
+  const render = async (stamp: number): Promise<File> => {
+    const named = (blob: Blob, name: string) => new File([blob], name, { type: MIME[format] });
+    if (format === 'png') {
+      const blob = await exportPng({ doc, logo, progress, scale, transparent });
+      return named(blob, `ink-bleed_${size.width}x${size.height}_${stamp}.png`);
+    }
+    if (format === 'svg') {
+      return named(await exportSvg({ doc, logo, progress, transparent }), `ink-bleed_${stamp}.svg`);
+    }
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const encode = format === 'mp4' ? exportMp4 : exportGif;
+    const blob = await encode({ doc, logo, onProgress: setDone, signal: controller.signal });
+    return named(blob, `ink-bleed_${stamp}.${format}`);
+  };
+
+  const download = (file: File) => {
+    downloadBlob(file, file.name);
+    toast.success(t('inkBleed.export.done', { format: format.toUpperCase() }));
+    close();
+  };
+
+  const share = async (file: File) => {
+    const outcome = await shareFile(file);
+    if (outcome === 'shared') close();
+    else if (outcome === 'failed') download(file);
+    else setReady({ file, options });
+  };
+
+  const run = async (action: 'share' | 'download') => {
     setBusy(true);
     setDone(0);
-    const stamp = Date.now();
     try {
-      if (format === 'png') {
-        const blob = await exportPng({ doc, logo, progress, scale, transparent });
-        downloadBlob(blob, `ink-bleed_${size.width}x${size.height}_${stamp}.png`);
-      } else if (format === 'svg') {
-        const blob = await exportSvg({ doc, logo, progress, transparent });
-        downloadBlob(blob, `ink-bleed_${stamp}.svg`);
-      } else {
-        const controller = new AbortController();
-        abortRef.current = controller;
-        const encode = format === 'mp4' ? exportMp4 : exportGif;
-        const blob = await encode({ doc, logo, onProgress: setDone, signal: controller.signal });
-        downloadBlob(blob, `ink-bleed_${stamp}.${format}`);
-      }
-      toast.success(t('inkBleed.export.done', { format: format.toUpperCase() }));
-      onClose();
+      const file = await render(Date.now());
+      if (action === 'share') await share(file);
+      else download(file);
     } catch (error) {
       if (error instanceof InkTooLargeError && scale > 1) {
         const smaller = scale === 4 ? 2 : 1;
@@ -116,13 +153,43 @@ export const InkBleedExportDialog: React.FC<InkBleedExportDialogProps> = ({
       size="sm"
       mobileDrawer
       footer={
-        <div className="flex items-center justify-end gap-2">
-          {sendTo && <div className="mr-auto">{sendTo}</div>}
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {(sendTo || onCopyAsPng || shareable) && (
+            <div className="mr-auto flex items-center gap-1">
+              {sendTo}
+              {onCopyAsPng && format === 'png' && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t('common.copyAsPng')}
+                  title={t('common.copyAsPng')}
+                  className="h-7 w-7 text-muted-foreground [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
+                  disabled={busy}
+                  onClick={onCopyAsPng}
+                >
+                  <Copy size={14} />
+                </Button>
+              )}
+              {shareable && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t('inkBleed.export.download', { format: format.toUpperCase() })}
+                  title={t('inkBleed.export.download', { format: format.toUpperCase() })}
+                  className="h-7 w-7 text-muted-foreground [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
+                  disabled={busy}
+                  onClick={() => (readyFile ? download(readyFile) : void run('download'))}
+                >
+                  <Download size={14} />
+                </Button>
+              )}
+            </div>
+          )}
           {busy && isMotion && (
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs"
+              className="text-xs [@media(pointer:coarse)]:h-11"
               onClick={() => abortRef.current?.abort()}
             >
               {t('common.cancel')}
@@ -131,16 +198,22 @@ export const InkBleedExportDialog: React.FC<InkBleedExportDialogProps> = ({
           <Button
             variant="primary"
             size="sm"
-            className="text-xs gap-2"
+            className={cn('text-xs gap-2 [@media(pointer:coarse)]:h-11', shareable && 'w-full')}
             disabled={busy}
-            onClick={run}
+            onClick={() =>
+              readyFile ? void share(readyFile) : void run(shareable ? 'share' : 'download')
+            }
           >
-            <Download size={13} />
+            {shareable ? <Share2 size={13} /> : <Download size={13} />}
             {busy
               ? isMotion
                 ? t('inkBleed.export.rendering', { percent })
                 : t('common.exporting')
-              : t('inkBleed.export.download', { format: format.toUpperCase() })}
+              : readyFile
+                ? t('inkBleed.export.shareReady')
+                : shareable
+                  ? t('inkBleed.export.share')
+                  : t('inkBleed.export.download', { format: format.toUpperCase() })}
           </Button>
         </div>
       }

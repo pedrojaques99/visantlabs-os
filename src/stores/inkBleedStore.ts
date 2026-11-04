@@ -44,6 +44,12 @@ interface InkBleedState {
   reset: () => void;
 }
 
+/** An upright phone fills more of its screen at 4:5, and it is the size of a post. */
+function startingFormat(): FormatId {
+  const phone = globalThis.matchMedia?.('(max-width: 767px) and (orientation: portrait)').matches;
+  return phone ? '4:5' : '4:3';
+}
+
 /** A slider drag is one undo step: only the first change of a burst is recorded. */
 function firstOfBurst<T>(save: (state: T) => void, waitMs: number) {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -99,7 +105,7 @@ export const useInkBleedStore = create<InkBleedState>()(
   persist(
     temporal(
       (set) => ({
-        doc: createDefaultDoc(),
+        doc: createDefaultDoc(startingFormat()),
         logo: null,
         progress: 1,
         isPlaying: false,
@@ -130,7 +136,13 @@ export const useInkBleedStore = create<InkBleedState>()(
         setBrandLocked: (brandLocked) => set((s) => ({ doc: { ...s.doc, brandLocked } })),
         setProgress: (progress) => set({ progress }),
         setPlaying: (isPlaying) => set({ isPlaying }),
-        reset: () => set({ doc: createDefaultDoc(), logo: null, progress: 1, isPlaying: false }),
+        reset: () =>
+          set({
+            doc: createDefaultDoc(startingFormat()),
+            logo: null,
+            progress: 1,
+            isPlaying: false,
+          }),
       }),
       {
         limit: 50,
