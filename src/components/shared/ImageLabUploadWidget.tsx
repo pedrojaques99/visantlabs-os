@@ -3,15 +3,17 @@ import { Upload } from '@/lib/ui/icons';
 import { Thumb } from '@/components/ui/Thumb';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
+import { cn } from '@/lib/utils';
 
 interface ImageLabUploadWidgetProps {
   imageUrl: string;
   onLoad: (url: string, name: string, mediaType: 'image' | 'video') => void;
   acceptVideo?: boolean;
+  className?: string;
 }
 
 export const ImageLabUploadWidget: React.FC<ImageLabUploadWidgetProps> = React.memo(
-  ({ imageUrl, onLoad, acceptVideo = true }) => {
+  ({ imageUrl, onLoad, acceptVideo = true, className }) => {
     const { t } = useTranslation();
     const inputRef = useRef<HTMLInputElement>(null);
     const lastBlobUrlRef = useRef<string | null>(null);
@@ -56,7 +58,11 @@ export const ImageLabUploadWidget: React.FC<ImageLabUploadWidgetProps> = React.m
         <button
           onClick={() => inputRef.current?.click()}
           title={t('toolEditor.uploadImage')}
-          className="relative flex items-center justify-center w-9 h-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-[color,background-color,border-color,opacity] overflow-hidden"
+          aria-label={t('toolEditor.uploadImage')}
+          className={cn(
+            'relative flex items-center justify-center w-9 h-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-[color,background-color,border-color,opacity] overflow-hidden',
+            className
+          )}
         >
           {imageUrl ? (
             <Thumb

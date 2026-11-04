@@ -20,12 +20,18 @@ import {
   ToolPanel,
   ToolPanelActions,
   ToolPanelRow,
+  ToolPanelDisclosure,
   InlineColorPicker,
 } from '@/components/shared/ToolPanel';
+import { useTranslation } from '@/hooks/useTranslation';
+
+const DEFAULTS = useGridMachineStore.getInitialState();
 
 interface Props {
   onExportPng: () => void;
   onExportSvg: () => void;
+  /** Lazy capture of the grid as a PNG data URL, for "Send to". */
+  getCanvasPng?: () => string | undefined;
 }
 
 const Toggle: React.FC<{ label: string; checked: boolean; onChange: (v: boolean) => void }> = ({
@@ -46,7 +52,8 @@ const Slider: React.FC<{
   step: number;
   onChange: (v: number) => void;
   format?: (v: number) => string;
-}> = ({ label, value, min, max, step, onChange, format }) => {
+  resetValue?: number;
+}> = ({ label, value, min, max, step, onChange, format, resetValue }) => {
   const [local, setLocal] = useDebouncedSlider(value, onChange);
   return (
     <NodeSlider
@@ -57,250 +64,271 @@ const Slider: React.FC<{
       step={step}
       onChange={setLocal}
       formatValue={format}
+      resetValue={resetValue}
     />
   );
 };
 
-export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, onExportSvg }) => {
-  const showAnchors = useGridMachineStore((s) => s.showAnchors);
-  const showHandles = useGridMachineStore((s) => s.showHandles);
-  const showHLines = useGridMachineStore((s) => s.showHLines);
-  const showVLines = useGridMachineStore((s) => s.showVLines);
-  const showDiagonals = useGridMachineStore((s) => s.showDiagonals);
-  const showBaseGrid = useGridMachineStore((s) => s.showBaseGrid);
-  const showOutline = useGridMachineStore((s) => s.showOutline);
-  const lineOpacity = useGridMachineStore((s) => s.lineOpacity);
-  const pointSize = useGridMachineStore((s) => s.pointSize);
-  const logoOpacity = useGridMachineStore((s) => s.logoOpacity);
-  const lineColor = useGridMachineStore((s) => s.lineColor);
-  const anchorColor = useGridMachineStore((s) => s.anchorColor);
-  const handleColor = useGridMachineStore((s) => s.handleColor);
-  const bgMode = useGridMachineStore((s) => s.bgMode);
-  const baseGridSpacing = useGridMachineStore((s) => s.baseGridSpacing);
-  const hLineSpacing = useGridMachineStore((s) => s.hLineSpacing);
-  const vLineSpacing = useGridMachineStore((s) => s.vLineSpacing);
-  const diagonalSpacing = useGridMachineStore((s) => s.diagonalSpacing);
-  const hiddenLines = useGridMachineStore((s) => s.hiddenLines);
-  const isExporting = useGridMachineStore((s) => s.isExporting);
-  const svgContent = useGridMachineStore((s) => s.svgContent);
-  const updateSetting = useGridMachineStore((s) => s.updateSetting);
-  const clear = useGridMachineStore((s) => s.clear);
+export const GridMachineControls: React.FC<Props> = React.memo(
+  ({ onExportPng, onExportSvg, getCanvasPng }) => {
+    const showAnchors = useGridMachineStore((s) => s.showAnchors);
+    const showHandles = useGridMachineStore((s) => s.showHandles);
+    const showHLines = useGridMachineStore((s) => s.showHLines);
+    const showVLines = useGridMachineStore((s) => s.showVLines);
+    const showDiagonals = useGridMachineStore((s) => s.showDiagonals);
+    const showBaseGrid = useGridMachineStore((s) => s.showBaseGrid);
+    const showOutline = useGridMachineStore((s) => s.showOutline);
+    const lineOpacity = useGridMachineStore((s) => s.lineOpacity);
+    const pointSize = useGridMachineStore((s) => s.pointSize);
+    const logoOpacity = useGridMachineStore((s) => s.logoOpacity);
+    const lineColor = useGridMachineStore((s) => s.lineColor);
+    const anchorColor = useGridMachineStore((s) => s.anchorColor);
+    const handleColor = useGridMachineStore((s) => s.handleColor);
+    const bgMode = useGridMachineStore((s) => s.bgMode);
+    const baseGridSpacing = useGridMachineStore((s) => s.baseGridSpacing);
+    const hLineSpacing = useGridMachineStore((s) => s.hLineSpacing);
+    const vLineSpacing = useGridMachineStore((s) => s.vLineSpacing);
+    const diagonalSpacing = useGridMachineStore((s) => s.diagonalSpacing);
+    const hiddenLines = useGridMachineStore((s) => s.hiddenLines);
+    const isExporting = useGridMachineStore((s) => s.isExporting);
+    const svgContent = useGridMachineStore((s) => s.svgContent);
+    const updateSetting = useGridMachineStore((s) => s.updateSetting);
+    const clear = useGridMachineStore((s) => s.clear);
 
-  const tabs: PanelTab[] = [
-    {
-      id: 'display',
-      label: 'Display',
-      icon: <Eye size={16} />,
-      content: (
-        <div className="space-y-2">
-          <Toggle
-            label="Outline"
-            checked={showOutline}
-            onChange={(v) => updateSetting('showOutline', v)}
-          />
-          <Toggle
-            label="Anchors"
-            checked={showAnchors}
-            onChange={(v) => updateSetting('showAnchors', v)}
-          />
-          <Toggle
-            label="Handles"
-            checked={showHandles}
-            onChange={(v) => updateSetting('showHandles', v)}
-          />
-          <Toggle
-            label="H-Lines"
-            checked={showHLines}
-            onChange={(v) => updateSetting('showHLines', v)}
-          />
-          {showHLines && (
+    const { t } = useTranslation();
+
+    const tabs: PanelTab[] = [
+      {
+        id: 'display',
+        label: 'Display',
+        icon: <Eye size={16} />,
+        content: (
+          <div className="space-y-2">
+            <Toggle
+              label="Outline"
+              checked={showOutline}
+              onChange={(v) => updateSetting('showOutline', v)}
+            />
+            <Toggle
+              label="Anchors"
+              checked={showAnchors}
+              onChange={(v) => updateSetting('showAnchors', v)}
+            />
+            <Toggle
+              label="Handles"
+              checked={showHandles}
+              onChange={(v) => updateSetting('showHandles', v)}
+            />
+            <Toggle
+              label="H-Lines"
+              checked={showHLines}
+              onChange={(v) => updateSetting('showHLines', v)}
+            />
+            {showHLines && (
+              <Slider
+                label="Min Spacing"
+                value={hLineSpacing}
+                resetValue={DEFAULTS.hLineSpacing}
+                min={0}
+                max={50}
+                step={1}
+                onChange={(v) => updateSetting('hLineSpacing', v)}
+                format={(v) => (v === 0 ? 'All' : `${v}`)}
+              />
+            )}
+            <Toggle
+              label="V-Lines"
+              checked={showVLines}
+              onChange={(v) => updateSetting('showVLines', v)}
+            />
+            {showVLines && (
+              <Slider
+                label="Min Spacing"
+                value={vLineSpacing}
+                resetValue={DEFAULTS.vLineSpacing}
+                min={0}
+                max={50}
+                step={1}
+                onChange={(v) => updateSetting('vLineSpacing', v)}
+                format={(v) => (v === 0 ? 'All' : `${v}`)}
+              />
+            )}
+            <Toggle
+              label="Diagonals"
+              checked={showDiagonals}
+              onChange={(v) => updateSetting('showDiagonals', v)}
+            />
+            {showDiagonals && (
+              <Slider
+                label="Min Spacing"
+                value={diagonalSpacing}
+                resetValue={DEFAULTS.diagonalSpacing}
+                min={0}
+                max={50}
+                step={1}
+                onChange={(v) => updateSetting('diagonalSpacing', v)}
+                format={(v) => (v === 0 ? 'All' : `${v}`)}
+              />
+            )}
+            <Toggle
+              label="Base Grid"
+              checked={showBaseGrid}
+              onChange={(v) => updateSetting('showBaseGrid', v)}
+            />
+            {hiddenLines.size > 0 && (
+              <button
+                onClick={() => useGridMachineStore.setState({ hiddenLines: new Set() })}
+                className="text-2xs text-brand-cyan/70 hover:text-brand-cyan mt-1"
+              >
+                Show {hiddenLines.size} hidden line{hiddenLines.size > 1 ? 's' : ''}
+              </button>
+            )}
+          </div>
+        ),
+      },
+      {
+        id: 'style',
+        label: 'Style',
+        icon: <SlidersHorizontal size={16} />,
+        content: (
+          <div className="space-y-2">
             <Slider
-              label="Min Spacing"
-              value={hLineSpacing}
+              label="Line Opacity"
+              value={lineOpacity}
+              resetValue={DEFAULTS.lineOpacity}
+              min={0.05}
+              max={1}
+              step={0.05}
+              onChange={(v) => updateSetting('lineOpacity', v)}
+              format={(v) => `${Math.round(v * 100)}%`}
+            />
+            <Slider
+              label="Logo Opacity"
+              value={logoOpacity}
+              resetValue={DEFAULTS.logoOpacity}
               min={0}
-              max={50}
-              step={1}
-              onChange={(v) => updateSetting('hLineSpacing', v)}
-              format={(v) => (v === 0 ? 'All' : `${v}`)}
+              max={1}
+              step={0.05}
+              onChange={(v) => updateSetting('logoOpacity', v)}
+              format={(v) => `${Math.round(v * 100)}%`}
             />
-          )}
-          <Toggle
-            label="V-Lines"
-            checked={showVLines}
-            onChange={(v) => updateSetting('showVLines', v)}
-          />
-          {showVLines && (
-            <Slider
-              label="Min Spacing"
-              value={vLineSpacing}
-              min={0}
-              max={50}
-              step={1}
-              onChange={(v) => updateSetting('vLineSpacing', v)}
-              format={(v) => (v === 0 ? 'All' : `${v}`)}
-            />
-          )}
-          <Toggle
-            label="Diagonals"
-            checked={showDiagonals}
-            onChange={(v) => updateSetting('showDiagonals', v)}
-          />
-          {showDiagonals && (
-            <Slider
-              label="Min Spacing"
-              value={diagonalSpacing}
-              min={0}
-              max={50}
-              step={1}
-              onChange={(v) => updateSetting('diagonalSpacing', v)}
-              format={(v) => (v === 0 ? 'All' : `${v}`)}
-            />
-          )}
-          <Toggle
-            label="Base Grid"
-            checked={showBaseGrid}
-            onChange={(v) => updateSetting('showBaseGrid', v)}
-          />
-          {hiddenLines.size > 0 && (
-            <button
-              onClick={() => useGridMachineStore.setState({ hiddenLines: new Set() })}
-              className="text-2xs text-brand-cyan/70 hover:text-brand-cyan mt-1"
-            >
-              Show {hiddenLines.size} hidden line{hiddenLines.size > 1 ? 's' : ''}
-            </button>
-          )}
-        </div>
-      ),
-    },
-    {
-      id: 'style',
-      label: 'Style',
-      icon: <SlidersHorizontal size={16} />,
-      content: (
-        <div className="space-y-2">
-          <Slider
-            label="Line Opacity"
-            value={lineOpacity}
-            min={0.05}
-            max={1}
-            step={0.05}
-            onChange={(v) => updateSetting('lineOpacity', v)}
-            format={(v) => `${Math.round(v * 100)}%`}
-          />
-          <Slider
-            label="Point Size"
-            value={pointSize}
-            min={1}
-            max={12}
-            step={0.5}
-            onChange={(v) => updateSetting('pointSize', v)}
-          />
-          <Slider
-            label="Logo Opacity"
-            value={logoOpacity}
-            min={0}
-            max={1}
-            step={0.05}
-            onChange={(v) => updateSetting('logoOpacity', v)}
-            format={(v) => `${Math.round(v * 100)}%`}
-          />
-          {showBaseGrid && (
-            <Slider
-              label="Grid Spacing"
-              value={baseGridSpacing}
-              min={5}
-              max={100}
-              step={5}
-              onChange={(v) => updateSetting('baseGridSpacing', v)}
-            />
-          )}
-        </div>
-      ),
-    },
-    {
-      id: 'bg',
-      label: 'Background',
-      icon: <Square size={16} />,
-      content: (
-        <div className="flex gap-1.5">
-          {(['dark', 'light'] as const).map((mode) => (
-            <button
-              key={mode}
-              onClick={() => updateSetting('bgMode', mode)}
-              className={cn(
-                'flex-1 py-2 rounded-md text-2xs uppercase tracking-wider transition-colors duration-200 border',
-                bgMode === mode
-                  ? 'bg-accent text-foreground border-border-hover'
-                  : 'bg-muted text-muted-foreground border-border hover:bg-accent'
+            <ToolPanelDisclosure label={t('canvasNodes.shared.advancedSettings')}>
+              <Slider
+                label="Point Size"
+                value={pointSize}
+                resetValue={DEFAULTS.pointSize}
+                min={1}
+                max={12}
+                step={0.5}
+                onChange={(v) => updateSetting('pointSize', v)}
+              />
+              {showBaseGrid && (
+                <Slider
+                  label="Grid Spacing"
+                  value={baseGridSpacing}
+                  resetValue={DEFAULTS.baseGridSpacing}
+                  min={5}
+                  max={100}
+                  step={5}
+                  onChange={(v) => updateSetting('baseGridSpacing', v)}
+                />
               )}
+            </ToolPanelDisclosure>
+          </div>
+        ),
+      },
+      {
+        id: 'bg',
+        label: 'Background',
+        icon: <Square size={16} />,
+        content: (
+          <div className="flex gap-1.5">
+            {(['dark', 'light'] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => updateSetting('bgMode', mode)}
+                className={cn(
+                  'flex-1 py-2 rounded-md text-2xs uppercase tracking-wider transition-colors duration-200 border',
+                  bgMode === mode
+                    ? 'bg-accent text-foreground border-border-hover'
+                    : 'bg-muted text-muted-foreground border-border hover:bg-accent'
+                )}
+              >
+                {mode}
+              </button>
+            ))}
+          </div>
+        ),
+      },
+      {
+        id: 'colors',
+        label: 'Colors',
+        icon: <PaletteIcon size={16} />,
+        content: (
+          <div className="space-y-3">
+            <ColorInput
+              label="Lines"
+              value={lineColor}
+              onChange={(v) => updateSetting('lineColor', v)}
+            />
+            <ColorInput
+              label="Anchors"
+              value={anchorColor}
+              onChange={(v) => updateSetting('anchorColor', v)}
+            />
+            <ColorInput
+              label="Handles"
+              value={handleColor}
+              onChange={(v) => updateSetting('handleColor', v)}
+            />
+          </div>
+        ),
+      },
+    ];
+
+    return (
+      <ToolPanel>
+        <PanelSectionTabs tabs={tabs} />
+
+        {/* Actions */}
+        <ToolPanelActions>
+          <div className="flex gap-2 w-full">
+            <Button
+              onClick={onExportPng}
+              disabled={isExporting}
+              className="flex-1 bg-foreground hover:bg-foreground/90 text-background font-medium h-9 text-xs gap-2"
             >
-              {mode}
-            </button>
-          ))}
-        </div>
-      ),
-    },
-    {
-      id: 'colors',
-      label: 'Colors',
-      icon: <PaletteIcon size={16} />,
-      content: (
-        <div className="space-y-3">
-          <ColorInput
-            label="Lines"
-            value={lineColor}
-            onChange={(v) => updateSetting('lineColor', v)}
-          />
-          <ColorInput
-            label="Anchors"
-            value={anchorColor}
-            onChange={(v) => updateSetting('anchorColor', v)}
-          />
-          <ColorInput
-            label="Handles"
-            value={handleColor}
-            onChange={(v) => updateSetting('handleColor', v)}
-          />
-        </div>
-      ),
-    },
-  ];
-
-  return (
-    <ToolPanel>
-      <PanelSectionTabs tabs={tabs} />
-
-      {/* Actions */}
-      <ToolPanelActions>
-        <div className="flex gap-2 w-full">
+              <Download size={14} /> Export PNG
+            </Button>
+            {svgContent && (
+              <SendToButton
+                source="grid-machine"
+                outputMime="image/png"
+                mimeType="image/png"
+                getImageBase64={getCanvasPng}
+              />
+            )}
+          </div>
           <Button
-            onClick={onExportPng}
+            onClick={onExportSvg}
             disabled={isExporting}
-            className="flex-1 bg-foreground hover:bg-foreground/90 text-background font-medium h-9 text-xs gap-2"
+            variant="ghost"
+            className="w-full text-muted-foreground hover:text-foreground h-9 text-xs gap-2"
           >
-            <Download size={14} /> Export PNG
+            <FileCode size={14} /> Export SVG
           </Button>
-          {svgContent && <SendToButton source="grid-machine" outputMime="image/png" />}
-        </div>
-        <Button
-          onClick={onExportSvg}
-          disabled={isExporting}
-          variant="ghost"
-          className="w-full text-muted-foreground hover:text-foreground h-9 text-xs gap-2"
-        >
-          <FileCode size={14} /> Export SVG
-        </Button>
-        <Button
-          variant="ghost"
-          onClick={clear}
-          className="w-full text-muted-foreground hover:text-destructive h-8 text-xs gap-2"
-        >
-          <Trash2 size={13} /> Clear
-        </Button>
-      </ToolPanelActions>
-    </ToolPanel>
-  );
-});
+          <Button
+            variant="ghost"
+            onClick={clear}
+            className="w-full text-muted-foreground hover:text-destructive h-8 text-xs gap-2"
+          >
+            <Trash2 size={13} /> Clear
+          </Button>
+        </ToolPanelActions>
+      </ToolPanel>
+    );
+  }
+);
 
 GridMachineControls.displayName = 'GridMachineControls';
 

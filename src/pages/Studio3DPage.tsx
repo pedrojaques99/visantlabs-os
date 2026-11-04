@@ -11,6 +11,16 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
+import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
+import {
+  StageDock,
+  StageDockDivider,
+  StageDockGroup,
+  StageDockText,
+  stageDockButton,
+} from '@/components/shared/StageDock';
+import { Button } from '@/components/ui/button';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { ControlsPanel } from '@/components/3d-studio/ControlsPanel';
 
 const SceneCanvas = React.lazy(() =>
@@ -42,6 +52,7 @@ import {
   Upload,
   Type,
   Keyboard,
+  Info,
   X,
   Undo2,
   Redo2,
@@ -86,6 +97,14 @@ export const Studio3DPage: React.FC = () => {
 
   const isMobile = useIsMobile();
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  // The app bar's brand is this tool's brand: its colors and on-brand scenes follow it.
+  // The model stays: changing brand must not replace someone's work.
+  const activeBrandId = useActiveBrandSafe()?.activeBrand?.id;
+  useEffect(() => {
+    if (activeBrandId) useStudio3DStore.getState().setBrandGuidelineId(activeBrandId);
+  }, [activeBrandId]);
   const panelVisible = store((s) => s.panelVisible);
   const setPanelVisible = store((s) => s.setPanelVisible);
   const resetScene = store((s) => s.resetScene);
@@ -697,10 +716,9 @@ export const Studio3DPage: React.FC = () => {
         }
         controlsPanelWidth={300}
         mobileSheetLabel={t('studio3d.controls')}
-        statusItems={statusItems}
-        fileName={fileName}
         isDragOver={isDragOver}
         hideTopBar
+        onMobileSheetChange={setSheetOpen}
         canvasClassName="absolute inset-0 transition-colors duration-300"
         dragProps={{
           onDragOver: (e: React.DragEvent) => {
@@ -712,135 +730,57 @@ export const Studio3DPage: React.FC = () => {
         }}
         dropMessage={t('studio3d.dropHere')}
       >
-        {/* Floating left toolbar */}
-        <div
-          className={cn(
-            'absolute left-3 top-3 z-20 flex flex-col gap-1 bg-popover/90 backdrop-blur-xl border border-border rounded-xl p-1.5 shadow-2xl shadow-black/50',
-            isMobile && 'left-2 top-2 p-1'
-          )}
-        >
-          <button
-            onClick={() => setPanelVisible(!panelVisible)}
-            title={t('studio3d.controls')}
-            className={cn(
-              'flex items-center justify-center rounded-xl transition-colors',
-              isMobile ? 'w-11 h-11' : 'w-9 h-9',
-              panelVisible
-                ? 'bg-muted text-foreground ring-1 ring-ring/50'
-                : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-            )}
-          >
-            <PanelRightOpen size={isMobile ? 18 : 15} />
-          </button>
-
-          <div className="h-px bg-border mx-1 my-0.5" />
-
-          <button
-            onClick={undoWithFeedback}
-            disabled={!canUndo}
-            title={`Undo (Ctrl+Z)${undoCount ? `: ${undoCount}` : ''}`}
-            className={cn(
-              'relative flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 disabled:pointer-events-none transition-colors',
-              isMobile ? 'w-11 h-11' : 'w-9 h-9'
-            )}
-          >
-            <Undo2 size={isMobile ? 18 : 15} />
-            {undoCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-muted text-2xs font-mono text-muted-foreground px-0.5">
-                {undoCount}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={redoWithFeedback}
-            disabled={!canRedo}
-            title={`Redo (Ctrl+Shift+Z)${redoCount ? `: ${redoCount}` : ''}`}
-            className={cn(
-              'relative flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 disabled:pointer-events-none transition-colors',
-              isMobile ? 'w-11 h-11' : 'w-9 h-9'
-            )}
-          >
-            <Redo2 size={isMobile ? 18 : 15} />
-            {redoCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-muted text-2xs font-mono text-muted-foreground px-0.5">
-                {redoCount}
-              </span>
-            )}
-          </button>
-
-          <div className="h-px bg-border mx-1 my-0.5" />
-
-          <button
-            onClick={resetScene}
-            title={t('studio3d.resetScene')}
-            className={cn(
-              'flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors',
-              isMobile ? 'w-11 h-11' : 'w-9 h-9'
-            )}
-          >
-            <RotateCcw size={isMobile ? 18 : 15} />
-          </button>
-          <button
-            onClick={() => setExportModalOpen(true)}
-            title="Export (Shift+E)"
-            className={cn(
-              'flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors',
-              isMobile ? 'w-11 h-11' : 'w-9 h-9'
-            )}
-          >
-            <Download size={isMobile ? 18 : 15} />
-          </button>
-          <button
-            onClick={async () => {
-              const s = store.getState();
-              const name = s._sceneName || s.fileName || 'Untitled';
-              const url = await shareScene(name, captureThumb());
-              if (url) {
-                await navigator.clipboard.writeText(url);
-                toast.success('Share link copied!');
-              } else {
-                toast.error('Failed to create share link');
-              }
-            }}
-            title="Share link"
-            className={cn(
-              'flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors',
-              isMobile ? 'w-11 h-11' : 'w-9 h-9'
-            )}
-          >
-            <Share2 size={isMobile ? 18 : 15} />
-          </button>
-          <button
-            onClick={toggleFullscreen}
-            title="Fullscreen"
-            className={cn(
-              'flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors',
-              isMobile ? 'w-11 h-11' : 'w-9 h-9'
-            )}
-          >
-            {isFullscreen ? (
-              <Minimize2 size={isMobile ? 18 : 15} />
-            ) : (
-              <Maximize2 size={isMobile ? 18 : 15} />
-            )}
-          </button>
-
-          <div className="h-px bg-border mx-1 my-0.5" />
-
-          <div className="relative">
-            <button
-              onClick={() => setScenePopover((v) => !v)}
-              title="Scene options"
-              className={cn(
-                'flex items-center justify-center rounded-xl transition-colors',
-                isMobile ? 'w-11 h-11' : 'w-9 h-9',
-                scenePopover
-                  ? 'bg-muted text-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-              )}
+        {/* This stage runs under the closed sheet's bar, so on a phone the dock sits above it. */}
+        <StageDock className={isMobile && !sheetOpen ? 'bottom-[60px]' : 'bottom-3'}>
+          <Tooltip content={`Undo (Ctrl+Z)${undoCount ? `: ${undoCount}` : ''}`}>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Undo"
+              className={stageDockButton}
+              disabled={!canUndo}
+              onClick={undoWithFeedback}
             >
-              <Eye size={isMobile ? 18 : 15} />
-            </button>
+              <Undo2 size={14} />
+            </Button>
+          </Tooltip>
+          <Tooltip content={`Redo (Ctrl+Shift+Z)${redoCount ? `: ${redoCount}` : ''}`}>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Redo"
+              className={stageDockButton}
+              disabled={!canRedo}
+              onClick={redoWithFeedback}
+            >
+              <Redo2 size={14} />
+            </Button>
+          </Tooltip>
+          <Tooltip content={t('studio3d.resetScene')}>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={t('studio3d.resetScene')}
+              className={stageDockButton}
+              onClick={resetScene}
+            >
+              <RotateCcw size={14} />
+            </Button>
+          </Tooltip>
+          <StageDockDivider />
+          <div className="relative shrink-0">
+            <Tooltip content="Scene options">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Scene options"
+                aria-expanded={scenePopover}
+                className={cn(stageDockButton, scenePopover && 'bg-accent text-foreground')}
+                onClick={() => setScenePopover((v) => !v)}
+              >
+                <Eye size={14} />
+              </Button>
+            </Tooltip>
             {scenePopover && (
               <>
                 <div
@@ -853,7 +793,7 @@ export const Studio3DPage: React.FC = () => {
                     if (e.key === 'Escape') setScenePopover(false);
                   }}
                 />
-                <div className="absolute left-full top-0 ml-2 z-40 bg-popover/95 backdrop-blur-xl border border-border rounded-xl p-2 shadow-2xl shadow-black/50 min-w-[140px] space-y-0.5">
+                <div className="absolute bottom-full left-1/2 z-40 mb-2 min-w-[140px] -translate-x-1/2 space-y-0.5 rounded-xl border border-border bg-popover p-2 shadow-lg">
                   {(
                     [
                       {
@@ -896,20 +836,88 @@ export const Studio3DPage: React.FC = () => {
               </>
             )}
           </div>
-
+          <Tooltip content="Share link">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Share link"
+              className={stageDockButton}
+              onClick={async () => {
+                const s = store.getState();
+                const name = s._sceneName || s.fileName || 'Untitled';
+                const url = await shareScene(name, captureThumb());
+                if (url) {
+                  await navigator.clipboard.writeText(url);
+                  toast.success('Share link copied!');
+                } else {
+                  toast.error('Failed to create share link');
+                }
+              }}
+            >
+              <Share2 size={14} />
+            </Button>
+          </Tooltip>
+          <Tooltip content="Fullscreen">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Fullscreen"
+              className={stageDockButton}
+              onClick={toggleFullscreen}
+            >
+              {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+            </Button>
+          </Tooltip>
           {!isMobile && (
             <>
-              <div className="h-px bg-border mx-1 my-0.5" />
-              <button
-                onClick={() => setShowShortcuts((v) => !v)}
-                title="Keyboard shortcuts (?)"
-                className="flex items-center justify-center w-9 h-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-              >
-                <Keyboard size={15} />
-              </button>
+              <StageDockDivider />
+              {statusItems.length > 0 && (
+                <StageDockGroup icon={<Info size={14} />} label={t('toolDock.details')}>
+                  {statusItems.map((item) => (
+                    <StageDockText key={item.label}>{item.label}</StageDockText>
+                  ))}
+                  {fileName && <StageDockText>{fileName}</StageDockText>}
+                </StageDockGroup>
+              )}
+              <Tooltip content="Keyboard shortcuts (?)">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Keyboard shortcuts"
+                  className={stageDockButton}
+                  onClick={() => setShowShortcuts((v) => !v)}
+                >
+                  <Keyboard size={14} />
+                </Button>
+              </Tooltip>
+              <Tooltip content={t('studio3d.controls')}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t('studio3d.controls')}
+                  aria-pressed={panelVisible}
+                  className={cn(stageDockButton, panelVisible && 'text-foreground')}
+                  onClick={() => setPanelVisible(!panelVisible)}
+                >
+                  <PanelRightOpen size={14} />
+                </Button>
+              </Tooltip>
             </>
           )}
-        </div>
+          {(isMobile || !panelVisible) && (
+            <Tooltip content="Export (Shift+E)">
+              <Button
+                variant="primary"
+                size="icon"
+                aria-label="Export"
+                className="ml-0.5 h-7 w-7 shrink-0 [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
+                onClick={() => setExportModalOpen(true)}
+              >
+                <Download size={14} />
+              </Button>
+            </Tooltip>
+          )}
+        </StageDock>
 
         <Suspense
           fallback={

@@ -12,6 +12,7 @@ import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
+import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Dropzone } from '@/components/ui/Dropzone';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { QuickActions } from '@/components/shared/QuickActions';
@@ -290,26 +291,16 @@ export const CompressPage: React.FC = () => {
         <BrandToolSelect value={brandId} onChange={setBrandId} />
 
         {/* Quality slider */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
-              {t('miniTools.quality')}
-            </span>
-            <span className="text-2xs font-mono text-muted-foreground tabular-nums">
-              {quality}%
-            </span>
-          </div>
-          <input
-            type="range"
-            min="10"
-            max="100"
-            step="5"
-            value={quality}
-            onChange={(e) => setQuality(parseInt(e.target.value))}
-            disabled={isProcessing}
-            className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
-          />
-        </div>
+        <NodeSlider
+          label={t('miniTools.quality')}
+          value={quality}
+          min={10}
+          max={100}
+          step={5}
+          onChange={setQuality}
+          formatValue={(v) => `${v}%`}
+          disabled={isProcessing}
+        />
 
         {/* Max dimension */}
         <div className="space-y-1.5">

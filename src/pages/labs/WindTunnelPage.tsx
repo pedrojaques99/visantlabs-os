@@ -35,7 +35,7 @@ import {
 import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
 import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
 import { DropOverlay } from '@/components/ui/DropOverlay';
-import { InlineColorPicker } from '@/components/shared/ToolPanel';
+import { InlineColorPicker, ToolPanelDisclosure } from '@/components/shared/ToolPanel';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { usePasteImage } from '@/hooks/usePasteImage';
 import { Input } from '@/components/ui/input';
@@ -526,6 +526,7 @@ function ControlsContent({
         <NodeSlider
           label={t('wind.tunnel.scale')}
           value={config.obstacleScale}
+          resetValue={DEFAULT_CONFIG.obstacleScale}
           min={10}
           max={250}
           step={5}
@@ -535,6 +536,7 @@ function ControlsContent({
         <NodeSlider
           label="X"
           value={config.obstacleOffsetX}
+          resetValue={DEFAULT_CONFIG.obstacleOffsetX}
           min={-50}
           max={50}
           step={1}
@@ -544,6 +546,7 @@ function ControlsContent({
         <NodeSlider
           label="Y"
           value={config.obstacleOffsetY}
+          resetValue={DEFAULT_CONFIG.obstacleOffsetY}
           min={-50}
           max={50}
           step={1}
@@ -615,6 +618,7 @@ function ControlsContent({
         <NodeSlider
           label={t('wind.tunnel.wind')}
           value={config.windSpeed}
+          resetValue={DEFAULT_CONFIG.windSpeed}
           min={1}
           max={100}
           step={1}
@@ -624,6 +628,7 @@ function ControlsContent({
         <NodeSlider
           label={t('wind.tunnel.viscosity')}
           value={config.viscosity}
+          resetValue={DEFAULT_CONFIG.viscosity}
           min={1}
           max={100}
           step={1}
@@ -633,6 +638,7 @@ function ControlsContent({
         <NodeSlider
           label={t('wind.tunnel.particles')}
           value={config.particleCount}
+          resetValue={DEFAULT_CONFIG.particleCount}
           min={500}
           max={15000}
           step={500}
@@ -640,41 +646,47 @@ function ControlsContent({
           formatValue={(v) => String(Math.round(v))}
         />
         <NodeSlider
-          label="Size"
-          value={config.particleSize}
-          min={0.5}
-          max={4}
-          step={0.5}
-          onChange={(v) => update('particleSize', v)}
-          formatValue={(v) => v.toFixed(1)}
-        />
-        <NodeSlider
-          label={t('wind.tunnel.lifetime')}
-          value={config.particleLifetime}
-          min={20}
-          max={300}
-          step={10}
-          onChange={(v) => update('particleLifetime', v)}
-          formatValue={(v) => String(Math.round(v))}
-        />
-        <NodeSlider
           label={t('wind.tunnel.trail')}
           value={config.trailLength}
+          resetValue={DEFAULT_CONFIG.trailLength}
           min={2}
           max={32}
           step={2}
           onChange={(v) => update('trailLength', v)}
           formatValue={(v) => String(Math.round(v))}
         />
-        <NodeSlider
-          label={t('wind.tunnel.spread')}
-          value={config.spread}
-          min={0}
-          max={100}
-          step={5}
-          onChange={(v) => update('spread', v)}
-          formatValue={(v) => String(Math.round(v))}
-        />
+        <ToolPanelDisclosure label={t('canvasNodes.shared.advancedSettings')}>
+          <NodeSlider
+            label="Size"
+            value={config.particleSize}
+            resetValue={DEFAULT_CONFIG.particleSize}
+            min={0.5}
+            max={4}
+            step={0.5}
+            onChange={(v) => update('particleSize', v)}
+            formatValue={(v) => v.toFixed(1)}
+          />
+          <NodeSlider
+            label={t('wind.tunnel.lifetime')}
+            value={config.particleLifetime}
+            resetValue={DEFAULT_CONFIG.particleLifetime}
+            min={20}
+            max={300}
+            step={10}
+            onChange={(v) => update('particleLifetime', v)}
+            formatValue={(v) => String(Math.round(v))}
+          />
+          <NodeSlider
+            label={t('wind.tunnel.spread')}
+            value={config.spread}
+            resetValue={DEFAULT_CONFIG.spread}
+            min={0}
+            max={100}
+            step={5}
+            onChange={(v) => update('spread', v)}
+            formatValue={(v) => String(Math.round(v))}
+          />
+        </ToolPanelDisclosure>
       </div>
 
       {/* Effects */}
@@ -683,6 +695,7 @@ function ControlsContent({
         <NodeSlider
           label={t('wind.tunnel.glow')}
           value={config.glowIntensity}
+          resetValue={DEFAULT_CONFIG.glowIntensity}
           min={0}
           max={30}
           step={1}
@@ -692,6 +705,7 @@ function ControlsContent({
         <NodeSlider
           label={t('wind.tunnel.perspective')}
           value={config.perspective}
+          resetValue={DEFAULT_CONFIG.perspective}
           min={0}
           max={100}
           step={1}
@@ -724,6 +738,7 @@ function ControlsContent({
           <NodeSlider
             label="Opacity"
             value={config.fieldOpacity}
+            resetValue={DEFAULT_CONFIG.fieldOpacity}
             min={0.1}
             max={1}
             step={0.05}

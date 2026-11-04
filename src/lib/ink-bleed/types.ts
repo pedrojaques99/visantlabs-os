@@ -104,6 +104,8 @@ export interface InkDoc {
   motion: MotionSettings;
   /** Style currently applied, cleared as soon as ink or paper are edited. */
   presetId: string | null;
+  /** The style the current values started from. It survives edits, which clear `presetId`. */
+  basePresetId?: string | null;
   /** While true, trying a style keeps the brand: ink, paper, font and text stay. */
   brandLocked: boolean;
 }

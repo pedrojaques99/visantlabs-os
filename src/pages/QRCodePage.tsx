@@ -6,6 +6,7 @@ import { loadImage } from '@/utils/imageUtils';
 import { FormInput } from '../components/ui/form-input';
 import { Select } from '../components/ui/select';
 import { useTranslation } from '@/hooks/useTranslation';
+import { NodeSlider } from '@/components/ui/NodeSlider';
 import { MiniAppShell } from '@/components/shared/MiniAppShell';
 
 const ease = [0.4, 0, 0.2, 1] as const;
@@ -90,18 +91,16 @@ export const QRCodePage: React.FC = () => {
         />
       </div>
 
-      <div>
-        <label className="block text-xs font-medium text-foreground mb-2">Size: {size}px</label>
-        <input
-          type="range"
-          min="128"
-          max="512"
-          step="32"
-          value={size}
-          onChange={(e) => setSize(Number(e.target.value))}
-          className="w-full h-2 bg-muted rounded-md appearance-none cursor-pointer accent-brand-cyan"
-        />
-      </div>
+      <NodeSlider
+        label="Size"
+        value={size}
+        min={128}
+        max={512}
+        step={32}
+        onChange={setSize}
+        formatValue={(v) => `${v}px`}
+        resetValue={256}
+      />
 
       <div>
         <label className="block text-xs font-medium text-foreground mb-2">
@@ -141,20 +140,16 @@ export const QRCodePage: React.FC = () => {
         </div>
       </div>
 
-      <div>
-        <label className="block text-xs font-medium text-foreground mb-2">
-          Margin: {marginSize}px
-        </label>
-        <input
-          type="range"
-          min="0"
-          max="8"
-          step="1"
-          value={marginSize}
-          onChange={(e) => setMarginSize(Number(e.target.value))}
-          className="w-full h-2 bg-muted rounded-md appearance-none cursor-pointer accent-brand-cyan"
-        />
-      </div>
+      <NodeSlider
+        label="Margin"
+        value={marginSize}
+        min={0}
+        max={8}
+        step={1}
+        onChange={setMarginSize}
+        formatValue={(v) => `${v}px`}
+        resetValue={4}
+      />
     </div>
   );
 

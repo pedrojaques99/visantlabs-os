@@ -2,6 +2,13 @@
 import React, { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { toast } from 'sonner';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
+import {
+  StageDock,
+  StageDockDivider,
+  StageDockReveal,
+  StageDockZoom,
+  stageDockButton,
+} from '@/components/shared/StageDock';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -110,6 +117,7 @@ export const InkBleedPage: React.FC = () => {
 
   const { width, height } = FORMATS[format];
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [timelineOpen, setTimelineOpen] = useState(false);
   const viewport = useArtworkViewport(width, height, isMobile, sheetOpen);
   const { canUndo, canRedo } = useHistoryFlags();
   usePlayback();
@@ -333,77 +341,91 @@ export const InkBleedPage: React.FC = () => {
       {/* The shell reserves the panel with padding: everything here lives in that box. */}
       <div className="relative h-full w-full">
         <InkBleedCanvas viewport={viewport} onLogoFiles={handleLogoFiles} />
-        <div
-          data-canvas-ui
+        {/* Phone on its side with the sheet open: no height left to share with the artwork. */}
+        <StageDock
           className={cn(
-            'absolute left-3 top-3 z-10 flex items-center gap-0.5 rounded-xl p-1 cursor-default',
-            'border border-border bg-card shadow-lg'
+            viewport.short ? '-bottom-7' : 'bottom-3',
+            isMobile && sheetOpen && viewport.lyingDown && 'hidden'
           )}
         >
-          <Tooltip content={t('inkBleed.shuffleHint')}>
-            <Button
-              variant="ghost"
-              size="sm"
-              aria-label={t('inkBleed.shuffle')}
-              className="h-7 gap-1.5 px-2 text-xs [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:min-w-11"
-              onClick={shuffle}
-            >
-              <Shuffle size={14} />
-              <span className="max-[359px]:hidden [@media(max-height:500px)]:hidden">
-                {t('inkBleed.shuffle')}
-              </span>
-            </Button>
-          </Tooltip>
-          <span className="mx-0.5 h-4 w-px bg-border" aria-hidden />
-          <Tooltip content={t('toolEditor.undoHint')}>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t('toolEditor.undo')}
-              className="h-7 w-7 text-muted-foreground disabled:opacity-30 [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
-              disabled={!canUndo}
-              onClick={undo}
-            >
-              <Undo2 size={14} />
-            </Button>
-          </Tooltip>
-          <Tooltip content={t('toolEditor.redoHint')}>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t('toolEditor.redo')}
-              className="h-7 w-7 text-muted-foreground disabled:opacity-30 [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
-              disabled={!canRedo}
-              onClick={redo}
-            >
-              <Redo2 size={14} />
-            </Button>
-          </Tooltip>
-          <Tooltip content={t('toolEditor.resetHint')}>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t('common.resetSettingsTitle')}
-              className="h-7 w-7 text-muted-foreground [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
-              onClick={() => setConfirmReset(true)}
-            >
-              <Eraser size={14} />
-            </Button>
-          </Tooltip>
-          {!isMobile && (
-            <Tooltip
-              content={panelVisible ? t('toolEditor.hidePanelHint') : t('toolEditor.showPanelHint')}
-            >
+          <InkBleedTransport onTogglePlay={togglePlay} onOpenChange={setTimelineOpen} />
+          {/* On a phone the timeline needs the row, so the tools make way for it. */}
+          <StageDockReveal atRest open={!isMobile || !timelineOpen}>
+            <StageDockDivider />
+            <Tooltip content={t('inkBleed.shuffleHint')}>
               <Button
                 variant="ghost"
                 size="icon"
-                aria-label={panelVisible ? t('common.hidePanel') : t('common.showPanel')}
-                className="h-7 w-7 text-muted-foreground [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
-                onClick={() => setPanelVisible(!panelVisible)}
+                aria-label={t('inkBleed.shuffle')}
+                className={stageDockButton}
+                onClick={shuffle}
               >
-                {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
+                <Shuffle size={14} />
               </Button>
             </Tooltip>
+            <Tooltip content={t('toolEditor.undoHint')}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t('toolEditor.undo')}
+                className={stageDockButton}
+                disabled={!canUndo}
+                onClick={undo}
+              >
+                <Undo2 size={14} />
+              </Button>
+            </Tooltip>
+            <Tooltip content={t('toolEditor.redoHint')}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t('toolEditor.redo')}
+                className={stageDockButton}
+                disabled={!canRedo}
+                onClick={redo}
+              >
+                <Redo2 size={14} />
+              </Button>
+            </Tooltip>
+            <Tooltip content={t('toolEditor.resetHint')}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t('common.resetSettingsTitle')}
+                className={stageDockButton}
+                onClick={() => setConfirmReset(true)}
+              >
+                <Eraser size={14} />
+              </Button>
+            </Tooltip>
+          </StageDockReveal>
+          {/* A phone zooms with two fingers. */}
+          {!isMobile && (
+            <>
+              <StageDockDivider />
+              <StageDockZoom
+                zoom={viewport.zoom}
+                onZoomIn={() => viewport.setZoom(viewport.zoom * 1.2)}
+                onZoomOut={() => viewport.setZoom(viewport.zoom / 1.2)}
+                onFit={viewport.fit}
+                detail={`${width} × ${height}`}
+              />
+              <Tooltip
+                content={
+                  panelVisible ? t('toolEditor.hidePanelHint') : t('toolEditor.showPanelHint')
+                }
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={panelVisible ? t('common.hidePanel') : t('common.showPanel')}
+                  className={stageDockButton}
+                  onClick={() => setPanelVisible(!panelVisible)}
+                >
+                  {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
+                </Button>
+              </Tooltip>
+            </>
           )}
           {(isMobile || !panelVisible) && (
             <Tooltip content={t('inkBleed.export.title')}>
@@ -412,18 +434,14 @@ export const InkBleedPage: React.FC = () => {
                 size="icon"
                 aria-label={t('inkBleed.export.title')}
                 disabled={awaitingLogo}
-                className="ml-0.5 h-7 w-7 [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
+                className="ml-0.5 h-7 w-7 shrink-0 [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
                 onClick={() => setExportOpen(true)}
               >
                 <Download size={14} />
               </Button>
             </Tooltip>
           )}
-        </div>
-        {/* Hidden, not removed: the artwork keeps playing while the sheet is open. */}
-        <div className={cn(isMobile && sheetOpen && 'hidden')}>
-          <InkBleedTransport viewport={viewport} onTogglePlay={togglePlay} />
-        </div>
+        </StageDock>
       </div>
       <InkBleedExportDialog
         isOpen={exportOpen}

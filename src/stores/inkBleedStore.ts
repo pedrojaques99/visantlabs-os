@@ -70,6 +70,7 @@ export function mergePreset(doc: InkDoc, preset: InkPreset): InkDoc {
     return {
       ...doc,
       presetId: preset.id,
+      basePresetId: preset.id,
       ink: preset.ink,
       paper: preset.paper,
       typography: { ...preset.typography, text },
@@ -78,6 +79,7 @@ export function mergePreset(doc: InkDoc, preset: InkPreset): InkDoc {
   return {
     ...doc,
     presetId: preset.id,
+    basePresetId: preset.id,
     ink: { ...preset.ink, inkColor: doc.ink.inkColor },
     paper: { ...preset.paper, baseColor: doc.paper.baseColor },
     typography: {

@@ -415,6 +415,7 @@ export function createDefaultDoc(format: FormatId = '4:3'): InkDoc {
     paper: preset.paper,
     motion: { mode: 'bleed-in', duration: 3.5, speed: 1 },
     presetId: preset.id,
+    basePresetId: preset.id,
     brandLocked: false,
   };
 }

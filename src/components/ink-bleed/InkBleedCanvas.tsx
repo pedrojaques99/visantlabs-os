@@ -20,19 +20,17 @@ const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 4;
 // Fitting may go below the zoom buttons' floor, so the artwork stays clear of a tall sheet.
 const MIN_FIT_ZOOM = 0.05;
-// Keeps the artwork clear of the floating tools above it and the transport pill below.
-const FIT_INSET = { x: 48, top: 56, bottom: 88 };
+// Keeps the artwork clear of the dock below it.
+const FIT_INSET = { x: 48, top: 24, bottom: 88 };
 // On a phone the artwork is the point: it gets the width.
 const PHONE_INSET_X = 12;
-// A phone on its side has no height to spare, and the tools float beside the artwork.
+// A phone on its side has no height to spare.
 const SHORT_VIEW = 420;
 const SHORT_INSET_TOP = 12;
 const SHORT_INSET_BOTTOM = 76;
-// The tools float at the top left, so the artwork sits to their right.
-const SHORT_INSET_LEFT = 320;
-// With the sheet open, the row of tools stays above and the transport steps aside.
-const SHEET_INSET_TOP = 68;
-const SHEET_INSET_BOTTOM = 12;
+// On a phone the dock is 56 px tall and sits 12 px above the sheet.
+const PHONE_INSET_TOP = 12;
+const PHONE_INSET_BOTTOM = 76;
 // The shell reserves this strip on desktop. The stage runs under it, to the window edge.
 const STAGE_BLEED = 40;
 
@@ -56,8 +54,10 @@ export interface ArtworkViewport {
   bleed: boolean;
   /** Fingers are the pointer: gestures on, and the artwork takes them instead of the page. */
   isTouch: boolean;
-  /** A window with no height to spare: the transport drops into the strip the shell reserves. */
+  /** A window with no height to spare: the dock drops into the strip the shell reserves. */
   short: boolean;
+  /** A phone on its side. */
+  lyingDown: boolean;
 }
 
 const limit = (value: number, max: number) => Math.min(max, Math.max(-max, value));
@@ -83,31 +83,23 @@ export function useArtworkViewport(
     (viewHeight: number) => {
       const short = viewHeight > 0 && viewHeight < SHORT_VIEW;
       if (isMobile && lyingDown) {
+        // With the sheet open the dock steps aside, so the artwork takes its place.
         return {
           top: SHORT_INSET_TOP,
-          bottom: sheetOpen ? SHEET_INSET_BOTTOM : SHORT_INSET_BOTTOM,
-          left: SHORT_INSET_LEFT,
+          bottom: sheetOpen ? SHORT_INSET_TOP : SHORT_INSET_BOTTOM,
         };
       }
-      if (isMobile) {
-        return short || sheetOpen
-          ? { top: SHEET_INSET_TOP, bottom: SHEET_INSET_BOTTOM, left: insetX }
-          : { top: SHEET_INSET_TOP, bottom: FIT_INSET.bottom, left: insetX };
-      }
+      if (isMobile) return { top: PHONE_INSET_TOP, bottom: PHONE_INSET_BOTTOM };
       return short
-        ? { top: SHORT_INSET_TOP, bottom: SHORT_INSET_BOTTOM, left: SHORT_INSET_LEFT }
-        : {
-            top: FIT_INSET.top,
-            bottom: FIT_INSET.bottom + (bleed ? STAGE_BLEED : 0),
-            left: insetX,
-          };
+        ? { top: SHORT_INSET_TOP, bottom: SHORT_INSET_BOTTOM }
+        : { top: FIT_INSET.top, bottom: FIT_INSET.bottom + (bleed ? STAGE_BLEED : 0) };
     },
-    [bleed, insetX, isMobile, lyingDown, sheetOpen]
+    [bleed, isMobile, lyingDown, sheetOpen]
   );
-  const { top: insetTop, bottom: insetBottom, left: insetLeft } = insets(size.height);
+  const { top: insetTop, bottom: insetBottom } = insets(size.height);
   const short = !isMobile && size.height > 0 && size.height < SHORT_VIEW;
 
-  const availableW = Math.max(0, size.width - insetLeft - insetX);
+  const availableW = Math.max(0, size.width - insetX * 2);
   const availableH = Math.max(0, size.height - insetTop - insetBottom);
   // How far the view can travel before an edge of the artwork leaves the clear area.
   const roomX = Math.max(0, width * zoom - availableW) / 2 / zoom;
@@ -119,8 +111,8 @@ export function useArtworkViewport(
     fitted.current = true;
     const el = containerRef.current;
     if (!el) return;
-    const { top, bottom, left } = insets(el.clientHeight);
-    const fitW = el.clientWidth - left - insetX;
+    const { top, bottom } = insets(el.clientHeight);
+    const fitW = el.clientWidth - insetX * 2;
     const fitH = el.clientHeight - top - bottom;
     if (fitW <= 0 || fitH <= 0) return;
     setZoomState(Math.max(MIN_FIT_ZOOM, Math.min(fitW / width, fitH / height, 1)));
@@ -161,7 +153,7 @@ export function useArtworkViewport(
     containerRef,
     zoom,
     pan: {
-      x: (insetLeft - insetX) / 2 - focusX * zoom,
+      x: -focusX * zoom,
       y: (insetTop - insetBottom) / 2 - focusY * zoom,
     },
     setZoom,
@@ -171,6 +163,7 @@ export function useArtworkViewport(
     bleed,
     isTouch,
     short,
+    lyingDown,
     visible: {
       x: focusX - visibleW / 2,
       y: focusY - visibleH / 2,

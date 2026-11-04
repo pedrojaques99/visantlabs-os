@@ -123,16 +123,24 @@ const ScrubInput = React.memo<ScrubInputProps>(
           return;
         }
         const mult = e.shiftKey ? 0.1 : 1;
-        if (e.key === 'ArrowUp') {
+        if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
           e.preventDefault();
           onChange(clamp(value + step * mult));
         }
-        if (e.key === 'ArrowDown') {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
           e.preventDefault();
           onChange(clamp(value - step * mult));
         }
+        if (e.key === 'Home') {
+          e.preventDefault();
+          onChange(min);
+        }
+        if (e.key === 'End') {
+          e.preventDefault();
+          onChange(max);
+        }
       },
-      [editing, value, step, onChange, clamp, commitEdit]
+      [editing, value, step, min, max, onChange, clamp, commitEdit]
     );
 
     return (
@@ -140,16 +148,22 @@ const ScrubInput = React.memo<ScrubInputProps>(
         className={cn(
           'group flex flex-col gap-1 rounded-md border border-border bg-muted',
           'hover:border-border-hover focus-within:border-ring transition-colors',
-          'px-2 py-1.5',
+          'px-2 py-1.5 [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:justify-center',
           className
         )}
         onWheel={onWheel}
         onKeyDown={onKeyDown}
         tabIndex={editing ? -1 : 0}
         title={hint}
+        role="spinbutton"
+        aria-label={label}
+        aria-valuemin={min}
+        aria-valuemax={max}
+        aria-valuenow={value}
+        aria-valuetext={display}
       >
         <span
-          className="text-2xs text-muted-foreground cursor-ew-resize select-none truncate leading-none touch-none"
+          className="text-2xs text-muted-foreground cursor-ew-resize select-none truncate leading-none touch-pan-y"
           onPointerDown={onScrubDown}
         >
           {icon && (
@@ -171,7 +185,7 @@ const ScrubInput = React.memo<ScrubInputProps>(
             />
           ) : (
             <span
-              className="text-xs font-mono text-foreground cursor-ew-resize select-none tabular-nums leading-none touch-none"
+              className="text-xs font-mono text-foreground cursor-ew-resize select-none tabular-nums leading-none touch-pan-y"
               onPointerDown={onScrubDown}
               onDoubleClick={startEdit}
             >

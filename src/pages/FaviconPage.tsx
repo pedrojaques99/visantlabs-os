@@ -12,6 +12,7 @@ import { encodePngsToIco } from '@/utils/icoEncoder';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
+import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Dropzone } from '@/components/ui/Dropzone';
 import { Input } from '@/components/ui/input';
 import { QuickActions } from '@/components/shared/QuickActions';
@@ -328,44 +329,28 @@ export const FaviconPage: React.FC = () => {
       </div>
 
       {/* Border radius */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-muted-foreground">
-            {t('miniTools.favicon.radius')}
-          </span>
-          <span className="text-2xs font-mono tabular-nums text-muted-foreground">
-            {borderRadius}%
-          </span>
-        </div>
-        <input
-          type="range"
-          min="0"
-          max="50"
-          step="1"
-          value={borderRadius}
-          onChange={(e) => setBorderRadius(parseInt(e.target.value))}
-          className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
-        />
-      </div>
+      <NodeSlider
+        label={t('miniTools.favicon.radius')}
+        value={borderRadius}
+        min={0}
+        max={50}
+        step={1}
+        onChange={setBorderRadius}
+        formatValue={(v) => `${v}%`}
+        resetValue={useFaviconStore.getInitialState().borderRadius}
+      />
 
       {/* Padding */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-muted-foreground">
-            {t('miniTools.favicon.padding')}
-          </span>
-          <span className="text-2xs font-mono tabular-nums text-muted-foreground">{padding}%</span>
-        </div>
-        <input
-          type="range"
-          min="0"
-          max="20"
-          step="1"
-          value={padding}
-          onChange={(e) => setPadding(parseInt(e.target.value))}
-          className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
-        />
-      </div>
+      <NodeSlider
+        label={t('miniTools.favicon.padding')}
+        value={padding}
+        min={0}
+        max={20}
+        step={1}
+        onChange={setPadding}
+        formatValue={(v) => `${v}%`}
+        resetValue={useFaviconStore.getInitialState().padding}
+      />
 
       <div className="h-px bg-border" />
 

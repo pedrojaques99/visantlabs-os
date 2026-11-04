@@ -9,6 +9,7 @@ import { fileToBase64, validateFile } from '@/utils/fileUtils';
 import { getContrastRatioPublic, checkWCAGCompliance } from '@/utils/colorUtils';
 import { copyToClipboard } from '@/utils/clipboard';
 import { Button } from '@/components/ui/button';
+import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Input } from '@/components/ui/input';
 import { Thumb } from '@/components/ui/Thumb';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
@@ -338,22 +339,17 @@ export const ColorPalettePage: React.FC = () => {
             {/* Controls */}
             <div className="space-y-4">
               {/* Max colors slider */}
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-medium text-muted-foreground">Max Colors</span>
-                <input
-                  type="range"
-                  min="5"
-                  max="12"
-                  step="1"
-                  value={maxColors}
-                  onChange={(e) => setMaxColors(parseInt(e.target.value))}
-                  disabled={isExtracting}
-                  className="flex-1 max-w-[200px] h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
-                />
-                <span className="text-2xs font-mono text-muted-foreground w-6 text-right">
-                  {maxColors}
-                </span>
-              </div>
+              <NodeSlider
+                label="Max Colors"
+                value={maxColors}
+                min={5}
+                max={12}
+                step={1}
+                onChange={setMaxColors}
+                formatValue={String}
+                disabled={isExtracting}
+                className="max-w-xs"
+              />
 
               {/* Action buttons */}
               <div className="flex flex-wrap gap-2">
