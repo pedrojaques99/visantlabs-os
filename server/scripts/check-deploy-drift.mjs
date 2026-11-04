@@ -76,6 +76,24 @@ async function consultarSaude() {
   return res.json();
 }
 
+/** Outro merge pode chegar durante a espera: um commit mais novo no ar já contém o esperado. */
+function jaContem(noAr) {
+  if (!noAr) return false;
+  const git = (...args) =>
+    execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  try {
+    git('fetch', '--quiet', 'origin', 'main');
+  } catch {
+    /* sem rede ou sem remote: vale o histórico que já está aqui */
+  }
+  try {
+    git('merge-base', '--is-ancestor', esperado, noAr);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // ── Modo espera: usado logo depois de disparar um deploy ────────────────────
 if (AGUARDAR_SEG > 0) {
   const limite = Date.now() + AGUARDAR_SEG * 1000;
@@ -89,6 +107,10 @@ if (AGUARDAR_SEG > 0) {
       const s = await consultarSaude();
       if (s.commit === esperado) {
         console.log(`✓ no ar = ${curto(esperado)} · up há ${Math.floor((s.uptime ?? 0) / 60)} min`);
+        process.exit(0);
+      }
+      if (s.commit !== visto && jaContem(s.commit)) {
+        console.log(`✓ no ar ${curto(s.commit)}, mais novo, já contém ${curto(esperado)}`);
         process.exit(0);
       }
       // Reinício derruba o /api/health por alguns segundos: erro aqui é esperado
@@ -110,8 +132,8 @@ if (AGUARDAR_SEG > 0) {
   if (visto) console.error(`  Último commit visto no ar: ${curto(visto)}`);
   if (ultimoErro) console.error(`  Último erro: ${ultimoErro}`);
   console.error('');
-  console.error('  O deploy foi aceito mas não chegou. Ver, nesta ordem:');
-  console.error('   1. o log do build no Coolify (o passo anterior imprime a URL);');
+  console.error('  O deploy não chegou. Ver, nesta ordem:');
+  console.error('   1. o log do último deployment no painel do Coolify;');
   console.error('   2. o container subiu e caiu? (crash em boot mantém o antigo servindo)');
   console.error('   3. SOURCE_COMMIT chega na env do container? Sem ela o /api/health');
   console.error('      não expõe `commit` e esta checagem não tem como confirmar nada.');
@@ -165,9 +187,7 @@ if (upMin < TOLERANCIA_MIN) {
 
 console.error('');
 console.error('  O deploy não aconteceu. Checar, nesta ordem:');
-console.error('   1. o workflow "Deploy backend" rodou, ou saiu como `skipped`?');
-console.error('      (ele só dispara quando o "Test Suite" fecha VERDE em main)');
-console.error('   2. os secrets COOLIFY_URL/COOLIFY_TOKEN/COOLIFY_APP_UUID existem?');
-console.error('      (`gh secret list` — repo sem secrets faz o job falhar no portão)');
-console.error('   3. subir na mão: `gh workflow run "Deploy backend" --ref main`');
+console.error('   1. o log do último deployment no painel do Coolify (o webhook dispara em todo push de main);');
+console.error('   2. o container subiu e caiu? (crash em boot mantém o antigo servindo)');
+console.error('   3. subir na mão: botão Deploy no painel do Coolify');
 process.exit(1);
