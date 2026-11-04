@@ -183,7 +183,11 @@ export const GridMachinePage: React.FC = () => {
         </Tooltip>
       }
       controlsPanel={
-        <GridMachineControls onExportPng={handleExportPng} onExportSvg={handleExportSvg} />
+        <GridMachineControls
+          onExportPng={handleExportPng}
+          onExportSvg={handleExportSvg}
+          getCanvasPng={() => gridRef.current?.getCanvas()?.toDataURL('image/png')}
+        />
       }
       statusItems={statusItems}
       fileName={svgContent ? fileName : undefined}

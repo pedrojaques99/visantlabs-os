@@ -13,7 +13,6 @@ import {
   type HalftoneShape,
 } from '@/components/riso/RisoRenderer';
 import { hexToRgb } from '@/utils/colorUtils';
-import { SendToButton } from '@/components/shared/SendToButton';
 import {
   ToolPanel,
   ToolPanelActions,
@@ -678,11 +677,6 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                     <FileImage size={14} className="text-muted-foreground" />
                     Export Hi-Res PNG (2x)
                   </button>
-                )}
-                {store.imageUrl && (
-                  <div className="px-1 py-0.5">
-                    <SendToButton source="riso" outputMime="image/png" imageUrl={store.imageUrl} />
-                  </div>
                 )}
               </div>
             )}

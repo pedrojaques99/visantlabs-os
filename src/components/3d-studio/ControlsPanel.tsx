@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import React from 'react';
 import { SendToButton } from '@/components/shared/SendToButton';
+import { PanelSectionTabs, type PanelTab } from '@/components/shared/PanelSectionTabs';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useIsMobile } from '@/hooks/use-media-query';
-import { Download } from '@/lib/ui/icons';
-import { ToolPanel, ToolPanelContent } from '@/components/shared/ToolPanel';
+import { Box, Camera, Clapperboard, Palette, Sparkles, Wand2 } from '@/lib/ui/icons';
+import { ToolPanel, ToolPanelExportActions } from '@/components/shared/ToolPanel';
 import { EssentialsTab } from './panels/EssentialsTab';
 import { SceneTab } from './panels/SceneTab';
 import { LookTab } from './panels/LookTab';
@@ -13,78 +11,71 @@ import { CameraTab } from './panels/CameraTab';
 import { AnimationTab } from './panels/AnimationTab';
 import { EffectsTab } from './panels/EffectsTab';
 
-const TABS = [
-  { id: 'essentials', label: 'Basics' },
-  { id: 'scene', label: 'Model' },
-  { id: 'look', label: 'Object' },
-  { id: 'camera', label: 'Scene' },
-  { id: 'animate', label: 'Animate' },
-  { id: 'effects', label: 'FX' },
-] as const;
-
-type TabId = (typeof TABS)[number]['id'];
-
 interface ControlsPanelProps {
   onExport: () => void;
-  /** Lazy capture of the current scene canvas as a PNG data URL (for "Send to →"). */
+  /** Lazy capture of the current scene canvas as a PNG data URL (for "Send to"). */
   getCanvasPng?: () => string | undefined;
 }
 
 export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(
   ({ onExport, getCanvasPng }) => {
     const { t } = useTranslation();
-    const isMobile = useIsMobile();
-    const [activeTab, setActiveTab] = useState<TabId>('essentials');
+    const tabs: PanelTab[] = [
+      {
+        id: 'essentials',
+        icon: <Sparkles size={16} />,
+        label: t('studio3d.panelTabs.basics'),
+        content: <EssentialsTab />,
+      },
+      {
+        id: 'scene',
+        icon: <Box size={16} />,
+        label: t('studio3d.panelTabs.model'),
+        content: <SceneTab />,
+      },
+      {
+        id: 'look',
+        icon: <Palette size={16} />,
+        label: t('studio3d.panelTabs.object'),
+        content: <LookTab />,
+      },
+      {
+        id: 'camera',
+        icon: <Camera size={16} />,
+        label: t('studio3d.panelTabs.scene'),
+        content: <CameraTab />,
+      },
+      {
+        id: 'animate',
+        icon: <Clapperboard size={16} />,
+        label: t('studio3d.panelTabs.animate'),
+        content: <AnimationTab />,
+      },
+      {
+        id: 'effects',
+        icon: <Wand2 size={16} />,
+        label: t('studio3d.panelTabs.effects'),
+        content: <EffectsTab />,
+      },
+    ];
 
     return (
       <ToolPanel>
-        {/* Tab bar */}
-        <div className="shrink-0 flex border-b border-border">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                'flex-1 transition-colors',
-                isMobile ? 'py-3 text-2xs' : 'py-2 text-2xs',
-                activeTab === tab.id
-                  ? 'text-foreground border-b border-ring'
-                  : 'text-muted-foreground hover:text-muted-foreground'
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab content */}
-        <ToolPanelContent>
-          {activeTab === 'essentials' && <EssentialsTab />}
-          {activeTab === 'scene' && <SceneTab />}
-          {activeTab === 'look' && <LookTab />}
-          {activeTab === 'camera' && <CameraTab />}
-          {activeTab === 'animate' && <AnimationTab />}
-          {activeTab === 'effects' && <EffectsTab />}
-        </ToolPanelContent>
-
-        {/* Sticky bottom — Export button */}
-        <div className="shrink-0 border-t border-border px-3 py-2.5 flex gap-2">
-          <Button
-            onClick={onExport}
-            aria-label="Export"
-            className="flex-1 bg-foreground hover:bg-foreground/90 text-background font-medium text-xs h-8"
-          >
-            <Download size={12} className="mr-1.5" />
-            {t('studio3d.export.title')}
-          </Button>
-          <SendToButton
-            source="3d-studio"
-            outputMime="image/png"
-            mimeType="image/png"
-            label="3D render"
-            getImageBase64={getCanvasPng}
-          />
-        </div>
+        <PanelSectionTabs tabs={tabs} />
+        <ToolPanelExportActions
+          onExport={onExport}
+          isExporting={false}
+          disabled={false}
+          sendTo={
+            <SendToButton
+              source="3d-studio"
+              outputMime="image/png"
+              mimeType="image/png"
+              label="3D render"
+              getImageBase64={getCanvasPng}
+            />
+          }
+        />
       </ToolPanel>
     );
   }

@@ -2,7 +2,6 @@ import React, { useCallback, useState } from 'react';
 import { ScrubInput } from '@/components/ui/ScrubInput';
 import { Select } from '@/components/ui/select';
 import { useHalftoneStore, BLEND_MODES, HALFTONE_PRESETS } from '@/stores/halftoneStore';
-import { SendToButton } from '@/components/shared/SendToButton';
 import { PresetThumbnailStrip } from '@/components/shared/PresetThumbnailStrip';
 import {
   ToolPanel,
@@ -294,11 +293,6 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
           onExport={onExport}
           isExporting={store.isExporting}
           disabled={!store.imageUrl}
-          sendTo={
-            store.imageUrl ? (
-              <SendToButton source="halftone" outputMime="image/png" imageUrl={store.imageUrl} />
-            ) : undefined
-          }
           onCopyAsPng={onCopyAsPng}
         />
       </ToolPanel>

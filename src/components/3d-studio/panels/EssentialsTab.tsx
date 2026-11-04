@@ -22,6 +22,9 @@ import { Switch } from '@/components/ui/switch';
 import { Select, type SelectOption } from '@/components/ui/select';
 import { SHADER_DEFINITIONS } from '@/utils/shaders/shaderParams';
 import { BrandSelector } from '@/components/canvas/BrandSelector';
+import { Button } from '@/components/ui/button';
+import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
+import { useTranslation } from '@/hooks/useTranslation';
 import type { StoreState } from './_shared';
 import { ScenePresetsStrip } from '../ScenePresetsStrip';
 import { useBrandLogoLoader } from '../useBrandLogoLoader';
@@ -62,6 +65,7 @@ const SHADER_OPTIONS: SelectOption[] = SHADER_DEFINITIONS.map((d) => ({
 }));
 
 export const EssentialsTab: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const store = useStudio3DStore(useShallow(essentialsSelector));
 
   const [scale, setScale] = useDebouncedSlider(store.objectScale, store.setObjectScale);
@@ -80,8 +84,9 @@ export const EssentialsTab: React.FC = React.memo(() => {
 
   const { loadPrimaryBrandLogo } = useBrandLogoLoader();
 
-  // Selecting a brand records it (drives swatches + on-brand scenes) and auto-loads
-  // its primary logo straight into the 3D model.
+  // The app bar picks the brand. Outside the app there is no bar, so the selector stays.
+  const activeBrand = useActiveBrandSafe()?.activeBrand ?? null;
+  const panelBrand = brandGuidelines.find((b) => b.id === activeBrand?.id) ?? activeBrand;
   const handleBrandChange = (id: string | null) => {
     store.setBrandGuidelineId(id ?? '');
     if (id) loadPrimaryBrandLogo(brandGuidelines.find((b) => b.id === id));
@@ -89,16 +94,32 @@ export const EssentialsTab: React.FC = React.memo(() => {
 
   return (
     <>
-      {/* Brand — core: applying a brand flows its tokens into the pickers + on-brand scenes */}
-      <ToolPanelSection title="Brand">
-        <BrandSelector
-          value={store._brandGuidelineId || null}
-          onChange={handleBrandChange}
-          className="w-full"
-        />
-      </ToolPanelSection>
-
-      <ToolPanelDivider />
+      {activeBrand ? (
+        panelBrand?.logos?.length ? (
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => loadPrimaryBrandLogo(panelBrand)}
+            >
+              {t('studio3d.basics.useLogo', { name: panelBrand.identity?.name ?? '' })}
+            </Button>
+            <ToolPanelDivider />
+          </>
+        ) : null
+      ) : (
+        <>
+          <ToolPanelSection title={t('studio3d.basics.brand')}>
+            <BrandSelector
+              value={store._brandGuidelineId || null}
+              onChange={handleBrandChange}
+              className="w-full"
+            />
+          </ToolPanelSection>
+          <ToolPanelDivider />
+        </>
+      )}
 
       {/* Quick-start presets (+ on-brand scenes when a brand is applied) */}
       <ScenePresetsStrip flat />
@@ -106,16 +127,16 @@ export const EssentialsTab: React.FC = React.memo(() => {
       <ToolPanelDivider />
 
       {/* Object — color + size */}
-      <ToolPanelSection title="Object">
+      <ToolPanelSection title={t('studio3d.basics.object')}>
         <ExpandableColorPicker
-          label="Material color"
+          label={t('studio3d.basics.materialColor')}
           color={store.color}
           onChange={store.setColor}
           presets={brandSwatches.length ? brandSwatches : undefined}
         />
         <div className="grid grid-cols-2 gap-2">
           <ScrubInput
-            label="Size"
+            label={t('studio3d.basics.size')}
             value={scale}
             min={0.2}
             max={3}
@@ -123,7 +144,7 @@ export const EssentialsTab: React.FC = React.memo(() => {
             onChange={setScale}
           />
           <ScrubInput
-            label="Depth"
+            label={t('studio3d.basics.depth')}
             value={depth}
             min={0.1}
             max={10}
@@ -136,14 +157,14 @@ export const EssentialsTab: React.FC = React.memo(() => {
       <ToolPanelDivider />
 
       {/* Background — type select + color */}
-      <ToolPanelSection title="Background">
+      <ToolPanelSection title={t('studio3d.basics.background')}>
         <Select
           options={BG_TYPE_OPTIONS}
           value={store.bgType}
           onChange={(v) => store.setBgType(v as StoreState['bgType'])}
         />
         <ExpandableColorPicker
-          label="Background color"
+          label={t('studio3d.basics.backgroundColor')}
           color={store.background}
           onChange={store.setBackground}
           presets={brandSwatches.length ? brandSwatches : undefined}
@@ -153,7 +174,7 @@ export const EssentialsTab: React.FC = React.memo(() => {
       <ToolPanelDivider />
 
       {/* Effects — the two the user reaches for first: bloom + shader */}
-      <ToolPanelSection title="Effects">
+      <ToolPanelSection title={t('studio3d.basics.effects')}>
         <ToolPanelRow label="Bloom">
           <Switch
             checked={store.bloomEnabled}
@@ -163,7 +184,7 @@ export const EssentialsTab: React.FC = React.memo(() => {
         </ToolPanelRow>
         {store.bloomEnabled && (
           <ScrubInput
-            label="Intensity"
+            label={t('studio3d.basics.intensity')}
             value={bloom}
             min={0}
             max={5}
@@ -191,9 +212,7 @@ export const EssentialsTab: React.FC = React.memo(() => {
               value={store.shaderType}
               onChange={(v) => store.setShaderType(v as StoreState['shaderType'])}
             />
-            <p className="text-3xs text-muted-foreground">
-              Fine-tune shader parameters in the FX tab.
-            </p>
+            <p className="text-3xs text-muted-foreground">{t('studio3d.basics.shaderHint')}</p>
           </div>
         )}
       </ToolPanelSection>

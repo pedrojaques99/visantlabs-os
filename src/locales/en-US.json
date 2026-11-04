@@ -2787,6 +2787,7 @@
       "failedToSaveImage": "Failed to save image",
       "failedToFindNodePosition": "Failed to find node position",
       "advancedSettings": "Advanced settings",
+      "typeValue": "Type a value",
       "dragToAdjust": "Drag to adjust",
       "selectResolution": "Select resolution",
       "creditsCount": "{count} credits"
@@ -6485,6 +6486,27 @@
     "galeria_da_comunidade": "Community gallery"
   },
   "studio3d": {
+    "panelTabs": {
+      "basics": "Basics",
+      "model": "Model",
+      "object": "Object",
+      "scene": "Scene",
+      "animate": "Animate",
+      "effects": "Effects"
+    },
+    "basics": {
+      "brand": "Brand",
+      "useLogo": "Use {name} logo",
+      "object": "Object",
+      "materialColor": "Material color",
+      "size": "Size",
+      "depth": "Depth",
+      "background": "Background",
+      "backgroundColor": "Background color",
+      "effects": "Effects",
+      "intensity": "Intensity",
+      "shaderHint": "Fine-tune shader parameters in the Effects tab."
+    },
     "title": "3D Studio",
     "loadingEngine": "Loading 3D Engine...",
     "backToApps": "Back to apps",
@@ -6895,7 +6917,7 @@
     "filters": "Filters",
     "fromPdf": "Extract from PDF",
     "search": "Search",
-    "columns": "Columns ({count})",
+    "columns": "Columns",
     "resolution": "Resolution",
     "any": "Any",
     "contentModes": {
@@ -8427,6 +8449,17 @@
     "body": "Upgrade your plan for more space and keep uploading images.",
     "upgrade": "Upgrade"
   },
+  "toolDock": {
+    "export": "Export",
+    "details": "Details",
+    "play": "Play (Space)",
+    "pause": "Pause (Space)",
+    "timeline": "Timeline",
+    "zoom": "Zoom",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "fit": "Fit to screen"
+  },
   "toolEditor": {
     "export": {
       "title": "Export",
@@ -9030,14 +9063,6 @@
       "duration": "Duration",
       "speed": "Speed"
     },
-    "transport": {
-      "play": "Play (Space)",
-      "pause": "Pause (Space)",
-      "timeline": "Timeline",
-      "zoomIn": "Zoom in",
-      "zoomOut": "Zoom out",
-      "fit": "Fit to screen"
-    },
     "export": {
       "title": "Export",
       "format": "File format",
@@ -9062,6 +9087,7 @@
     "brandApplied": "Colors, font and name of {brand} applied",
     "brandRelease": "Release brand",
     "shuffle": "Shuffle",
+    "advanced": "Advanced",
     "shuffleHint": "Rolls effects and parameters (S). Text and font stay.",
     "saveBlocked": "The browser is out of space. Your artwork won't be kept if you reload: export it before leaving.",
     "minimapHint": "Ctrl or ⌘ + click the artwork to position",

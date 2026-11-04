@@ -22,15 +22,19 @@ import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Tooltip } from '@/components/ui/Tooltip';
-import {
-  AppShell,
-  AppShellTopBar,
-  AppShellPanel,
-  AppShellStatusBar,
-} from '@/components/ui/AppShell';
+import { AppShell, AppShellTopBar, AppShellPanel } from '@/components/ui/AppShell';
 import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
 import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
 import { SendToButton } from '@/components/shared/SendToButton';
+import {
+  StageDock,
+  StageDockDivider,
+  StageDockGroup,
+  StageDockReveal,
+  StageDockText,
+  StageDockZoom,
+  stageDockButton,
+} from '@/components/shared/StageDock';
 import { BrandFunnelBanner } from '@/components/funnel/BrandFunnelBanner';
 import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
 import { useIsMobile } from '@/hooks/use-media-query';
@@ -622,6 +626,8 @@ export const GridPaintPage: React.FC = () => {
   const inShell = useInAppShell();
   const isMobile = useIsMobile();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const [zoomOpen, setZoomOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
   const pencilLastCell = useRef<{ r: number; c: number } | null>(null);
@@ -1056,148 +1062,77 @@ export const GridPaintPage: React.FC = () => {
           o banner é z-30 e sumiria por baixo do shell se ficasse fora. */}
       <BrandFunnelBanner toolId="grid-paint" />
 
-      {/* Top bar */}
-      <AppShellTopBar
-        left={
-          <>
-            {!inShell && (
-              <>
-                <Tooltip content="Back to Apps" position="bottom">
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => navigate('/apps')}
-                    aria-label="Back to Apps"
-                  >
-                    <ChevronLeft size={14} />
-                  </Button>
-                </Tooltip>
-                <div className="w-px h-4 bg-border mx-1" />
-                <MicroTitle className="text-muted-foreground">Grid Paint</MicroTitle>
-              </>
-            )}
-            <MicroTitle
-              className={inShell ? 'text-muted-foreground' : 'text-muted-foreground ml-2'}
-            >
-              {activeCount} dots
-            </MicroTitle>
-            {isMobile && (
-              <MicroTitle className="text-muted-foreground ml-1.5">
-                {config.frameW}x{config.frameH}
-              </MicroTitle>
-            )}
-          </>
-        }
-        right={
-          <>
-            <Tooltip content="Export SVG" position="bottom">
-              <Button variant="surface" size="xs" className="gap-1.5" onClick={exportSVG}>
-                <Download size={10} /> SVG
-              </Button>
-            </Tooltip>
-            <Tooltip content="Export PNG" position="bottom">
-              <Button variant="surface" size="xs" className="gap-1.5" onClick={exportPNG}>
-                <Download size={10} /> PNG
-              </Button>
-            </Tooltip>
-            <Tooltip content="Copy state to clipboard" position="bottom">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => copyToClipboard(JSON.stringify({ grid: grid.cells, config }))}
-                aria-label="Copy state to clipboard"
-              >
-                <Copy size={12} />
-              </Button>
-            </Tooltip>
-            <SendToButton source="grid-paint" outputMime="image/png" />
-            <AppShellLegalMenu />
-          </>
-        }
-      />
+      {/* In the app the rail already says where we are and holds the legal links. */}
+      {!inShell && (
+        <AppShellTopBar
+          left={
+            <>
+              <Tooltip content="Back to Apps" position="bottom">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => navigate('/apps')}
+                  aria-label="Back to Apps"
+                >
+                  <ChevronLeft size={14} />
+                </Button>
+              </Tooltip>
+              <div className="w-px h-4 bg-border mx-1" />
+              <MicroTitle className="text-muted-foreground">Grid Paint</MicroTitle>
+            </>
+          }
+          right={<AppShellLegalMenu />}
+        />
+      )}
 
-      {/* Bottom toolbar */}
-      <div
+      <StageDock
         className={cn(
-          'fixed left-1/2 -translate-x-1/2 z-30 transition-[bottom] duration-300',
-          isMobile ? (mobileSheetOpen ? 'bottom-[calc(45%+8px)]' : 'bottom-[56px]') : 'bottom-4'
+          'transition-[bottom] duration-[var(--dur-base)]',
+          isMobile ? (mobileSheetOpen ? 'bottom-[calc(45%+8px)]' : 'bottom-[56px]') : 'bottom-3'
         )}
       >
-        <div className="flex items-center gap-0.5 bg-popover/85 backdrop-blur-xl border border-border rounded-xl px-1.5 py-1 shadow-lg">
-          <Tooltip content="Zoom Out" position="top">
+        <StageDockZoom
+          zoom={zoom}
+          onZoomIn={() => setZoom((z) => Math.min(3, z + 0.15))}
+          onZoomOut={() => setZoom((z) => Math.max(0.3, z - 0.15))}
+          onFit={() => setZoom(1)}
+          onOpenChange={setZoomOpen}
+        />
+        {/* On a phone an open group needs the row, so the tools make way for it. */}
+        <StageDockReveal atRest open={!isMobile || (!zoomOpen && !exportOpen)}>
+          <StageDockDivider />
+          <Tooltip content="Eraser">
             <Button
               variant="ghost"
+              size="icon"
+              aria-label="Eraser"
+              aria-pressed={eraseMode}
               className={cn(
-                'flex items-center justify-center rounded-md',
-                isMobile ? 'w-10 h-10' : 'w-9 h-9'
-              )}
-              onClick={() => setZoom((z) => Math.max(0.3, z - 0.15))}
-            >
-              <ZoomOut size={16} strokeWidth={2} />
-            </Button>
-          </Tooltip>
-          <span className="text-2xs font-mono text-muted-foreground w-[34px] text-center tabular-nums select-none">
-            {(zoom * 100).toFixed(0)}%
-          </span>
-          <Tooltip content="Zoom In" position="top">
-            <Button
-              variant="ghost"
-              className={cn(
-                'flex items-center justify-center rounded-md',
-                isMobile ? 'w-10 h-10' : 'w-9 h-9'
-              )}
-              onClick={() => setZoom((z) => Math.min(3, z + 0.15))}
-            >
-              <ZoomIn size={16} strokeWidth={2} />
-            </Button>
-          </Tooltip>
-          <Tooltip content="Reset zoom" position="top">
-            <Button
-              variant="ghost"
-              className={cn(
-                'flex items-center justify-center rounded-md',
-                isMobile ? 'w-10 h-10' : 'w-9 h-9'
-              )}
-              onClick={() => setZoom(1)}
-            >
-              <Maximize2 size={16} strokeWidth={2} />
-            </Button>
-          </Tooltip>
-
-          <div className="w-px h-5 bg-border mx-0.5" />
-
-          <Tooltip content="Eraser" position="top">
-            <Button
-              variant="ghost"
-              className={cn(
-                'flex items-center justify-center rounded-md',
-                isMobile ? 'w-10 h-10' : 'w-9 h-9',
+                stageDockButton,
                 eraseMode && 'bg-accent text-foreground ring-1 ring-ring'
               )}
               onClick={() => setEraseMode((m) => !m)}
             >
-              <Eraser size={16} strokeWidth={2} />
+              <Eraser size={14} />
             </Button>
           </Tooltip>
-          <Tooltip content="Undo (Ctrl+Z)" position="top">
+          <Tooltip content="Undo (Ctrl+Z)">
             <Button
               variant="ghost"
-              className={cn(
-                'flex items-center justify-center rounded-md',
-                isMobile ? 'w-10 h-10' : 'w-9 h-9'
-              )}
+              size="icon"
+              aria-label="Undo"
+              className={stageDockButton}
               onClick={undo}
             >
-              <RotateCcw size={16} strokeWidth={2} />
+              <RotateCcw size={14} />
             </Button>
           </Tooltip>
-          <Tooltip content="Clear canvas" position="top">
+          <Tooltip content="Clear canvas">
             <Button
               variant="ghost"
-              className={cn(
-                'flex items-center justify-center rounded-md',
-                isMobile ? 'w-10 h-10' : 'w-9 h-9'
-              )}
+              size="icon"
+              aria-label="Clear canvas"
+              className={stageDockButton}
               onClick={() => {
                 pushHistory();
                 setGrid((prev) => ({
@@ -1208,11 +1143,43 @@ export const GridPaintPage: React.FC = () => {
                 }));
               }}
             >
-              <Trash2 size={16} strokeWidth={2} />
+              <Trash2 size={14} />
             </Button>
           </Tooltip>
-        </div>
-      </div>
+        </StageDockReveal>
+        <StageDockDivider />
+        <StageDockGroup
+          icon={<Download size={14} />}
+          label={t('toolDock.export')}
+          onOpenChange={setExportOpen}
+        >
+          <StageDockText>{activeCount} dots</StageDockText>
+          <Button variant="surface" size="xs" className="shrink-0 gap-1.5" onClick={exportSVG}>
+            SVG
+          </Button>
+          <Button variant="surface" size="xs" className="shrink-0 gap-1.5" onClick={exportPNG}>
+            PNG
+          </Button>
+          <Tooltip content="Copy state to clipboard">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={stageDockButton}
+              onClick={() => copyToClipboard(JSON.stringify({ grid: grid.cells, config }))}
+              aria-label="Copy state to clipboard"
+            >
+              <Copy size={14} />
+            </Button>
+          </Tooltip>
+          <SendToButton
+            source="grid-paint"
+            outputMime="image/png"
+            mimeType="image/png"
+            variant="node"
+            getImageBase64={() => canvasRef.current?.toDataURL('image/png')}
+          />
+        </StageDockGroup>
+      </StageDock>
 
       {/* Right panel – desktop */}
       {!isMobile && (
@@ -1334,6 +1301,7 @@ export const GridPaintPage: React.FC = () => {
               <NodeSlider
                 label={t('grid.paint.width')}
                 value={config.frameW}
+                resetValue={DEFAULT_CONFIG.frameW}
                 min={200}
                 max={4000}
                 step={10}
@@ -1343,6 +1311,7 @@ export const GridPaintPage: React.FC = () => {
               <NodeSlider
                 label={t('grid.paint.height')}
                 value={config.frameH}
+                resetValue={DEFAULT_CONFIG.frameH}
                 min={200}
                 max={4000}
                 step={10}
@@ -1352,6 +1321,7 @@ export const GridPaintPage: React.FC = () => {
               <NodeSlider
                 label="Spacing"
                 value={config.spacing}
+                resetValue={DEFAULT_CONFIG.spacing}
                 min={20}
                 max={200}
                 step={1}
@@ -1367,6 +1337,7 @@ export const GridPaintPage: React.FC = () => {
               <NodeSlider
                 label={t('grid.paint.dot_radius')}
                 value={config.dotRadius}
+                resetValue={DEFAULT_CONFIG.dotRadius}
                 min={2}
                 max={40}
                 step={1}
@@ -1376,27 +1347,30 @@ export const GridPaintPage: React.FC = () => {
               <NodeSlider
                 label={t('grid.paint.blob')}
                 value={config.blobFactor}
+                resetValue={DEFAULT_CONFIG.blobFactor}
                 min={0.05}
                 max={1}
                 step={0.05}
                 onChange={(v) => updateConfig({ blobFactor: v })}
               />
               <NodeSlider
-                label="Tension"
-                value={config.curveTension}
-                min={0.05}
-                max={1}
-                step={0.05}
-                onChange={(v) => updateConfig({ curveTension: v })}
-              />
-              <NodeSlider
                 label={t('grid.paint.glow')}
                 value={config.glow}
+                resetValue={DEFAULT_CONFIG.glow}
                 min={0}
                 max={30}
                 step={1}
                 onChange={(v) => updateConfig({ glow: v })}
                 formatValue={(v) => `${v}px`}
+              />
+              <NodeSlider
+                label="Tension"
+                value={config.curveTension}
+                resetValue={DEFAULT_CONFIG.curveTension}
+                min={0.05}
+                max={1}
+                step={0.05}
+                onChange={(v) => updateConfig({ curveTension: v })}
               />
             </div>
 
@@ -1418,6 +1392,7 @@ export const GridPaintPage: React.FC = () => {
                 <NodeSlider
                   label={t('grid.paint.width_2')}
                   value={config.strokeWidth}
+                  resetValue={DEFAULT_CONFIG.strokeWidth}
                   min={0.5}
                   max={5}
                   step={0.25}
@@ -1564,6 +1539,7 @@ export const GridPaintPage: React.FC = () => {
               <NodeSlider
                 label={t('grid.paint.width')}
                 value={config.frameW}
+                resetValue={DEFAULT_CONFIG.frameW}
                 min={200}
                 max={4000}
                 step={10}
@@ -1573,6 +1549,7 @@ export const GridPaintPage: React.FC = () => {
               <NodeSlider
                 label={t('grid.paint.height')}
                 value={config.frameH}
+                resetValue={DEFAULT_CONFIG.frameH}
                 min={200}
                 max={4000}
                 step={10}
@@ -1582,6 +1559,7 @@ export const GridPaintPage: React.FC = () => {
               <NodeSlider
                 label="Spacing"
                 value={config.spacing}
+                resetValue={DEFAULT_CONFIG.spacing}
                 min={20}
                 max={200}
                 step={1}
@@ -1595,6 +1573,7 @@ export const GridPaintPage: React.FC = () => {
               <NodeSlider
                 label={t('grid.paint.dot_radius_2')}
                 value={config.dotRadius}
+                resetValue={DEFAULT_CONFIG.dotRadius}
                 min={2}
                 max={40}
                 step={1}
@@ -1604,27 +1583,30 @@ export const GridPaintPage: React.FC = () => {
               <NodeSlider
                 label={t('grid.paint.blob_2')}
                 value={config.blobFactor}
+                resetValue={DEFAULT_CONFIG.blobFactor}
                 min={0.05}
                 max={1}
                 step={0.05}
                 onChange={(v) => updateConfig({ blobFactor: v })}
               />
               <NodeSlider
-                label="Tension"
-                value={config.curveTension}
-                min={0.05}
-                max={1}
-                step={0.05}
-                onChange={(v) => updateConfig({ curveTension: v })}
-              />
-              <NodeSlider
                 label={t('grid.paint.glow_2')}
                 value={config.glow}
+                resetValue={DEFAULT_CONFIG.glow}
                 min={0}
                 max={30}
                 step={1}
                 onChange={(v) => updateConfig({ glow: v })}
                 formatValue={(v) => `${v}px`}
+              />
+              <NodeSlider
+                label="Tension"
+                value={config.curveTension}
+                resetValue={DEFAULT_CONFIG.curveTension}
+                min={0.05}
+                max={1}
+                step={0.05}
+                onChange={(v) => updateConfig({ curveTension: v })}
               />
             </div>
             {/* Stroke */}
@@ -1645,6 +1627,7 @@ export const GridPaintPage: React.FC = () => {
                 <NodeSlider
                   label={t('grid.paint.width_3')}
                   value={config.strokeWidth}
+                  resetValue={DEFAULT_CONFIG.strokeWidth}
                   min={0.5}
                   max={5}
                   step={0.25}
@@ -1668,19 +1651,6 @@ export const GridPaintPage: React.FC = () => {
             </div>
           </GlassPanel>
         </AppShellMobileSheet>
-      )}
-
-      {!isMobile && (
-        <AppShellStatusBar>
-          <span>{Math.round(zoom * 100)}%</span>
-          <span>{activeCount} dots</span>
-          <span>
-            {config.frameW}×{config.frameH}
-          </span>
-          <span>spacing {config.spacing}px</span>
-          <span>r {config.dotRadius}px</span>
-          {config.strokeOnly && <span className="text-foreground">stroke</span>}
-        </AppShellStatusBar>
       )}
     </AppShell>
   );

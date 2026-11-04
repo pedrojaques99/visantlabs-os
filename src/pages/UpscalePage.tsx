@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Maximize2, Diamond, X } from '@/lib/ui/icons';
+import { Maximize2, X } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,7 @@ import { ImageCompareSlider } from '@/components/shared/ImageCompareSlider';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
+import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Dropzone } from '@/components/ui/Dropzone';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -247,29 +248,16 @@ export const UpscalePage: React.FC = () => {
         </div>
 
         {/* Sharpening slider */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <Diamond size={10} className="text-muted-foreground" />
-              <span className="text-xs font-medium text-muted-foreground">
-                {t('miniTools.upscale.sharpening')}
-              </span>
-            </div>
-            <span className="text-2xs font-mono text-muted-foreground tabular-nums">
-              {Math.round(sharpening * 100)}%
-            </span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.05"
-            value={sharpening}
-            onChange={(e) => setSharpening(parseFloat(e.target.value))}
-            disabled={isProcessing}
-            className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
-          />
-        </div>
+        <NodeSlider
+          label={t('miniTools.upscale.sharpening')}
+          value={sharpening}
+          min={0}
+          max={1}
+          step={0.05}
+          onChange={setSharpening}
+          formatValue={(v) => `${Math.round(v * 100)}%`}
+          disabled={isProcessing}
+        />
       </div>
 
       <div className="h-px bg-border" />

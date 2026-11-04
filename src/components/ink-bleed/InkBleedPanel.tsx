@@ -30,6 +30,7 @@ import {
   ExpandableColorPicker,
   SectionLabel,
   ToolPanelChip,
+  ToolPanelDisclosure,
   ToolPanelSection,
 } from '@/components/shared/ToolPanel';
 import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
@@ -45,7 +46,14 @@ import {
 import { ensureFont, measureLines } from '@/lib/ink-bleed/fonts';
 import { PAPER_STOCKS, drawPaper, drawVeil } from '@/lib/ink-bleed/paper';
 import { FONT_CHOICES, INK_SWATCHES, PRESETS, createDefaultDoc } from '@/lib/ink-bleed/presets';
-import type { DragAxis, FormatId, MotionMode, PaperType, TextAlign } from '@/lib/ink-bleed/types';
+import type {
+  DragAxis,
+  FormatId,
+  InkSettings,
+  MotionMode,
+  PaperType,
+  TextAlign,
+} from '@/lib/ink-bleed/types';
 import { useInkBleedStore } from '@/stores/inkBleedStore';
 
 /** Neutral thumb: on this panel, cyan is reserved for the selected style. */
@@ -54,6 +62,12 @@ const InkSlider: React.FC<NodeSliderProps> = (props) => (
 );
 
 const pct = (v: number) => `${Math.round(v)}%`;
+
+/** What "back to default" means: the style these values started from. */
+function useBaseStyle() {
+  const baseId = useInkBleedStore((s) => s.doc.basePresetId);
+  return PRESETS.find((preset) => preset.id === baseId) ?? PRESETS[0];
+}
 
 const FORMAT_OPTIONS = (Object.keys(FORMATS) as FormatId[]).map((value) => ({
   value,
@@ -474,6 +488,13 @@ const InkSection: React.FC = () => {
   const ink = useInkBleedStore((s) => s.doc.ink);
   const setInk = useInkBleedStore((s) => s.setInk);
   const newVariation = useInkBleedStore((s) => s.newVariation);
+  const base = useBaseStyle();
+
+  // Only there when a value in the group differs from the style it started from.
+  const resetIfChanged = (keys: (keyof InkSettings)[]) =>
+    keys.some((key) => ink[key] !== base.ink[key])
+      ? () => setInk(Object.fromEntries(keys.map((key) => [key, base.ink[key]])))
+      : undefined;
 
   return (
     <>
@@ -484,62 +505,14 @@ const InkSection: React.FC = () => {
         presets={INK_SWATCHES}
       />
 
-      <ToolPanelSection title={t('inkBleed.ink.opticsTitle')}>
-        <InkSlider
-          label={t('inkBleed.ink.defocus')}
-          value={ink.defocus}
-          min={0}
-          max={100}
-          step={1}
-          onChange={(defocus) => setInk({ defocus })}
-          formatValue={pct}
-        />
-        <InkSlider
-          label={t('inkBleed.ink.halo')}
-          value={ink.halo}
-          min={0}
-          max={100}
-          step={1}
-          onChange={(halo) => setInk({ halo })}
-          formatValue={pct}
-        />
-        <InkSlider
-          label={t('inkBleed.ink.drag')}
-          value={ink.drag}
-          min={0}
-          max={100}
-          step={1}
-          onChange={(drag) => setInk({ drag })}
-          formatValue={pct}
-        />
-        {ink.drag > 0 && (
-          <SegmentedControl
-            aria-label={t('inkBleed.ink.dragAxis')}
-            size="xs"
-            fullWidth
-            value={ink.dragAxis}
-            onChange={(dragAxis: DragAxis) => setInk({ dragAxis })}
-            options={[
-              { value: 'vertical', label: t('inkBleed.ink.dragVertical') },
-              { value: 'horizontal', label: t('inkBleed.ink.dragHorizontal') },
-            ]}
-          />
-        )}
-        <InkSlider
-          label={t('inkBleed.ink.ghost')}
-          value={ink.ghost}
-          min={0}
-          max={100}
-          step={1}
-          onChange={(ghost) => setInk({ ghost })}
-          formatValue={pct}
-        />
-      </ToolPanelSection>
-
-      <ToolPanelSection title={t('inkBleed.ink.bleedTitle')}>
+      <ToolPanelSection
+        title={t('inkBleed.ink.bleedTitle')}
+        onReset={resetIfChanged(['bleedSpread', 'roughness', 'inkErosion', 'inkOpacity'])}
+      >
         <InkSlider
           label={t('inkBleed.ink.spread')}
           value={ink.bleedSpread}
+          resetValue={base.ink.bleedSpread}
           min={0}
           max={100}
           step={1}
@@ -549,6 +522,7 @@ const InkSection: React.FC = () => {
         <InkSlider
           label={t('inkBleed.ink.roughness')}
           value={ink.roughness}
+          resetValue={base.ink.roughness}
           min={0}
           max={100}
           step={1}
@@ -556,12 +530,23 @@ const InkSection: React.FC = () => {
           formatValue={pct}
         />
         <InkSlider
-          label={t('inkBleed.ink.feather')}
-          value={ink.edgeFeather}
+          label={t('inkBleed.ink.erosion')}
+          value={ink.inkErosion}
+          resetValue={base.ink.inkErosion}
           min={0}
           max={100}
           step={1}
-          onChange={(edgeFeather) => setInk({ edgeFeather })}
+          onChange={(inkErosion) => setInk({ inkErosion })}
+          formatValue={pct}
+        />
+        <InkSlider
+          label={t('inkBleed.ink.opacity')}
+          value={ink.inkOpacity}
+          resetValue={base.ink.inkOpacity}
+          min={10}
+          max={100}
+          step={1}
+          onChange={(inkOpacity) => setInk({ inkOpacity })}
           formatValue={pct}
         />
         <ToolPanelChip
@@ -572,75 +557,135 @@ const InkSection: React.FC = () => {
           {t('inkBleed.ink.variation')}
         </ToolPanelChip>
       </ToolPanelSection>
-
-      <ToolPanelSection title={t('inkBleed.ink.fiberTitle')}>
-        <InkSlider
-          label={t('inkBleed.ink.frequency')}
-          value={ink.frequency * 1000}
-          min={8}
-          max={80}
-          step={1}
-          onChange={(v) => setInk({ frequency: v / 1000 })}
-          formatValue={(v) => String(Math.round(v))}
-        />
-        <InkSlider
-          label={t('inkBleed.ink.streaks')}
-          value={ink.capillaryStreaks}
-          min={0}
-          max={100}
-          step={1}
-          onChange={(capillaryStreaks) => setInk({ capillaryStreaks })}
-          formatValue={pct}
-        />
-        <InkSlider
-          label={t('inkBleed.ink.detail')}
-          value={ink.octaves}
-          min={1}
-          max={4}
-          step={1}
-          onChange={(octaves) => setInk({ octaves })}
-          formatValue={(v) => String(Math.round(v))}
-        />
-      </ToolPanelSection>
-
-      <ToolPanelSection title={t('inkBleed.ink.wearTitle')}>
-        <InkSlider
-          label={t('inkBleed.ink.core')}
-          value={ink.coreFillDensity}
-          min={0}
-          max={100}
-          step={1}
-          onChange={(coreFillDensity) => setInk({ coreFillDensity })}
-          formatValue={pct}
-        />
-        <InkSlider
-          label={t('inkBleed.ink.erosion')}
-          value={ink.inkErosion}
-          min={0}
-          max={100}
-          step={1}
-          onChange={(inkErosion) => setInk({ inkErosion })}
-          formatValue={pct}
-        />
-        <InkSlider
-          label={t('inkBleed.ink.grit')}
-          value={ink.tonerGrit}
-          min={0}
-          max={100}
-          step={1}
-          onChange={(tonerGrit) => setInk({ tonerGrit })}
-          formatValue={pct}
-        />
-        <InkSlider
-          label={t('inkBleed.ink.opacity')}
-          value={ink.inkOpacity}
-          min={10}
-          max={100}
-          step={1}
-          onChange={(inkOpacity) => setInk({ inkOpacity })}
-          formatValue={pct}
-        />
-      </ToolPanelSection>
+      <ToolPanelDisclosure label={t('inkBleed.advanced')}>
+        <ToolPanelSection
+          title={t('inkBleed.ink.opticsTitle')}
+          onReset={resetIfChanged(['defocus', 'halo', 'drag', 'ghost'])}
+        >
+          <InkSlider
+            label={t('inkBleed.ink.defocus')}
+            value={ink.defocus}
+            resetValue={base.ink.defocus}
+            min={0}
+            max={100}
+            step={1}
+            onChange={(defocus) => setInk({ defocus })}
+            formatValue={pct}
+          />
+          <InkSlider
+            label={t('inkBleed.ink.halo')}
+            value={ink.halo}
+            resetValue={base.ink.halo}
+            min={0}
+            max={100}
+            step={1}
+            onChange={(halo) => setInk({ halo })}
+            formatValue={pct}
+          />
+          <InkSlider
+            label={t('inkBleed.ink.drag')}
+            value={ink.drag}
+            resetValue={base.ink.drag}
+            min={0}
+            max={100}
+            step={1}
+            onChange={(drag) => setInk({ drag })}
+            formatValue={pct}
+          />
+          {ink.drag > 0 && (
+            <SegmentedControl
+              aria-label={t('inkBleed.ink.dragAxis')}
+              size="xs"
+              fullWidth
+              value={ink.dragAxis}
+              onChange={(dragAxis: DragAxis) => setInk({ dragAxis })}
+              options={[
+                { value: 'vertical', label: t('inkBleed.ink.dragVertical') },
+                { value: 'horizontal', label: t('inkBleed.ink.dragHorizontal') },
+              ]}
+            />
+          )}
+          <InkSlider
+            label={t('inkBleed.ink.ghost')}
+            value={ink.ghost}
+            resetValue={base.ink.ghost}
+            min={0}
+            max={100}
+            step={1}
+            onChange={(ghost) => setInk({ ghost })}
+            formatValue={pct}
+          />
+        </ToolPanelSection>
+        <ToolPanelSection
+          title={t('inkBleed.ink.fiberTitle')}
+          onReset={resetIfChanged(['frequency', 'capillaryStreaks', 'octaves', 'edgeFeather'])}
+        >
+          <InkSlider
+            label={t('inkBleed.ink.frequency')}
+            value={ink.frequency * 1000}
+            min={8}
+            max={80}
+            step={1}
+            onChange={(v) => setInk({ frequency: v / 1000 })}
+            formatValue={(v) => String(Math.round(v))}
+          />
+          <InkSlider
+            label={t('inkBleed.ink.streaks')}
+            value={ink.capillaryStreaks}
+            resetValue={base.ink.capillaryStreaks}
+            min={0}
+            max={100}
+            step={1}
+            onChange={(capillaryStreaks) => setInk({ capillaryStreaks })}
+            formatValue={pct}
+          />
+          <InkSlider
+            label={t('inkBleed.ink.detail')}
+            value={ink.octaves}
+            resetValue={base.ink.octaves}
+            min={1}
+            max={4}
+            step={1}
+            onChange={(octaves) => setInk({ octaves })}
+            formatValue={(v) => String(Math.round(v))}
+          />
+          <InkSlider
+            label={t('inkBleed.ink.feather')}
+            value={ink.edgeFeather}
+            resetValue={base.ink.edgeFeather}
+            min={0}
+            max={100}
+            step={1}
+            onChange={(edgeFeather) => setInk({ edgeFeather })}
+            formatValue={pct}
+          />
+        </ToolPanelSection>
+        <ToolPanelSection
+          title={t('inkBleed.ink.wearTitle')}
+          onReset={resetIfChanged(['coreFillDensity', 'tonerGrit'])}
+        >
+          <InkSlider
+            label={t('inkBleed.ink.core')}
+            value={ink.coreFillDensity}
+            resetValue={base.ink.coreFillDensity}
+            min={0}
+            max={100}
+            step={1}
+            onChange={(coreFillDensity) => setInk({ coreFillDensity })}
+            formatValue={pct}
+          />
+          <InkSlider
+            label={t('inkBleed.ink.grit')}
+            value={ink.tonerGrit}
+            resetValue={base.ink.tonerGrit}
+            min={0}
+            max={100}
+            step={1}
+            onChange={(tonerGrit) => setInk({ tonerGrit })}
+            formatValue={pct}
+          />
+        </ToolPanelSection>
+      </ToolPanelDisclosure>
     </>
   );
 };
@@ -649,6 +694,7 @@ const PaperSection: React.FC = () => {
   const { t } = useTranslation();
   const paper = useInkBleedStore((s) => s.doc.paper);
   const setPaper = useInkBleedStore((s) => s.setPaper);
+  const base = useBaseStyle();
   const isTransparent = paper.paperType === 'transparent';
 
   const selectStock = (type: PaperType, color: string) =>
@@ -692,6 +738,7 @@ const PaperSection: React.FC = () => {
           <InkSlider
             label={t('inkBleed.paper.sepia')}
             value={paper.agingSepia}
+            resetValue={base.paper.agingSepia}
             min={0}
             max={100}
             step={1}
@@ -701,6 +748,7 @@ const PaperSection: React.FC = () => {
           <InkSlider
             label={t('inkBleed.paper.grain')}
             value={paper.fiberGrain}
+            resetValue={base.paper.fiberGrain}
             min={0}
             max={100}
             step={1}
@@ -710,6 +758,7 @@ const PaperSection: React.FC = () => {
           <InkSlider
             label={t('inkBleed.paper.vignette')}
             value={paper.vignette}
+            resetValue={base.paper.vignette}
             min={0}
             max={100}
             step={1}
@@ -717,10 +766,11 @@ const PaperSection: React.FC = () => {
             formatValue={pct}
           />
 
-          <ToolPanelSection title={t('inkBleed.paper.collageTitle')}>
+          <ToolPanelDisclosure label={t('inkBleed.paper.collageTitle')}>
             <InkSlider
               label={t('inkBleed.paper.patches')}
               value={paper.patches}
+              resetValue={base.paper.patches}
               min={0}
               max={100}
               step={1}
@@ -732,6 +782,7 @@ const PaperSection: React.FC = () => {
                 <InkSlider
                   label={t('inkBleed.paper.veil')}
                   value={paper.veil}
+                  resetValue={base.paper.veil}
                   min={0}
                   max={100}
                   step={1}
@@ -748,6 +799,7 @@ const PaperSection: React.FC = () => {
             <InkSlider
               label={t('inkBleed.paper.scanLines')}
               value={paper.scanLines}
+              resetValue={base.paper.scanLines}
               min={0}
               max={100}
               step={1}
@@ -757,13 +809,14 @@ const PaperSection: React.FC = () => {
             <InkSlider
               label={t('inkBleed.paper.dust')}
               value={paper.dust}
+              resetValue={base.paper.dust}
               min={0}
               max={100}
               step={1}
               onChange={(dust) => setPaper({ dust })}
               formatValue={pct}
             />
-          </ToolPanelSection>
+          </ToolPanelDisclosure>
         </>
       )}
     </>

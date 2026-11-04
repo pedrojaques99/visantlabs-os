@@ -2787,6 +2787,7 @@
       "failedToSaveImage": "Não deu para salvar a imagem",
       "failedToFindNodePosition": "Não achei a posição do nó",
       "advancedSettings": "Configurações avançadas",
+      "typeValue": "Digitar valor",
       "dragToAdjust": "Arraste para ajustar",
       "selectResolution": "Escolha a resolução",
       "creditsCount": "{count} créditos"
@@ -6485,6 +6486,27 @@
     "galeria_da_comunidade": "Galeria da comunidade"
   },
   "studio3d": {
+    "panelTabs": {
+      "basics": "Básico",
+      "model": "Modelo",
+      "object": "Objeto",
+      "scene": "Cena",
+      "animate": "Animar",
+      "effects": "Efeitos"
+    },
+    "basics": {
+      "brand": "Marca",
+      "useLogo": "Usar logo de {name}",
+      "object": "Objeto",
+      "materialColor": "Cor do material",
+      "size": "Tamanho",
+      "depth": "Profundidade",
+      "background": "Fundo",
+      "backgroundColor": "Cor de fundo",
+      "effects": "Efeitos",
+      "intensity": "Intensidade",
+      "shaderHint": "Ajuste os parâmetros do shader na aba Efeitos."
+    },
     "title": "3D Studio",
     "loadingEngine": "Carregando Motor 3D...",
     "backToApps": "Voltar aos apps",
@@ -6895,7 +6917,7 @@
     "filters": "Filtros",
     "fromPdf": "Extrair de PDF",
     "search": "Buscar",
-    "columns": "Colunas ({count})",
+    "columns": "Colunas",
     "resolution": "Resolução",
     "any": "Qualquer",
     "contentModes": {
@@ -8427,6 +8449,17 @@
     "body": "Suba de plano pra ter mais espaço e continuar enviando imagens.",
     "upgrade": "Fazer upgrade"
   },
+  "toolDock": {
+    "export": "Exportar",
+    "details": "Detalhes",
+    "play": "Reproduzir (Espaço)",
+    "pause": "Pausar (Espaço)",
+    "timeline": "Linha do tempo",
+    "zoom": "Zoom",
+    "zoomIn": "Aproximar",
+    "zoomOut": "Afastar",
+    "fit": "Ajustar à tela"
+  },
   "toolEditor": {
     "export": {
       "title": "Exportar",
@@ -9030,14 +9063,6 @@
       "duration": "Duração",
       "speed": "Velocidade"
     },
-    "transport": {
-      "play": "Reproduzir (Espaço)",
-      "pause": "Pausar (Espaço)",
-      "timeline": "Linha do tempo",
-      "zoomIn": "Aproximar",
-      "zoomOut": "Afastar",
-      "fit": "Ajustar à tela"
-    },
     "export": {
       "title": "Exportar",
       "format": "Formato do arquivo",
@@ -9062,6 +9087,7 @@
     "brandApplied": "Cores, fonte e nome de {brand} aplicados",
     "brandRelease": "Soltar marca",
     "shuffle": "Embaralhar",
+    "advanced": "Avançado",
     "shuffleHint": "Sorteia efeitos e parâmetros (S). Texto e fonte ficam.",
     "saveBlocked": "O navegador está sem espaço. Sua arte não será salva se você recarregar a página: exporte antes de sair.",
     "minimapHint": "Ctrl ou ⌘ + clique na arte para posicionar",

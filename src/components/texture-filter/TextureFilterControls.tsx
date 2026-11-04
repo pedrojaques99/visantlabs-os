@@ -15,7 +15,6 @@ import {
 } from '@/stores/textureFilterStore';
 import { UploadIcon, Layers, Blend, Move, RotateCw, Grid, Palette } from '@/lib/ui/icons';
 import { PanelSectionTabs, type PanelTab } from '@/components/shared/PanelSectionTabs';
-import { SendToButton } from '@/components/shared/SendToButton';
 import { PresetThumbnailStrip } from '@/components/shared/PresetThumbnailStrip';
 import {
   ToolPanel,
@@ -319,15 +318,6 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
           onExport={onExport}
           isExporting={store.isExporting}
           disabled={!store.imageUrl}
-          sendTo={
-            store.imageUrl ? (
-              <SendToButton
-                source="texture-filter"
-                outputMime="image/png"
-                imageUrl={store.imageUrl}
-              />
-            ) : undefined
-          }
           onCopyAsPng={onCopyAsPng}
         />
       </ToolPanel>

@@ -1,5 +1,5 @@
 // ui-scale-ignore-file: raio-sortido — arquivo novo dentro do orçamento de raios; a soma da catraca não distingue isso.
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { useTranslation } from '@/hooks/useTranslation';
 import { buildArtworkSvg, inkBlendMode } from '@/lib/ink-bleed/engine';
@@ -10,6 +10,7 @@ import type { ArtworkViewport } from './InkBleedCanvas';
 
 const MINIMAP_SIZE = 168;
 const MINIMAP_SIZE_PHONE = 96;
+const AWAKE_MS = 2000;
 
 interface InkBleedMinimapProps {
   viewport: ArtworkViewport;
@@ -60,6 +61,15 @@ export const InkBleedMinimap: React.FC<InkBleedMinimapProps> = ({ viewport, widt
   };
 
   const { visible } = viewport;
+
+  // Only there while the view moves. A mouse brings it back by hovering its corner.
+  const [awake, setAwake] = useState(true);
+  useEffect(() => {
+    setAwake(true);
+    const timer = setTimeout(() => setAwake(false), AWAKE_MS);
+    return () => clearTimeout(timer);
+  }, [visible.x, visible.y, visible.width]);
+
   const layer = 'absolute inset-0 h-full w-full pointer-events-none';
 
   return (
@@ -67,9 +77,9 @@ export const InkBleedMinimap: React.FC<InkBleedMinimapProps> = ({ viewport, widt
       data-canvas-ui
       data-testid="ink-bleed-minimap"
       className={cn(
-        'absolute right-3 z-10 space-y-1.5 rounded-xl p-1.5 cursor-default',
-        // Below the row of tools, which takes the whole width of a phone.
-        isMobile ? 'top-[72px]' : 'top-3',
+        'absolute right-3 top-3 z-10 space-y-1.5 rounded-xl p-1.5 cursor-default',
+        'transition-opacity duration-[var(--dur-base)]',
+        !awake && 'opacity-0 hover:opacity-100 [@media(hover:none)]:pointer-events-none',
         'border border-border bg-card shadow-lg'
       )}
       onClick={(e) => e.stopPropagation()}

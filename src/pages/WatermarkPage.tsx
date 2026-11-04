@@ -16,6 +16,7 @@ import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
+import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Dropzone } from '@/components/ui/Dropzone';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Input } from '@/components/ui/input';
@@ -582,68 +583,40 @@ export const WatermarkPage: React.FC = () => {
         </div>
 
         {/* Opacity slider */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
-              {t('miniTools.watermark.opacity')}
-            </span>
-            <span className="text-2xs font-mono text-muted-foreground tabular-nums">
-              {Math.round(opacity * 100)}%
-            </span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={opacity}
-            onChange={(e) => setOpacity(parseFloat(e.target.value))}
-            disabled={isProcessing}
-            className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
-          />
-        </div>
+        <NodeSlider
+          label={t('miniTools.watermark.opacity')}
+          value={opacity}
+          min={0}
+          max={1}
+          step={0.01}
+          onChange={setOpacity}
+          formatValue={(v) => `${Math.round(v * 100)}%`}
+          disabled={isProcessing}
+        />
 
         {/* Size slider */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
-              {t('miniTools.watermark.size')}
-            </span>
-            <span className="text-2xs font-mono text-muted-foreground tabular-nums">{scale}%</span>
-          </div>
-          <input
-            type="range"
-            min="10"
-            max="100"
-            step="1"
-            value={scale}
-            onChange={(e) => setScale(parseInt(e.target.value))}
-            disabled={isProcessing}
-            className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
-          />
-        </div>
+        <NodeSlider
+          label={t('miniTools.watermark.size')}
+          value={scale}
+          min={10}
+          max={100}
+          step={1}
+          onChange={setScale}
+          formatValue={(v) => `${v}%`}
+          disabled={isProcessing}
+        />
 
         {/* Rotation slider */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
-              {t('miniTools.watermark.rotation')}
-            </span>
-            <span className="text-2xs font-mono text-muted-foreground tabular-nums">
-              {rotation}°
-            </span>
-          </div>
-          <input
-            type="range"
-            min="-180"
-            max="180"
-            step="1"
-            value={rotation}
-            onChange={(e) => setRotation(parseInt(e.target.value))}
-            disabled={isProcessing}
-            className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
-          />
-        </div>
+        <NodeSlider
+          label={t('miniTools.watermark.rotation')}
+          value={rotation}
+          min={-180}
+          max={180}
+          step={1}
+          onChange={setRotation}
+          formatValue={(v) => `${v}°`}
+          disabled={isProcessing}
+        />
       </div>
 
       <div className="h-px bg-border" />

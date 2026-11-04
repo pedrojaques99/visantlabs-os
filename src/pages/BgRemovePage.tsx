@@ -13,6 +13,7 @@ import { validateFile } from '@/utils/fileUtils';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Button } from '@/components/ui/button';
+import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Dropzone } from '@/components/ui/Dropzone';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -516,47 +517,27 @@ export const BgRemovePage: React.FC = () => {
           ) : (
             <motion.div key="simple-controls" {...fade} className="space-y-3">
               {/* Threshold */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {t('miniTools.bgRemove.threshold')}
-                  </span>
-                  <span className="text-2xs font-mono text-muted-foreground tabular-nums">
-                    {threshold}%
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="1"
-                  value={threshold}
-                  onChange={(e) => setThreshold(parseInt(e.target.value))}
-                  disabled={isProcessing}
-                  className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
-                />
-              </div>
+              <NodeSlider
+                label={t('miniTools.bgRemove.threshold')}
+                value={threshold}
+                min={0}
+                max={100}
+                step={1}
+                onChange={setThreshold}
+                formatValue={(v) => `${v}%`}
+                disabled={isProcessing}
+              />
               {/* Feather */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {t('miniTools.bgRemove.feather')}
-                  </span>
-                  <span className="text-2xs font-mono text-muted-foreground tabular-nums">
-                    {feather}px
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="10"
-                  step="1"
-                  value={feather}
-                  onChange={(e) => setFeather(parseInt(e.target.value))}
-                  disabled={isProcessing}
-                  className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
-                />
-              </div>
+              <NodeSlider
+                label={t('miniTools.bgRemove.feather')}
+                value={feather}
+                min={0}
+                max={10}
+                step={1}
+                onChange={setFeather}
+                formatValue={(v) => `${v}px`}
+                disabled={isProcessing}
+              />
             </motion.div>
           )}
         </AnimatePresence>

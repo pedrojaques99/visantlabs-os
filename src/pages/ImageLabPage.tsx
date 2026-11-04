@@ -1,11 +1,4 @@
-import React, {
-  useCallback,
-  useState,
-  useMemo,
-  useEffect,
-  useRef,
-  type PointerEvent as RPointerEvent,
-} from 'react';
+import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   CircleDot,
@@ -20,8 +13,8 @@ import {
   Pause,
   Zap,
   Blend,
-  Pin,
   HelpCircle,
+  Info,
   ChevronDown,
   Save,
 } from '@/lib/ui/icons';
@@ -30,6 +23,17 @@ import { cn } from '@/lib/utils';
 import { Thumb } from '@/components/ui/Thumb';
 import { API_BASE } from '@/config/api';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
+import {
+  StageDock,
+  StageDockDivider,
+  StageDockGroup,
+  StageDockReveal,
+  StageDockText,
+  StageDockTransport,
+  stageDockButton,
+} from '@/components/shared/StageDock';
+import { Button } from '@/components/ui/button';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { Dropzone } from '@/components/ui/Dropzone';
 import { HalftoneCanvas, type HalftoneCanvasHandle } from '@/components/halftone/HalftoneCanvas';
 import { generateHalftoneSvg } from '@/components/halftone/halftone-svg-export';
@@ -385,6 +389,8 @@ function usePresetCycling(mode: ImageLabMode) {
 
 /* ─── Main Page ─── */
 
+type HalftoneVideoControls = NonNullable<ReturnType<HalftoneCanvasHandle['getVideoControls']>>;
+
 export const ImageLabPage: React.FC = () => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
@@ -430,54 +436,9 @@ export const ImageLabPage: React.FC = () => {
   const [presetLibraryOpen, setPresetLibraryOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
-  const [fxBarVisible, setFxBarVisible] = useState(true);
-  const [fxBarPinned, setFxBarPinned] = useState(false);
-  const fxBarRef = useRef<HTMLDivElement>(null);
-  const fxHideTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const FX_PROXIMITY_PX = 80;
-  const FX_HIDE_DELAY = 1200;
-  const FX_INITIAL_DELAY = 2000;
-
-  const canAutoHide = !isMobile && !fxBarPinned;
-
-  useEffect(() => {
-    if (!canAutoHide) return;
-    const t = setTimeout(() => setFxBarVisible(false), FX_INITIAL_DELAY);
-    return () => clearTimeout(t);
-  }, [canAutoHide]);
-
-  // Clear the proximity-driven auto-hide timer on unmount (it's scheduled from
-  // pointer handlers, outside the effect above).
-  useEffect(() => () => clearTimeout(fxHideTimer.current), []);
-
-  const handleCanvasPointerMove = useCallback(
-    (e: RPointerEvent<HTMLDivElement>) => {
-      if (!canAutoHide) return;
-      const rect = e.currentTarget.getBoundingClientRect();
-      const relY = e.clientY - rect.top;
-      const nearTop = relY < FX_PROXIMITY_PX;
-
-      if (nearTop) {
-        clearTimeout(fxHideTimer.current);
-        setFxBarVisible(true);
-      } else if (!fxBarRef.current?.matches(':hover')) {
-        clearTimeout(fxHideTimer.current);
-        fxHideTimer.current = setTimeout(() => setFxBarVisible(false), FX_HIDE_DELAY);
-      }
-    },
-    [canAutoHide]
-  );
-
-  const handleFxBarEnter = useCallback(() => {
-    if (!canAutoHide) return;
-    clearTimeout(fxHideTimer.current);
-    setFxBarVisible(true);
-  }, [canAutoHide]);
-
-  const handleFxBarLeave = useCallback(() => {
-    if (!canAutoHide) return;
-    fxHideTimer.current = setTimeout(() => setFxBarVisible(false), FX_HIDE_DELAY);
-  }, [canAutoHide]);
+  const [timelineOpen, setTimelineOpen] = useState(false);
+  const [modesOpen, setModesOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const cyclePreset = usePresetCycling(mode);
 
@@ -605,6 +566,15 @@ export const ImageLabPage: React.FC = () => {
     if (mode === 'texture') return textureRef.current?.getVideoControls();
     return null;
   }, [mode]);
+
+  // Every effect keeps its canvas mounted and plays its own copy of the video, and they all report
+  // to the same store. Pausing only the visible one lets the others report "playing" right back.
+  const forEachVideo = useCallback((run: (vc: HalftoneVideoControls) => void) => {
+    for (const ref of [halftoneRef, risoRef, textureRef]) {
+      const vc = ref.current?.getVideoControls();
+      if (vc) run(vc);
+    }
+  }, []);
 
   const handleVideoExport = useCallback(
     async (fmt: VideoFormat, onProgress: (pct: number) => void) => {
@@ -925,12 +895,6 @@ export const ImageLabPage: React.FC = () => {
     []
   );
 
-  const tbBtn = cn(
-    'flex items-center justify-center rounded-xl transition-colors',
-    isMobile ? 'w-11 h-11' : 'w-9 h-9'
-  );
-  const tbIcon = isMobile ? 18 : 15;
-
   // `dark contents`: os modais irmãos do shell (export, presets) ficam no escopo escuro do editor.
   return (
     <div className="dark contents text-foreground">
@@ -946,288 +910,202 @@ export const ImageLabPage: React.FC = () => {
             : `All ${mode} settings will return to defaults.`
         }
         controlsPanel={controlsPanel}
-        statusItems={statusItems}
-        fileName={fileName}
         isDragOver={isDragOver}
         dragProps={dragProps}
         dropMessage={dropMessage}
         showLegalMenu={false}
         hideTopBar
+        onMobileSheetChange={setSheetOpen}
         canvasClassName="absolute inset-0 transition-[color,background-color,border-color,filter] duration-300"
       >
         {/* Funil de marca (Fase 5). Precisa ficar DENTRO do AppShell (zIndex 40),
-            senão o z-30 do banner some por baixo do shell. Posição custom: a
-            faixa top-center default colide com a FX bar (top-0 + mt-3, z-30),
-            então ancoramos no canto inferior esquerdo — livre em desktop (status
-            bar é bottom-center) e acima do mobile sheet (~56px) no mobile. */}
+            senão o z-30 do banner some por baixo do shell. No topo porque os
+            controles ficam todos na barra de baixo. */}
         <BrandFunnelBanner
           toolId="image-lab"
-          className="fixed bottom-16 md:bottom-3 left-3 z-30 flex items-center gap-3 rounded-full border border-border bg-popover/80 backdrop-blur-xl pl-3 pr-1.5 py-1.5 max-w-[calc(100vw-2rem)]"
+          className="fixed top-14 md:top-[68px] left-3 z-30 flex items-center gap-3 rounded-full border border-border bg-popover/80 backdrop-blur-xl pl-3 pr-1.5 py-1.5 max-w-[calc(100vw-2rem)]"
         />
-        {/* Proximity sensor for FX bar auto-hide (z-0: works when magic hand inactive) */}
-        <div className="absolute inset-0 z-0" onPointerMove={handleCanvasPointerMove} />
-        {/* Top-strip proximity trigger — z-20 above magic hand overlay (z-10).
-            Centered + bounded so it never overlaps the right control panel, whose
-            section-tab rail has clickable icons in the top-right corner. */}
-        <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[65%] max-w-3xl h-20 z-20"
-          onPointerMove={handleCanvasPointerMove}
-        />
-
-        {/* Floating tools — canvas-only actions */}
-        <div
-          className={cn(
-            'absolute left-3 top-3 z-20 flex flex-col gap-1 bg-popover/90 backdrop-blur-xl border border-border rounded-xl p-1.5 shadow-2xl shadow-black/50',
-            isMobile && 'left-2 top-2 p-1'
-          )}
-        >
-          <ImageLabUploadWidget imageUrl={sourceUrl} onLoad={broadcastImage} />
-          {hasImage && <OpacityToggle value={effectOpacity} onChange={setEffectOpacity} />}
-          {hasImage && (
+        {/* This stage runs under the closed sheet's bar, so on a phone the dock sits above it. */}
+        <StageDock className={isMobile && !sheetOpen ? 'bottom-[60px]' : 'bottom-3'}>
+          {hasImage && sourceMediaType === 'video' && videoDuration > 0 && (
             <>
-              <button
-                onClick={() => setMagicHandActive(false)}
-                title={t('imagelab.selectTool')}
-                className={cn(
-                  tbBtn,
-                  !magicHandActive
-                    ? 'bg-accent text-foreground ring-1 ring-ring shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                )}
-              >
-                <MousePointer2 size={tbIcon} />
-              </button>
-              <button
-                onClick={() => setMagicHandActive(!magicHandActive)}
-                title={t('imagelab.magicHand')}
-                className={cn(
-                  tbBtn,
-                  magicHandActive
-                    ? 'bg-accent text-foreground ring-1 ring-ring shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                )}
-              >
-                <Hand size={tbIcon} />
-              </button>
+              <StageDockTransport
+                playing={videoIsPlaying}
+                onToggle={() => forEachVideo((vc) => (videoIsPlaying ? vc.pause() : vc.play()))}
+                value={videoCurrentTime}
+                max={videoDuration}
+                step={0.01}
+                onSeek={(value) => forEachVideo((vc) => vc.seek(value))}
+                readout={`${videoCurrentTime.toFixed(1)}s / ${videoDuration.toFixed(1)}s`}
+                onOpenChange={setTimelineOpen}
+              />
+              <StageDockDivider />
             </>
           )}
-          {hasImage && sourceMediaType === 'video' && (
-            <>
-              <div className="h-px bg-border mx-1 my-0.5" />
-              <button
-                onClick={() => {
-                  const vc = getActiveVideoControls();
-                  if (vc) {
-                    if (videoIsPlaying) {
-                      vc.pause();
-                    } else {
-                      vc.play();
-                    }
-                  }
-                }}
-                title={videoIsPlaying ? t('imagelab.pause') : t('imagelab.play')}
-                className={cn(tbBtn, 'text-muted-foreground hover:text-foreground hover:bg-accent')}
-              >
-                {videoIsPlaying ? <Pause size={tbIcon} /> : <Play size={tbIcon} />}
-              </button>
-              {videoDuration > 0 && (
-                <div
-                  className="flex flex-col items-center gap-0.5 py-1"
-                  title={`${videoCurrentTime.toFixed(1)}s / ${videoDuration.toFixed(1)}s`}
-                >
-                  <input
-                    type="range"
-                    min={0}
-                    max={videoDuration}
-                    step={0.01}
-                    value={videoCurrentTime}
-                    onChange={(e) => {
-                      const vc = getActiveVideoControls();
-                      if (vc) vc.seek(parseFloat(e.target.value));
-                    }}
-                    className="w-7 h-[2px] appearance-none bg-border rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-foreground"
-                    style={{
-                      writingMode: 'vertical-lr',
-                      direction: 'rtl',
-                      height: '56px',
-                      width: '12px',
-                    }}
-                  />
-                  <span className="text-2xs tabular-nums text-muted-foreground">
-                    {videoCurrentTime.toFixed(1)}s
-                  </span>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Floating top bar — FX modes + undo/redo + panel toggle */}
-        <div
-          ref={fxBarRef}
-          className="absolute top-0 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center"
-          onPointerEnter={handleFxBarEnter}
-          onPointerLeave={handleFxBarLeave}
-        >
-          {/* Collapsed handle — always visible on desktop when bar is hidden */}
-          {canAutoHide && (
-            <button
-              onClick={() => {
-                clearTimeout(fxHideTimer.current);
-                setFxBarVisible(true);
-              }}
-              title={t('imagelab.showFxBar')}
-              aria-label={t('imagelab.showFxBar')}
-              className={cn(
-                'flex items-center justify-center h-5 px-8 rounded-b-xl transition-[color,background-color,border-color,opacity,filter] duration-300',
-                'bg-background/90 border-b border-x border-border',
-                'text-muted-foreground hover:text-foreground hover:bg-background',
-                fxBarVisible ? 'opacity-0 pointer-events-none' : 'opacity-100'
-              )}
-            >
-              <ChevronDown size={10} />
-            </button>
-          )}
-
-          {/* Full bar */}
-          <div
-            className={cn(
-              'mt-3 transition-[opacity,transform] duration-300',
-              fxBarVisible
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 -translate-y-2 pointer-events-none'
-            )}
-          >
-            <div className="flex items-center gap-1 px-1.5 py-1 rounded-full bg-background/95 border border-border shadow-lg">
-              {/* Undo / Redo */}
-              <div className="flex items-center gap-0.5 pr-1 border-r border-border">
-                <button
-                  onClick={undo}
-                  disabled={historyIndex < 0}
-                  title={t('imagelab.undo')}
-                  aria-label={t('imagelab.undo')}
-                  className="flex items-center justify-center w-7 h-7 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-25 disabled:pointer-events-none"
-                >
-                  <Undo2 size={14} />
-                </button>
-                <button
-                  onClick={redo}
-                  disabled={historyIndex >= historyLength - 1}
-                  title={t('imagelab.redo')}
-                  aria-label={t('imagelab.redo')}
-                  className="flex items-center justify-center w-7 h-7 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-25 disabled:pointer-events-none"
-                >
-                  <Redo2 size={14} />
-                </button>
-              </div>
-
-              {/* FX Mode tabs */}
-              {MODE_ITEMS.map((m, i) => {
-                const thumb = thumbs[m.id];
-                const isActive = mode === m.id;
-                return (
-                  <button
-                    key={m.id}
-                    onClick={() => handleModeChange(m.id)}
-                    className={cn(
-                      'group/fx relative flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-[color,background-color,border-color,box-shadow] duration-200 text-2xs font-medium whitespace-nowrap',
-                      isActive
-                        ? 'bg-accent text-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                    )}
-                  >
-                    <span
+          {/* On a phone the timeline and the list of effects need the row: the rest makes way. */}
+          <StageDockReveal atRest open={!isMobile || !timelineOpen}>
+            <ImageLabUploadWidget
+              imageUrl={sourceUrl}
+              onLoad={broadcastImage}
+              className={stageDockButton}
+            />
+            {hasImage && <OpacityToggle value={effectOpacity} onChange={setEffectOpacity} />}
+            <StageDockDivider />
+            {MODE_ITEMS.map((m) => {
+              const thumb = thumbs[m.id];
+              const isActive = mode === m.id;
+              return (
+                <StageDockReveal key={m.id} atRest open={!isMobile || isActive || modesOpen}>
+                  <div className="group/fx relative shrink-0">
+                    <Button
+                      variant="ghost"
+                      aria-label={m.label}
+                      aria-pressed={isActive}
+                      title={m.label}
                       className={cn(
-                        'transition-colors',
-                        isActive
-                          ? 'text-foreground'
-                          : 'text-muted-foreground group-hover/fx:text-foreground'
+                        stageDockButton,
+                        'w-auto min-w-7 gap-1.5 px-1.5 text-2xs font-medium [@media(pointer:coarse)]:w-11 [@media(pointer:coarse)]:px-0',
+                        isActive && 'bg-accent text-foreground'
                       )}
+                      onClick={() => {
+                        if (isMobile && isActive) {
+                          setModesOpen((open) => !open);
+                          return;
+                        }
+                        setModesOpen(false);
+                        handleModeChange(m.id);
+                      }}
                     >
                       {m.icon}
-                    </span>
-                    <span>{m.label}</span>
-                    <span
-                      className={cn(
-                        'text-2xs font-mono tabular-nums transition-colors',
-                        isActive ? 'text-muted-foreground' : 'text-muted-foreground/60'
-                      )}
-                    >
-                      {i + 1}
-                    </span>
+                      {isActive && !isMobile && <span>{m.label}</span>}
+                    </Button>
                     {thumb && !isActive && (
-                      <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 opacity-0 group-hover/fx:opacity-100 transition-opacity duration-200 z-50">
-                        <div className="rounded-xl overflow-hidden border border-border shadow-xl shadow-black/60 bg-card">
-                          <Thumb src={thumb} alt="" className="w-28 h-28 object-cover" />
-                          <div className="px-2 py-1 text-2xs text-muted-foreground text-center bg-popover/90">
+                      <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 opacity-0 transition-opacity duration-200 group-hover/fx:opacity-100">
+                        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-xl shadow-black/60">
+                          <Thumb src={thumb} alt="" className="h-28 w-28 object-cover" />
+                          <div className="bg-popover/90 px-2 py-1 text-center text-2xs text-muted-foreground">
                             {m.label}
                           </div>
                         </div>
                       </div>
                     )}
-                  </button>
-                );
-              })}
-
-              {/* Help + Pin + Panel toggle */}
-              <div className="pl-1 border-l border-border flex items-center gap-0.5">
-                {hasImage && (
-                  <SendToButton
-                    source="image-lab"
-                    outputMime="image/png"
-                    mimeType="image/png"
-                    label={`Image Lab: ${mode}`}
-                    variant="node"
-                    getImageBase64={captureResultPng}
-                    className="mr-0.5"
-                  />
-                )}
-                <button
-                  onClick={() => setShortcutsOpen(true)}
-                  title={t('imagelab.shortcuts')}
-                  aria-label={t('imagelab.shortcuts')}
-                  className="flex items-center justify-center w-7 h-7 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  </div>
+                </StageDockReveal>
+              );
+            })}
+            <StageDockReveal atRest open={!isMobile || !modesOpen}>
+              <StageDockDivider />
+              {hasImage && (
+                <>
+                  {/* On a phone the hand alone is the switch: the row has no room for both. */}
+                  {!isMobile && (
+                    <Tooltip content={t('imagelab.selectTool')}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={t('imagelab.selectTool')}
+                        aria-pressed={!magicHandActive}
+                        className={cn(
+                          stageDockButton,
+                          !magicHandActive && 'bg-accent text-foreground'
+                        )}
+                        onClick={() => setMagicHandActive(false)}
+                      >
+                        <MousePointer2 size={14} />
+                      </Button>
+                    </Tooltip>
+                  )}
+                  <Tooltip content={t('imagelab.magicHand')}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={t('imagelab.magicHand')}
+                      aria-pressed={magicHandActive}
+                      className={cn(
+                        stageDockButton,
+                        magicHandActive && 'bg-accent text-foreground'
+                      )}
+                      onClick={() => setMagicHandActive(!magicHandActive)}
+                    >
+                      <Hand size={14} />
+                    </Button>
+                  </Tooltip>
+                </>
+              )}
+              <Tooltip content={t('imagelab.undo')}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t('imagelab.undo')}
+                  className={stageDockButton}
+                  disabled={historyIndex < 0}
+                  onClick={undo}
                 >
-                  <HelpCircle size={12} />
-                </button>
-                {!isMobile && (
-                  <>
-                    <button
-                      onClick={() => {
-                        setFxBarPinned(!fxBarPinned);
-                        setFxBarVisible(true);
-                      }}
-                      title={fxBarPinned ? t('imagelab.unpinBar') : t('imagelab.pinBar')}
-                      aria-label={fxBarPinned ? t('imagelab.unpinBar') : t('imagelab.pinBar')}
-                      aria-pressed={fxBarPinned}
-                      className={cn(
-                        'flex items-center justify-center w-7 h-7 rounded-full transition-colors',
-                        fxBarPinned
-                          ? 'text-foreground bg-accent'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                      )}
-                    >
-                      <Pin size={12} className={cn(fxBarPinned && 'rotate-45')} />
-                    </button>
-                    <button
-                      onClick={() => setPanelVisible(!panelVisible)}
-                      title={t('common.hidePanelShortcut')}
-                      aria-label={t('common.hidePanelShortcut')}
-                      className={cn(
-                        'flex items-center justify-center w-7 h-7 rounded-full transition-colors',
-                        panelVisible
-                          ? 'text-foreground'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                      )}
-                    >
-                      <PanelRightOpen size={14} />
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+                  <Undo2 size={14} />
+                </Button>
+              </Tooltip>
+              <Tooltip content={t('imagelab.redo')}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t('imagelab.redo')}
+                  className={stageDockButton}
+                  disabled={historyIndex >= historyLength - 1}
+                  onClick={redo}
+                >
+                  <Redo2 size={14} />
+                </Button>
+              </Tooltip>
+            </StageDockReveal>
+          </StageDockReveal>
+          {!isMobile && statusItems.length > 0 && (
+            <>
+              <StageDockDivider />
+              <StageDockGroup icon={<Info size={14} />} label={t('toolDock.details')}>
+                {statusItems.map((item) => (
+                  <StageDockText key={item.label}>{item.label}</StageDockText>
+                ))}
+                {fileName && <StageDockText>{fileName}</StageDockText>}
+              </StageDockGroup>
+            </>
+          )}
+          {hasImage && (
+            <SendToButton
+              source="image-lab"
+              outputMime="image/png"
+              mimeType="image/png"
+              label={`Image Lab: ${mode}`}
+              variant="node"
+              getImageBase64={captureResultPng}
+            />
+          )}
+          {!isMobile && (
+            <>
+              <Tooltip content={t('imagelab.shortcuts')}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t('imagelab.shortcuts')}
+                  className={stageDockButton}
+                  onClick={() => setShortcutsOpen(true)}
+                >
+                  <HelpCircle size={14} />
+                </Button>
+              </Tooltip>
+              <Tooltip content={t('common.hidePanelShortcut')}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t('common.hidePanelShortcut')}
+                  className={cn(stageDockButton, panelVisible && 'text-foreground')}
+                  onClick={() => setPanelVisible(!panelVisible)}
+                >
+                  <PanelRightOpen size={14} />
+                </Button>
+              </Tooltip>
+            </>
+          )}
+        </StageDock>
 
         <CanvasErrorBoundary>
           <div className={mode !== 'halftone' ? 'hidden' : 'contents'}>
@@ -1579,7 +1457,8 @@ const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> 
         title={t('imagelab.effectOpacity', { value: Math.round(value * 100) })}
         aria-label={t('imagelab.effectOpacity', { value: Math.round(value * 100) })}
         className={cn(
-          'flex items-center justify-center w-9 h-9 rounded-xl transition-colors',
+          'flex items-center justify-center rounded-xl transition-colors',
+          stageDockButton,
           open
             ? 'bg-accent text-foreground ring-1 ring-ring'
             : 'text-muted-foreground hover:text-foreground hover:bg-accent'
@@ -1588,7 +1467,7 @@ const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> 
         <Blend size={15} />
       </button>
       {open && (
-        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 z-30 flex items-center gap-2 bg-popover/95 backdrop-blur-xl border border-border rounded-xl px-3 py-2 shadow-2xl shadow-black/50 animate-fade-in">
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-30 flex items-center gap-2 bg-popover/95 backdrop-blur-xl border border-border rounded-xl px-3 py-2 shadow-2xl shadow-black/50 animate-fade-in">
           <span className="text-2xs tabular-nums text-muted-foreground w-6 text-right shrink-0">
             {Math.round(value * 100)}
           </span>

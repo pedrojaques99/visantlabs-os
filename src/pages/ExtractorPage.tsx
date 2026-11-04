@@ -22,6 +22,7 @@ import { PageShell } from '../components/ui/PageShell';
 import { imageApi, SearchImage, DesignerParams, ContentMode } from '../services/imageApi';
 import { applyShaderEffect } from '../utils/shaders/shaderRenderer';
 import { Button } from '../components/ui/button';
+import { NodeSlider } from '@/components/ui/NodeSlider';
 import { MediaTile } from '../components/ui/MediaTile';
 import { Badge } from '../components/ui/badge';
 import { toast } from 'sonner';
@@ -666,22 +667,16 @@ export default function ExtractorPage() {
                     glassSurface.panel
                   )}
                 >
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-muted-foreground pl-1">
-                      {t('extractor.columns', { count: columns })}
-                    </label>
-                    <div className="px-1 pt-2 pb-1">
-                      <input
-                        type="range"
-                        min="2"
-                        max="7"
-                        step="1"
-                        value={columns}
-                        onChange={(e) => setColumns(parseInt(e.target.value))}
-                        className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-brand-cyan"
-                      />
-                    </div>
-                  </div>
+                  <NodeSlider
+                    label={t('extractor.columns')}
+                    value={columns}
+                    min={2}
+                    max={7}
+                    step={1}
+                    onChange={setColumns}
+                    formatValue={String}
+                    resetValue={4}
+                  />
 
                   <div className="space-y-2">
                     <label className="text-xs font-medium text-muted-foreground pl-1">
