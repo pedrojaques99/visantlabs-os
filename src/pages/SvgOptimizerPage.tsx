@@ -503,6 +503,17 @@ export const SvgOptimizerPage: React.FC = () => {
       toolId="svg-optimizer"
       documentTitle={t('apps.svgOptimizer.name')}
       onReset={hasItems ? reset : undefined}
+      presets={{
+        toolId: 'svg-optimizer',
+        getData: () => ({ ...options }),
+        applyData: (data) => {
+          // Each change optimizes every file again, so only what differs.
+          for (const [key, value] of Object.entries(data)) {
+            const option = key as keyof typeof options;
+            if (options[option] !== value) setOption(option, value);
+          }
+        },
+      }}
       panel={panelContent}
       panelLabel={t('miniTools.panelLabel')}
       statusBar={statusBarContent}

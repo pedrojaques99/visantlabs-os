@@ -16,8 +16,10 @@ import {
   StageDock,
   StageDockDivider,
   StageDockGroup,
+  StageDockReset,
   StageDockText,
   stageDockButton,
+  stageDockPopover,
 } from '@/components/shared/StageDock';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -26,7 +28,14 @@ import { ControlsPanel } from '@/components/3d-studio/ControlsPanel';
 const SceneCanvas = React.lazy(() =>
   import('@/components/3d-studio/SceneCanvas').then((m) => ({ default: m.SceneCanvas }))
 );
-import { useStudio3DStore, saveScene, shareScene } from '@/stores/studio3dStore';
+import { StageDockPresets } from '@/components/shared/StageDockPresets';
+import {
+  useStudio3DStore,
+  saveScene,
+  shareScene,
+  getScenePreset,
+  applyScenePresetData,
+} from '@/stores/studio3dStore';
 import {
   exportPNG,
   exportVideo,
@@ -56,7 +65,6 @@ import {
   X,
   Undo2,
   Redo2,
-  RotateCcw,
   Download,
   PanelRightOpen,
   Eye,
@@ -756,17 +764,20 @@ export const Studio3DPage: React.FC = () => {
               <Redo2 size={14} />
             </Button>
           </Tooltip>
-          <Tooltip content={t('studio3d.resetScene')}>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t('studio3d.resetScene')}
-              className={stageDockButton}
-              onClick={resetScene}
-            >
-              <RotateCcw size={14} />
-            </Button>
-          </Tooltip>
+          <StageDockPresets
+            toolId="3d-studio"
+            getData={getScenePreset}
+            applyData={applyScenePresetData}
+          />
+          <StageDockReset
+            onReset={() => {
+              resetScene();
+              toast.success(t('common.settingsReset'));
+            }}
+            title={t('studio3d.resetScene')}
+            message={t('studio3d.resetConfirmMessage')}
+            confirmText={t('studio3d.resetConfirmButton')}
+          />
           <StageDockDivider />
           <div className="relative shrink-0">
             <Tooltip content="Scene options">
@@ -793,7 +804,12 @@ export const Studio3DPage: React.FC = () => {
                     if (e.key === 'Escape') setScenePopover(false);
                   }}
                 />
-                <div className="absolute bottom-full left-1/2 z-40 mb-2 min-w-[140px] -translate-x-1/2 space-y-0.5 rounded-xl border border-border bg-popover p-2 shadow-lg">
+                <div
+                  className={cn(
+                    stageDockPopover,
+                    'min-w-[140px] space-y-0.5 rounded-xl border border-border bg-popover p-2 shadow-lg'
+                  )}
+                >
                   {(
                     [
                       {

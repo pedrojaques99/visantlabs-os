@@ -1,14 +1,15 @@
 // ui-scale-ignore-file: raio-sortido — arquivo novo dentro do orçamento de raios; a soma da catraca não distingue isso.
 import React, { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { toast } from 'sonner';
-import { ConfirmationModal } from '@/components/ConfirmationModal';
 import {
   StageDock,
   StageDockDivider,
+  StageDockReset,
   StageDockReveal,
   StageDockZoom,
   stageDockButton,
 } from '@/components/shared/StageDock';
+import { StageDockPresets } from '@/components/shared/StageDockPresets';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -34,17 +35,9 @@ import { exportPng, exportPngDataUrl } from '@/lib/ink-bleed/exporter';
 import { ensureFont, measureLines } from '@/lib/ink-bleed/fonts';
 import { createLogoMask } from '@/lib/ink-bleed/logoMask';
 import { shuffleDoc } from '@/lib/ink-bleed/shuffle';
-import {
-  Download,
-  Eraser,
-  PanelRightClose,
-  PanelRightOpen,
-  Redo2,
-  Shuffle,
-  Undo2,
-} from '@/lib/ui/icons';
+import { Download, PanelRightClose, PanelRightOpen, Redo2, Shuffle, Undo2 } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
-import { useInkBleedStore } from '@/stores/inkBleedStore';
+import { mergePreset, useInkBleedStore } from '@/stores/inkBleedStore';
 import { validateFile } from '@/utils/fileUtils';
 
 const history = useInkBleedStore.temporal;
@@ -111,7 +104,6 @@ export const InkBleedPage: React.FC = () => {
     () => !window.matchMedia('(max-height: 500px)').matches
   );
   const [exportOpen, setExportOpen] = useState(false);
-  const [confirmReset, setConfirmReset] = useState(false);
   const isMobile = useIsMobile();
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -234,6 +226,38 @@ export const InkBleedPage: React.FC = () => {
     setDoc(shuffleDoc(doc));
   }, [setDoc, setPlaying, setProgress]);
 
+  // The look of the print. The logo is a file, and the source goes with it.
+  const getPresetData = useCallback((): Record<string, any> => {
+    const { format, seed, logoScale, typography, ink, paper, motion, presetId, basePresetId } =
+      useInkBleedStore.getState().doc;
+    return { format, seed, logoScale, typography, ink, paper, motion, presetId, basePresetId };
+  }, []);
+
+  // Same rule as a built-in style: the person's own text and a locked brand stay.
+  const applyPresetData = useCallback(
+    (data: Record<string, any>) => {
+      const { doc } = useInkBleedStore.getState();
+      const merged = mergePreset(doc, {
+        id: data.presetId ?? '',
+        ink: { ...doc.ink, ...data.ink },
+        paper: { ...doc.paper, ...data.paper },
+        typography: { ...doc.typography, ...data.typography },
+      });
+      setPlaying(false);
+      setProgress(1);
+      setDoc({
+        ...merged,
+        format: data.format ?? doc.format,
+        seed: data.seed ?? doc.seed,
+        logoScale: data.logoScale ?? doc.logoScale,
+        motion: { ...doc.motion, ...data.motion },
+        presetId: data.presetId ?? null,
+        basePresetId: data.basePresetId ?? doc.basePresetId,
+      });
+    },
+    [setDoc, setPlaying, setProgress]
+  );
+
   const undo = useCallback(() => history.getState().undo(), []);
   const redo = useCallback(() => history.getState().redo(), []);
 
@@ -343,10 +367,7 @@ export const InkBleedPage: React.FC = () => {
         <InkBleedCanvas viewport={viewport} onLogoFiles={handleLogoFiles} />
         {/* Phone on its side with the sheet open: no height left to share with the artwork. */}
         <StageDock
-          className={cn(
-            viewport.short ? '-bottom-7' : 'bottom-3',
-            isMobile && sheetOpen && viewport.lyingDown && 'hidden'
-          )}
+          className={cn('bottom-3', isMobile && sheetOpen && viewport.lyingDown && 'hidden')}
         >
           <InkBleedTransport onTogglePlay={togglePlay} onOpenChange={setTimelineOpen} />
           {/* On a phone the timeline needs the row, so the tools make way for it. */}
@@ -387,17 +408,17 @@ export const InkBleedPage: React.FC = () => {
                 <Redo2 size={14} />
               </Button>
             </Tooltip>
-            <Tooltip content={t('toolEditor.resetHint')}>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={t('common.resetSettingsTitle')}
-                className={stageDockButton}
-                onClick={() => setConfirmReset(true)}
-              >
-                <Eraser size={14} />
-              </Button>
-            </Tooltip>
+            <StageDockPresets
+              toolId="ink-bleed"
+              getData={getPresetData}
+              applyData={applyPresetData}
+            />
+            <StageDockReset
+              onReset={() => {
+                reset();
+                toast.success(t('common.settingsReset'));
+              }}
+            />
           </StageDockReveal>
           {/* A phone zooms with two fingers. */}
           {!isMobile && (
@@ -448,19 +469,6 @@ export const InkBleedPage: React.FC = () => {
         onClose={() => setExportOpen(false)}
         sendTo={isMobile ? sendTo : undefined}
         onCopyAsPng={isMobile ? (transparent) => void copyArtwork(transparent) : undefined}
-      />
-      <ConfirmationModal
-        isOpen={confirmReset}
-        onClose={() => setConfirmReset(false)}
-        onConfirm={() => {
-          reset();
-          setConfirmReset(false);
-          toast.success(t('common.settingsReset'));
-        }}
-        title={t('common.resetSettingsTitle')}
-        message={t('common.resetSettingsMessage')}
-        confirmText={t('common.reset')}
-        variant="warning"
       />
     </ToolEditorShell>
   );

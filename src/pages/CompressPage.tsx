@@ -401,6 +401,16 @@ export const CompressPage: React.FC = () => {
       toolId="compress"
       documentTitle={t('apps.imageCompressor.name')}
       onReset={hasItems ? reset : undefined}
+      presets={{
+        toolId: 'compress',
+        getData: () => ({ quality, maxDimension, outputFormat }),
+        applyData: (data) => {
+          const next = { quality, maxDimension, outputFormat, ...data };
+          setQuality(next.quality);
+          setMaxDimension(next.maxDimension);
+          setOutputFormat(next.outputFormat);
+        },
+      }}
       panel={panelContent}
       panelLabel={t('miniTools.panelLabel')}
       statusBar={statusBarContent}

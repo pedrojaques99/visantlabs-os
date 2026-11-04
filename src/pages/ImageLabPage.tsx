@@ -15,8 +15,6 @@ import {
   Blend,
   HelpCircle,
   Info,
-  ChevronDown,
-  Save,
 } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -27,6 +25,7 @@ import {
   StageDock,
   StageDockDivider,
   StageDockGroup,
+  StageDockReset,
   StageDockReveal,
   StageDockText,
   StageDockTransport,
@@ -71,7 +70,8 @@ import { exportVideoServerSide, type VideoFormat } from '@/utils/videoExport';
 import { ImageLabUploadWidget } from '@/components/shared/ImageLabUploadWidget';
 import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
 import { useIsMobile } from '@/hooks/use-media-query';
-import { ImageLabSavePreset } from '@/components/shared/ImageLabSavePreset';
+import { StageDockPresets } from '@/components/shared/StageDockPresets';
+import { applyImageLabPreset, collectImageLabPreset } from '@/lib/imagelab/applyPreset';
 import { useToolInput } from '@/hooks/useToolInput';
 import { BrandFunnelBanner } from '@/components/funnel/BrandFunnelBanner';
 
@@ -267,8 +267,9 @@ function useCanvasThumbnails(
     shaders: null,
   });
 
-  const frameId = useRef<number>(0);
-  const debounceId = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // One timer per effect: a shared one let each capture cancel the others, and only the last showed.
+  const timers = useRef(new Map<ImageLabMode, ReturnType<typeof setTimeout>>());
+  const frames = useRef(new Map<ImageLabMode, number>());
 
   // 3.6: debounce thumbnail capture ~500ms. History changes can fire rapidly
   // (slider drags commit several entries); without this we toDataURL+JPEG-encode
@@ -276,12 +277,13 @@ function useCanvasThumbnails(
   // cancelled on unmount so a queued capture can't setState after unmount.
   const capture = useCallback(
     (modeKey: ImageLabMode) => {
-      if (debounceId.current) clearTimeout(debounceId.current);
-      debounceId.current = setTimeout(() => {
+      const pending = timers.current.get(modeKey);
+      if (pending) clearTimeout(pending);
+      const timer = setTimeout(() => {
         const canvas = canvasRefsMap.current[modeKey];
         if (!canvas || canvas.width === 0 || canvas.height === 0) return;
-        cancelAnimationFrame(frameId.current);
-        frameId.current = requestAnimationFrame(() => {
+        cancelAnimationFrame(frames.current.get(modeKey) ?? 0);
+        const frame = requestAnimationFrame(() => {
           try {
             const tmp = document.createElement('canvas');
             const size = 72;
@@ -293,13 +295,18 @@ function useCanvasThumbnails(
             const w = canvas.width * scale;
             const h = canvas.height * scale;
             ctx.drawImage(canvas, (size - w) / 2, (size - h) / 2, w, h);
+            // A hidden WebGL canvas reads back black: keep the icon rather than show an empty tile.
+            const center = ctx.getImageData(size / 2, size / 2, 1, 1).data;
+            if (center[0] + center[1] + center[2] === 0) return;
             const url = tmp.toDataURL('image/jpeg', 0.6);
             setThumbs((prev) => ({ ...prev, [modeKey]: url }));
           } catch {
             /* tainted canvas, ignore */
           }
         });
+        frames.current.set(modeKey, frame);
       }, 500);
+      timers.current.set(modeKey, timer);
     },
     [canvasRefsMap]
   );
@@ -321,8 +328,8 @@ function useCanvasThumbnails(
   // fire a setState on an unmounted component (e.g. after a fast mode switch).
   useEffect(
     () => () => {
-      if (debounceId.current) clearTimeout(debounceId.current);
-      cancelAnimationFrame(frameId.current);
+      timers.current.forEach(clearTimeout);
+      frames.current.forEach(cancelAnimationFrame);
     },
     []
   );
@@ -855,35 +862,7 @@ export const ImageLabPage: React.FC = () => {
     }
   }, [mode, handleAiEnhance, isAiProcessing, setExportModalOpen, handleCopyAsPng]);
 
-  const [savePresetOpen, setSavePresetOpen] = useState(false);
-  const controlsPanel = useMemo(
-    () => (
-      <div className="h-full flex flex-col">
-        <div className="flex-1 overflow-hidden">{modeControls}</div>
-        {/* Save preset — collapsed behind a button at the bottom, by the export actions */}
-        <div className="shrink-0 border-t border-border">
-          {savePresetOpen && (
-            <div className="px-4 pt-3 animate-fade-in">
-              <ImageLabSavePreset />
-            </div>
-          )}
-          <button
-            onClick={() => setSavePresetOpen((v) => !v)}
-            className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-            aria-expanded={savePresetOpen}
-          >
-            <Save size={12} />
-            {t('imagelab.savePreset')}
-            <ChevronDown
-              size={12}
-              className={cn('transition-transform', savePresetOpen && 'rotate-180')}
-            />
-          </button>
-        </div>
-      </div>
-    ),
-    [modeControls, savePresetOpen]
-  );
+  const controlsPanel = <div className="h-full overflow-hidden">{modeControls}</div>;
 
   const MODE_ITEMS: { id: ImageLabMode; icon: React.ReactNode; label: string }[] = useMemo(
     () => [
@@ -957,30 +936,36 @@ export const ImageLabPage: React.FC = () => {
               return (
                 <StageDockReveal key={m.id} open={!isMobile || isActive || modesOpen}>
                   <div className="group/fx relative shrink-0">
-                    <Button
-                      variant="ghost"
-                      aria-label={m.label}
-                      aria-pressed={isActive}
-                      title={m.label}
-                      className={cn(
-                        stageDockButton,
-                        'w-auto min-w-7 gap-1.5 px-1.5 text-2xs font-medium [@media(pointer:coarse)]:w-11 [@media(pointer:coarse)]:px-0',
-                        isActive && 'bg-accent text-foreground'
-                      )}
-                      onClick={() => {
-                        if (isMobile && isActive) {
-                          setModesOpen((open) => !open);
-                          return;
-                        }
-                        setModesOpen(false);
-                        handleModeChange(m.id);
-                      }}
-                    >
-                      {m.icon}
-                      {isActive && !isMobile && <span>{m.label}</span>}
-                    </Button>
-                    {thumb && !isActive && (
-                      <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 opacity-0 transition-opacity duration-200 group-hover/fx:opacity-100">
+                    <Tooltip content={m.label}>
+                      <Button
+                        variant="ghost"
+                        aria-label={m.label}
+                        aria-pressed={isActive}
+                        className={cn(
+                          'relative overflow-hidden rounded-md p-0 transition-[width,height,opacity,box-shadow] duration-[var(--dur-fast)] [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11',
+                          // The effect in use is the biggest thing in the dock.
+                          isActive
+                            ? 'h-10 w-10 ring-1 ring-foreground'
+                            : 'h-7 w-7 text-muted-foreground opacity-70 hover:opacity-100'
+                        )}
+                        onClick={() => {
+                          if (isMobile && isActive) {
+                            setModesOpen((open) => !open);
+                            return;
+                          }
+                          setModesOpen(false);
+                          handleModeChange(m.id);
+                        }}
+                      >
+                        {thumb ? (
+                          <Thumb src={thumb} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          m.icon
+                        )}
+                      </Button>
+                    </Tooltip>
+                    {thumb && !isActive && !isMobile && (
+                      <div className="pointer-events-none absolute left-full top-1/2 z-50 ml-2 hidden -translate-y-1/2 group-hover/fx:block">
                         <div className="overflow-hidden rounded-xl border border-border bg-card shadow-lg">
                           <Thumb src={thumb} alt="" className="h-28 w-28 object-cover" />
                           <div className="bg-popover/90 px-2 py-1 text-center text-2xs text-muted-foreground">
@@ -1056,6 +1041,17 @@ export const ImageLabPage: React.FC = () => {
                   <Redo2 size={14} />
                 </Button>
               </Tooltip>
+              <StageDockPresets
+                toolId="image-lab"
+                getData={collectImageLabPreset}
+                applyData={(data) => applyImageLabPreset({ data })}
+              />
+              <StageDockReset
+                onReset={() => {
+                  handleReset();
+                  toast.success(t('common.settingsReset'));
+                }}
+              />
             </StageDockReveal>
           </StageDockReveal>
           {!isMobile && statusItems.length > 0 && (
@@ -1467,7 +1463,7 @@ const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> 
         <Blend size={15} />
       </button>
       {open && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-30 flex items-center gap-2 bg-popover/95 backdrop-blur-xl border border-border rounded-xl px-3 py-2 shadow-2xl shadow-black/50 animate-fade-in">
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-30 md:bottom-auto md:left-full md:top-0 md:mb-0 md:ml-2 md:translate-x-0 flex items-center gap-2 bg-popover/95 backdrop-blur-xl border border-border rounded-xl px-3 py-2 shadow-2xl shadow-black/50 animate-fade-in">
           <span className="text-2xs tabular-nums text-muted-foreground w-6 text-right shrink-0">
             {Math.round(value * 100)}
           </span>

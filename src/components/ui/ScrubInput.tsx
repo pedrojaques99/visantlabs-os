@@ -1,7 +1,5 @@
-// Colhido para o registry: `@visant/scrub-input` — a versão canônica vive lá.
-// Correção que valha para outros projetos deve ir no registry primeiro.
 import * as React from 'react';
-import { cn } from '@/lib/utils';
+import { NodeSlider } from '@/components/ui/NodeSlider';
 
 export interface ScrubInputProps {
   label: string;
@@ -10,190 +8,27 @@ export interface ScrubInputProps {
   max: number;
   step?: number;
   suffix?: string;
-  icon?: React.ReactNode;
   hint?: string;
   onChange: (value: number) => void;
   className?: string;
 }
 
+/** A number with a range is the same control as a slider: one row, no box of its own. */
 const ScrubInput = React.memo<ScrubInputProps>(
-  ({ label, value, min, max, step = 1, suffix = '', icon, hint, onChange, className }) => {
-    const [editing, setEditing] = React.useState(false);
-    const [draft, setDraft] = React.useState('');
-    const inputRef = React.useRef<HTMLInputElement>(null);
-    const scrubRef = React.useRef<{ startX: number; startValue: number } | null>(null);
-    const activeListenersRef = React.useRef<{
-      onMove: (e: PointerEvent) => void;
-      onUp: () => void;
-    } | null>(null);
-
-    const clamp = React.useCallback(
-      (v: number) => {
-        const clamped = Math.max(min, Math.min(max, v));
-        return parseFloat((Math.round(clamped / step) * step).toFixed(10));
-      },
-      [min, max, step]
-    );
-
-    const decimals = React.useMemo(() => {
-      const s = String(step);
-      const dot = s.indexOf('.');
-      return dot === -1 ? 0 : s.length - dot - 1;
-    }, [step]);
-
-    const display = suffix ? `${value.toFixed(decimals)}${suffix}` : value.toFixed(decimals);
-
-    const startEdit = React.useCallback(() => {
-      setDraft(String(value));
-      setEditing(true);
-      requestAnimationFrame(() => inputRef.current?.select());
-    }, [value]);
-
-    const commitEdit = React.useCallback(() => {
-      setEditing(false);
-      const parsed = parseFloat(draft);
-      if (!isNaN(parsed)) onChange(clamp(parsed));
-    }, [draft, onChange, clamp]);
-
-    // Pointer events (not mouse) so drag-to-scrub also works on touch devices.
-    // Desktop behaviour is unchanged — pointer events fire for the mouse too.
-    const onScrubDown = React.useCallback(
-      (e: React.PointerEvent) => {
-        if (editing) return;
-        // Only primary button / single touch should scrub.
-        if (e.pointerType === 'mouse' && e.button !== 0) return;
-        e.preventDefault();
-        scrubRef.current = { startX: e.clientX, startValue: value };
-        const sensitivity = (max - min) / 300;
-
-        const onMove = (me: PointerEvent) => {
-          if (!scrubRef.current) return;
-          const dx = me.clientX - scrubRef.current.startX;
-          const mult = me.shiftKey ? 0.1 : 1;
-          onChange(clamp(scrubRef.current.startValue + dx * sensitivity * mult));
-        };
-
-        const onUp = () => {
-          scrubRef.current = null;
-          document.removeEventListener('pointermove', onMove);
-          document.removeEventListener('pointerup', onUp);
-          document.removeEventListener('pointercancel', onUp);
-          document.body.style.cursor = '';
-          document.body.style.userSelect = '';
-          activeListenersRef.current = null;
-        };
-
-        activeListenersRef.current = { onMove, onUp };
-        document.addEventListener('pointermove', onMove);
-        document.addEventListener('pointerup', onUp);
-        document.addEventListener('pointercancel', onUp);
-        document.body.style.cursor = 'ew-resize';
-        document.body.style.userSelect = 'none';
-      },
-      [editing, value, min, max, onChange, clamp]
-    );
-
-    React.useEffect(() => {
-      return () => {
-        if (activeListenersRef.current) {
-          document.removeEventListener('pointermove', activeListenersRef.current.onMove);
-          document.removeEventListener('pointerup', activeListenersRef.current.onUp);
-          document.removeEventListener('pointercancel', activeListenersRef.current.onUp);
-        }
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
-      };
-    }, []);
-
-    const onWheel = React.useCallback(
-      (e: React.WheelEvent) => {
-        e.stopPropagation();
-        const mult = e.shiftKey ? 0.1 : 1;
-        const dir = e.deltaY < 0 ? 1 : -1;
-        onChange(clamp(value + dir * step * mult));
-      },
-      [value, step, onChange, clamp]
-    );
-
-    const onKeyDown = React.useCallback(
-      (e: React.KeyboardEvent) => {
-        if (editing) {
-          if (e.key === 'Enter') commitEdit();
-          if (e.key === 'Escape') setEditing(false);
-          return;
-        }
-        const mult = e.shiftKey ? 0.1 : 1;
-        if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
-          e.preventDefault();
-          onChange(clamp(value + step * mult));
-        }
-        if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
-          e.preventDefault();
-          onChange(clamp(value - step * mult));
-        }
-        if (e.key === 'Home') {
-          e.preventDefault();
-          onChange(min);
-        }
-        if (e.key === 'End') {
-          e.preventDefault();
-          onChange(max);
-        }
-      },
-      [editing, value, step, min, max, onChange, clamp, commitEdit]
-    );
-
+  ({ label, value, min, max, step = 1, suffix = '', hint, onChange, className }) => {
+    const decimals = (String(step).split('.')[1] ?? '').length;
     return (
-      <div
-        className={cn(
-          'group flex flex-col gap-1 rounded-md border border-border bg-muted',
-          'hover:border-border-hover focus-within:border-ring transition-colors',
-          'px-2 py-1.5 [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:justify-center',
-          className
-        )}
-        onWheel={onWheel}
-        onKeyDown={onKeyDown}
-        tabIndex={editing ? -1 : 0}
-        title={hint}
-        role="spinbutton"
-        aria-label={label}
-        aria-valuemin={min}
-        aria-valuemax={max}
-        aria-valuenow={value}
-        aria-valuetext={display}
-      >
-        <span
-          className="text-2xs text-muted-foreground cursor-ew-resize select-none truncate leading-none touch-pan-y"
-          onPointerDown={onScrubDown}
-        >
-          {icon && (
-            <span className="inline-flex mr-1 align-middle text-muted-foreground">{icon}</span>
-          )}
-          {label}
-        </span>
-        <div className="flex items-center min-w-0">
-          {editing ? (
-            <input
-              ref={inputRef}
-              type="text"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onBlur={commitEdit}
-              onKeyDown={onKeyDown}
-              className="w-full bg-transparent text-xs font-mono text-foreground outline-none tabular-nums"
-              autoFocus
-            />
-          ) : (
-            <span
-              className="text-xs font-mono text-foreground cursor-ew-resize select-none tabular-nums leading-none touch-pan-y"
-              onPointerDown={onScrubDown}
-              onDoubleClick={startEdit}
-            >
-              {display}
-            </span>
-          )}
-        </div>
-      </div>
+      <NodeSlider
+        label={label}
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        hint={hint}
+        className={className}
+        onChange={onChange}
+        formatValue={(v) => `${v.toFixed(decimals)}${suffix}`}
+      />
     );
   }
 );

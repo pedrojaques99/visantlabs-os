@@ -16,7 +16,6 @@ import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Dropzone } from '@/components/ui/Dropzone';
 import { InlineColorPicker } from '@/components/shared/ToolPanel';
 import { QuickActions } from '@/components/shared/QuickActions';
-import { BrandToolSelect } from '@/components/shared/BrandToolSelect';
 import { useToolInput } from '@/hooks/useToolInput';
 import { useBrandDefaults } from '@/hooks/useBrandDefaults';
 import JSZip from 'jszip';
@@ -145,7 +144,6 @@ export const FaviconPage: React.FC = () => {
   const { pendingAsset, acceptAsset } = useToolInput('favicon');
   const {
     brandId,
-    setBrandId,
     defaults: brandDefaults,
     isExplicit: brandIsExplicit,
   } = useBrandDefaults('favicon');
@@ -294,8 +292,6 @@ export const FaviconPage: React.FC = () => {
   /* ── Panel: controls (only shown when source is loaded) ── */
   const panel = sourceUrl ? (
     <div className="space-y-5">
-      <BrandToolSelect value={brandId} onChange={setBrandId} />
-
       {/* Background color */}
       <div className="space-y-1.5">
         <span className="text-xs font-medium text-muted-foreground">
@@ -410,6 +406,16 @@ export const FaviconPage: React.FC = () => {
       toolId="favicon"
       documentTitle={t('apps.faviconGenerator.name')}
       onReset={sourceUrl ? handleReset : undefined}
+      presets={{
+        toolId: 'favicon',
+        getData: () => ({ backgroundColor, borderRadius, padding }),
+        applyData: (data) => {
+          const next = { backgroundColor, borderRadius, padding, ...data };
+          setBackgroundColor(next.backgroundColor);
+          setBorderRadius(next.borderRadius);
+          setPadding(next.padding);
+        },
+      }}
       panel={panel}
       panelLabel={t('miniTools.settings')}
       statusBar={statusBar}

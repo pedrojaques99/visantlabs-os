@@ -32,7 +32,8 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
   const { t } = useTranslation();
   const { theme } = useTheme();
   const { selectedBrandGuideline, setSelectedBrandGuideline, adoptBrand } = useMockup();
-  const hasActiveBrand = !!useActiveBrandSafe()?.activeBrand;
+  const activeBrandId = useActiveBrandSafe()?.activeBrand?.id ?? null;
+  const hasActiveBrand = !!activeBrandId;
 
   const [searchQuery, setSearchQuery] = useState('');
   const { data: guidelines = [], isLoading, refetch } = useBrandGuidelines(true);
@@ -77,13 +78,20 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
     setIsSelectionModalOpen(false);
   };
 
+  // With a brand in the app bar there is nothing to choose here: only use it or not this time.
+  const handleOpen = () => {
+    if (!hasActiveBrand) setIsSelectionModalOpen(true);
+    else if (selectedBrandGuideline) setSelectedBrandGuideline(null);
+    else if (activeBrandId) adoptBrand(activeBrandId);
+  };
+
   const selectedGuidelineObj = guidelines.find((g) => g.id === selectedBrandGuideline);
 
   return (
     <div className={cn('relative', isMinimal ? 'inline-flex' : 'flex flex-col w-full')}>
       {isMinimal ? (
         <button
-          onClick={() => setIsSelectionModalOpen(true)}
+          onClick={handleOpen}
           className={cn(
             'flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors text-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
             selectedBrandGuideline
@@ -104,7 +112,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
         <Button
           variant="ghost"
           type="button"
-          onClick={() => setIsSelectionModalOpen(true)}
+          onClick={handleOpen}
           className={cn(
             'w-full p-4 flex items-center justify-between group transition-colors duration-300',
             'bg-neutral-900/40 hover:bg-neutral-900/60 border border-neutral-800 hover:border-border rounded-xl'

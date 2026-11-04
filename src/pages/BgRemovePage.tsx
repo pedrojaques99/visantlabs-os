@@ -620,6 +620,16 @@ export const BgRemovePage: React.FC = () => {
       toolId="remove-bg"
       documentTitle={t('apps.backgroundRemover.name')}
       onReset={hasItems ? reset : undefined}
+      presets={{
+        toolId: 'remove-bg',
+        getData: () => ({ mode, threshold, feather }),
+        applyData: (data) => {
+          const next = { mode, threshold, feather, ...data };
+          setMode(next.mode);
+          setThreshold(next.threshold);
+          setFeather(next.feather);
+        },
+      }}
       panel={panelContent}
       panelLabel={t('miniTools.panelLabel')}
       statusBar={statusBarContent}

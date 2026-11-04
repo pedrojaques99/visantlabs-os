@@ -1318,7 +1318,7 @@ export async function getSavedScenes(): Promise<SavedScene[]> {
   }
 }
 
-export async function saveScene(name: string, thumbnail?: string): Promise<SavedScene | null> {
+function sceneConfig(): Record<string, any> {
   const state = useStudio3DStore.getState();
   const exclude = new Set([
     '_cameraControlsRef',
@@ -1337,6 +1337,53 @@ export async function saveScene(name: string, thumbnail?: string): Promise<Saved
   config.shaderEnabled = state.shaderEnabled;
   config.shaderType = state.shaderType;
   config.shaderValues = state.shaderValues;
+  return config;
+}
+
+/** What isn't the look of a scene: its content, its files and images, and which save it is. */
+const NOT_PRESET = [
+  'svgData',
+  'inputMode',
+  'text',
+  'fileName',
+  'modelUrl',
+  'texture',
+  'customHdriUrl',
+  'backgroundImageUrl',
+  'normalMapUrl',
+  'roughnessMapUrl',
+  'metalnessMapUrl',
+  '_sceneId',
+  '_sceneName',
+  '_lastSavedAt',
+  '_brandGuidelineId',
+];
+
+/** A scene's config without its content, for a preset that applies to whatever is loaded next. */
+export function getScenePreset(): Record<string, any> {
+  const config = sceneConfig();
+  for (const key of NOT_PRESET) delete config[key];
+  // These two only mean something with an image the preset doesn't carry.
+  if (!config.environment) delete config.environment;
+  if (config.bgType === 'image') delete config.bgType;
+  return config;
+}
+
+export function applyScenePresetData(data: Record<string, any>) {
+  const { shaderEnabled, shaderType, shaderValues, ...config } = data;
+  useStudio3DStore.getState().applyConfig(config);
+  if (shaderEnabled !== undefined) {
+    useStudio3DStore.setState({
+      shaderEnabled,
+      shaderType,
+      shaderValues: shaderValues || {},
+    });
+  }
+}
+
+export async function saveScene(name: string, thumbnail?: string): Promise<SavedScene | null> {
+  const state = useStudio3DStore.getState();
+  const config = sceneConfig();
 
   // If this scene already has a server id, UPDATE it in place (PATCH) instead of
   // creating a new record — autosave reuses this path so it never spawns phantom

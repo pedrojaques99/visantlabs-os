@@ -156,23 +156,20 @@ export const ToolPanelDisclosure: React.FC<{
 }> = ({ label, icon, id, children, defaultOpen = false, badge }) => {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div
-      id={id}
-      className="rounded-md border border-border transition-colors duration-200 scroll-mt-2"
-    >
+    // A group is a line and a title, never a box: the controls inside already have their shape.
+    <div id={id} className="scroll-mt-2 border-t border-border pt-1">
       <button
         onClick={() => setOpen(!open)}
-        className={cn(
-          'w-full flex items-center justify-between text-left px-3 py-2.5 transition-colors duration-200 rounded-md',
-          'hover:bg-accent',
-          open && 'bg-muted/50'
-        )}
+        aria-expanded={open}
+        className="group flex w-full items-center justify-between py-2 text-left"
       >
-        <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           {icon && <span className="text-muted-foreground">{icon}</span>}
-          <span className="text-xs font-medium text-muted-foreground">{label}</span>
+          <span className="text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
+            {label}
+          </span>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex flex-shrink-0 items-center gap-2">
           {badge}
           <ChevronDown
             size={14}
@@ -183,12 +180,13 @@ export const ToolPanelDisclosure: React.FC<{
           />
         </div>
       </button>
-      {open && <div className="px-3 pb-3 pt-1 animate-fade-in space-y-3">{children}</div>}
+      {open && <div className="animate-fade-in space-y-3 pb-3 pt-1">{children}</div>}
     </div>
   );
 };
 
-export const ToolPanelDivider: React.FC = () => <div className="h-px bg-border" />;
+/** Space between groups. The titles already separate them, so no line. */
+export const ToolPanelDivider: React.FC = () => <div aria-hidden className="h-1" />;
 
 export const ToolPanelActions: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="shrink-0 border-t border-border px-4 py-3 space-y-2">{children}</div>
@@ -219,10 +217,10 @@ export const ToolPanelChip: React.FC<{
   <button
     onClick={onClick}
     className={cn(
-      'px-2.5 py-2 rounded-md text-xs transition-colors duration-200 text-left border',
+      'px-2.5 py-1.5 rounded-md text-xs transition-colors duration-200 text-left',
       active
-        ? 'bg-accent text-foreground border-border-hover'
-        : 'bg-muted/50 text-muted-foreground border-border hover:bg-accent hover:text-foreground hover:border-border-hover',
+        ? 'bg-accent text-foreground'
+        : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground',
       className
     )}
   >
@@ -234,7 +232,7 @@ export const ToolPanelRow: React.FC<{
   label: string;
   children: React.ReactNode;
 }> = ({ label, children }) => (
-  <div className="flex items-center justify-between py-1">
+  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 py-1">
     <span className="text-2xs text-muted-foreground">{label}</span>
     {children}
   </div>

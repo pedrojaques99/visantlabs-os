@@ -72,7 +72,9 @@ export const PanelSectionTabs: React.FC<PanelSectionTabsProps> = ({
           <span className="text-2xs text-muted-foreground">{t.label}</span>
           {t.action}
         </div>
-        <div className="px-4 py-4 space-y-4">{t.content}</div>
+        <div data-tool-panel className="px-4 py-4 space-y-4">
+          {t.content}
+        </div>
       </TabsPrimitive.Content>
     ))}
   </TabsPrimitive.Root>

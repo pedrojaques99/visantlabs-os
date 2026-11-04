@@ -73,7 +73,7 @@ export const CreativeSetupSidebar: React.FC = () => {
   const { t } = useTranslation();
   const { data: guidelines = [] } = useBrandGuidelines();
   const { activeGuideline } = useBrandKit();
-  const { setActiveBrand } = useActiveBrand();
+  const { activeBrand, setActiveBrand } = useActiveBrand();
   const queryClient = useQueryClient();
 
   // A marca ativa do app é o SSoT: escolher marca aqui também atualiza o cockpit
@@ -310,37 +310,40 @@ export const CreativeSetupSidebar: React.FC = () => {
         </button>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <label className={fieldLabel}>{t('creativeSetup.brand')}</label>
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Select
-              value={brandId ?? ''}
-              onChange={(val) => selectBrand(val || null)}
+      {/* The app bar picks the brand. The selector stays only when there is none yet. */}
+      {!activeBrand && (
+        <div className="flex flex-col gap-2">
+          <label className={fieldLabel}>{t('creativeSetup.brand')}</label>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Select
+                value={brandId ?? ''}
+                onChange={(val) => selectBrand(val || null)}
+                disabled={status !== 'setup'}
+                placeholder={t('creativeSetup.selectBrandPlaceholder')}
+                variant="node"
+                className="h-12"
+                options={guidelines.map((g) => ({
+                  value: g.id!,
+                  label: g.identity?.name || t('creativeSetup.untitledBrand'),
+                }))}
+              />
+            </div>
+            <button
+              onClick={() => setWizardOpen(true)}
               disabled={status !== 'setup'}
-              placeholder={t('creativeSetup.selectBrandPlaceholder')}
-              variant="node"
-              className="h-12"
-              options={guidelines.map((g) => ({
-                value: g.id!,
-                label: g.identity?.name || t('creativeSetup.untitledBrand'),
-              }))}
-            />
+              className={cn(
+                'w-12 h-12 shrink-0 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50',
+                glassSurface.tile
+              )}
+              title={t('creativeSetup.newBrand')}
+              aria-label={t('creativeSetup.newBrand')}
+            >
+              <Plus size={18} />
+            </button>
           </div>
-          <button
-            onClick={() => setWizardOpen(true)}
-            disabled={status !== 'setup'}
-            className={cn(
-              'w-12 h-12 shrink-0 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50',
-              glassSurface.tile
-            )}
-            title={t('creativeSetup.newBrand')}
-            aria-label={t('creativeSetup.newBrand')}
-          >
-            <Plus size={18} />
-          </button>
         </div>
-      </div>
+      )}
 
       <div className="flex flex-col gap-2">
         <label htmlFor="creative-idea" className="text-base font-medium text-foreground px-1">

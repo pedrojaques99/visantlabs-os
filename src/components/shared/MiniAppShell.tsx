@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import {
+  Info,
   ChevronLeft,
   PanelRightOpen,
   PanelRightClose,
-  RotateCcw,
   type LucideIcon,
 } from '@/lib/ui/icons';
 import { useNavigate } from 'react-router-dom';
@@ -15,7 +15,14 @@ import { MicroTitle } from '@/components/ui/MicroTitle';
 import { AppShell, AppShellTopBar, AppShellPanel } from '@/components/ui/AppShell';
 import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
 import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
-import { StageDock, StageDockDivider, stageDockButton } from '@/components/shared/StageDock';
+import {
+  StageDock,
+  StageDockDivider,
+  StageDockGroup,
+  StageDockReset,
+  stageDockButton,
+} from '@/components/shared/StageDock';
+import { StageDockPresets } from '@/components/shared/StageDockPresets';
 import { DropOverlay } from '@/components/ui/DropOverlay';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { useInAppShell } from '@/components/shell/InAppShellContext';
@@ -28,6 +35,15 @@ export interface MiniAppShellDragDrop {
   onDragOver: (e: React.DragEvent) => void;
   onDragLeave: (e: React.DragEvent) => void;
   isDragOver: boolean;
+}
+
+export interface MiniAppShellPresets {
+  /** The route name. Saved presets are filed under it. */
+  toolId: string;
+  /** Settings only: no file, image data or blob URL. */
+  getData: () => Record<string, any>;
+  /** Presets can be older than the tool, so a key may be missing. */
+  applyData: (data: Record<string, any>) => void;
 }
 
 export interface MiniAppShellProps {
@@ -52,6 +68,7 @@ export interface MiniAppShellProps {
   /** Content of the floating bottom status/action pill. */
   statusBar?: React.ReactNode;
   onReset?: () => void;
+  presets?: MiniAppShellPresets;
 
   dragDrop?: MiniAppShellDragDrop;
   dropMessage?: string;
@@ -72,6 +89,11 @@ export interface MiniAppShellProps {
  * low-level components). Lighter than ToolEditorShell: no undo/redo, no canvas
  * error boundary, no legal menu. See .agent/plans/MINI-APP-SHELL.md.
  */
+const MiniAppDockSlotContext = createContext<HTMLElement | null>(null);
+
+/** Where a mode of a tool portals its own controls, so they join the one dock. */
+export const useMiniAppDockSlot = () => useContext(MiniAppDockSlotContext);
+
 export const MiniAppShell: React.FC<MiniAppShellProps> = ({
   title,
   toolId,
@@ -84,6 +106,7 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
   defaultPanelVisible = true,
   statusBar,
   onReset,
+  presets,
   dragDrop,
   dropMessage,
   hideFunnelBanner = false,
@@ -115,8 +138,9 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
   });
   useHotkeys('r', () => onReset?.(), { enableOnFormTags: false });
 
+  const [dockSlot, setDockSlot] = useState<HTMLElement | null>(null);
   const showPanelToggle = hasPanel && !isMobile;
-  const hasDock = Boolean(statusBar || onReset || showPanelToggle);
+  const hasDock = Boolean(statusBar || onReset || presets || showPanelToggle);
 
   const canvasPadding = useMemo(
     () => ({
@@ -174,7 +198,9 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
           onDragLeave: dragDrop.onDragLeave,
         })}
       >
-        {children}
+        <MiniAppDockSlotContext.Provider value={dockSlot}>
+          {children}
+        </MiniAppDockSlotContext.Provider>
         {dragDrop && <DropOverlay visible={dragDrop.isDragOver} message={dropMessage} />}
       </div>
 
@@ -214,24 +240,34 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
                 : '60px'
           }
         >
-          {statusBar && (
-            <div className="flex min-w-0 items-center gap-3 overflow-hidden whitespace-nowrap px-2 text-2xs text-muted-foreground">
-              {statusBar}
-            </div>
+          <div ref={setDockSlot} className="contents" />
+          {statusBar &&
+            (isMobile ? (
+              <div className="flex min-w-0 items-center gap-3 overflow-hidden whitespace-nowrap px-2 text-2xs text-muted-foreground">
+                {statusBar}
+              </div>
+            ) : (
+              <StageDockGroup icon={<Info size={14} />} label={t('toolDock.details')}>
+                <div className="flex items-center gap-3 px-2 text-2xs text-muted-foreground">
+                  {statusBar}
+                </div>
+              </StageDockGroup>
+            ))}
+          {statusBar && (onReset || presets || showPanelToggle) && <StageDockDivider />}
+          {presets && (
+            <StageDockPresets
+              toolId={presets.toolId}
+              getData={presets.getData}
+              applyData={presets.applyData}
+            />
           )}
-          {statusBar && (onReset || showPanelToggle) && <StageDockDivider />}
+          {/* A mini app's reset also drops what was added to it, not only the settings. */}
           {onReset && (
-            <Tooltip content={t('common.resetShortcut')}>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={t('common.reset')}
-                className={stageDockButton}
-                onClick={onReset}
-              >
-                <RotateCcw size={14} />
-              </Button>
-            </Tooltip>
+            <StageDockReset
+              onReset={onReset}
+              title={t('toolDock.clearAll')}
+              message={t('toolDock.clearAllMessage')}
+            />
           )}
           {showPanelToggle && (
             <Tooltip

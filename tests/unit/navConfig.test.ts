@@ -277,7 +277,6 @@ describe('isBrandScopedEditor', () => {
       '/converter',
       '/remove-bg',
       '/upscale',
-      '/favicon',
     ]) {
       expect(isBrandScopedEditor(p)).toBe(false);
     }

@@ -438,6 +438,15 @@ export const ConverterPage: React.FC = () => {
       toolId="converter"
       documentTitle={t('apps.fileConverter.name')}
       onReset={hasItems ? reset : undefined}
+      presets={{
+        toolId: 'converter',
+        getData: () => ({ outputFormat, jpgQuality }),
+        applyData: (data) => {
+          const next = { outputFormat, jpgQuality, ...data };
+          setOutputFormat(next.outputFormat);
+          setJpgQuality(next.jpgQuality);
+        },
+      }}
       panel={panelContent}
       panelLabel={t('miniTools.panelLabel')}
       statusBar={statusBarContent}

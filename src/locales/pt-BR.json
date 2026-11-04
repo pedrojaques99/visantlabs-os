@@ -7359,7 +7359,8 @@
       "export_svg": "Baixar SVG",
       "copy_state": "Copiar estado",
       "eraser": "Borracha",
-      "clear_canvas": "Limpar tudo"
+      "clear_canvas": "Limpar tudo",
+      "clear_canvas_message": "Todos os pontos desta tela são apagados."
     },
     "machine": {
       "this_will_remove_the_current_svg_and_": "Isso remove o SVG atual e zera os ajustes.",
@@ -8996,7 +8997,20 @@
     "zoom": "Zoom",
     "zoomIn": "Aproximar",
     "zoomOut": "Afastar",
-    "fit": "Ajustar à tela"
+    "fit": "Ajustar à tela",
+    "snap": "Encaixar na grade",
+    "shortcuts": "Atalhos (?)",
+    "presets": {
+      "title": "Meus presets",
+      "name": "Nome do preset",
+      "save": "Salvar",
+      "saved": "Preset salvo",
+      "saveFailed": "Não deu para salvar o preset",
+      "applied": "{name} aplicado",
+      "delete": "Apagar {name}"
+    },
+    "clearAll": "Limpar tudo",
+    "clearAllMessage": "O que você adicionou é removido e os ajustes voltam ao padrão."
   },
   "toolEditor": {
     "export": {

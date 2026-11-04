@@ -10,8 +10,7 @@ import {
   PanelRightOpen,
   Pause,
   Play,
-  RotateCcw,
-  Save,
+  RefreshCw,
   Shapes,
   Share2,
   Sparkles,
@@ -34,10 +33,12 @@ import {
   StageDock,
   StageDockDivider,
   StageDockGroup,
+  StageDockReset,
   StageDockReveal,
   StageDockText,
   stageDockButton,
 } from '@/components/shared/StageDock';
+import { StageDockPresets } from '@/components/shared/StageDockPresets';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
 import {
   InlineColorPicker,
@@ -368,9 +369,7 @@ function ControlsContent({
   fileInputRef,
   handleImageUpload,
   handleClearImage,
-  handleReset,
   userPresets,
-  onSavePreset,
   onLoadPreset,
   onDeletePreset,
   onCopyJson,
@@ -383,10 +382,8 @@ function ControlsContent({
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   handleImageUpload: (file: File) => void;
   handleClearImage: () => void;
-  handleReset: () => void;
   t: (key: string, params?: Record<string, string | number>) => string;
   userPresets: SavedPreset[];
-  onSavePreset: () => void;
   onLoadPreset: (preset: SavedPreset) => void;
   onDeletePreset: (idx: number) => void;
   onCopyJson: () => void;
@@ -435,12 +432,6 @@ function ControlsContent({
               </div>
             </ToolPanelSection>
           )}
-          <ToolPanelChip
-            onClick={onSavePreset}
-            className="flex w-full items-center justify-center gap-2 py-1.5 text-2xs"
-          >
-            <Save size={12} /> {t('wind.tunnel.save_current')}
-          </ToolPanelChip>
           <ToolPanelGrid cols={2}>
             <ToolPanelChip
               onClick={onCopyJson}
@@ -455,9 +446,6 @@ function ControlsContent({
               <ClipboardPaste size={12} /> {t('wind.tunnel.import_json')}
             </ToolPanelChip>
           </ToolPanelGrid>
-          <ToolPanelChip onClick={handleReset} className="w-full py-1.5 text-center text-2xs">
-            {t('wind.tunnel.reset_all')}
-          </ToolPanelChip>
           <p className="text-2xs leading-relaxed text-muted-foreground">
             {t('wind.tunnel.shortcuts_hint')}
           </p>
@@ -927,20 +915,6 @@ export function WindTunnelPage() {
     }
   }, [t]);
 
-  const handleSavePreset = useCallback(() => {
-    const name = prompt(t('wind.tunnel.preset_name_prompt'));
-    if (!name?.trim()) return;
-    const preset: SavedPreset = {
-      name: name.trim(),
-      config: serializeConfig(config),
-      createdAt: Date.now(),
-    };
-    const updated = [...userPresets, preset];
-    setUserPresets(updated);
-    saveUserPresets(updated);
-    toast.success(t('wind.tunnel.preset_saved', { name: name.trim() }));
-  }, [config, userPresets, t]);
-
   const handleLoadPreset = useCallback(
     (preset: SavedPreset) => {
       setConfig((prev) => ({
@@ -1102,9 +1076,7 @@ export function WindTunnelPage() {
         fileInputRef={fileInputRef}
         handleImageUpload={handleImageUpload}
         handleClearImage={handleClearImage}
-        handleReset={handleReset}
         userPresets={userPresets}
-        onSavePreset={handleSavePreset}
         onLoadPreset={handleLoadPreset}
         onDeletePreset={handleDeletePreset}
         onCopyJson={handleCopyJson}
@@ -1181,7 +1153,7 @@ export function WindTunnelPage() {
                 className={stageDockButton}
                 onClick={handleResetSim}
               >
-                <RotateCcw size={14} />
+                <RefreshCw size={14} />
               </Button>
             </Tooltip>
             {isRecording ? (
@@ -1220,6 +1192,25 @@ export function WindTunnelPage() {
                 <Share2 size={14} />
               </Button>
             </Tooltip>
+            <StageDockPresets
+              toolId="wind-tunnel"
+              getData={() => serializeConfig(config)}
+              applyData={(data) =>
+                setConfig((prev) => ({
+                  ...prev,
+                  ...data,
+                  obstacleImage: prev.obstacleImage,
+                  paused: prev.paused,
+                }))
+              }
+            />
+            <StageDockReset
+              title={t('wind.tunnel.reset_all')}
+              onReset={() => {
+                handleReset();
+                toast.success(t('common.settingsReset'));
+              }}
+            />
             <StageDockDivider />
           </StageDockReveal>
           <StageDockGroup

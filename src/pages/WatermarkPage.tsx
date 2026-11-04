@@ -23,7 +23,6 @@ import { Input } from '@/components/ui/input';
 import JSZip from 'jszip';
 import { QuickActions } from '@/components/shared/QuickActions';
 import { InlineColorPicker } from '@/components/shared/ToolPanel';
-import { BrandToolSelect } from '@/components/shared/BrandToolSelect';
 import { useToolInput } from '@/hooks/useToolInput';
 import { useBrandDefaults } from '@/hooks/useBrandDefaults';
 import { glassSurface } from '@/lib/ui/glass';
@@ -219,7 +218,6 @@ export const WatermarkPage: React.FC = () => {
   const { pendingAsset, acceptAsset } = useToolInput('watermark');
   const {
     brandId,
-    setBrandId,
     defaults: brandDefaults,
     isExplicit: brandIsExplicit,
   } = useBrandDefaults('watermark');
@@ -455,8 +453,6 @@ export const WatermarkPage: React.FC = () => {
 
       {/* Controls */}
       <div className="space-y-4">
-        <BrandToolSelect value={brandId} onChange={setBrandId} />
-
         {/* Type toggle */}
         <div className="space-y-1.5">
           <span className="text-xs font-medium text-muted-foreground">
@@ -699,6 +695,20 @@ export const WatermarkPage: React.FC = () => {
       toolId="watermark"
       documentTitle={t('apps.watermark.name')}
       onReset={hasItems ? reset : undefined}
+      presets={{
+        toolId: 'watermark',
+        getData: () => ({ watermarkType, text, position, opacity, scale, rotation, color }),
+        applyData: (data) => {
+          const next = { watermarkType, text, position, opacity, scale, rotation, color, ...data };
+          setWatermarkType(next.watermarkType);
+          setText(next.text);
+          setPosition(next.position);
+          setOpacity(next.opacity);
+          setScale(next.scale);
+          setRotation(next.rotation);
+          setColor(next.color);
+        },
+      }}
       panel={panelContent}
       panelLabel={t('miniTools.panelLabel')}
       statusBar={statusBarContent}

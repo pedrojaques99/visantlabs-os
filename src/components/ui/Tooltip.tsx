@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
 import { X } from '@/lib/ui/icons';
 
 interface TooltipProps {
@@ -9,13 +9,18 @@ interface TooltipProps {
   dismissible?: boolean;
 }
 
+/** Where tooltips open by default inside a part of the screen, such as a dock on the left. */
+export const TooltipPositionContext = createContext<TooltipProps['position']>(undefined);
+
 export const Tooltip: React.FC<TooltipProps> = ({
   content,
   children,
-  position = 'top',
+  position: positionProp,
   delay = 300,
   dismissible = false,
 }) => {
+  const positionFromContext = useContext(TooltipPositionContext);
+  const position = positionProp ?? positionFromContext ?? 'top';
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });

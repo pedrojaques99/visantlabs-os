@@ -331,6 +331,15 @@ export const UpscalePage: React.FC = () => {
       toolId="upscale"
       documentTitle={t('apps.bicubicUpscale.name')}
       onReset={hasItems ? reset : undefined}
+      presets={{
+        toolId: 'upscale',
+        getData: () => ({ scaleFactor, sharpening }),
+        applyData: (data) => {
+          const next = { scaleFactor, sharpening, ...data };
+          setScaleFactor(next.scaleFactor);
+          setSharpening(next.sharpening);
+        },
+      }}
       panel={panelContent}
       panelLabel={t('miniTools.panelLabel')}
       statusBar={statusBarContent}
