@@ -30,7 +30,8 @@ export const InkBleedTransport: React.FC<InkBleedTransportProps> = ({ viewport, 
     <div
       data-canvas-ui
       className={cn(
-        'absolute left-1/2 -translate-x-1/2 bottom-3 z-10 flex items-center gap-3 rounded-full px-2 py-1.5 cursor-default',
+        'absolute left-1/2 -translate-x-1/2 z-10 flex items-center gap-3 rounded-full px-2 py-1.5 cursor-default',
+        viewport.short ? '-bottom-7' : 'bottom-3',
         'w-[min(640px,calc(100%-24px))]',
         'border border-border bg-card shadow-lg'
       )}
