@@ -14,7 +14,7 @@ import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { Button } from '@/components/ui/button';
 import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Dropzone } from '@/components/ui/Dropzone';
-import { Input } from '@/components/ui/input';
+import { InlineColorPicker } from '@/components/shared/ToolPanel';
 import { QuickActions } from '@/components/shared/QuickActions';
 import { BrandToolSelect } from '@/components/shared/BrandToolSelect';
 import { useToolInput } from '@/hooks/useToolInput';
@@ -143,7 +143,12 @@ export const FaviconPage: React.FC = () => {
   const reset = useFaviconStore((s) => s.reset);
 
   const { pendingAsset, acceptAsset } = useToolInput('favicon');
-  const { brandId, setBrandId, defaults: brandDefaults } = useBrandDefaults('favicon');
+  const {
+    brandId,
+    setBrandId,
+    defaults: brandDefaults,
+    isExplicit: brandIsExplicit,
+  } = useBrandDefaults('favicon');
 
   /* --- Accept piped asset from another tool --- */
   useEffect(() => {
@@ -157,10 +162,12 @@ export const FaviconPage: React.FC = () => {
   /* --- Apply brand defaults when brand is selected --- */
   useEffect(() => {
     if (!brandDefaults) return;
+    // Marca ativa só preenche o vazio: não troca a imagem que a pessoa já trouxe.
+    if (!brandIsExplicit && useFaviconStore.getState().sourceUrl) return;
     if (brandDefaults.logoUrl) {
       setSource(brandDefaults.logoUrl, 'brand-logo');
     }
-  }, [brandDefaults, setSource]);
+  }, [brandDefaults, brandIsExplicit, setSource]);
 
   const handleFile = useCallback(
     (file: File) => {
@@ -294,7 +301,7 @@ export const FaviconPage: React.FC = () => {
         <span className="text-xs font-medium text-muted-foreground">
           {t('miniTools.favicon.background')}
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-start gap-2">
           <button
             type="button"
             aria-pressed={isTransparentBg}
@@ -309,20 +316,10 @@ export const FaviconPage: React.FC = () => {
             {t('miniTools.favicon.none')}
           </button>
           {!isTransparentBg && (
-            <Input
-              type="text"
-              value={backgroundColor}
-              onChange={(e) => setBackgroundColor(e.target.value)}
-              className="h-6 w-24 text-2xs font-mono"
-              placeholder="#ffffff"
-            />
-          )}
-          {!isTransparentBg && (
-            <input
-              type="color"
+            <InlineColorPicker
               value={backgroundColor.startsWith('#') ? backgroundColor : '#ffffff'}
-              onChange={(e) => setBackgroundColor(e.target.value)}
-              className="w-6 h-6 rounded cursor-pointer border border-border bg-transparent"
+              onChange={setBackgroundColor}
+              label={t('miniTools.favicon.background')}
             />
           )}
         </div>

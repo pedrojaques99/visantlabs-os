@@ -1,41 +1,54 @@
-import { useInAppShell } from '@/components/shell/InAppShellContext';
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
-  ChevronLeft,
-  PanelRightClose,
-  PanelRight,
-  Download,
-  Upload,
-  X,
-  Play,
-  Pause,
-  RotateCcw,
-  Save,
-  Trash2,
-  Video,
-  Square,
-  Share2,
+  Activity,
   ClipboardCopy,
   ClipboardPaste,
+  Download,
+  Info,
+  Palette,
+  PanelRightClose,
+  PanelRightOpen,
+  Pause,
+  Play,
+  RotateCcw,
+  Save,
+  Shapes,
+  Share2,
+  Sparkles,
+  Square,
+  Trash2,
+  Upload,
+  Video,
+  Wind,
+  X,
 } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { loadImageFromFile } from '@/components/labs/wind-tunnel/ImageObstacles';
 import { Button } from '@/components/ui/button';
-import { GlassPanel } from '@/components/ui/GlassPanel';
-import { MicroTitle } from '@/components/ui/MicroTitle';
 import { NodeSlider } from '@/components/ui/NodeSlider';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { Switch } from '@/components/ui/switch';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { PanelSectionTabs, type PanelTab } from '@/components/shared/PanelSectionTabs';
 import {
-  AppShell,
-  AppShellTopBar,
-  AppShellPanel,
-  AppShellStatusBar,
-} from '@/components/ui/AppShell';
-import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
-import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
-import { DropOverlay } from '@/components/ui/DropOverlay';
-import { InlineColorPicker, ToolPanelDisclosure } from '@/components/shared/ToolPanel';
+  StageDock,
+  StageDockDivider,
+  StageDockGroup,
+  StageDockReveal,
+  StageDockText,
+  stageDockButton,
+} from '@/components/shared/StageDock';
+import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
+import {
+  InlineColorPicker,
+  ToolPanel,
+  ToolPanelChip,
+  ToolPanelDisclosure,
+  ToolPanelExportActions,
+  ToolPanelGrid,
+  ToolPanelRow,
+  ToolPanelSection,
+} from '@/components/shared/ToolPanel';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { usePasteImage } from '@/hooks/usePasteImage';
 import { Input } from '@/components/ui/input';
@@ -47,6 +60,7 @@ import {
 } from '@/components/labs/wind-tunnel/WindTunnelCanvas';
 import { useTranslation } from '@/hooks/useTranslation';
 import { copyToClipboard } from '@/utils/clipboard';
+import { cn } from '@/lib/utils';
 
 const DEFAULT_CONFIG: WindTunnelConfig = {
   obstacleType: 'text',
@@ -80,15 +94,17 @@ const DEFAULT_CONFIG: WindTunnelConfig = {
 
 type SerializableConfig = Omit<WindTunnelConfig, 'obstacleImage' | 'paused'>;
 
-const FIELD_OVERLAYS: { key: FieldOverlay; label: string }[] = [
-  { key: 'none', label: 'None' },
-  { key: 'velocity', label: 'Velocity' },
-  { key: 'pressure', label: 'Pressure' },
-  { key: 'vorticity', label: 'Vorticity' },
+const FIELD_OVERLAYS: { key: FieldOverlay; labelKey: string }[] = [
+  { key: 'none', labelKey: 'wind.tunnel.field_modes.none' },
+  { key: 'velocity', labelKey: 'wind.tunnel.field_modes.velocity' },
+  { key: 'pressure', labelKey: 'wind.tunnel.field_modes.pressure' },
+  { key: 'vorticity', labelKey: 'wind.tunnel.field_modes.vorticity' },
 ];
 
 interface SavedPreset {
   name: string;
+  /** Built-in presets are translated. A saved one keeps the name the person gave it. */
+  labelKey?: string;
   config: SerializableConfig;
   createdAt: number;
 }
@@ -96,6 +112,7 @@ interface SavedPreset {
 const BUILT_IN_PRESETS: SavedPreset[] = [
   {
     name: 'Classic Airfoil',
+    labelKey: 'wind.tunnel.preset_names.classic_airfoil',
     createdAt: 0,
     config: {
       ...DEFAULT_CONFIG,
@@ -122,6 +139,7 @@ const BUILT_IN_PRESETS: SavedPreset[] = [
   },
   {
     name: 'Neon Vortex',
+    labelKey: 'wind.tunnel.preset_names.neon_vortex',
     createdAt: 0,
     config: {
       ...DEFAULT_CONFIG,
@@ -148,6 +166,7 @@ const BUILT_IN_PRESETS: SavedPreset[] = [
   },
   {
     name: 'Blueprint',
+    labelKey: 'wind.tunnel.preset_names.blueprint',
     createdAt: 0,
     config: {
       ...DEFAULT_CONFIG,
@@ -174,6 +193,7 @@ const BUILT_IN_PRESETS: SavedPreset[] = [
   },
   {
     name: 'Fire Storm',
+    labelKey: 'wind.tunnel.preset_names.fire_storm',
     createdAt: 0,
     config: {
       ...DEFAULT_CONFIG,
@@ -200,6 +220,7 @@ const BUILT_IN_PRESETS: SavedPreset[] = [
   },
   {
     name: '3D Tunnel',
+    labelKey: 'wind.tunnel.preset_names.tunnel_3d',
     createdAt: 0,
     config: {
       ...DEFAULT_CONFIG,
@@ -298,28 +319,47 @@ function hexToRgba(hex: string): string {
 }
 
 const OBSTACLE_SHAPES = [
-  { key: 'text', label: 'Text' },
-  { key: 'circle', label: 'Circle' },
-  { key: 'triangle', label: 'Triangle' },
-  { key: 'square', label: 'Square' },
-  { key: 'diamond', label: 'Diamond' },
-  { key: 'airfoil', label: 'Airfoil' },
-  { key: 'image', label: 'Image' },
+  { key: 'text', labelKey: 'wind.tunnel.shapes.text' },
+  { key: 'circle', labelKey: 'wind.tunnel.shapes.circle' },
+  { key: 'triangle', labelKey: 'wind.tunnel.shapes.triangle' },
+  { key: 'square', labelKey: 'wind.tunnel.shapes.square' },
+  { key: 'diamond', labelKey: 'wind.tunnel.shapes.diamond' },
+  { key: 'airfoil', labelKey: 'wind.tunnel.shapes.airfoil' },
+  { key: 'image', labelKey: 'wind.tunnel.shapes.image' },
 ] as const;
 
 const COLOR_MODES = [
-  { key: 'rainbow', label: 'Rainbow' },
-  { key: 'velocity', label: 'Velocity' },
-  { key: 'density', label: 'Density' },
-  { key: 'uniform', label: 'Uniform' },
+  { key: 'rainbow', labelKey: 'wind.tunnel.color_modes.rainbow' },
+  { key: 'velocity', labelKey: 'wind.tunnel.color_modes.velocity' },
+  { key: 'density', labelKey: 'wind.tunnel.color_modes.density' },
+  { key: 'uniform', labelKey: 'wind.tunnel.color_modes.uniform' },
 ] as const;
 
 const RENDER_MODES = [
-  { key: 'streamlines', label: 'Stream' },
-  { key: 'particles', label: 'Dots' },
+  { key: 'streamlines', labelKey: 'wind.tunnel.render_modes.streamlines' },
+  { key: 'particles', labelKey: 'wind.tunnel.render_modes.particles' },
 ] as const;
 
 const FONT_OPTIONS = ['Manrope', 'Red Hat Mono', 'Arial Black', 'Georgia', 'Impact', 'Courier New'];
+
+const EXPORT_SCALES = [
+  { multiplier: 1, labelKey: 'wind.tunnel.scales.screen' },
+  { multiplier: 2, labelKey: 'wind.tunnel.scales.hd' },
+  { multiplier: 4, labelKey: 'wind.tunnel.scales.print' },
+] as const;
+
+/** No status bar here, so the stage takes the strip the shell keeps for one. Desktop only. */
+const FULL_BLEED_STAGE = 'absolute inset-0 !pb-0 transition-[padding] duration-[var(--dur-slow)]';
+
+/** A config pasted or shared by link can hold a mode we do not know: show it as it came. */
+function modeLabel(
+  modes: readonly { key: string; labelKey: string }[],
+  key: string,
+  t: (key: string) => string
+): string {
+  const labelKey = modes.find((mode) => mode.key === key)?.labelKey;
+  return labelKey ? t(labelKey) : key;
+}
 
 function ControlsContent({
   config,
@@ -328,7 +368,6 @@ function ControlsContent({
   fileInputRef,
   handleImageUpload,
   handleClearImage,
-  handleResetSim,
   handleReset,
   userPresets,
   onSavePreset,
@@ -336,7 +375,6 @@ function ControlsContent({
   onDeletePreset,
   onCopyJson,
   onPasteJson,
-  onShareUrl,
   t,
 }: {
   config: WindTunnelConfig;
@@ -345,7 +383,6 @@ function ControlsContent({
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   handleImageUpload: (file: File) => void;
   handleClearImage: () => void;
-  handleResetSim: () => void;
   handleReset: () => void;
   t: (key: string, params?: Record<string, string | number>) => string;
   userPresets: SavedPreset[];
@@ -354,525 +391,433 @@ function ControlsContent({
   onDeletePreset: (idx: number) => void;
   onCopyJson: () => void;
   onPasteJson: () => void;
-  onShareUrl: () => void;
 }) {
-  return (
-    <>
-      {/* Presets */}
-      <div className="p-3 space-y-2 border-b border-border">
-        <MicroTitle className="text-muted-foreground text-2xs">Presets</MicroTitle>
-        <div className="flex flex-wrap gap-1">
-          {BUILT_IN_PRESETS.map((p) => (
-            <Button
-              key={p.name}
-              variant="ghost"
-              size="xs"
-              onClick={() => onLoadPreset(p)}
-              className="text-2xs text-muted-foreground hover:text-foreground"
-            >
-              {p.name}
-            </Button>
-          ))}
-        </div>
-        {userPresets.length > 0 && (
-          <div className="flex flex-wrap gap-1 pt-1">
-            {userPresets.map((p, i) => (
-              <div key={i} className="flex items-center gap-0.5">
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  onClick={() => onLoadPreset(p)}
-                  className="text-2xs text-foreground"
-                >
-                  {p.name}
-                </Button>
-                <button
-                  onClick={() => onDeletePreset(i)}
-                  className="text-muted-foreground hover:text-destructive p-0.5"
-                  aria-label={`Delete preset ${p.name}`}
-                >
-                  <Trash2 size={8} />
-                </button>
+  const tabs: PanelTab[] = [
+    {
+      id: 'presets',
+      icon: <Sparkles size={15} />,
+      label: t('wind.tunnel.tabs.presets'),
+      content: (
+        <>
+          <ToolPanelGrid cols={2}>
+            {BUILT_IN_PRESETS.map((p) => (
+              <ToolPanelChip
+                key={p.name}
+                onClick={() => onLoadPreset(p)}
+                className="truncate text-2xs"
+              >
+                {p.labelKey ? t(p.labelKey) : p.name}
+              </ToolPanelChip>
+            ))}
+          </ToolPanelGrid>
+          {userPresets.length > 0 && (
+            <ToolPanelSection title={t('wind.tunnel.saved_presets')}>
+              <div className="space-y-1">
+                {userPresets.map((p, i) => (
+                  <div key={i} className="flex items-center gap-1">
+                    <ToolPanelChip
+                      onClick={() => onLoadPreset(p)}
+                      className="min-w-0 flex-1 truncate text-2xs"
+                    >
+                      {p.name}
+                    </ToolPanelChip>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => onDeletePreset(i)}
+                      className="shrink-0 text-muted-foreground hover:text-destructive"
+                      aria-label={t('wind.tunnel.delete_preset', { name: p.name })}
+                    >
+                      <Trash2 size={12} />
+                    </Button>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-        <Button
-          variant="ghost"
-          size="xs"
-          onClick={onSavePreset}
-          className="text-2xs text-muted-foreground hover:text-foreground w-full flex items-center justify-center gap-1"
-        >
-          <Save size={10} /> Save Current
-        </Button>
-      </div>
-
-      {/* Obstacle Shape */}
-      <div className="p-3 space-y-2 border-b border-border">
-        <MicroTitle className="text-muted-foreground text-2xs">
-          {t('wind.tunnel.obstacle')}
-        </MicroTitle>
-        <div className="grid grid-cols-3 gap-1">
-          {OBSTACLE_SHAPES.map((s) => (
-            <Button
-              key={s.key}
-              variant="ghost"
-              size="xs"
-              onClick={() => update('obstacleType', s.key)}
-              className={`text-2xs font-medium ${
-                config.obstacleType === s.key
-                  ? 'text-foreground bg-accent'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {s.label}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* Image Upload */}
-      {config.obstacleType === 'image' && (
-        <div className="p-3 space-y-2 border-b border-border">
-          <MicroTitle className="text-muted-foreground text-2xs">Image</MicroTitle>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/png,image/svg+xml,image/jpeg,image/webp"
-            className="hidden"
-            aria-label={t('wind.tunnel.upload_obstacle_image')}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleImageUpload(file);
-            }}
-          />
-          {imageName && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-2xs text-muted-foreground truncate flex-1">{imageName}</span>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={handleClearImage}
-                className="text-muted-foreground hover:text-foreground shrink-0"
-                aria-label={t('wind.tunnel.clear_image')}
-              >
-                <X size={10} />
-              </Button>
-            </div>
+            </ToolPanelSection>
           )}
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => fileInputRef.current?.click()}
-            className="text-2xs text-muted-foreground hover:text-foreground w-full flex items-center justify-center gap-1"
+          <ToolPanelChip
+            onClick={onSavePreset}
+            className="flex w-full items-center justify-center gap-2 py-1.5 text-2xs"
           >
-            <Upload size={10} /> {imageName ? 'Replace' : 'Upload SVG / PNG'}
-          </Button>
-          <p className="text-2xs text-muted-foreground text-center">
-            {t('wind.tunnel.or_drag_drop_onto_canvas')}
+            <Save size={12} /> {t('wind.tunnel.save_current')}
+          </ToolPanelChip>
+          <ToolPanelGrid cols={2}>
+            <ToolPanelChip
+              onClick={onCopyJson}
+              className="flex items-center justify-center gap-1.5 py-1.5 text-2xs"
+            >
+              <ClipboardCopy size={12} /> {t('wind.tunnel.copy_json')}
+            </ToolPanelChip>
+            <ToolPanelChip
+              onClick={onPasteJson}
+              className="flex items-center justify-center gap-1.5 py-1.5 text-2xs"
+            >
+              <ClipboardPaste size={12} /> {t('wind.tunnel.import_json')}
+            </ToolPanelChip>
+          </ToolPanelGrid>
+          <ToolPanelChip onClick={handleReset} className="w-full py-1.5 text-center text-2xs">
+            {t('wind.tunnel.reset_all')}
+          </ToolPanelChip>
+          <p className="text-2xs leading-relaxed text-muted-foreground">
+            {t('wind.tunnel.shortcuts_hint')}
           </p>
-        </div>
-      )}
-
-      {/* Text Controls */}
-      {config.obstacleType === 'text' && (
-        <div className="p-3 space-y-2 border-b border-border">
-          <MicroTitle className="text-muted-foreground text-2xs">Text</MicroTitle>
-          <Input
-            value={config.text}
-            onChange={(e) => update('text', e.target.value)}
-            placeholder="VISANT"
-            maxLength={24}
-            className="h-7 text-xs bg-transparent border-border"
-            aria-label={t('wind.tunnel.obstacle_text')}
-          />
-          <div className="flex items-center gap-1 flex-wrap">
-            {FONT_OPTIONS.map((f) => (
-              <Button
-                key={f}
-                variant="ghost"
-                size="xs"
-                onClick={() => update('fontFamily', f)}
-                className={`text-2xs px-1.5 ${
-                  config.fontFamily === f
-                    ? 'text-foreground bg-accent'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-                style={{ fontFamily: f }}
+        </>
+      ),
+    },
+    {
+      id: 'obstacle',
+      icon: <Shapes size={15} />,
+      label: t('wind.tunnel.obstacle'),
+      content: (
+        <>
+          <ToolPanelGrid cols={3}>
+            {OBSTACLE_SHAPES.map((s) => (
+              <ToolPanelChip
+                key={s.key}
+                active={config.obstacleType === s.key}
+                onClick={() => update('obstacleType', s.key)}
+                className="truncate px-1.5 text-center text-2xs"
               >
-                {f.split(' ')[0]}
-              </Button>
+                {t(s.labelKey)}
+              </ToolPanelChip>
             ))}
-          </div>
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => update('bold', !config.bold)}
-            className={`text-2xs font-bold ${
-              config.bold ? 'text-foreground bg-accent' : 'text-muted-foreground'
-            }`}
-            aria-label={t('wind.tunnel.toggle_bold')}
-          >
-            B
-          </Button>
-        </div>
-      )}
+          </ToolPanelGrid>
 
-      {/* Transform (universal) */}
-      <div className="p-3 space-y-2 border-b border-border">
-        <MicroTitle className="text-muted-foreground text-2xs">
-          {t('wind.tunnel.transform')}
-        </MicroTitle>
-        <NodeSlider
-          label={t('wind.tunnel.scale')}
-          value={config.obstacleScale}
-          resetValue={DEFAULT_CONFIG.obstacleScale}
-          min={10}
-          max={250}
-          step={5}
-          onChange={(v) => update('obstacleScale', v)}
-          formatValue={(v) => `${Math.round(v)}%`}
-        />
-        <NodeSlider
-          label="X"
-          value={config.obstacleOffsetX}
-          resetValue={DEFAULT_CONFIG.obstacleOffsetX}
-          min={-50}
-          max={50}
-          step={1}
-          onChange={(v) => update('obstacleOffsetX', v)}
-          formatValue={(v) => String(Math.round(v))}
-        />
-        <NodeSlider
-          label="Y"
-          value={config.obstacleOffsetY}
-          resetValue={DEFAULT_CONFIG.obstacleOffsetY}
-          min={-50}
-          max={50}
-          step={1}
-          onChange={(v) => update('obstacleOffsetY', v)}
-          formatValue={(v) => String(Math.round(v))}
-        />
-      </div>
+          {config.obstacleType === 'image' && (
+            <ToolPanelSection title={t('wind.tunnel.image')}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/svg+xml,image/jpeg,image/webp"
+                className="hidden"
+                aria-label={t('wind.tunnel.upload_obstacle_image')}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImageUpload(file);
+                }}
+              />
+              {imageName && (
+                <div className="flex items-center gap-1.5">
+                  <span className="flex-1 truncate text-2xs text-muted-foreground">
+                    {imageName}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={handleClearImage}
+                    className="shrink-0 text-muted-foreground hover:text-foreground"
+                    aria-label={t('wind.tunnel.clear_image')}
+                  >
+                    <X size={12} />
+                  </Button>
+                </div>
+              )}
+              <ToolPanelChip
+                onClick={() => fileInputRef.current?.click()}
+                className="flex w-full items-center justify-center gap-2 py-1.5 text-2xs"
+              >
+                <Upload size={12} />
+                {imageName ? t('wind.tunnel.replace_image') : t('wind.tunnel.upload_image')}
+              </ToolPanelChip>
+              <p className="text-center text-2xs text-muted-foreground">
+                {t('wind.tunnel.or_drag_drop_onto_canvas')}
+              </p>
+            </ToolPanelSection>
+          )}
 
-      {/* Render Mode */}
-      <div className="p-3 space-y-2 border-b border-border">
-        <MicroTitle className="text-muted-foreground text-2xs">
-          {t('wind.tunnel.render')}
-        </MicroTitle>
-        <div className="flex gap-1">
-          {RENDER_MODES.map((m) => (
-            <Button
-              key={m.key}
-              variant="ghost"
-              size="xs"
-              onClick={() => update('renderMode', m.key)}
-              className={`text-2xs flex-1 ${
-                config.renderMode === m.key
-                  ? 'text-foreground bg-accent'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {m.label}
-            </Button>
-          ))}
-        </div>
-      </div>
+          {config.obstacleType === 'text' && (
+            <ToolPanelSection title={t('wind.tunnel.text')}>
+              <Input
+                value={config.text}
+                onChange={(e) => update('text', e.target.value)}
+                placeholder="VISANT"
+                maxLength={24}
+                className="h-7 border-border bg-transparent text-xs"
+                aria-label={t('wind.tunnel.obstacle_text')}
+              />
+              <ToolPanelGrid cols={3}>
+                {FONT_OPTIONS.map((f) => (
+                  <ToolPanelChip
+                    key={f}
+                    active={config.fontFamily === f}
+                    onClick={() => update('fontFamily', f)}
+                    className="truncate px-1.5 text-center text-2xs"
+                  >
+                    <span style={{ fontFamily: f }}>{f.split(' ')[0]}</span>
+                  </ToolPanelChip>
+                ))}
+              </ToolPanelGrid>
+              <ToolPanelRow label={t('wind.tunnel.bold')}>
+                <Switch
+                  aria-label={t('wind.tunnel.toggle_bold')}
+                  checked={config.bold}
+                  onCheckedChange={(v) => update('bold', v)}
+                />
+              </ToolPanelRow>
+            </ToolPanelSection>
+          )}
 
-      {/* Color Mode */}
-      <div className="p-3 space-y-2 border-b border-border">
-        <MicroTitle className="text-muted-foreground text-2xs">Color</MicroTitle>
-        <div className="grid grid-cols-2 gap-1">
-          {COLOR_MODES.map((m) => (
-            <Button
-              key={m.key}
-              variant="ghost"
-              size="xs"
-              onClick={() => update('colorMode', m.key)}
-              className={`text-2xs ${
-                config.colorMode === m.key
-                  ? 'text-foreground bg-accent'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {m.label}
-            </Button>
-          ))}
-        </div>
-        {config.colorMode === 'uniform' && (
-          <div className="pt-1">
-            <InlineColorPicker
-              value={rgbaToHex(config.baseColor)}
-              onChange={(hex) => update('baseColor', hexToRgba(hex))}
-              label={t('wind.tunnel.particle_color')}
+          <ToolPanelSection title={t('wind.tunnel.transform')}>
+            <NodeSlider
+              label={t('wind.tunnel.scale')}
+              value={config.obstacleScale}
+              resetValue={DEFAULT_CONFIG.obstacleScale}
+              min={10}
+              max={250}
+              step={5}
+              onChange={(v) => update('obstacleScale', v)}
+              formatValue={(v) => `${Math.round(v)}%`}
             />
-          </div>
-        )}
-      </div>
-
-      {/* Simulation Sliders */}
-      <div className="p-3 space-y-3 border-b border-border">
-        <MicroTitle className="text-muted-foreground text-2xs">
-          {t('wind.tunnel.simulation')}
-        </MicroTitle>
-        <NodeSlider
-          label={t('wind.tunnel.wind')}
-          value={config.windSpeed}
-          resetValue={DEFAULT_CONFIG.windSpeed}
-          min={1}
-          max={100}
-          step={1}
-          onChange={(v) => update('windSpeed', v)}
-          formatValue={(v) => String(Math.round(v))}
-        />
-        <NodeSlider
-          label={t('wind.tunnel.viscosity')}
-          value={config.viscosity}
-          resetValue={DEFAULT_CONFIG.viscosity}
-          min={1}
-          max={100}
-          step={1}
-          onChange={(v) => update('viscosity', v)}
-          formatValue={(v) => String(Math.round(v))}
-        />
-        <NodeSlider
-          label={t('wind.tunnel.particles')}
-          value={config.particleCount}
-          resetValue={DEFAULT_CONFIG.particleCount}
-          min={500}
-          max={15000}
-          step={500}
-          onChange={(v) => update('particleCount', v)}
-          formatValue={(v) => String(Math.round(v))}
-        />
-        <NodeSlider
-          label={t('wind.tunnel.trail')}
-          value={config.trailLength}
-          resetValue={DEFAULT_CONFIG.trailLength}
-          min={2}
-          max={32}
-          step={2}
-          onChange={(v) => update('trailLength', v)}
-          formatValue={(v) => String(Math.round(v))}
-        />
-        <ToolPanelDisclosure label={t('canvasNodes.shared.advancedSettings')}>
+            <NodeSlider
+              label="X"
+              value={config.obstacleOffsetX}
+              resetValue={DEFAULT_CONFIG.obstacleOffsetX}
+              min={-50}
+              max={50}
+              step={1}
+              onChange={(v) => update('obstacleOffsetX', v)}
+              formatValue={(v) => String(Math.round(v))}
+            />
+            <NodeSlider
+              label="Y"
+              value={config.obstacleOffsetY}
+              resetValue={DEFAULT_CONFIG.obstacleOffsetY}
+              min={-50}
+              max={50}
+              step={1}
+              onChange={(v) => update('obstacleOffsetY', v)}
+              formatValue={(v) => String(Math.round(v))}
+            />
+          </ToolPanelSection>
+        </>
+      ),
+    },
+    {
+      id: 'flow',
+      icon: <Wind size={15} />,
+      label: t('wind.tunnel.simulation'),
+      content: (
+        <>
           <NodeSlider
-            label="Size"
-            value={config.particleSize}
-            resetValue={DEFAULT_CONFIG.particleSize}
-            min={0.5}
-            max={4}
-            step={0.5}
-            onChange={(v) => update('particleSize', v)}
-            formatValue={(v) => v.toFixed(1)}
-          />
-          <NodeSlider
-            label={t('wind.tunnel.lifetime')}
-            value={config.particleLifetime}
-            resetValue={DEFAULT_CONFIG.particleLifetime}
-            min={20}
-            max={300}
-            step={10}
-            onChange={(v) => update('particleLifetime', v)}
-            formatValue={(v) => String(Math.round(v))}
-          />
-          <NodeSlider
-            label={t('wind.tunnel.spread')}
-            value={config.spread}
-            resetValue={DEFAULT_CONFIG.spread}
-            min={0}
+            label={t('wind.tunnel.wind')}
+            value={config.windSpeed}
+            resetValue={DEFAULT_CONFIG.windSpeed}
+            min={1}
             max={100}
-            step={5}
-            onChange={(v) => update('spread', v)}
+            step={1}
+            onChange={(v) => update('windSpeed', v)}
             formatValue={(v) => String(Math.round(v))}
           />
-        </ToolPanelDisclosure>
-      </div>
-
-      {/* Effects */}
-      <div className="p-3 space-y-3 border-b border-border">
-        <MicroTitle className="text-muted-foreground text-2xs">Effects</MicroTitle>
-        <NodeSlider
-          label={t('wind.tunnel.glow')}
-          value={config.glowIntensity}
-          resetValue={DEFAULT_CONFIG.glowIntensity}
-          min={0}
-          max={30}
-          step={1}
-          onChange={(v) => update('glowIntensity', v)}
-          formatValue={(v) => String(Math.round(v))}
-        />
-        <NodeSlider
-          label={t('wind.tunnel.perspective')}
-          value={config.perspective}
-          resetValue={DEFAULT_CONFIG.perspective}
-          min={0}
-          max={100}
-          step={1}
-          onChange={(v) => update('perspective', v)}
-          formatValue={(v) => String(Math.round(v))}
-        />
-      </div>
-
-      {/* Field Overlay (CFD Visualization) */}
-      <div className="p-3 space-y-2 border-b border-border">
-        <MicroTitle className="text-muted-foreground text-2xs">Field Overlay</MicroTitle>
-        <div className="grid grid-cols-2 gap-1">
-          {FIELD_OVERLAYS.map((f) => (
-            <Button
-              key={f.key}
-              variant="ghost"
-              size="xs"
-              onClick={() => update('fieldOverlay', f.key)}
-              className={`text-2xs ${
-                config.fieldOverlay === f.key
-                  ? 'text-foreground bg-accent'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {f.label}
-            </Button>
-          ))}
-        </div>
-        {config.fieldOverlay !== 'none' && (
           <NodeSlider
-            label="Opacity"
-            value={config.fieldOpacity}
-            resetValue={DEFAULT_CONFIG.fieldOpacity}
-            min={0.1}
-            max={1}
-            step={0.05}
-            onChange={(v) => update('fieldOpacity', v)}
-            formatValue={(v) => `${Math.round(v * 100)}%`}
+            label={t('wind.tunnel.viscosity')}
+            value={config.viscosity}
+            resetValue={DEFAULT_CONFIG.viscosity}
+            min={1}
+            max={100}
+            step={1}
+            onChange={(v) => update('viscosity', v)}
+            formatValue={(v) => String(Math.round(v))}
           />
-        )}
-        <div className="flex items-center justify-between">
-          <span className="text-2xs text-muted-foreground">Vector Arrows</span>
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => update('showArrows', !config.showArrows)}
-            className={`text-2xs ${config.showArrows ? 'text-foreground' : 'text-muted-foreground'}`}
-          >
-            {config.showArrows ? 'ON' : 'OFF'}
-          </Button>
-        </div>
-      </div>
+          <NodeSlider
+            label={t('wind.tunnel.particles')}
+            value={config.particleCount}
+            resetValue={DEFAULT_CONFIG.particleCount}
+            min={500}
+            max={15000}
+            step={500}
+            onChange={(v) => update('particleCount', v)}
+            formatValue={(v) => String(Math.round(v))}
+          />
+          <NodeSlider
+            label={t('wind.tunnel.trail')}
+            value={config.trailLength}
+            resetValue={DEFAULT_CONFIG.trailLength}
+            min={2}
+            max={32}
+            step={2}
+            onChange={(v) => update('trailLength', v)}
+            formatValue={(v) => String(Math.round(v))}
+          />
+          <ToolPanelDisclosure label={t('canvasNodes.shared.advancedSettings')}>
+            <NodeSlider
+              label={t('wind.tunnel.size')}
+              value={config.particleSize}
+              resetValue={DEFAULT_CONFIG.particleSize}
+              min={0.5}
+              max={4}
+              step={0.5}
+              onChange={(v) => update('particleSize', v)}
+              formatValue={(v) => v.toFixed(1)}
+            />
+            <NodeSlider
+              label={t('wind.tunnel.lifetime')}
+              value={config.particleLifetime}
+              resetValue={DEFAULT_CONFIG.particleLifetime}
+              min={20}
+              max={300}
+              step={10}
+              onChange={(v) => update('particleLifetime', v)}
+              formatValue={(v) => String(Math.round(v))}
+            />
+            <NodeSlider
+              label={t('wind.tunnel.spread')}
+              value={config.spread}
+              resetValue={DEFAULT_CONFIG.spread}
+              min={0}
+              max={100}
+              step={5}
+              onChange={(v) => update('spread', v)}
+              formatValue={(v) => String(Math.round(v))}
+            />
+          </ToolPanelDisclosure>
+        </>
+      ),
+    },
+    {
+      id: 'look',
+      icon: <Palette size={15} />,
+      label: t('wind.tunnel.appearance'),
+      content: (
+        <>
+          <ToolPanelSection title={t('wind.tunnel.render')}>
+            <SegmentedControl
+              aria-label={t('wind.tunnel.render')}
+              size="xs"
+              fullWidth
+              value={config.renderMode}
+              onChange={(v) => update('renderMode', v)}
+              options={RENDER_MODES.map((m) => ({ value: m.key, label: t(m.labelKey) }))}
+            />
+          </ToolPanelSection>
 
-      {/* Appearance */}
-      <div className="p-3 space-y-2 border-b border-border">
-        <MicroTitle className="text-muted-foreground text-2xs">
-          {t('wind.tunnel.appearance')}
-        </MicroTitle>
-        <InlineColorPicker
-          value={config.bgColor}
-          onChange={(hex) => update('bgColor', hex)}
-          label={t('wind.tunnel.background')}
-        />
-        <div className="flex items-center justify-between">
-          <span className="text-2xs text-muted-foreground">{t('wind.tunnel.show_obstacles')}</span>
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => update('showObstacles', !config.showObstacles)}
-            className={`text-2xs ${config.showObstacles ? 'text-foreground' : 'text-muted-foreground'}`}
-            aria-label={t('wind.tunnel.toggle_obstacle_visibility')}
-          >
-            {config.showObstacles ? 'ON' : 'OFF'}
-          </Button>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-2xs text-muted-foreground">{t('wind.tunnel.grid_overlay')}</span>
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => update('showGrid', !config.showGrid)}
-            className={`text-2xs ${config.showGrid ? 'text-foreground' : 'text-muted-foreground'}`}
-            aria-label={t('wind.tunnel.toggle_grid')}
-          >
-            {config.showGrid ? 'ON' : 'OFF'}
-          </Button>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-2xs text-muted-foreground">Export Metadata</span>
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => update('exportMetadata', !config.exportMetadata)}
-            className={`text-2xs ${config.exportMetadata ? 'text-foreground' : 'text-muted-foreground'}`}
-          >
-            {config.exportMetadata ? 'ON' : 'OFF'}
-          </Button>
-        </div>
-      </div>
+          <ToolPanelSection title={t('wind.tunnel.color')}>
+            <ToolPanelGrid cols={2}>
+              {COLOR_MODES.map((m) => (
+                <ToolPanelChip
+                  key={m.key}
+                  active={config.colorMode === m.key}
+                  onClick={() => update('colorMode', m.key)}
+                  className="truncate text-2xs"
+                >
+                  {t(m.labelKey)}
+                </ToolPanelChip>
+              ))}
+            </ToolPanelGrid>
+            {config.colorMode === 'uniform' && (
+              <InlineColorPicker
+                value={rgbaToHex(config.baseColor)}
+                onChange={(hex) => update('baseColor', hexToRgba(hex))}
+                label={t('wind.tunnel.particle_color')}
+              />
+            )}
+          </ToolPanelSection>
 
-      {/* Actions */}
-      <div className="p-3 space-y-2">
-        <Button
-          variant="ghost"
-          size="xs"
-          onClick={handleResetSim}
-          className="text-2xs text-muted-foreground hover:text-foreground w-full"
-        >
-          {t('wind.tunnel.restart_simulation')}
-        </Button>
-        <Button
-          variant="ghost"
-          size="xs"
-          onClick={handleReset}
-          className="text-2xs text-muted-foreground hover:text-foreground w-full"
-        >
-          {t('wind.tunnel.reset_all')}
-        </Button>
-        <div className="flex gap-1 pt-1">
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={onCopyJson}
-            className="text-2xs text-muted-foreground hover:text-foreground flex-1 flex items-center justify-center gap-1"
-          >
-            <ClipboardCopy size={9} /> Copy JSON
-          </Button>
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={onPasteJson}
-            className="text-2xs text-muted-foreground hover:text-foreground flex-1 flex items-center justify-center gap-1"
-          >
-            <ClipboardPaste size={9} /> Import JSON
-          </Button>
-        </div>
-        <Button
-          variant="ghost"
-          size="xs"
-          onClick={onShareUrl}
-          className="text-2xs text-muted-foreground hover:text-foreground w-full flex items-center justify-center gap-1"
-        >
-          <Share2 size={9} /> Share URL
-        </Button>
-      </div>
+          <ToolPanelSection title={t('wind.tunnel.effects')}>
+            <NodeSlider
+              label={t('wind.tunnel.glow')}
+              value={config.glowIntensity}
+              resetValue={DEFAULT_CONFIG.glowIntensity}
+              min={0}
+              max={30}
+              step={1}
+              onChange={(v) => update('glowIntensity', v)}
+              formatValue={(v) => String(Math.round(v))}
+            />
+            <NodeSlider
+              label={t('wind.tunnel.perspective')}
+              value={config.perspective}
+              resetValue={DEFAULT_CONFIG.perspective}
+              min={0}
+              max={100}
+              step={1}
+              onChange={(v) => update('perspective', v)}
+              formatValue={(v) => String(Math.round(v))}
+            />
+          </ToolPanelSection>
 
-      {/* Shortcuts hint */}
-      <div className="p-3 pt-0">
-        <p className="text-2xs text-muted-foreground leading-relaxed">
-          Space: pause &middot; Tab: panel &middot; R: restart &middot; Ctrl+E: export &middot;
-          Drag: inject &middot; Right-drag: walls &middot; Scroll: wind
-        </p>
-      </div>
-    </>
+          <ToolPanelSection title={t('wind.tunnel.scene')}>
+            <InlineColorPicker
+              value={config.bgColor}
+              onChange={(hex) => update('bgColor', hex)}
+              label={t('wind.tunnel.background')}
+            />
+            <ToolPanelRow label={t('wind.tunnel.show_obstacles')}>
+              <Switch
+                aria-label={t('wind.tunnel.toggle_obstacle_visibility')}
+                checked={config.showObstacles}
+                onCheckedChange={(v) => update('showObstacles', v)}
+              />
+            </ToolPanelRow>
+            <ToolPanelRow label={t('wind.tunnel.grid_overlay')}>
+              <Switch
+                aria-label={t('wind.tunnel.toggle_grid')}
+                checked={config.showGrid}
+                onCheckedChange={(v) => update('showGrid', v)}
+              />
+            </ToolPanelRow>
+            <ToolPanelRow label={t('wind.tunnel.export_metadata')}>
+              <Switch
+                aria-label={t('wind.tunnel.export_metadata')}
+                checked={config.exportMetadata}
+                onCheckedChange={(v) => update('exportMetadata', v)}
+              />
+            </ToolPanelRow>
+          </ToolPanelSection>
+        </>
+      ),
+    },
+    {
+      id: 'field',
+      icon: <Activity size={15} />,
+      label: t('wind.tunnel.field_overlay'),
+      content: (
+        <>
+          <ToolPanelGrid cols={2}>
+            {FIELD_OVERLAYS.map((f) => (
+              <ToolPanelChip
+                key={f.key}
+                active={config.fieldOverlay === f.key}
+                onClick={() => update('fieldOverlay', f.key)}
+                className="truncate text-2xs"
+              >
+                {t(f.labelKey)}
+              </ToolPanelChip>
+            ))}
+          </ToolPanelGrid>
+          {config.fieldOverlay !== 'none' && (
+            <NodeSlider
+              label={t('wind.tunnel.opacity')}
+              value={config.fieldOpacity}
+              resetValue={DEFAULT_CONFIG.fieldOpacity}
+              min={0.1}
+              max={1}
+              step={0.05}
+              onChange={(v) => update('fieldOpacity', v)}
+              formatValue={(v) => `${Math.round(v * 100)}%`}
+            />
+          )}
+          <ToolPanelRow label={t('wind.tunnel.vector_arrows')}>
+            <Switch
+              aria-label={t('wind.tunnel.vector_arrows')}
+              checked={config.showArrows}
+              onCheckedChange={(v) => update('showArrows', v)}
+            />
+          </ToolPanelRow>
+        </>
+      ),
+    },
+  ];
+
+  return (
+    <PanelSectionTabs tabs={tabs} defaultId="presets" ariaLabel={t('wind.tunnel.tabs.aria')} />
   );
 }
 
 export function WindTunnelPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const inShell = useInAppShell();
   const isMobile = useIsMobile();
-  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
-  useEffect(() => {
-    document.title = 'Wind Tunnel';
-  }, []);
-
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [config, setConfig] = useState<WindTunnelConfig>(DEFAULT_CONFIG);
   const [showPanel, setShowPanel] = useState(true);
   const [activeCount, setActiveCount] = useState(0);
@@ -883,19 +828,22 @@ export function WindTunnelPage() {
   const [imageName, setImageName] = useState<string | null>(null);
   const [userPresets, setUserPresets] = useState<SavedPreset[]>(() => loadUserPresets());
 
-  const handleImageUpload = useCallback(async (file: File) => {
-    if (!file.type.match(/^image\/(png|svg\+xml|jpeg|webp)$/)) {
-      toast.error(t('wind.tunnel.unsupported_format_use_png_svg_jpeg_or'));
-      return;
-    }
-    try {
-      const img = await loadImageFromFile(file);
-      setConfig((prev) => ({ ...prev, obstacleType: 'image' as const, obstacleImage: img }));
-      setImageName(file.name);
-    } catch {
-      toast.error(t('wind.tunnel.failed_to_load_image'));
-    }
-  }, []);
+  const handleImageUpload = useCallback(
+    async (file: File) => {
+      if (!file.type.match(/^image\/(png|svg\+xml|jpeg|webp)$/)) {
+        toast.error(t('wind.tunnel.unsupported_format_use_png_svg_jpeg_or'));
+        return;
+      }
+      try {
+        const img = await loadImageFromFile(file);
+        setConfig((prev) => ({ ...prev, obstacleType: 'image' as const, obstacleImage: img }));
+        setImageName(file.name);
+      } catch {
+        toast.error(t('wind.tunnel.failed_to_load_image'));
+      }
+    },
+    [t]
+  );
 
   usePasteImage(
     useCallback(
@@ -942,30 +890,45 @@ export function WindTunnelPage() {
     setConfig((prev) => ({ ...prev, paused: !prev.paused }));
   }, []);
 
-  const [showExportMenu, setShowExportMenu] = useState(false);
+  const handleExport = useCallback(
+    (multiplier: number = 1) => {
+      try {
+        const handle = tunnelRef.current;
+        if (!handle) return;
+        const dataUrl =
+          multiplier === 1
+            ? handle.getCanvasRef()?.toDataURL('image/png')
+            : handle.exportAtResolution(multiplier);
+        if (!dataUrl) return;
+        const link = document.createElement('a');
+        link.download = `wind-tunnel-${multiplier}x-${Date.now()}.png`;
+        link.href = dataUrl;
+        link.click();
+        toast.success(t('wind.tunnel.png_exported_at_multiplierx', { multiplier }));
+      } catch {
+        toast.error(t('wind.tunnel.export_failed'));
+      }
+    },
+    [t]
+  );
 
-  const handleExport = useCallback((multiplier = 1) => {
+  const handleCopyPng = useCallback(async () => {
+    const canvas = tunnelRef.current?.getCanvasRef();
+    if (!canvas) return;
     try {
-      const handle = tunnelRef.current;
-      if (!handle) return;
-      const dataUrl =
-        multiplier === 1
-          ? handle.getCanvasRef()?.toDataURL('image/png')
-          : handle.exportAtResolution(multiplier);
-      if (!dataUrl) return;
-      const link = document.createElement('a');
-      link.download = `wind-tunnel-${multiplier}x-${Date.now()}.png`;
-      link.href = dataUrl;
-      link.click();
-      toast.success(t('wind.tunnel.png_exported_at_multiplierx'));
-      setShowExportMenu(false);
+      // Safari only accepts a write started inside the tap, so the image goes in as a promise.
+      const png = new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('empty'))), 'image/png');
+      });
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
+      toast.success(t('miniTools.copied'));
     } catch {
-      toast.error(t('wind.tunnel.export_failed'));
+      toast.error(t('miniTools.copyFailed'));
     }
-  }, []);
+  }, [t]);
 
   const handleSavePreset = useCallback(() => {
-    const name = prompt('Preset name:');
+    const name = prompt(t('wind.tunnel.preset_name_prompt'));
     if (!name?.trim()) return;
     const preset: SavedPreset = {
       name: name.trim(),
@@ -976,16 +939,20 @@ export function WindTunnelPage() {
     setUserPresets(updated);
     saveUserPresets(updated);
     toast.success(t('wind.tunnel.preset_saved', { name: name.trim() }));
-  }, [config, userPresets]);
+  }, [config, userPresets, t]);
 
-  const handleLoadPreset = useCallback((preset: SavedPreset) => {
-    setConfig((prev) => ({
-      ...preset.config,
-      obstacleImage: prev.obstacleImage,
-      paused: prev.paused,
-    }));
-    toast.success(t('wind.tunnel.preset_loaded', { name: preset.name }));
-  }, []);
+  const handleLoadPreset = useCallback(
+    (preset: SavedPreset) => {
+      setConfig((prev) => ({
+        ...preset.config,
+        obstacleImage: prev.obstacleImage,
+        paused: prev.paused,
+      }));
+      const name = preset.labelKey ? t(preset.labelKey) : preset.name;
+      toast.success(t('wind.tunnel.preset_loaded', { name }));
+    },
+    [t]
+  );
 
   const handleDeletePreset = useCallback(
     (idx: number) => {
@@ -994,7 +961,7 @@ export function WindTunnelPage() {
       saveUserPresets(updated);
       toast.success(t('wind.tunnel.preset_deleted'));
     },
-    [userPresets]
+    [userPresets, t]
   );
 
   const [isRecording, setIsRecording] = useState(false);
@@ -1016,23 +983,23 @@ export function WindTunnelPage() {
     const url = encodeConfigToUrl(config);
     copyToClipboard(url)
       .then(() => {
-        toast.success('Share URL copied to clipboard');
+        toast.success(t('wind.tunnel.share_url_copied'));
       })
       .catch(() => {
-        prompt('Copy this URL:', url);
+        prompt(t('wind.tunnel.copy_this_url'), url);
       });
-  }, [config]);
+  }, [config, t]);
 
   const handleCopyJson = useCallback(() => {
     const json = configToJson(config);
     copyToClipboard(json)
       .then(() => {
-        toast.success('Config JSON copied');
+        toast.success(t('wind.tunnel.config_copied'));
       })
       .catch(() => {
-        prompt('Copy this JSON:', json);
+        prompt(t('wind.tunnel.copy_this_json'), json);
       });
-  }, [config]);
+  }, [config, t]);
 
   const handlePasteJson = useCallback(async () => {
     try {
@@ -1044,12 +1011,12 @@ export function WindTunnelPage() {
           obstacleImage: prev.obstacleImage,
           paused: prev.paused,
         }));
-        toast.success('Config imported from clipboard');
+        toast.success(t('wind.tunnel.config_imported_clipboard'));
       } else {
-        toast.error('Invalid wind tunnel config JSON');
+        toast.error(t('wind.tunnel.invalid_config'));
       }
     } catch {
-      const text = prompt('Paste config JSON:');
+      const text = prompt(t('wind.tunnel.paste_config_prompt'));
       if (text) {
         const parsed = parseConfigJson(text);
         if (parsed) {
@@ -1058,13 +1025,13 @@ export function WindTunnelPage() {
             obstacleImage: prev.obstacleImage,
             paused: prev.paused,
           }));
-          toast.success('Config imported');
+          toast.success(t('wind.tunnel.config_imported'));
         } else {
-          toast.error('Invalid JSON');
+          toast.error(t('wind.tunnel.invalid_json'));
         }
       }
     }
-  }, []);
+  }, [t]);
 
   // Load config from URL on mount
   useEffect(() => {
@@ -1075,20 +1042,10 @@ export function WindTunnelPage() {
         obstacleImage: prev.obstacleImage,
         paused: prev.paused,
       }));
-      toast.success('Preset loaded from shared URL');
+      toast.success(t('wind.tunnel.preset_loaded_from_url'));
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
-
-  useEffect(() => {
-    if (!showExportMenu) return;
-    const close = () => setShowExportMenu(false);
-    const timer = setTimeout(() => document.addEventListener('click', close), 0);
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener('click', close);
-    };
-  }, [showExportMenu]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -1105,10 +1062,14 @@ export function WindTunnelPage() {
         e.preventDefault();
         handleExport(1);
       }
-      if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey) handleResetSim();
+      if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey) {
+        // Here R restarts the simulation. The shell listens further down, to ask about a reset.
+        e.stopPropagation();
+        handleResetSim();
+      }
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    window.addEventListener('keydown', handler, true);
+    return () => window.removeEventListener('keydown', handler, true);
   }, [togglePause, handleExport, handleResetSim]);
 
   const handleDrop = useCallback(
@@ -1121,197 +1082,216 @@ export function WindTunnelPage() {
     [handleImageUpload]
   );
 
-  const controlsProps = {
-    config,
-    update,
-    imageName,
-    fileInputRef,
-    handleImageUpload,
-    handleClearImage,
-    handleResetSim,
-    handleReset,
-    userPresets,
-    onSavePreset: handleSavePreset,
-    onLoadPreset: handleLoadPreset,
-    onDeletePreset: handleDeletePreset,
-    onCopyJson: handleCopyJson,
-    onPasteJson: handlePasteJson,
-    onShareUrl: handleShareUrl,
-    t,
+  const dragProps = {
+    onDragOver: (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragging(true);
+    },
+    onDragLeave: () => setDragging(false),
+    onDrop: handleDrop,
   };
 
-  // Editor sempre escuro: `dark` escopa os tokens escuros (ver ToolEditorShell).
+  const title = t('wind.tunnel.wind_tunnel');
+
+  const controlsPanel = (
+    <ToolPanel>
+      <ControlsContent
+        config={config}
+        update={update}
+        imageName={imageName}
+        fileInputRef={fileInputRef}
+        handleImageUpload={handleImageUpload}
+        handleClearImage={handleClearImage}
+        handleReset={handleReset}
+        userPresets={userPresets}
+        onSavePreset={handleSavePreset}
+        onLoadPreset={handleLoadPreset}
+        onDeletePreset={handleDeletePreset}
+        onCopyJson={handleCopyJson}
+        onPasteJson={handlePasteJson}
+        t={t}
+      />
+      {/* On a phone these go to the tools row: the sheet needs the room. */}
+      {!isMobile && (
+        <ToolPanelExportActions
+          onExport={() => handleExport(1)}
+          isExporting={false}
+          disabled={false}
+          onCopyAsPng={() => void handleCopyPng()}
+          sendTo={
+            <div className="space-y-1">
+              {EXPORT_SCALES.map((s) => (
+                <ToolPanelChip
+                  key={s.multiplier}
+                  onClick={() => handleExport(s.multiplier)}
+                  className="w-full py-1.5 text-2xs"
+                >
+                  {s.multiplier}x · {t(s.labelKey)}
+                </ToolPanelChip>
+              ))}
+            </div>
+          }
+        />
+      )}
+    </ToolPanel>
+  );
+
   return (
-    <AppShell className="dark text-foreground">
-      <div
-        className="absolute inset-0"
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={handleDrop}
-      >
+    <ToolEditorShell
+      title={title}
+      documentTitle={title}
+      panelVisible={showPanel}
+      setPanelVisible={setShowPanel}
+      onReset={handleReset}
+      hideTopBar
+      controlsPanel={controlsPanel}
+      controlsPanelWidth={340}
+      mobileSheetLabel={t('wind.tunnel.tabs.panel')}
+      isDragOver={dragging}
+      dragProps={dragProps}
+      dropMessage={t('wind.tunnel.drop_image_to_use_as_obstacle')}
+      canvasClassName={isMobile ? undefined : FULL_BLEED_STAGE}
+    >
+      {/* The shell reserves the panel with padding: everything here lives in that box. */}
+      <div className="relative h-full w-full">
         <WindTunnelCanvas
           ref={tunnelRef}
           config={config}
           onConfigChange={(partial) => setConfig((prev) => ({ ...prev, ...partial }))}
         />
-        <DropOverlay visible={dragging} message={t('wind.tunnel.drop_image_to_use_as_obstacle')} />
-      </div>
-
-      <AppShellTopBar
-        left={
-          <>
-            {!inShell && (
-              <>
-                <Tooltip content="Back to Labs" position="bottom">
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => navigate('/labs')}
-                    aria-label={t('wind.tunnel.back_to_labs')}
-                  >
-                    <ChevronLeft size={14} />
-                  </Button>
-                </Tooltip>
-                <div className="w-px h-4 bg-border mx-1" />
-              </>
-            )}
-            <MicroTitle>{t('wind.tunnel.wind_tunnel')}</MicroTitle>
-          </>
-        }
-        right={
-          <>
-            <Tooltip content={config.paused ? 'Resume (Space)' : 'Pause (Space)'} position="bottom">
+        <StageDock className="bottom-3">
+          <Tooltip content={t(config.paused ? 'toolDock.play' : 'toolDock.pause')}>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={t(config.paused ? 'toolDock.play' : 'toolDock.pause')}
+              className={cn(stageDockButton, 'text-foreground')}
+              onClick={togglePause}
+            >
+              {config.paused ? <Play size={14} /> : <Pause size={14} />}
+            </Button>
+          </Tooltip>
+          {/* On a phone an open group needs the row, so the tools make way for it. */}
+          <StageDockReveal open={!isMobile || (!detailsOpen && !exportOpen)}>
+            <Tooltip content={t('wind.tunnel.restart_hint')}>
               <Button
                 variant="ghost"
-                size="icon-sm"
-                onClick={togglePause}
-                aria-label={config.paused ? 'Resume simulation' : 'Pause simulation'}
-              >
-                {config.paused ? <Play size={12} /> : <Pause size={12} />}
-              </Button>
-            </Tooltip>
-            <Tooltip content="Restart simulation (R)" position="bottom">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={handleResetSim}
+                size="icon"
                 aria-label={t('wind.tunnel.restart_simulation_2')}
+                className={stageDockButton}
+                onClick={handleResetSim}
               >
-                <RotateCcw size={12} />
+                <RotateCcw size={14} />
               </Button>
             </Tooltip>
-            <div className="relative">
-              <Tooltip content="Export PNG (Ctrl+E)" position="bottom">
-                <Button
-                  variant="surface"
-                  size="xs"
-                  onClick={() => setShowExportMenu((p) => !p)}
-                  aria-label={t('wind.tunnel.export_png')}
-                >
-                  <Download size={12} className="mr-1" /> PNG
-                </Button>
-              </Tooltip>
-              {showExportMenu && (
-                <div className="absolute right-0 top-full mt-1 bg-popover/95 backdrop-blur-xl border border-border rounded-xl overflow-hidden z-50 min-w-[120px]">
-                  {[1, 2, 4].map((m) => (
-                    <button
-                      key={m}
-                      onClick={() => handleExport(m)}
-                      className="w-full px-3 py-1.5 text-left text-2xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                    >
-                      {m}x {m === 1 ? '(Screen)' : m === 2 ? '(2x HD)' : '(4x Print)'}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
             {isRecording ? (
-              <Tooltip content="Stop recording" position="bottom">
+              <Tooltip content={t('wind.tunnel.stop_recording')}>
                 <Button
-                  variant="surface"
-                  size="xs"
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t('wind.tunnel.stop_recording')}
+                  className={cn(stageDockButton, 'text-destructive')}
                   onClick={handleStopRecording}
-                  className="text-destructive border-destructive/30"
                 >
-                  <Square size={10} className="mr-1" /> Stop
+                  <Square size={14} />
                 </Button>
               </Tooltip>
             ) : (
-              <Tooltip content="Record WebM video" position="bottom">
+              <Tooltip content={t('wind.tunnel.record_hint')}>
                 <Button
                   variant="ghost"
-                  size="icon-sm"
+                  size="icon"
+                  aria-label={t('wind.tunnel.record_hint')}
+                  className={stageDockButton}
                   onClick={() => handleStartRecording(10)}
-                  aria-label="Record 10s video"
                 >
-                  <Video size={12} />
+                  <Video size={14} />
                 </Button>
               </Tooltip>
             )}
-            <Tooltip content="Share URL" position="bottom">
+            <Tooltip content={t('wind.tunnel.share_url')}>
               <Button
                 variant="ghost"
-                size="icon-sm"
+                size="icon"
+                aria-label={t('wind.tunnel.share_url')}
+                className={stageDockButton}
                 onClick={handleShareUrl}
-                aria-label="Copy share URL"
               >
-                <Share2 size={12} />
+                <Share2 size={14} />
               </Button>
             </Tooltip>
+            <StageDockDivider />
+          </StageDockReveal>
+          <StageDockGroup
+            icon={<Info size={14} />}
+            label={t('toolDock.details')}
+            onOpenChange={setDetailsOpen}
+          >
+            <StageDockText>
+              <span aria-live="polite">
+                {t('wind.tunnel.particles_count', { count: activeCount.toLocaleString() })}
+              </span>
+            </StageDockText>
+            <StageDockText>{fps} fps</StageDockText>
+            <StageDockText>{modeLabel(RENDER_MODES, config.renderMode, t)}</StageDockText>
+            <StageDockText>{modeLabel(COLOR_MODES, config.colorMode, t)}</StageDockText>
+            {config.fieldOverlay !== 'none' && (
+              <StageDockText>
+                <span className="text-foreground">
+                  {modeLabel(FIELD_OVERLAYS, config.fieldOverlay, t)}
+                </span>
+              </StageDockText>
+            )}
+            {isRecording && (
+              <StageDockText>
+                <span className="animate-pulse text-destructive">{t('wind.tunnel.rec')}</span>
+              </StageDockText>
+            )}
+            {config.paused && (
+              <StageDockText>
+                <span className="text-warning">{t('wind.tunnel.paused')}</span>
+              </StageDockText>
+            )}
+          </StageDockGroup>
+          {/* A phone opens the sheet with its own handle. */}
+          {!isMobile && (
             <Tooltip
-              content={showPanel ? 'Hide panel (Tab)' : 'Show panel (Tab)'}
-              position="bottom"
+              content={showPanel ? t('toolEditor.hidePanelHint') : t('toolEditor.showPanelHint')}
             >
               <Button
                 variant="ghost"
-                size="icon-sm"
+                size="icon"
+                aria-label={showPanel ? t('common.hidePanel') : t('common.showPanel')}
+                className={stageDockButton}
                 onClick={() => setShowPanel((p) => !p)}
-                aria-label={showPanel ? 'Hide panel' : 'Show panel'}
               >
-                {showPanel ? <PanelRightClose size={14} /> : <PanelRight size={14} />}
+                {showPanel ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
               </Button>
             </Tooltip>
-            <AppShellLegalMenu />
-          </>
-        }
-      />
-
-      {!isMobile && (
-        <AppShellPanel visible={showPanel} width={300}>
-          <GlassPanel className="h-full overflow-y-auto bg-card scrollbar-none rounded-xl">
-            <ControlsContent {...controlsProps} />
-          </GlassPanel>
-        </AppShellPanel>
-      )}
-
-      {isMobile && (
-        <AppShellMobileSheet
-          open={mobileSheetOpen}
-          onToggle={() => setMobileSheetOpen(!mobileSheetOpen)}
-          height="50%"
-        >
-          <GlassPanel className="bg-transparent scrollbar-none">
-            <ControlsContent {...controlsProps} />
-          </GlassPanel>
-        </AppShellMobileSheet>
-      )}
-
-      {!isMobile && (
-        <AppShellStatusBar>
-          <span aria-live="polite">{activeCount.toLocaleString()} particles</span>
-          <span>{fps} fps</span>
-          <span>{config.renderMode}</span>
-          <span>{config.colorMode}</span>
-          {config.fieldOverlay !== 'none' && (
-            <span className="text-foreground">{config.fieldOverlay}</span>
           )}
-          {isRecording && <span className="text-destructive animate-pulse">REC</span>}
-          {config.paused && <span className="text-warning">Paused</span>}
-        </AppShellStatusBar>
-      )}
-    </AppShell>
+          {(isMobile || !showPanel) && (
+            <StageDockGroup
+              icon={<Download size={14} />}
+              label={t('toolDock.export')}
+              onOpenChange={setExportOpen}
+            >
+              {EXPORT_SCALES.map((s) => (
+                <Tooltip key={s.multiplier} content={t(s.labelKey)}>
+                  <Button
+                    variant="surface"
+                    size="xs"
+                    className="shrink-0"
+                    aria-label={`${t('wind.tunnel.export_png')} ${s.multiplier}x`}
+                    onClick={() => handleExport(s.multiplier)}
+                  >
+                    {s.multiplier}x
+                  </Button>
+                </Tooltip>
+              ))}
+            </StageDockGroup>
+          )}
+        </StageDock>
+      </div>
+    </ToolEditorShell>
   );
 }

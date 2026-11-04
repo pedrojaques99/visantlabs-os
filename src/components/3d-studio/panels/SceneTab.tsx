@@ -309,7 +309,7 @@ export const SceneTab: React.FC = React.memo(() => {
                 [
                   { value: 'svg', label: t('studio3d.input.svgPng'), icon: <FileText size={12} /> },
                   { value: 'text', label: t('studio3d.input.text'), icon: <Type size={12} /> },
-                  { value: 'model', label: '3D Model', icon: <Box size={12} /> },
+                  { value: 'model', label: t('studio3d.input.model'), icon: <Box size={12} /> },
                 ] satisfies SelectOption[]
               }
             />
@@ -317,7 +317,7 @@ export const SceneTab: React.FC = React.memo(() => {
           {hasBrandLogos && (
             <ToolPanelChip onClick={() => setBrandPickerOpen(true)}>
               <span className="flex items-center justify-center gap-1">
-                <Palette size={12} /> Brand
+                <Palette size={12} /> {t('studio3d.input.pickLogo')}
               </span>
             </ToolPanelChip>
           )}
@@ -355,13 +355,13 @@ export const SceneTab: React.FC = React.memo(() => {
               value={store.text}
               onChange={(e) => store.setText(e.target.value)}
               placeholder={t('studio3d.input.textPlaceholder')}
-              aria-label="Text input"
+              aria-label={t('studio3d.input.text')}
               className="w-full bg-muted border border-border rounded px-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring"
             />
             <select
               value={store.font}
               onChange={(e) => store.setFont(e.target.value)}
-              aria-label="Font selection"
+              aria-label={t('studio3d.input.font')}
               className="w-full bg-muted border border-border rounded px-2 py-1.5 text-xs text-muted-foreground focus:outline-none focus:border-ring appearance-none cursor-pointer"
             >
               {FONT_OPTIONS.map((f) => (
@@ -375,15 +375,20 @@ export const SceneTab: React.FC = React.memo(() => {
       </ToolPanelDisclosure>
 
       {/* Scenes */}
-      <ToolPanelDisclosure label="Scenes" icon={<Film size={13} />} id="sec-scenes" defaultOpen>
+      <ToolPanelDisclosure
+        label={t('studio3d.scenes.title')}
+        icon={<Film size={13} />}
+        id="sec-scenes"
+        defaultOpen
+      >
         <div className="space-y-2">
           <div className="flex gap-1.5">
             <input
               type="text"
               value={sceneName}
               onChange={(e) => setSceneName(e.target.value)}
-              placeholder="Scene name..."
-              aria-label="Scene name"
+              placeholder={t('studio3d.scenes.namePlaceholder')}
+              aria-label={t('studio3d.scenes.nameAria')}
               className="flex-1 bg-muted border border-border rounded px-2 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring"
             />
             <Button
@@ -391,24 +396,26 @@ export const SceneTab: React.FC = React.memo(() => {
               size="sm"
               className="h-7 px-2 text-2xs relative"
               disabled={!sceneName.trim()}
-              aria-label="Save scene"
+              aria-label={t('studio3d.scenes.save')}
               onClick={async () => {
                 let thumb: string | undefined;
                 const c = document.querySelector('canvas') as HTMLCanvasElement | null;
                 if (c) {
-                  const t = document.createElement('canvas');
+                  const thumbCanvas = document.createElement('canvas');
                   const r = Math.min(80 / c.width, 80 / c.height, 1);
-                  t.width = Math.round(c.width * r);
-                  t.height = Math.round(c.height * r);
-                  t.getContext('2d')?.drawImage(c, 0, 0, t.width, t.height);
-                  thumb = t.toDataURL('image/jpeg', 0.6);
+                  thumbCanvas.width = Math.round(c.width * r);
+                  thumbCanvas.height = Math.round(c.height * r);
+                  thumbCanvas
+                    .getContext('2d')
+                    ?.drawImage(c, 0, 0, thumbCanvas.width, thumbCanvas.height);
+                  thumb = thumbCanvas.toDataURL('image/jpeg', 0.6);
                 }
                 const scene = await saveScene(sceneName.trim(), thumb);
                 if (scene) {
                   setSavedScenes(await getSavedScenes());
-                  toast.success('Scene saved');
+                  toast.success(t('studio3d.scenes.saved'));
                 } else {
-                  toast.error('Failed to save scene');
+                  toast.error(t('studio3d.scenes.saveFailed'));
                 }
               }}
             >
@@ -416,7 +423,9 @@ export const SceneTab: React.FC = React.memo(() => {
             </Button>
           </div>
           {scenesLoading && (
-            <div className="text-2xs text-muted-foreground text-center py-2">Loading scenes...</div>
+            <div className="text-2xs text-muted-foreground text-center py-2">
+              {t('studio3d.scenes.loading')}
+            </div>
           )}
           {savedScenes.length > 0 && (
             <div className="space-y-1 max-h-32 overflow-y-auto scrollbar-thin ">
@@ -425,10 +434,10 @@ export const SceneTab: React.FC = React.memo(() => {
                   <button
                     onClick={async () => {
                       const ok = await loadScene(scene.id);
-                      if (ok) toast.success(`Loaded "${scene.name}"`);
-                      else toast.error('Failed to load scene');
+                      if (ok) toast.success(t('studio3d.scenes.loaded', { name: scene.name }));
+                      else toast.error(t('studio3d.scenes.loadFailed'));
                     }}
-                    aria-label="Load scene"
+                    aria-label={t('studio3d.scenes.load')}
                     className="flex-1 flex items-center gap-2 text-left px-2 py-1 rounded text-2xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                   >
                     {scene.thumbnail ? (
@@ -447,9 +456,9 @@ export const SceneTab: React.FC = React.memo(() => {
                     onClick={async () => {
                       await deleteScene(scene.id);
                       setSavedScenes(await getSavedScenes());
-                      toast.success('Scene deleted');
+                      toast.success(t('studio3d.scenes.deleted'));
                     }}
-                    aria-label="Delete scene"
+                    aria-label={t('studio3d.scenes.delete')}
                     className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-destructive transition-[color,background-color,border-color,opacity]"
                   >
                     <Trash2 size={10} />
@@ -467,15 +476,15 @@ export const SceneTab: React.FC = React.memo(() => {
       {/* SVG Trace Refine — only for PNG uploads */}
       {lastPngFile.current && store.inputMode === 'svg' && store.svgData && (
         <ToolPanelDisclosure
-          label="SVG Refine"
+          label={t('studio3d.trace.title')}
           defaultOpen
           badge={
             <span className="text-3xs font-mono text-warning bg-warning/10 px-1.5 py-0.5 rounded">
-              trace
+              {t('studio3d.trace.badge')}
             </span>
           }
         >
-          <ToolPanelRow label="Preset">
+          <ToolPanelRow label={t('studio3d.trace.preset')}>
             <div className="w-40">
               <Select
                 value={store.tracePreset}
@@ -484,11 +493,11 @@ export const SceneTab: React.FC = React.memo(() => {
                 }
                 options={
                   [
-                    { value: 'logo', label: 'Logo' },
-                    { value: 'lettering', label: 'Lettering' },
-                    { value: 'lineArt', label: 'Line Art' },
-                    { value: 'stamp', label: 'Stamp' },
-                    { value: 'custom', label: 'Custom' },
+                    { value: 'logo', label: t('studio3d.trace.presets.logo') },
+                    { value: 'lettering', label: t('studio3d.trace.presets.lettering') },
+                    { value: 'lineArt', label: t('studio3d.trace.presets.lineArt') },
+                    { value: 'stamp', label: t('studio3d.trace.presets.stamp') },
+                    { value: 'custom', label: t('studio3d.trace.presets.custom') },
                   ] satisfies SelectOption[]
                 }
               />
@@ -513,7 +522,7 @@ export const SceneTab: React.FC = React.memo(() => {
             onChange={setDepth}
           />
           <ScrubInput
-            label={t('studio3d.geometry.objectScale')}
+            label={t('studio3d.basics.size')}
             value={objectScale}
             min={0.1}
             max={5}
@@ -525,7 +534,7 @@ export const SceneTab: React.FC = React.memo(() => {
           <Switch
             checked={store.bevelEnabled}
             onCheckedChange={store.setBevelEnabled}
-            aria-label="Bevel"
+            aria-label={t('studio3d.geometry.bevel')}
           />
         </ToolPanelRow>
       </ToolPanelDisclosure>
@@ -550,14 +559,14 @@ export const SceneTab: React.FC = React.memo(() => {
               <Switch
                 checked={!!store.shapeColor}
                 onCheckedChange={(on) => store.setShapeColor(on ? '#888888' : '')}
-                aria-label="Custom shape color"
+                aria-label={t('studio3d.geometry.shapeColor')}
               />
             </ToolPanelRow>
             {!!store.shapeColor && (
               <ExpandableColorPicker
                 color={store.shapeColor}
                 onChange={store.setShapeColor}
-                label="Shape color"
+                label={t('studio3d.geometry.shapeColor')}
               />
             )}
           </>
@@ -570,15 +579,17 @@ export const SceneTab: React.FC = React.memo(() => {
         icon={<Link size={13} />}
         badge={
           store.showChain ? (
-            <span className="text-3xs text-success bg-success/10 px-1.5 py-0.5 rounded">on</span>
+            <span className="text-3xs text-success bg-success/10 px-1.5 py-0.5 rounded">
+              {t('studio3d.geometry.chainOn')}
+            </span>
           ) : undefined
         }
       >
-        <ToolPanelRow label="Enable">
+        <ToolPanelRow label={t('studio3d.panels.enable')}>
           <Switch
             checked={store.showChain}
             onCheckedChange={store.setShowChain}
-            aria-label="Chain"
+            aria-label={t('studio3d.geometry.showChain')}
           />
         </ToolPanelRow>
         {store.showChain && (
@@ -605,14 +616,14 @@ export const SceneTab: React.FC = React.memo(() => {
               <Switch
                 checked={!!store.chainColor}
                 onCheckedChange={(on) => store.setChainColor(on ? store.color : '')}
-                aria-label="Custom chain color"
+                aria-label={t('studio3d.geometry.chainColor')}
               />
             </ToolPanelRow>
             {!!store.chainColor && (
               <ExpandableColorPicker
                 color={store.chainColor}
                 onChange={store.setChainColor}
-                label="Chain color"
+                label={t('studio3d.geometry.chainColor')}
               />
             )}
           </>
@@ -620,7 +631,7 @@ export const SceneTab: React.FC = React.memo(() => {
       </ToolPanelDisclosure>
 
       {/* Advanced — over-senior numerics, flat (never nested) */}
-      <ToolPanelDisclosure label="Advanced" defaultOpen={false}>
+      <ToolPanelDisclosure label={t('studio3d.panels.advanced')} defaultOpen={false}>
         {/* SVG Trace refine (custom preset) + re-trace */}
         {lastPngFile.current && store.inputMode === 'svg' && store.svgData && (
           <>
@@ -628,7 +639,7 @@ export const SceneTab: React.FC = React.memo(() => {
               <>
                 <div className="grid grid-cols-2 gap-1.5">
                   <ScrubInput
-                    label="Noise"
+                    label={t('studio3d.trace.noise')}
                     value={store.traceTurdSize}
                     min={0}
                     max={20}
@@ -636,7 +647,7 @@ export const SceneTab: React.FC = React.memo(() => {
                     onChange={store.setTraceTurdSize}
                   />
                   <ScrubInput
-                    label="Simplify"
+                    label={t('studio3d.trace.simplify')}
                     value={store.traceOptTolerance}
                     min={0}
                     max={2}
@@ -646,7 +657,7 @@ export const SceneTab: React.FC = React.memo(() => {
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   <ScrubInput
-                    label="Threshold"
+                    label={t('studio3d.panels.threshold')}
                     value={typeof store.traceThreshold === 'number' ? store.traceThreshold : 128}
                     min={0}
                     max={255}
@@ -654,7 +665,7 @@ export const SceneTab: React.FC = React.memo(() => {
                     onChange={store.setTraceThreshold}
                   />
                   <ScrubInput
-                    label="Corners"
+                    label={t('studio3d.trace.corners')}
                     value={store.traceAlphaMax}
                     min={0}
                     max={1.334}
@@ -671,7 +682,7 @@ export const SceneTab: React.FC = React.memo(() => {
               disabled={isRetracing}
               onClick={handleRetrace}
             >
-              {isRetracing ? <GlitchLoader size={12} /> : 'Re-trace'}
+              {isRetracing ? <GlitchLoader size={12} /> : t('studio3d.trace.retrace')}
             </Button>
           </>
         )}
@@ -857,6 +868,7 @@ export const SceneTab: React.FC = React.memo(() => {
 });
 
 const CommunityGallery: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const [scenes, setScenes] = useState<PublicScene[]>([]);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -871,17 +883,20 @@ const CommunityGallery: React.FC = React.memo(() => {
     setLoading(false);
   }, [loaded]);
 
-  const handleFork = useCallback(async (id: string) => {
-    setForking(id);
-    const ok = await forkScene(id);
-    setForking(null);
-    if (ok) toast.success('Scene forked!');
-    else toast.error('Failed to fork');
-  }, []);
+  const handleFork = useCallback(
+    async (id: string) => {
+      setForking(id);
+      const ok = await forkScene(id);
+      setForking(null);
+      if (ok) toast.success(t('studio3d.scenes.forked'));
+      else toast.error(t('studio3d.scenes.forkFailed'));
+    },
+    [t]
+  );
 
   return (
     <ToolPanelDisclosure
-      label="Community"
+      label={t('common.community')}
       icon={<Globe size={13} />}
       badge={
         scenes.length > 0 ? (
@@ -894,10 +909,12 @@ const CommunityGallery: React.FC = React.memo(() => {
           onClick={load}
           className="w-full px-2 py-2 rounded text-2xs bg-muted text-muted-foreground hover:bg-accent hover:text-foreground transition-colors border border-dashed border-border"
         >
-          {loading ? <GlitchLoader size={12} /> : 'Browse public scenes'}
+          {loading ? <GlitchLoader size={12} /> : t('studio3d.scenes.browsePublic')}
         </button>
       ) : scenes.length === 0 ? (
-        <p className="text-center text-muted-foreground text-2xs py-3">No public scenes yet</p>
+        <p className="text-center text-muted-foreground text-2xs py-3">
+          {t('studio3d.scenes.noPublic')}
+        </p>
       ) : (
         <div className="space-y-1 max-h-48 overflow-y-auto scrollbar-thin ">
           {scenes.map((scene) => (

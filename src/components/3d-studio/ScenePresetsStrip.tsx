@@ -44,7 +44,7 @@ const PresetGroup: React.FC<{
   );
 
 export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ flat = false }) => {
-  const { t } = useTranslation();
+  const { t, tOr } = useTranslation();
   const store = useStudio3DStore(useShallow(selector));
   const presetThumbs = usePresetPreviews();
   const [hasRandomizedOnce, setHasRandomizedOnce] = useState(false);
@@ -79,7 +79,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
                 {presetThumbs[name] ? (
                   <Thumb
                     src={presetThumbs[name]}
-                    alt={preset.label}
+                    alt={tOr(`studio3d.scenePresets.names.${name}`, preset.label)}
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
@@ -88,7 +88,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
                 )}
               </div>
               <span className="text-3xs text-muted-foreground group-hover:text-muted-foreground transition-colors max-w-14 truncate">
-                {preset.label}
+                {tOr(`studio3d.scenePresets.names.${name}`, preset.label)}
               </span>
             </button>
           ))}
@@ -136,7 +136,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
                   store.applyConfig(scene.config as Parameters<typeof store.applyConfig>[0])
                 }
                 className="shrink-0 flex flex-col items-center gap-1 group transition-colors duration-150"
-                title={scene.label}
+                title={tOr(`studio3d.scenePresets.names.${scene.label}`, scene.label)}
               >
                 <div
                   className="w-14 h-14 rounded-md overflow-hidden border border-border group-hover:border-border-hover transition-colors flex items-center justify-center"
@@ -151,7 +151,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
                   />
                 </div>
                 <span className="text-3xs text-muted-foreground group-hover:text-muted-foreground transition-colors max-w-14 truncate">
-                  {scene.label}
+                  {tOr(`studio3d.scenePresets.names.${scene.label}`, scene.label)}
                 </span>
               </button>
             ))}

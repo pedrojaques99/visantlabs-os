@@ -13,6 +13,7 @@ import {
 import { PanelSectionTabs, type PanelTab } from '@/components/shared/PanelSectionTabs';
 import { ApplyBrandButton } from '@/components/shared/BrandSwatchRow';
 import { CircleDot, Layers, Blend, Image, SlidersHorizontal } from '@/lib/ui/icons';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const HALFTONE_PRESET_ITEMS = Object.keys(HALFTONE_PRESETS).map((name) => ({ name }));
 
@@ -58,6 +59,7 @@ interface HalftoneControlsProps {
 
 export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
   ({ onExport, onCopyAsPng }) => {
+    const { t, tOr } = useTranslation();
     const store = useHalftoneStore();
     const [expandedChannel, setExpandedChannel] = useState<number | null>(null);
 
@@ -71,12 +73,12 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
     const tabs: PanelTab[] = [
       {
         id: 'screen',
-        label: 'Halftone',
+        label: t('imagelab.controls.halftone'),
         icon: <CircleDot size={16} />,
         content: (
           <div className="grid grid-cols-2 gap-1.5">
             <ScrubInput
-              label="Freq"
+              label={t('imagelab.controls.frequency')}
               value={store.frequency}
               min={20}
               max={500}
@@ -84,7 +86,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
               onChange={(v) => set('frequency', v)}
             />
             <ScrubInput
-              label="Dot"
+              label={t('imagelab.controls.dot')}
               value={store.dotSize}
               min={0.1}
               max={1}
@@ -92,7 +94,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
               onChange={(v) => set('dotSize', v)}
             />
             <ScrubInput
-              label="Space"
+              label={t('imagelab.controls.space')}
               value={store.dotSpacing}
               min={0}
               max={0.8}
@@ -104,7 +106,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
       },
       {
         id: 'channels',
-        label: 'Channels',
+        label: t('imagelab.controls.channels'),
         icon: <Layers size={16} />,
         action: (
           <ApplyBrandButton
@@ -122,7 +124,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
                 key={ch.key}
                 color={store[ch.inkKey]}
                 onColorChange={(v) => set(ch.inkKey, v)}
-                label={ch.key}
+                label={tOr(`imagelab.controls.channelNames.${ch.key}`, ch.key)}
                 visible={store[ch.showKey]}
                 onToggleVisible={() => set(ch.showKey, !store[ch.showKey])}
                 expanded={expandedChannel === i}
@@ -130,7 +132,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
               >
                 <div className="grid grid-cols-2 gap-1.5">
                   <ScrubInput
-                    label="Opacity"
+                    label={t('imagelab.controls.opacity')}
                     value={(store as any)[ch.alphaKey]}
                     min={0}
                     max={1}
@@ -138,7 +140,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
                     onChange={(v) => set(ch.alphaKey, v)}
                   />
                   <ScrubInput
-                    label="Angle"
+                    label={t('imagelab.controls.angle')}
                     value={(store as any)[ch.angleKey]}
                     min={0}
                     max={360}
@@ -154,28 +156,31 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
       },
       {
         id: 'paper',
-        label: 'Paper & Blend',
+        label: t('imagelab.controls.paperAndBlend'),
         icon: <Blend size={16} />,
         content: (
           <div className="space-y-3">
-            <ToolPanelRow label="Paper">
+            <ToolPanelRow label={t('imagelab.controls.paper')}>
               <InlineColorPicker
                 value={store.paperColor}
                 onChange={(v) => set('paperColor', v)}
-                label="Paper color"
+                label={t('imagelab.controls.paperColor')}
               />
             </ToolPanelRow>
             <ScrubInput
-              label="Paper Opacity"
+              label={t('imagelab.controls.paperOpacity')}
               value={store.paperAlpha}
               min={0}
               max={1}
               step={0.01}
               onChange={(v) => set('paperAlpha', v)}
             />
-            <ToolPanelRow label="Blend">
+            <ToolPanelRow label={t('imagelab.controls.blend')}>
               <Select
-                options={BLEND_MODES.map((m) => ({ value: String(m.id), label: m.label }))}
+                options={BLEND_MODES.map((m) => ({
+                  value: String(m.id),
+                  label: tOr(`imagelab.controls.blendModes.${m.id}`, m.label),
+                }))}
                 value={String(store.blendMode)}
                 onChange={(v) => set('blendMode', Number(v))}
                 variant="node"
@@ -186,13 +191,13 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
       },
       {
         id: 'image',
-        label: 'Image & Texture',
+        label: t('imagelab.controls.imageAndTexture'),
         icon: <Image size={16} />,
         content: (
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-1.5">
               <ScrubInput
-                label="Contrast"
+                label={t('imagelab.controls.contrast')}
                 value={store.contrast}
                 min={0.3}
                 max={2}
@@ -200,7 +205,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
                 onChange={(v) => set('contrast', v)}
               />
               <ScrubInput
-                label="Light"
+                label={t('imagelab.controls.light')}
                 value={store.lightness}
                 min={-0.5}
                 max={0.5}
@@ -208,7 +213,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
                 onChange={(v) => set('lightness', v)}
               />
               <ScrubInput
-                label="Blur"
+                label={t('imagelab.controls.blur')}
                 value={store.blur}
                 min={0}
                 max={30}
@@ -217,7 +222,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
                 onChange={(v) => set('blur', v)}
               />
               <ScrubInput
-                label="Grain"
+                label={t('imagelab.controls.grain')}
                 value={store.paperNoise}
                 min={0}
                 max={1}
@@ -226,7 +231,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
               />
             </div>
             <ScrubInput
-              label="Ink Noise"
+              label={t('imagelab.controls.inkNoise')}
               value={store.inkNoise}
               min={0}
               max={1}
@@ -238,12 +243,12 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
       },
       {
         id: 'advanced',
-        label: 'Dot Advanced',
+        label: t('imagelab.controls.dotAdvanced'),
         icon: <SlidersHorizontal size={16} />,
         content: (
           <div className="grid grid-cols-2 gap-1.5">
             <ScrubInput
-              label="Rough"
+              label={t('imagelab.controls.rough')}
               value={store.roughness}
               min={0}
               max={2}
@@ -251,7 +256,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
               onChange={(v) => set('roughness', v)}
             />
             <ScrubInput
-              label="Fuzz"
+              label={t('imagelab.controls.fuzz')}
               value={store.fuzz}
               min={0}
               max={0.5}
@@ -259,7 +264,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
               onChange={(v) => set('fuzz', v)}
             />
             <ScrubInput
-              label="Random"
+              label={t('imagelab.controls.random')}
               value={store.randomness}
               min={0}
               max={0.4}
@@ -267,7 +272,7 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
               onChange={(v) => set('randomness', v)}
             />
             <ScrubInput
-              label="Thresh"
+              label={t('imagelab.controls.threshold')}
               value={store.threshold}
               min={0}
               max={0.5}

@@ -10,12 +10,6 @@ import { useShallow } from 'zustand/react/shallow';
 import type { StoreState } from './_shared';
 import { ToolPanelDisclosure, ToolPanelRow } from '@/components/shared/ToolPanel';
 
-// Animation Type options for the shared <Select> (mapped from the store SSoT).
-const ANIMATION_TYPE_OPTIONS: SelectOption[] = ANIMATION_PRESETS.map((a) => ({
-  value: a.id,
-  label: a.label,
-}));
-
 const EASING_VALUES = ['linear', 'easeIn', 'easeOut', 'easeInOut'] as const;
 
 // Fine-grained subscription: only the animation/physics slice. Replaces the
@@ -44,8 +38,14 @@ const animationPanelSelector = (s: StoreState) => ({
 });
 
 export const AnimationTab: React.FC = React.memo(() => {
-  const { t } = useTranslation();
+  const { t, tOr } = useTranslation();
   const store = useStudio3DStore(useShallow(animationPanelSelector));
+
+  // Animation Type options for the shared <Select> (mapped from the store SSoT).
+  const animationTypeOptions: SelectOption[] = ANIMATION_PRESETS.map((a) => ({
+    value: a.id,
+    label: tOr(`studio3d.animation.presets.${a.id}`, a.label),
+  }));
 
   // Easing options for the shared <Select> (translated labels).
   const easingOptions: SelectOption[] = EASING_VALUES.map((e) => ({
@@ -86,7 +86,7 @@ export const AnimationTab: React.FC = React.memo(() => {
       {/* Essentials — Animation Type */}
       <span className="text-2xs text-muted-foreground">{t('studio3d.animation.type')}</span>
       <Select
-        options={ANIMATION_TYPE_OPTIONS}
+        options={animationTypeOptions}
         value={store.animate}
         onChange={(v) => store.setAnimate(v as typeof store.animate)}
       />
@@ -95,7 +95,7 @@ export const AnimationTab: React.FC = React.memo(() => {
       {isStandardAnim && (
         <>
           <ScrubInput
-            label="Speed"
+            label={t('studio3d.animation.speed')}
             value={animateSpeed}
             min={0.1}
             max={5}
@@ -114,7 +114,7 @@ export const AnimationTab: React.FC = React.memo(() => {
             <Switch
               checked={store.animateReverse}
               onCheckedChange={store.setAnimateReverse}
-              aria-label="Reverse animation"
+              aria-label={t('studio3d.animation.reverse')}
             />
           </ToolPanelRow>
         </>
@@ -122,10 +122,10 @@ export const AnimationTab: React.FC = React.memo(() => {
 
       {/* Advanced — Physics parameters (only when physicsFall is selected) */}
       {store.animate === 'physicsFall' && (
-        <ToolPanelDisclosure label="Advanced" defaultOpen={false}>
+        <ToolPanelDisclosure label={t('studio3d.panels.advanced')} defaultOpen={false}>
           <div className="grid grid-cols-2 gap-1.5">
             <ScrubInput
-              label="Count"
+              label={t('studio3d.animation.physics.count')}
               value={physicsCount}
               min={1}
               max={Math.max(1, Math.round(100 - (store.physicsSize - 0.2) * (92 / 1.5)))}
@@ -133,7 +133,7 @@ export const AnimationTab: React.FC = React.memo(() => {
               onChange={setPhysicsCount}
             />
             <ScrubInput
-              label="Gravity"
+              label={t('studio3d.animation.physics.gravity')}
               value={physicsGravity}
               min={0}
               max={30}
@@ -141,7 +141,7 @@ export const AnimationTab: React.FC = React.memo(() => {
               onChange={setPhysicsGravity}
             />
             <ScrubInput
-              label="Bounce"
+              label={t('studio3d.animation.physics.bounciness')}
               value={physicsBounciness}
               min={0}
               max={1}
@@ -149,7 +149,7 @@ export const AnimationTab: React.FC = React.memo(() => {
               onChange={setPhysicsBounciness}
             />
             <ScrubInput
-              label="Friction"
+              label={t('studio3d.animation.physics.friction')}
               value={physicsFriction}
               min={0}
               max={1}
@@ -158,7 +158,7 @@ export const AnimationTab: React.FC = React.memo(() => {
             />
           </div>
           <ScrubInput
-            label="Size"
+            label={t('studio3d.animation.physics.size')}
             value={physicsSize}
             min={0.2}
             max={2}

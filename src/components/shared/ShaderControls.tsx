@@ -5,12 +5,16 @@
  * Import into any app's control panel.
  */
 
-import React, { useCallback } from 'react';
+import React from 'react';
 import { cn } from '@/lib/utils';
 import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Switch } from '@/components/ui/switch';
 import { MicroTitle } from '@/components/ui/MicroTitle';
-import { ToolPanelDisclosure } from '@/components/shared/ToolPanel';
+import {
+  ToolPanelDisclosure,
+  ToolPanelRow,
+  InlineColorPicker,
+} from '@/components/shared/ToolPanel';
 import { PanelSectionTabs, type PanelTab } from '@/components/shared/PanelSectionTabs';
 import { Zap, Square, SlidersHorizontal } from '@/lib/ui/icons';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
@@ -23,7 +27,14 @@ import {
   type ShaderParam,
 } from '@/utils/shaders/shaderParams';
 import type { ShaderType } from '@/utils/shaders/shaderRegistry';
+import { parseHex } from '@/utils/colorUtils';
 import { useTranslation } from '@/hooks/useTranslation';
+
+/** Shader names and params live in shaderParams.ts as English labels; translate them by label. */
+const useShaderLabel = () => {
+  const { tOr } = useTranslation();
+  return (label: string) => tOr(`imagelab.shader.labels.${label}`, label);
+};
 
 interface ShaderControlsProps {
   enabled: boolean;
@@ -55,6 +66,7 @@ export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(
     sectioned,
   }) => {
     const { t } = useTranslation();
+    const shaderLabel = useShaderLabel();
     const def = SHADER_DEFINITIONS_MAP[shaderType];
 
     const typeSelector = (
@@ -70,7 +82,7 @@ export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(
                 : 'bg-muted text-muted-foreground hover:bg-accent'
             )}
           >
-            {d.label}
+            {shaderLabel(d.label)}
           </button>
         ))}
       </div>
@@ -89,7 +101,7 @@ export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(
                 : 'bg-muted text-muted-foreground hover:bg-accent'
             )}
           >
-            {o.label}
+            {shaderLabel(o.label)}
           </button>
         ))}
       </div>
@@ -123,12 +135,17 @@ export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(
     // ── Sectioned layout (ImageLab): icon-rail tabs, matching the other tools ──
     if (sectioned) {
       const tabs: PanelTab[] = [
-        { id: 'shader', label: 'Shader', icon: <Zap size={16} />, content: typeSelector },
+        {
+          id: 'shader',
+          label: t('imagelab.shader.title'),
+          icon: <Zap size={16} />,
+          content: typeSelector,
+        },
         ...(variantSelector
           ? [
               {
                 id: 'variant',
-                label: def!.variants!.label,
+                label: shaderLabel(def!.variants!.label),
                 icon: <Square size={16} />,
                 content: variantSelector,
               },
@@ -148,7 +165,7 @@ export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(
             <PanelSectionTabs tabs={tabs} />
           ) : (
             <div className="p-4 text-2xs text-muted-foreground">
-              Enable the shader effect to edit its parameters.
+              {t('imagelab.shader.enableHint')}
             </div>
           )}
         </div>
@@ -163,7 +180,10 @@ export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(
           <>
             {typeSelector}
             {variantSelector && (
-              <ToolPanelDisclosure label={def!.variants!.label.toUpperCase()} defaultOpen>
+              <ToolPanelDisclosure
+                label={shaderLabel(def!.variants!.label).toUpperCase()}
+                defaultOpen
+              >
                 {variantSelector}
               </ToolPanelDisclosure>
             )}
@@ -205,10 +225,11 @@ const SliderParam: React.FC<{
   value: any;
   onChange: (v: number) => void;
 }> = React.memo(({ param, value, onChange }) => {
+  const shaderLabel = useShaderLabel();
   const [local, setLocal] = useDebouncedSlider(value ?? param.defaultValue, onChange);
   return (
     <NodeSlider
-      label={param.label}
+      label={shaderLabel(param.label)}
       value={local}
       min={param.min}
       max={param.max}
@@ -226,10 +247,11 @@ const SelectParam: React.FC<{
   value: any;
   onChange: (v: number) => void;
 }> = React.memo(({ param, value, onChange }) => {
+  const shaderLabel = useShaderLabel();
   const current = value ?? param.defaultValue;
   return (
     <div>
-      <span className="text-2xs text-muted-foreground block mb-1">{param.label}</span>
+      <span className="text-2xs text-muted-foreground block mb-1">{shaderLabel(param.label)}</span>
       <div className="grid grid-cols-2 gap-1">
         {param.options.map((o) => (
           <button
@@ -242,7 +264,7 @@ const SelectParam: React.FC<{
                 : 'bg-muted text-muted-foreground hover:bg-accent'
             )}
           >
-            {o.label}
+            {shaderLabel(o.label)}
           </button>
         ))}
       </div>
@@ -256,15 +278,18 @@ const ToggleParam: React.FC<{
   param: ShaderParam;
   value: any;
   onChange: (v: number) => void;
-}> = React.memo(({ param, value, onChange }) => (
-  <div className="flex items-center justify-between">
-    <span className="text-2xs text-muted-foreground">{param.label}</span>
-    <Switch
-      checked={(value ?? param.defaultValue) === 1}
-      onCheckedChange={(v) => onChange(v ? 1 : 0)}
-    />
-  </div>
-));
+}> = React.memo(({ param, value, onChange }) => {
+  const shaderLabel = useShaderLabel();
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-2xs text-muted-foreground">{shaderLabel(param.label)}</span>
+      <Switch
+        checked={(value ?? param.defaultValue) === 1}
+        onCheckedChange={(v) => onChange(v ? 1 : 0)}
+      />
+    </div>
+  );
+});
 
 ToggleParam.displayName = 'ToggleParam';
 
@@ -293,25 +318,18 @@ const ColorParam: React.FC<{
   value: any;
   onChange: (v: [number, number, number]) => void;
 }> = React.memo(({ param, value, onChange }) => {
+  const shaderLabel = useShaderLabel();
   const rgb = (value ?? param.defaultValue) as [number, number, number];
-  const hex = glToHex(rgb);
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      onChange(hexToGl(e.target.value));
-    },
-    [onChange]
-  );
+  const label = shaderLabel(param.label);
 
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-2xs text-muted-foreground">{param.label}</span>
-      <input
-        type="color"
-        value={hex}
-        onChange={handleChange}
-        className="w-8 h-5 rounded cursor-pointer bg-transparent border-0"
+    <ToolPanelRow label={label}>
+      <InlineColorPicker
+        value={glToHex(rgb)}
+        onChange={(hex) => onChange(hexToGl(parseHex(hex) ?? hex))}
+        label={label}
       />
-    </div>
+    </ToolPanelRow>
   );
 });
 

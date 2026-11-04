@@ -1,14 +1,10 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
+import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 // ── Tool-specific default mappings ─────────────────────────────────────────
-
-export interface CompressDefaults {
-  quality: number;
-  outputFormat: 'jpeg' | 'png' | 'webp';
-}
 
 export interface WatermarkDefaults {
   logoUrl: string | null;
@@ -27,7 +23,6 @@ export interface OgImageDefaults {
 }
 
 export type ToolDefaults = {
-  compress: CompressDefaults;
   watermark: WatermarkDefaults;
   favicon: FaviconDefaults;
   'og-image': OgImageDefaults;
@@ -63,12 +58,6 @@ function deriveDefaults<T extends keyof ToolDefaults>(
   brand: BrandGuideline
 ): ToolDefaults[T] {
   switch (toolId) {
-    case 'compress':
-      return {
-        quality: 85,
-        outputFormat: 'webp',
-      } as ToolDefaults[T];
-
     case 'watermark':
       return {
         logoUrl: getPrimaryLogo(brand),
@@ -100,13 +89,19 @@ interface UseBrandDefaultsReturn<T extends keyof ToolDefaults> {
   setBrandId: (id: string | null) => void;
   brand: BrandGuideline | null;
   defaults: ToolDefaults[T] | null;
+  /** true quando a pessoa escolheu no seletor; false quando veio da marca ativa. */
+  isExplicit: boolean;
   isLoading: boolean;
 }
 
 export function useBrandDefaults<T extends keyof ToolDefaults>(
   toolId: T
 ): UseBrandDefaultsReturn<T> {
-  const [brandId, setBrandId] = useState<string | null>(null);
+  // Estas rotas não têm chip de marca na barra do app (UTILITY_TOOL_PREFIXES), então o seletor
+  // fica e começa na marca ativa. undefined = segue a ativa; null = "sem marca" escolhido.
+  const activeBrandId = useActiveBrandSafe()?.activeBrand?.id ?? null;
+  const [chosenId, setChosenId] = useState<string | null | undefined>(undefined);
+  const brandId = chosenId === undefined ? activeBrandId : chosenId;
 
   const { data: brand = null, isLoading } = useQuery({
     queryKey: ['brand-guidelines', brandId],
@@ -117,7 +112,7 @@ export function useBrandDefaults<T extends keyof ToolDefaults>(
   const defaults = useMemo(() => (brand ? deriveDefaults(toolId, brand) : null), [toolId, brand]);
 
   const handleSetBrandId = useCallback((id: string | null) => {
-    setBrandId(id);
+    setChosenId(id);
   }, []);
 
   return {
@@ -125,6 +120,7 @@ export function useBrandDefaults<T extends keyof ToolDefaults>(
     setBrandId: handleSetBrandId,
     brand,
     defaults,
+    isExplicit: chosenId !== undefined,
     isLoading,
   };
 }

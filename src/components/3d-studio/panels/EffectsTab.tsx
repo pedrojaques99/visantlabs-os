@@ -110,11 +110,11 @@ export const EffectsTab: React.FC = React.memo(() => {
 
   return (
     <>
-      <ToolPanelRow label="Before / After">
+      <ToolPanelRow label={t('studio3d.panels.beforeAfter')}>
         <Switch
           checked={!store.effectsBypass}
           onCheckedChange={(v) => store.setEffectsBypass(!v)}
-          aria-label="Toggle all effects"
+          aria-label={t('studio3d.panels.toggleAllEffects')}
         />
       </ToolPanelRow>
 
@@ -123,28 +123,28 @@ export const EffectsTab: React.FC = React.memo(() => {
         <Switch
           checked={store.bloomEnabled}
           onCheckedChange={store.setBloomEnabled}
-          aria-label="Bloom"
+          aria-label={t('studio3d.panels.bloom')}
         />
       </ToolPanelRow>
       {store.bloomEnabled && (
         <div className="grid grid-cols-2 gap-1.5">
           <ScrubInput
-            label="Intensity"
+            label={t('studio3d.basics.intensity')}
             value={bloomIntensity}
             min={0}
             max={5}
             step={0.1}
             onChange={setBloomIntensity}
-            hint="Bloom glow strength"
+            hint={t('studio3d.panels.bloomIntensityHint')}
           />
           <ScrubInput
-            label="Threshold"
+            label={t('studio3d.panels.threshold')}
             value={bloomThreshold}
             min={0}
             max={1}
             step={0.01}
             onChange={setBloomThreshold}
-            hint="Pixels brighter than this glow"
+            hint={t('studio3d.panels.bloomThresholdHint')}
           />
         </div>
       )}
@@ -154,7 +154,7 @@ export const EffectsTab: React.FC = React.memo(() => {
         <Switch
           checked={store.dofEnabled}
           onCheckedChange={store.setDofEnabled}
-          aria-label="Depth of field"
+          aria-label={t('studio3d.panels.depthOfField')}
         />
       </ToolPanelRow>
 
@@ -163,12 +163,12 @@ export const EffectsTab: React.FC = React.memo(() => {
         <Switch
           checked={store.noiseEnabled}
           onCheckedChange={store.setNoiseEnabled}
-          aria-label="Film grain"
+          aria-label={t('studio3d.panels.filmGrain')}
         />
       </ToolPanelRow>
       {store.noiseEnabled && (
         <ScrubInput
-          label="Amount"
+          label={t('studio3d.panels.amount')}
           value={noiseOpacity}
           min={0}
           max={0.5}
@@ -182,12 +182,12 @@ export const EffectsTab: React.FC = React.memo(() => {
         <Switch
           checked={store.vignetteEnabled}
           onCheckedChange={store.setVignetteEnabled}
-          aria-label="Vignette"
+          aria-label={t('studio3d.panels.vignette')}
         />
       </ToolPanelRow>
       {store.vignetteEnabled && (
         <ScrubInput
-          label="Darkness"
+          label={t('studio3d.panels.darkness')}
           value={vignetteIntensity}
           min={0}
           max={1}
@@ -198,17 +198,17 @@ export const EffectsTab: React.FC = React.memo(() => {
 
       {/* Color Grading — own top-level disclosure */}
       <ToolPanelDisclosure label={t('studio3d.panels.colorGrading')}>
-        <ToolPanelRow label="Enable">
+        <ToolPanelRow label={t('studio3d.panels.enable')}>
           <Switch
             checked={store.colorGradingEnabled}
             onCheckedChange={store.setColorGradingEnabled}
-            aria-label="Color grading"
+            aria-label={t('studio3d.panels.colorGrading')}
           />
         </ToolPanelRow>
         {store.colorGradingEnabled && (
           <div className="grid grid-cols-2 gap-1.5">
             <ScrubInput
-              label="Bright"
+              label={t('studio3d.panels.brightness')}
               value={cgBrightness}
               min={-0.5}
               max={0.5}
@@ -216,7 +216,7 @@ export const EffectsTab: React.FC = React.memo(() => {
               onChange={setCgBrightness}
             />
             <ScrubInput
-              label="Contrast"
+              label={t('studio3d.panels.contrast')}
               value={cgContrast}
               min={-0.5}
               max={0.5}
@@ -224,7 +224,7 @@ export const EffectsTab: React.FC = React.memo(() => {
               onChange={setCgContrast}
             />
             <ScrubInput
-              label="Hue"
+              label={t('studio3d.panels.hue')}
               value={cgHue}
               min={-Math.PI}
               max={Math.PI}
@@ -232,7 +232,7 @@ export const EffectsTab: React.FC = React.memo(() => {
               onChange={setCgHue}
             />
             <ScrubInput
-              label="Sat"
+              label={t('studio3d.panels.saturation')}
               value={cgSaturation}
               min={-1}
               max={1}
@@ -244,12 +244,12 @@ export const EffectsTab: React.FC = React.memo(() => {
       </ToolPanelDisclosure>
 
       {/* Shader FX */}
-      <ToolPanelDisclosure label={t('studio3d.panels.shaderFx')}>
-        <ToolPanelRow label="Enable">
+      <ToolPanelDisclosure label={t('studio3d.tabs.shader')}>
+        <ToolPanelRow label={t('studio3d.panels.enable')}>
           <Switch
             checked={store.shaderEnabled}
             onCheckedChange={store.setShaderEnabled}
-            aria-label="Shader FX"
+            aria-label={t('studio3d.tabs.shader')}
           />
         </ToolPanelRow>
         {store.shaderEnabled && (
@@ -266,26 +266,26 @@ export const EffectsTab: React.FC = React.memo(() => {
       </ToolPanelDisclosure>
 
       {/* Advanced — over-senior controls */}
-      <ToolPanelDisclosure label="Advanced" defaultOpen={false}>
+      <ToolPanelDisclosure label={t('studio3d.panels.advanced')} defaultOpen={false}>
         {store.dofEnabled && (
           <div className="grid grid-cols-2 gap-1.5">
             <ScrubInput
-              label="DOF Focus"
+              label={t('studio3d.panels.dofFocus')}
               value={dofFocusDistance}
               min={0}
               max={0.1}
               step={0.001}
               onChange={setDofFocusDistance}
-              hint="Objects at this depth stay sharp"
+              hint={t('studio3d.panels.dofFocusHint')}
             />
             <ScrubInput
-              label="DOF Bokeh"
+              label={t('studio3d.panels.dofBokeh')}
               value={dofBokehScale}
               min={0}
               max={10}
               step={0.1}
               onChange={setDofBokehScale}
-              hint="Blur intensity for out-of-focus areas"
+              hint={t('studio3d.panels.dofBokehHint')}
             />
           </div>
         )}
@@ -294,18 +294,18 @@ export const EffectsTab: React.FC = React.memo(() => {
           <Switch
             checked={store.chromaticAberrationEnabled}
             onCheckedChange={store.setChromaticAberrationEnabled}
-            aria-label="Chromatic aberration"
+            aria-label={t('studio3d.panels.chromaticAberration')}
           />
         </ToolPanelRow>
         {store.chromaticAberrationEnabled && (
           <ScrubInput
-            label="Offset"
+            label={t('studio3d.panels.offset')}
             value={chromaticAberrationOffset}
             min={0}
             max={0.02}
             step={0.0005}
             onChange={setChromaticAberrationOffset}
-            hint="RGB fringe at edges, like a real lens"
+            hint={t('studio3d.panels.chromaticOffsetHint')}
           />
         )}
 
@@ -313,18 +313,18 @@ export const EffectsTab: React.FC = React.memo(() => {
           <Switch
             checked={store.ssaoEnabled}
             onCheckedChange={store.setSsaoEnabled}
-            aria-label="SSAO"
+            aria-label={t('studio3d.panels.ambientOcclusion')}
           />
         </ToolPanelRow>
         {store.ssaoEnabled && (
           <ScrubInput
-            label="AO Intensity"
+            label={t('studio3d.basics.intensity')}
             value={ssaoIntensity}
             min={0}
             max={2}
             step={0.05}
             onChange={setSsaoIntensity}
-            hint="Ambient occlusion darkens crevices and contact areas"
+            hint={t('studio3d.panels.aoIntensityHint')}
           />
         )}
       </ToolPanelDisclosure>

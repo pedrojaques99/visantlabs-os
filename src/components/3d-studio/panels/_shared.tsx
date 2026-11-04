@@ -53,6 +53,7 @@ export const PbrMapUpload: React.FC<{
   value: string;
   onChange: (url: string) => void;
 }> = ({ label, value, onChange }) => {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   return (
     <div className="space-y-1">
@@ -63,7 +64,7 @@ export const PbrMapUpload: React.FC<{
             onClick={() => onChange('')}
             className="text-3xs text-muted-foreground hover:text-destructive transition-colors"
           >
-            Remove
+            {t('studio3d.texture.remove')}
           </button>
         )}
       </div>
@@ -71,7 +72,7 @@ export const PbrMapUpload: React.FC<{
         onClick={() => inputRef.current?.click()}
         className="w-full px-2 py-1.5 rounded text-2xs bg-muted text-muted-foreground hover:bg-accent hover:text-foreground transition-colors border border-dashed border-border"
       >
-        {value ? 'Map loaded' : `Upload ${label}`}
+        {value ? t('studio3d.texture.mapLoaded') : t('studio3d.texture.uploadMap', { name: label })}
       </button>
       <input
         ref={inputRef}
@@ -126,7 +127,7 @@ export const MaterialCategoryTabs: React.FC<{
   activeCat: string;
   store: Pick<StoreState, 'material' | 'setMaterial'>;
 }> = React.memo(({ activeCat, store }) => {
-  const { t } = useTranslation();
+  const { t, tOr } = useTranslation();
   const [openCat, setOpenCat] = useState(activeCat);
 
   const handleCat = useCallback((cat: string) => {
@@ -159,7 +160,7 @@ export const MaterialCategoryTabs: React.FC<{
                   style={{ backgroundColor: m.color || '#666' }}
                 />
                 <span className="text-3xs leading-tight text-center truncate w-full">
-                  {m.label}
+                  {tOr(`studio3d.material.presets.${m.id}`, m.label)}
                 </span>
               </span>
             </ToolPanelChip>
@@ -298,7 +299,7 @@ export const TextureControls: React.FC<{
   setTextureRotation: (v: number) => void;
 }> = React.memo(
   ({ store, textureOpacity, setTextureOpacity, textureRotation, setTextureRotation }) => {
-    const { t } = useTranslation();
+    const { t, tOr } = useTranslation();
     const textureInputRef = useRef<HTMLInputElement>(null);
     const [activeProc, setActiveProc] = useState<string | null>(null);
 
@@ -333,7 +334,7 @@ export const TextureControls: React.FC<{
               active={activeProc === pt.id}
               onClick={() => applyProcedural(pt)}
             >
-              {pt.label}
+              {tOr(`studio3d.texture.procedural.${pt.id}`, pt.label)}
             </ToolPanelChip>
           ))}
         </ToolPanelGrid>
@@ -349,7 +350,7 @@ export const TextureControls: React.FC<{
           accept="image/*"
           onChange={handleTextureUpload}
           className="hidden"
-          aria-label="Upload texture"
+          aria-label={t('studio3d.texture.upload')}
         />
         {hasTexture && (
           <div className="pt-2 space-y-2">
@@ -361,7 +362,7 @@ export const TextureControls: React.FC<{
                 max={1}
                 step={0.01}
                 onChange={setTextureOpacity}
-                hint="Texture opacity"
+                hint={t('studio3d.texture.opacityHint')}
               />
               <ScrubInput
                 label={t('studio3d.texture.repeat')}
@@ -370,16 +371,16 @@ export const TextureControls: React.FC<{
                 max={10}
                 step={0.5}
                 onChange={store.setTextureRepeat}
-                hint="Tiling repeat"
+                hint={t('studio3d.texture.repeatHint')}
               />
               <ScrubInput
-                label="Rotation"
+                label={t('studio3d.panels.rotation')}
                 value={textureRotation}
                 min={0}
                 max={6.28}
                 step={0.1}
                 onChange={setTextureRotation}
-                hint="Rotation in radians"
+                hint={t('studio3d.texture.rotationHint')}
               />
             </div>
             {activeProc && (

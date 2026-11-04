@@ -232,7 +232,7 @@ const MockupMachinePageContent: React.FC = () => {
     imageProvider,
     setImageProvider,
     selectedBrandGuideline,
-    setSelectedBrandGuideline,
+    adoptBrand,
     seed,
     setSeed,
     seedLocked,
@@ -274,7 +274,7 @@ const MockupMachinePageContent: React.FC = () => {
   // deep-link vindo do wizard /welcome ou de qualquer superfície externa.
   useEffect(() => {
     const brandParam = searchParams.get('brand');
-    if (brandParam) setSelectedBrandGuideline(brandParam);
+    if (brandParam) adoptBrand(brandParam);
     // Só na montagem — o selector da página assume depois.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

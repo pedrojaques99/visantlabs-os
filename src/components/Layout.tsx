@@ -28,6 +28,22 @@ import { ShellHeaderContext } from './shell/ShellHeaderContext';
 import { useTrackEditorOrigin } from './shell/editorOrigin';
 import { FirstRunGuard } from './shell/FirstRunGuard';
 
+// Tools fill the window: a page footer would cover their dock and, on a phone, their panel.
+const MINI_TOOL_ROUTES = [
+  '/color-converter',
+  '/compress',
+  '/converter',
+  '/favicon',
+  '/naming',
+  '/og-image',
+  '/pdf-compress',
+  '/qrcode',
+  '/remove-bg',
+  '/svg-optimizer',
+  '/upscale',
+  '/watermark',
+];
+
 /** Contexto opcional do paywall — e.g. 402 brand_limit/seat_limit passa a mensagem e cai direto na aba de assinatura. `insufficient_credits` (free user no muro de crédito) abre o modal de upgrade de plano — Pro dá 10× créditos. */
 export type SubscriptionModalContext = {
   reason?: 'brand_limit' | 'seat_limit' | 'insufficient_credits';
@@ -817,6 +833,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           !location.pathname.startsWith('/ink-bleed') &&
           !location.pathname.startsWith('/grid-machine') &&
           !location.pathname.startsWith('/labs/wind-tunnel') &&
+          !MINI_TOOL_ROUTES.some((route) => location.pathname.startsWith(route)) &&
           !location.pathname.startsWith('/playground') &&
           location.pathname !== '/' && (
             <ASCIIFooter

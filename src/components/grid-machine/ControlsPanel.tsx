@@ -4,7 +4,6 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { NodeSlider } from '@/components/ui/NodeSlider';
 import {
-  Download,
   FileCode,
   Trash2,
   Eye,
@@ -18,7 +17,7 @@ import { useGridMachineStore } from '@/stores/gridMachineStore';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import {
   ToolPanel,
-  ToolPanelActions,
+  ToolPanelExportActions,
   ToolPanelRow,
   ToolPanelDisclosure,
   InlineColorPicker,
@@ -95,83 +94,83 @@ export const GridMachineControls: React.FC<Props> = React.memo(
     const updateSetting = useGridMachineStore((s) => s.updateSetting);
     const clear = useGridMachineStore((s) => s.clear);
 
-    const { t } = useTranslation();
+    const { t, tOr } = useTranslation();
 
     const tabs: PanelTab[] = [
       {
         id: 'display',
-        label: 'Display',
+        label: t('grid.machine.display'),
         icon: <Eye size={16} />,
         content: (
           <div className="space-y-2">
             <Toggle
-              label="Outline"
+              label={t('grid.machine.outline')}
               checked={showOutline}
               onChange={(v) => updateSetting('showOutline', v)}
             />
             <Toggle
-              label="Anchors"
+              label={t('grid.machine.anchors')}
               checked={showAnchors}
               onChange={(v) => updateSetting('showAnchors', v)}
             />
             <Toggle
-              label="Handles"
+              label={t('grid.machine.handles')}
               checked={showHandles}
               onChange={(v) => updateSetting('showHandles', v)}
             />
             <Toggle
-              label="H-Lines"
+              label={t('grid.machine.hLines')}
               checked={showHLines}
               onChange={(v) => updateSetting('showHLines', v)}
             />
             {showHLines && (
               <Slider
-                label="Min Spacing"
+                label={t('grid.machine.minSpacing')}
                 value={hLineSpacing}
                 resetValue={DEFAULTS.hLineSpacing}
                 min={0}
                 max={50}
                 step={1}
                 onChange={(v) => updateSetting('hLineSpacing', v)}
-                format={(v) => (v === 0 ? 'All' : `${v}`)}
+                format={(v) => (v === 0 ? t('grid.machine.all') : `${v}`)}
               />
             )}
             <Toggle
-              label="V-Lines"
+              label={t('grid.machine.vLines')}
               checked={showVLines}
               onChange={(v) => updateSetting('showVLines', v)}
             />
             {showVLines && (
               <Slider
-                label="Min Spacing"
+                label={t('grid.machine.minSpacing')}
                 value={vLineSpacing}
                 resetValue={DEFAULTS.vLineSpacing}
                 min={0}
                 max={50}
                 step={1}
                 onChange={(v) => updateSetting('vLineSpacing', v)}
-                format={(v) => (v === 0 ? 'All' : `${v}`)}
+                format={(v) => (v === 0 ? t('grid.machine.all') : `${v}`)}
               />
             )}
             <Toggle
-              label="Diagonals"
+              label={t('grid.machine.diagonals')}
               checked={showDiagonals}
               onChange={(v) => updateSetting('showDiagonals', v)}
             />
             {showDiagonals && (
               <Slider
-                label="Min Spacing"
+                label={t('grid.machine.minSpacing')}
                 value={diagonalSpacing}
                 resetValue={DEFAULTS.diagonalSpacing}
                 min={0}
                 max={50}
                 step={1}
                 onChange={(v) => updateSetting('diagonalSpacing', v)}
-                format={(v) => (v === 0 ? 'All' : `${v}`)}
+                format={(v) => (v === 0 ? t('grid.machine.all') : `${v}`)}
               />
             )}
             <Toggle
-              label="Base Grid"
+              label={t('grid.machine.baseGrid')}
               checked={showBaseGrid}
               onChange={(v) => updateSetting('showBaseGrid', v)}
             />
@@ -180,7 +179,14 @@ export const GridMachineControls: React.FC<Props> = React.memo(
                 onClick={() => useGridMachineStore.setState({ hiddenLines: new Set() })}
                 className="text-2xs text-brand-cyan/70 hover:text-brand-cyan mt-1"
               >
-                Show {hiddenLines.size} hidden line{hiddenLines.size > 1 ? 's' : ''}
+                {t(
+                  hiddenLines.size > 1
+                    ? 'grid.machine.showHiddenLines'
+                    : 'grid.machine.showHiddenLine',
+                  {
+                    count: hiddenLines.size,
+                  }
+                )}
               </button>
             )}
           </div>
@@ -188,12 +194,12 @@ export const GridMachineControls: React.FC<Props> = React.memo(
       },
       {
         id: 'style',
-        label: 'Style',
+        label: t('grid.machine.style'),
         icon: <SlidersHorizontal size={16} />,
         content: (
           <div className="space-y-2">
             <Slider
-              label="Line Opacity"
+              label={t('grid.machine.lineOpacity')}
               value={lineOpacity}
               resetValue={DEFAULTS.lineOpacity}
               min={0.05}
@@ -203,7 +209,7 @@ export const GridMachineControls: React.FC<Props> = React.memo(
               format={(v) => `${Math.round(v * 100)}%`}
             />
             <Slider
-              label="Logo Opacity"
+              label={t('grid.machine.logoOpacity')}
               value={logoOpacity}
               resetValue={DEFAULTS.logoOpacity}
               min={0}
@@ -214,7 +220,7 @@ export const GridMachineControls: React.FC<Props> = React.memo(
             />
             <ToolPanelDisclosure label={t('canvasNodes.shared.advancedSettings')}>
               <Slider
-                label="Point Size"
+                label={t('grid.machine.pointSize')}
                 value={pointSize}
                 resetValue={DEFAULTS.pointSize}
                 min={1}
@@ -224,7 +230,7 @@ export const GridMachineControls: React.FC<Props> = React.memo(
               />
               {showBaseGrid && (
                 <Slider
-                  label="Grid Spacing"
+                  label={t('grid.machine.gridSpacing')}
                   value={baseGridSpacing}
                   resetValue={DEFAULTS.baseGridSpacing}
                   min={5}
@@ -239,7 +245,7 @@ export const GridMachineControls: React.FC<Props> = React.memo(
       },
       {
         id: 'bg',
-        label: 'Background',
+        label: t('grid.machine.background'),
         icon: <Square size={16} />,
         content: (
           <div className="flex gap-1.5">
@@ -254,7 +260,7 @@ export const GridMachineControls: React.FC<Props> = React.memo(
                     : 'bg-muted text-muted-foreground border-border hover:bg-accent'
                 )}
               >
-                {mode}
+                {tOr(`grid.machine.bg.${mode}`, mode)}
               </button>
             ))}
           </div>
@@ -262,22 +268,22 @@ export const GridMachineControls: React.FC<Props> = React.memo(
       },
       {
         id: 'colors',
-        label: 'Colors',
+        label: t('grid.machine.colors'),
         icon: <PaletteIcon size={16} />,
         content: (
           <div className="space-y-3">
             <ColorInput
-              label="Lines"
+              label={t('grid.machine.lines')}
               value={lineColor}
               onChange={(v) => updateSetting('lineColor', v)}
             />
             <ColorInput
-              label="Anchors"
+              label={t('grid.machine.anchors')}
               value={anchorColor}
               onChange={(v) => updateSetting('anchorColor', v)}
             />
             <ColorInput
-              label="Handles"
+              label={t('grid.machine.handles')}
               value={handleColor}
               onChange={(v) => updateSetting('handleColor', v)}
             />
@@ -291,40 +297,37 @@ export const GridMachineControls: React.FC<Props> = React.memo(
         <PanelSectionTabs tabs={tabs} />
 
         {/* Actions */}
-        <ToolPanelActions>
-          <div className="flex gap-2 w-full">
-            <Button
-              onClick={onExportPng}
-              disabled={isExporting}
-              className="flex-1 bg-foreground hover:bg-foreground/90 text-background font-medium h-9 text-xs gap-2"
-            >
-              <Download size={14} /> Export PNG
-            </Button>
-            {svgContent && (
+        <ToolPanelExportActions
+          onExport={onExportPng}
+          isExporting={isExporting}
+          disabled={!svgContent}
+          sendTo={
+            svgContent ? (
               <SendToButton
                 source="grid-machine"
                 outputMime="image/png"
                 mimeType="image/png"
                 getImageBase64={getCanvasPng}
               />
-            )}
-          </div>
+            ) : undefined
+          }
+        >
           <Button
             onClick={onExportSvg}
             disabled={isExporting}
             variant="ghost"
             className="w-full text-muted-foreground hover:text-foreground h-9 text-xs gap-2"
           >
-            <FileCode size={14} /> Export SVG
+            <FileCode size={14} /> {t('grid.machine.exportSvg')}
           </Button>
           <Button
             variant="ghost"
             onClick={clear}
             className="w-full text-muted-foreground hover:text-destructive h-8 text-xs gap-2"
           >
-            <Trash2 size={13} /> Clear
+            <Trash2 size={13} /> {t('grid.machine.clear')}
           </Button>
-        </ToolPanelActions>
+        </ToolPanelExportActions>
       </ToolPanel>
     );
   }

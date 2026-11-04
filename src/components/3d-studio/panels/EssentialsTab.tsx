@@ -52,21 +52,20 @@ const essentialsSelector = (s: StoreState) => ({
   setBrandGuidelineId: s.setBrandGuidelineId,
 });
 
-const BG_TYPE_OPTIONS: SelectOption[] = [
-  { value: 'solid', label: 'Solid color' },
-  { value: 'linear', label: 'Linear gradient' },
-  { value: 'radial', label: 'Radial gradient' },
-  { value: 'image', label: 'Image' },
-];
-
-const SHADER_OPTIONS: SelectOption[] = SHADER_DEFINITIONS.map((d) => ({
-  value: d.id,
-  label: d.label,
-}));
-
 export const EssentialsTab: React.FC = React.memo(() => {
-  const { t } = useTranslation();
+  const { t, tOr } = useTranslation();
   const store = useStudio3DStore(useShallow(essentialsSelector));
+
+  const bgTypeOptions: SelectOption[] = [
+    { value: 'solid', label: t('studio3d.background.types.solid') },
+    { value: 'linear', label: t('studio3d.background.types.linear') },
+    { value: 'radial', label: t('studio3d.background.types.radial') },
+    { value: 'image', label: t('studio3d.background.types.image') },
+  ];
+  const shaderOptions: SelectOption[] = SHADER_DEFINITIONS.map((d) => ({
+    value: d.id,
+    label: tOr(`imagelab.shader.labels.${d.label}`, d.label),
+  }));
 
   const [scale, setScale] = useDebouncedSlider(store.objectScale, store.setObjectScale);
   const [depth, setDepth] = useDebouncedSlider(store.depth, store.setDepth);
@@ -159,7 +158,7 @@ export const EssentialsTab: React.FC = React.memo(() => {
       {/* Background — type select + color */}
       <ToolPanelSection title={t('studio3d.basics.background')}>
         <Select
-          options={BG_TYPE_OPTIONS}
+          options={bgTypeOptions}
           value={store.bgType}
           onChange={(v) => store.setBgType(v as StoreState['bgType'])}
         />
@@ -175,11 +174,11 @@ export const EssentialsTab: React.FC = React.memo(() => {
 
       {/* Effects — the two the user reaches for first: bloom + shader */}
       <ToolPanelSection title={t('studio3d.basics.effects')}>
-        <ToolPanelRow label="Bloom">
+        <ToolPanelRow label={t('studio3d.panels.bloom')}>
           <Switch
             checked={store.bloomEnabled}
             onCheckedChange={store.setBloomEnabled}
-            aria-label="Toggle bloom"
+            aria-label={t('studio3d.panels.bloom')}
           />
         </ToolPanelRow>
         {store.bloomEnabled && (
@@ -197,18 +196,18 @@ export const EssentialsTab: React.FC = React.memo(() => {
       <ToolPanelDivider />
 
       {/* Shader */}
-      <ToolPanelSection title="Shader">
-        <ToolPanelRow label="Shader FX">
+      <ToolPanelSection title={t('studio3d.tabs.shader')}>
+        <ToolPanelRow label={t('studio3d.panels.enable')}>
           <Switch
             checked={store.shaderEnabled}
             onCheckedChange={store.setShaderEnabled}
-            aria-label="Toggle shader"
+            aria-label={t('studio3d.tabs.shader')}
           />
         </ToolPanelRow>
         {store.shaderEnabled && (
           <div className="space-y-1.5">
             <Select
-              options={SHADER_OPTIONS}
+              options={shaderOptions}
               value={store.shaderType}
               onChange={(v) => store.setShaderType(v as StoreState['shaderType'])}
             />

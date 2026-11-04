@@ -22,6 +22,7 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Input } from '@/components/ui/input';
 import JSZip from 'jszip';
 import { QuickActions } from '@/components/shared/QuickActions';
+import { InlineColorPicker } from '@/components/shared/ToolPanel';
 import { BrandToolSelect } from '@/components/shared/BrandToolSelect';
 import { useToolInput } from '@/hooks/useToolInput';
 import { useBrandDefaults } from '@/hooks/useBrandDefaults';
@@ -216,14 +217,26 @@ export const WatermarkPage: React.FC = () => {
   const reset = useWatermarkStore((s) => s.reset);
 
   const { pendingAsset, acceptAsset } = useToolInput('watermark');
-  const { brandId, setBrandId, defaults: brandDefaults } = useBrandDefaults('watermark');
+  const {
+    brandId,
+    setBrandId,
+    defaults: brandDefaults,
+    isExplicit: brandIsExplicit,
+  } = useBrandDefaults('watermark');
 
   /* --- Apply brand defaults when brand is selected --- */
   useEffect(() => {
     if (!brandDefaults) return;
-    if (brandDefaults.logoUrl) setLogoUrl(brandDefaults.logoUrl);
-    if (brandDefaults.textColor) setColor(brandDefaults.textColor);
-  }, [brandDefaults, setLogoUrl, setColor]);
+    // Marca ativa só preenche o que está no padrão: não desfaz o ajuste que a pessoa já fez.
+    const current = useWatermarkStore.getState();
+    const initial = useWatermarkStore.getInitialState();
+    if (brandDefaults.logoUrl && (brandIsExplicit || !current.logoUrl)) {
+      setLogoUrl(brandDefaults.logoUrl);
+    }
+    if (brandDefaults.textColor && (brandIsExplicit || current.color === initial.color)) {
+      setColor(brandDefaults.textColor);
+    }
+  }, [brandDefaults, brandIsExplicit, setLogoUrl, setColor]);
 
   useEffect(() => {
     if (!pendingAsset) return;
@@ -468,27 +481,19 @@ export const WatermarkPage: React.FC = () => {
             <span className="text-xs font-medium text-muted-foreground">
               {t('miniTools.watermark.text')}
             </span>
-            <div className="flex items-center gap-2">
-              <Input
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                disabled={isProcessing}
-                placeholder={t('miniTools.watermark.textPlaceholder')}
-                className="h-7 text-xs flex-1"
+            <Input
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              disabled={isProcessing}
+              placeholder={t('miniTools.watermark.textPlaceholder')}
+              className="h-7 text-xs w-full"
+            />
+            <div className={cn(isProcessing && 'pointer-events-none opacity-50')}>
+              <InlineColorPicker
+                value={color}
+                onChange={setColor}
+                label={t('miniTools.watermark.text')}
               />
-              <label className="relative flex-shrink-0">
-                <input
-                  type="color"
-                  value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                  disabled={isProcessing}
-                  className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-                />
-                <div
-                  className="w-7 h-7 rounded border border-border cursor-pointer"
-                  style={{ backgroundColor: color }}
-                />
-              </label>
             </div>
           </div>
         ) : (

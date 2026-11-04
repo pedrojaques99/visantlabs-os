@@ -943,7 +943,7 @@ export const ImageLabPage: React.FC = () => {
             </>
           )}
           {/* On a phone the timeline and the list of effects need the row: the rest makes way. */}
-          <StageDockReveal atRest open={!isMobile || !timelineOpen}>
+          <StageDockReveal open={!isMobile || !timelineOpen}>
             <ImageLabUploadWidget
               imageUrl={sourceUrl}
               onLoad={broadcastImage}
@@ -955,7 +955,7 @@ export const ImageLabPage: React.FC = () => {
               const thumb = thumbs[m.id];
               const isActive = mode === m.id;
               return (
-                <StageDockReveal key={m.id} atRest open={!isMobile || isActive || modesOpen}>
+                <StageDockReveal key={m.id} open={!isMobile || isActive || modesOpen}>
                   <div className="group/fx relative shrink-0">
                     <Button
                       variant="ghost"
@@ -993,7 +993,7 @@ export const ImageLabPage: React.FC = () => {
                 </StageDockReveal>
               );
             })}
-            <StageDockReveal atRest open={!isMobile || !modesOpen}>
+            <StageDockReveal open={!isMobile || !modesOpen}>
               <StageDockDivider />
               {hasImage && (
                 <>

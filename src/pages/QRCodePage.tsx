@@ -1,13 +1,17 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
-import { Download, QrCode } from '@/lib/ui/icons';
+import { toast } from 'sonner';
+import { QrCode } from '@/lib/ui/icons';
 import { loadImage } from '@/utils/imageUtils';
 import { FormInput } from '../components/ui/form-input';
 import { Select } from '../components/ui/select';
 import { useTranslation } from '@/hooks/useTranslation';
 import { NodeSlider } from '@/components/ui/NodeSlider';
 import { MiniAppShell } from '@/components/shared/MiniAppShell';
+import { QuickActions } from '@/components/shared/QuickActions';
+import { InlineColorPicker } from '@/components/shared/ToolPanel';
+import { copyImageAsPng } from '@/utils/clipboard';
 
 const ease = [0.4, 0, 0.2, 1] as const;
 
@@ -21,7 +25,8 @@ export const QRCodePage: React.FC = () => {
   const [bgColor, setBgColor] = useState<string>('#ffffff');
   const [fgColor, setFgColor] = useState<string>('#000000');
   const [marginSize, setMarginSize] = useState<number>(4);
-  const qrCodeRef = useRef<HTMLDivElement>(null);
+  const [qrNode, setQrNode] = useState<HTMLDivElement | null>(null);
+  const [pngDataUrl, setPngDataUrl] = useState<string | null>(null);
 
   const handleReset = () => {
     setText('');
@@ -32,56 +37,71 @@ export const QRCodePage: React.FC = () => {
     setMarginSize(4);
   };
 
-  const handleDownload = async () => {
-    if (!qrCodeRef.current) return;
+  const hasText = text.trim().length > 0;
 
-    const svg = qrCodeRef.current.querySelector('svg');
+  // PNG único para baixar, copiar e enviar. Espera o nó existir: a saída animada do estado
+  // vazio atrasa a montagem do QR.
+  useEffect(() => {
+    if (!hasText || !qrNode) {
+      setPngDataUrl(null);
+      return;
+    }
+    const svg = qrNode.querySelector('svg');
     if (!svg) return;
 
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(svgBlob);
-
-    try {
-      const img = await loadImage(url, null);
-      canvas.width = img.width;
-      canvas.height = img.height;
-      if (ctx) {
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const url = URL.createObjectURL(new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' }));
+      try {
+        const img = await loadImage(url, null);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx || cancelled) return;
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0);
-
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const blobUrl = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = `qrcode-${Date.now()}.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(blobUrl);
-          }
-        }, 'image/png');
+        setPngDataUrl(canvas.toDataURL('image/png'));
+      } catch {
+        console.error('Failed to load SVG image');
+      } finally {
+        URL.revokeObjectURL(url);
       }
-    } catch {
-      console.error('Failed to load SVG image');
-    } finally {
-      URL.revokeObjectURL(url);
-    }
+    }, 150);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [hasText, qrNode, text, size, errorCorrectionLevel, bgColor, fgColor, marginSize]);
+
+  const handleDownload = () => {
+    if (!pngDataUrl) return;
+    const link = document.createElement('a');
+    link.href = pngDataUrl;
+    link.download = `qrcode-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
-  const hasText = text.trim().length > 0;
+  const handleCopy = async () => {
+    if (!pngDataUrl) return;
+    const result = await copyImageAsPng(pngDataUrl);
+    if (result.success) toast.success(t('miniTools.copied'));
+    else toast.error(result.error || t('miniTools.copyFailed'));
+  };
 
   const panel = (
     <div className="space-y-6">
-      <h2 className="text-2xs font-medium text-muted-foreground">Settings</h2>
+      <h2 className="text-2xs font-medium text-muted-foreground">{t('miniTools.settings')}</h2>
 
       <div>
-        <label className="block text-xs font-medium text-foreground mb-2">Text or URL</label>
+        <label className="block text-xs font-medium text-foreground mb-2">
+          {t('miniTools.qr.text')}
+        </label>
         <FormInput
           type="text"
           value={text}
@@ -92,7 +112,7 @@ export const QRCodePage: React.FC = () => {
       </div>
 
       <NodeSlider
-        label="Size"
+        label={t('miniTools.qr.size')}
         value={size}
         min={128}
         max={512}
@@ -104,44 +124,46 @@ export const QRCodePage: React.FC = () => {
 
       <div>
         <label className="block text-xs font-medium text-foreground mb-2">
-          Error Correction Level
+          {t('miniTools.qr.errorCorrection')}
         </label>
         <Select
           value={errorCorrectionLevel}
           onChange={(value) => setErrorCorrectionLevel(value as ErrorCorrectionLevel)}
           options={[
-            { value: 'L', label: 'L - Low (~7%)' },
-            { value: 'M', label: 'M - Medium (~15%)' },
-            { value: 'Q', label: 'Q - Quartile (~25%)' },
-            { value: 'H', label: 'H - High (~30%)' },
+            { value: 'L', label: t('miniTools.qr.levelL') },
+            { value: 'M', label: t('miniTools.qr.levelM') },
+            { value: 'Q', label: t('miniTools.qr.levelQ') },
+            { value: 'H', label: t('miniTools.qr.levelH') },
           ]}
           placeholder={t('q.r.code.select_error_correction_level')}
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-4">
         <div>
-          <label className="block text-xs font-medium text-foreground mb-2">Background</label>
-          <FormInput
-            type="color"
+          <label className="block text-xs font-medium text-foreground mb-2">
+            {t('miniTools.qr.background')}
+          </label>
+          <InlineColorPicker
             value={bgColor}
-            onChange={(e) => setBgColor(e.target.value)}
-            className="w-full h-12"
+            onChange={setBgColor}
+            label={t('miniTools.qr.background')}
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-foreground mb-2">Foreground</label>
-          <FormInput
-            type="color"
+          <label className="block text-xs font-medium text-foreground mb-2">
+            {t('miniTools.qr.foreground')}
+          </label>
+          <InlineColorPicker
             value={fgColor}
-            onChange={(e) => setFgColor(e.target.value)}
-            className="w-full h-12"
+            onChange={setFgColor}
+            label={t('miniTools.qr.foreground')}
           />
         </div>
       </div>
 
       <NodeSlider
-        label="Margin"
+        label={t('miniTools.qr.margin')}
         value={marginSize}
         min={0}
         max={8}
@@ -150,19 +172,18 @@ export const QRCodePage: React.FC = () => {
         formatValue={(v) => `${v}px`}
         resetValue={4}
       />
-    </div>
-  );
 
-  const statusBar = hasText ? (
-    <button
-      onClick={handleDownload}
-      className="flex items-center gap-2 text-xs font-medium text-foreground hover:text-brand-cyan/80 transition-colors"
-    >
-      <Download className="w-3.5 h-3.5" />
-      Download PNG
-    </button>
-  ) : (
-    <span className="text-xs text-muted-foreground">Enter text to generate</span>
+      {pngDataUrl && (
+        <QuickActions
+          toolId="qrcode"
+          outputMime="image/png"
+          summary={t('miniTools.qr.ready')}
+          onDownloadAll={handleDownload}
+          onCopy={handleCopy}
+          assetData={{ imageBase64: pngDataUrl, mimeType: 'image/png', label: 'qrcode.png' }}
+        />
+      )}
+    </div>
   );
 
   return (
@@ -173,7 +194,6 @@ export const QRCodePage: React.FC = () => {
       documentTitle={t('apps.qrCode.name')}
       onReset={handleReset}
       panel={panel}
-      statusBar={statusBar}
     >
       <AnimatePresence mode="wait">
         {hasText ? (
@@ -183,7 +203,7 @@ export const QRCodePage: React.FC = () => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, ease }}
-            ref={qrCodeRef}
+            ref={setQrNode}
             className="p-6 bg-white rounded-xl shadow-2xl shadow-black/40"
           >
             <QRCodeSVG

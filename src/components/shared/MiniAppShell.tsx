@@ -12,13 +12,10 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { MicroTitle } from '@/components/ui/MicroTitle';
-import {
-  AppShell,
-  AppShellTopBar,
-  AppShellPanel,
-  AppShellStatusBar,
-} from '@/components/ui/AppShell';
+import { AppShell, AppShellTopBar, AppShellPanel } from '@/components/ui/AppShell';
 import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
+import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
+import { StageDock, StageDockDivider, stageDockButton } from '@/components/shared/StageDock';
 import { DropOverlay } from '@/components/ui/DropOverlay';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { useInAppShell } from '@/components/shell/InAppShellContext';
@@ -118,24 +115,29 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
   });
   useHotkeys('r', () => onReset?.(), { enableOnFormTags: false });
 
+  const showPanelToggle = hasPanel && !isMobile;
+  const hasDock = Boolean(statusBar || onReset || showPanelToggle);
+
   const canvasPadding = useMemo(
     () => ({
       paddingRight: !isMobile && hasPanel && panelVisible ? panelWidth + 24 : 0,
       // A percentage in padding is measured against the width, and the sheet's height is a
       // percentage of the height. `bottom` is measured against the height, so the two line up.
       bottom: isMobile && mobileSheetOpen ? `${mobileSheetHeight}%` : undefined,
-      paddingBottom: isMobile ? (mobileSheetOpen ? 0 : 56) : statusBar ? 56 : 16,
+      // Room for the dock, and on a phone for the closed sheet's bar under it.
+      paddingBottom: isMobile ? (mobileSheetOpen ? 72 : hasPanel ? 120 : 72) : hasDock ? 64 : 16,
     }),
-    [isMobile, hasPanel, panelVisible, panelWidth, statusBar, mobileSheetOpen, mobileSheetHeight]
+    [isMobile, hasPanel, panelVisible, panelWidth, hasDock, mobileSheetOpen, mobileSheetHeight]
   );
 
   return (
     // AppShell's base surface is the always-dark editor canvas; mini-tools are
     // tokenized, so they take the theme background.
     <AppShell className={cn('bg-background', className)}>
-      <AppShellTopBar
-        left={
-          inShell ? null : (
+      {/* In the app the bar above already says where we are. */}
+      {!inShell && (
+        <AppShellTopBar
+          left={
             <>
               <Tooltip content={t('common.backToApps')}>
                 <Button
@@ -151,49 +153,17 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
               {Icon && <Icon size={14} className="text-muted-foreground ml-0.5" />}
               <MicroTitle className="text-xs text-muted-foreground ml-1.5">{title}</MicroTitle>
             </>
-          )
-        }
-        right={
-          <>
-            {onReset && (
-              <Tooltip content={t('common.resetShortcut')}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label={t('common.reset')}
-                  className="h-7 w-7 text-muted-foreground"
-                  onClick={onReset}
-                >
-                  <RotateCcw size={14} />
-                </Button>
-              </Tooltip>
-            )}
-            {hasPanel && !isMobile && (
-              <Tooltip
-                content={
-                  panelVisible ? t('common.hidePanelShortcut') : t('common.showPanelShortcut')
-                }
-              >
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label={panelVisible ? t('common.hidePanel') : t('common.showPanel')}
-                  className="h-7 w-7 text-muted-foreground"
-                  onClick={() => setPanelVisible((v) => !v)}
-                >
-                  {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
-                </Button>
-              </Tooltip>
-            )}
-          </>
-        }
-      />
+          }
+          right={<AppShellLegalMenu />}
+        />
+      )}
 
       {!hideFunnelBanner && <BrandFunnelBanner toolId={toolId} />}
 
       <div
         className={cn(
-          'absolute inset-0 pt-10 overflow-auto transition-colors duration-300',
+          'absolute inset-0 overflow-auto transition-colors duration-300',
+          inShell ? 'pt-3' : 'pt-10',
           centerContent && 'flex items-center justify-center',
           canvasClassName
         )}
@@ -233,7 +203,53 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
         </AppShellMobileSheet>
       )}
 
-      {statusBar && <AppShellStatusBar>{statusBar}</AppShellStatusBar>}
+      {hasDock && (
+        <StageDock
+          className="transition-[bottom] duration-[var(--dur-base)]"
+          bottom={
+            !isMobile || !hasPanel
+              ? '12px'
+              : mobileSheetOpen
+                ? `calc(${mobileSheetHeight}% + 8px)`
+                : '60px'
+          }
+        >
+          {statusBar && (
+            <div className="flex min-w-0 items-center gap-3 overflow-hidden whitespace-nowrap px-2 text-2xs text-muted-foreground">
+              {statusBar}
+            </div>
+          )}
+          {statusBar && (onReset || showPanelToggle) && <StageDockDivider />}
+          {onReset && (
+            <Tooltip content={t('common.resetShortcut')}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t('common.reset')}
+                className={stageDockButton}
+                onClick={onReset}
+              >
+                <RotateCcw size={14} />
+              </Button>
+            </Tooltip>
+          )}
+          {showPanelToggle && (
+            <Tooltip
+              content={panelVisible ? t('common.hidePanelShortcut') : t('common.showPanelShortcut')}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={panelVisible ? t('common.hidePanel') : t('common.showPanel')}
+                className={stageDockButton}
+                onClick={() => setPanelVisible((v) => !v)}
+              >
+                {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
+              </Button>
+            </Tooltip>
+          )}
+        </StageDock>
+      )}
     </AppShell>
   );
 };

@@ -15,7 +15,7 @@ import {
 import { hexToRgb } from '@/utils/colorUtils';
 import {
   ToolPanel,
-  ToolPanelActions,
+  ToolPanelExportActions,
   ToolPanelGrid,
   ToolPanelChip,
   ToolPanelRow,
@@ -29,17 +29,16 @@ import {
   Zap,
   Loader2,
   Focus,
-  Download,
   ChevronDown,
   Palette,
   Search,
   FileImage,
   FileType,
   Layers,
-  Copy,
   SlidersHorizontal,
   Blend,
 } from '@/lib/ui/icons';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const RISO_PRESET_ITEMS = Object.entries(RISO_FULL_PRESETS).map(([name, p]) => ({
   name,
@@ -106,23 +105,6 @@ const INK_CATEGORIES: Record<string, string[]> = {
   ],
 };
 
-const DITHER_OPTIONS = [
-  { value: 'stochastic', label: 'Stochastic' },
-  { value: 'atkinson', label: 'Atkinson' },
-  { value: 'floydsteinberg', label: 'Floyd-Steinberg' },
-  { value: 'bayer', label: 'Bayer' },
-  { value: 'halftone', label: 'Halftone' },
-];
-
-const HALFTONE_SHAPE_OPTIONS = [
-  { value: 'circle', label: 'Circle' },
-  { value: 'line', label: 'Line' },
-  { value: 'cross', label: 'Cross' },
-  { value: 'ellipse', label: 'Ellipse' },
-];
-
-const LAYER_DITHER_OPTIONS = [{ value: '', label: 'Auto (global)' }, ...DITHER_OPTIONS];
-
 interface RisoControlsProps {
   onExport: () => void;
   onExportSvg?: () => void;
@@ -143,12 +125,12 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
     isAiProcessing,
     onCopyAsPng,
   }) => {
+    const { t, tOr } = useTranslation();
     const store = useRisoStore();
     const [expandedLayer, setExpandedLayer] = useState<number | null>(null);
     const [inkCatalogLayer, setInkCatalogLayer] = useState<number | null>(null);
     const [inkSearch, setInkSearch] = useState('');
     const [inkCategory, setInkCategory] = useState<string | null>(null);
-    const [exportOpen, setExportOpen] = useState(false);
 
     const set = useCallback(
       <K extends string>(key: K, value: any) => {
@@ -181,10 +163,28 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
         store.updateSetting('edgeBleed', preset.edgeBleed);
         if (preset.ditherMode) store.updateSetting('ditherMode', preset.ditherMode);
         if (preset.halftoneShape) store.updateSetting('halftoneShape', preset.halftoneShape);
-        toast.success(`Applied "${name}"`);
+        toast.success(t('toolEditor.presets.applied', { name }));
       },
-      [store]
+      [store, t]
     );
+
+    const ditherOptions = [
+      { value: 'stochastic', label: t('imagelab.riso.dither.stochastic') },
+      { value: 'atkinson', label: 'Atkinson' },
+      { value: 'floydsteinberg', label: 'Floyd-Steinberg' },
+      { value: 'bayer', label: 'Bayer' },
+      { value: 'halftone', label: t('imagelab.controls.halftone') },
+    ];
+    const halftoneShapeOptions = [
+      { value: 'circle', label: t('imagelab.riso.shapes.circle') },
+      { value: 'line', label: t('imagelab.riso.shapes.line') },
+      { value: 'cross', label: t('imagelab.riso.shapes.cross') },
+      { value: 'ellipse', label: t('imagelab.riso.shapes.ellipse') },
+    ];
+    const layerDitherOptions = [
+      { value: '', label: t('imagelab.riso.dither.auto') },
+      ...ditherOptions,
+    ];
 
     const filteredInks = useMemo(() => {
       let inks = RISO_INK_CATALOG;
@@ -202,22 +202,22 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
     const tabs: PanelTab[] = [
       {
         id: 'screening',
-        label: 'Screening',
+        label: t('imagelab.riso.screening'),
         icon: <SlidersHorizontal size={16} />,
         content: (
           <div className="space-y-3">
-            <ToolPanelRow label="Mode">
+            <ToolPanelRow label={t('imagelab.controls.mode')}>
               <Select
-                options={DITHER_OPTIONS}
+                options={ditherOptions}
                 value={store.ditherMode}
                 onChange={(v) => store.updateSetting('ditherMode', v as DitherMode)}
                 variant="node"
               />
             </ToolPanelRow>
             {store.ditherMode === 'halftone' && (
-              <ToolPanelRow label="Shape">
+              <ToolPanelRow label={t('imagelab.controls.shape')}>
                 <Select
-                  options={HALFTONE_SHAPE_OPTIONS}
+                  options={halftoneShapeOptions}
                   value={store.halftoneShape}
                   onChange={(v) => store.updateSetting('halftoneShape', v as HalftoneShape)}
                   variant="node"
@@ -226,7 +226,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
             )}
             <div className="grid grid-cols-2 gap-1.5">
               <ScrubInput
-                label="Freq"
+                label={t('imagelab.controls.frequency')}
                 value={store.frequency}
                 min={15}
                 max={200}
@@ -234,7 +234,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                 onChange={(v) => set('frequency', v)}
               />
               <ScrubInput
-                label="Dot"
+                label={t('imagelab.controls.dot')}
                 value={store.dotSize}
                 min={0.3}
                 max={1}
@@ -242,7 +242,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                 onChange={(v) => set('dotSize', v)}
               />
               <ScrubInput
-                label="Space"
+                label={t('imagelab.controls.space')}
                 value={store.dotSpacing ?? 0}
                 min={0}
                 max={0.8}
@@ -250,7 +250,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                 onChange={(v) => set('dotSpacing', v)}
               />
               <ScrubInput
-                label="Gain"
+                label={t('imagelab.riso.gain')}
                 value={store.dotGain ?? 0}
                 min={0}
                 max={1}
@@ -258,7 +258,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                 onChange={(v) => set('dotGain', v)}
               />
               <ScrubInput
-                label="Contrast"
+                label={t('imagelab.controls.contrast')}
                 value={store.contrast}
                 min={0.3}
                 max={2.5}
@@ -266,7 +266,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                 onChange={(v) => set('contrast', v)}
               />
               <ScrubInput
-                label="Light"
+                label={t('imagelab.controls.light')}
                 value={store.lightness}
                 min={-0.5}
                 max={0.5}
@@ -275,7 +275,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
               />
             </div>
             <ScrubInput
-              label="Misreg"
+              label={t('imagelab.riso.misregistration')}
               value={store.misregistration}
               min={0}
               max={8}
@@ -288,7 +288,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
       },
       {
         id: 'channels',
-        label: 'Channels',
+        label: t('imagelab.controls.channels'),
         icon: <Layers size={16} />,
         action: (
           <ApplyBrandButton
@@ -309,12 +309,12 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
         ),
         content: (
           <div className="space-y-3">
-            <ToolPanelRow label="Ink Layers">
+            <ToolPanelRow label={t('imagelab.riso.inkLayers')}>
               <div className="flex gap-1">
                 {[2, 3, 4].map((n) => (
                   <button
                     key={n}
-                    aria-label={`Set ink layer count to ${n}`}
+                    aria-label={t('imagelab.riso.setInkLayerCount', { count: n })}
                     onClick={() => store.updateSetting('colorCount', n)}
                     className={cn(
                       'w-8 h-8 rounded-md text-2xs font-mono transition-colors duration-200 border',
@@ -343,7 +343,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                     actions={
                       <span
                         role="button"
-                        aria-label={`Solo layer ${i + 1}`}
+                        aria-label={t('imagelab.riso.soloLayer', { index: i + 1 })}
                         onClick={(e) => {
                           e.stopPropagation();
                           store.setSoloLayer(i);
@@ -361,7 +361,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                   >
                     <div className="grid grid-cols-2 gap-1.5">
                       <ScrubInput
-                        label="Opacity"
+                        label={t('imagelab.controls.opacity')}
                         value={layer.alpha}
                         min={0}
                         max={1}
@@ -369,7 +369,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                         onChange={(v) => store.updateLayer(i, { alpha: v })}
                       />
                       <ScrubInput
-                        label="Angle"
+                        label={t('imagelab.controls.angle')}
                         value={layer.angle}
                         min={0}
                         max={90}
@@ -396,9 +396,9 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                         onChange={(v) => store.updateLayer(i, { offsetY: v })}
                       />
                     </div>
-                    <ToolPanelRow label="Dither">
+                    <ToolPanelRow label={t('imagelab.shader.labels.Dither')}>
                       <Select
-                        options={LAYER_DITHER_OPTIONS}
+                        options={layerDitherOptions}
                         value={layer.ditherMode ?? ''}
                         onChange={(v) =>
                           store.updateLayer(i, {
@@ -418,7 +418,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                       className="flex items-center gap-1.5 text-2xs text-muted-foreground hover:text-muted-foreground transition-colors"
                     >
                       <Palette size={12} />
-                      Riso Ink Catalog
+                      {t('imagelab.riso.inkCatalog')}
                       <ChevronDown
                         size={10}
                         className={cn(
@@ -438,7 +438,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                             type="text"
                             value={inkSearch}
                             onChange={(e) => setInkSearch(e.target.value)}
-                            placeholder="Search inks..."
+                            placeholder={t('imagelab.riso.searchInks')}
                             className="w-full h-6 pl-6 pr-2 rounded-md bg-muted border border-border text-2xs text-muted-foreground font-mono placeholder:text-muted-foreground focus:outline-none focus:border-ring"
                           />
                         </div>
@@ -452,7 +452,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                                 : 'text-muted-foreground border-border hover:text-muted-foreground'
                             )}
                           >
-                            All
+                            {t('imagelab.riso.allInks')}
                           </button>
                           {Object.keys(INK_CATEGORIES).map((cat) => (
                             <button
@@ -465,7 +465,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                                   : 'text-muted-foreground border-border hover:text-muted-foreground'
                               )}
                             >
-                              {cat}
+                              {tOr(`imagelab.riso.inkCategories.${cat}`, cat)}
                             </button>
                           ))}
                         </div>
@@ -489,7 +489,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                           ))}
                           {filteredInks.length === 0 && (
                             <span className="col-span-8 text-2xs text-muted-foreground font-mono py-2 text-center">
-                              No inks found
+                              {t('imagelab.riso.noInks')}
                             </span>
                           )}
                         </div>
@@ -502,7 +502,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                         className="flex items-center gap-1.5 text-2xs text-muted-foreground hover:text-muted-foreground transition-colors"
                       >
                         <Layers size={12} />
-                        Export Layer Separation
+                        {t('imagelab.riso.exportLayer')}
                       </button>
                     )}
                   </ChannelRow>
@@ -514,20 +514,20 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
       },
       {
         id: 'paper',
-        label: 'Paper & Texture',
+        label: t('imagelab.riso.paperAndTexture'),
         icon: <Blend size={16} />,
         content: (
           <div className="space-y-3">
-            <ToolPanelRow label="Paper">
+            <ToolPanelRow label={t('imagelab.controls.paper')}>
               <InlineColorPicker
                 value={store.paperColor}
                 onChange={(v) => store.updateSetting('paperColor', v)}
-                label="Paper color"
+                label={t('imagelab.controls.paperColor')}
               />
             </ToolPanelRow>
             <div className="grid grid-cols-2 gap-1.5">
               <ScrubInput
-                label="Grain"
+                label={t('imagelab.controls.grain')}
                 value={store.paperNoise}
                 min={0}
                 max={1}
@@ -535,7 +535,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                 onChange={(v) => set('paperNoise', v)}
               />
               <ScrubInput
-                label="Noise"
+                label={t('imagelab.riso.noise')}
                 value={store.inkNoise}
                 min={0}
                 max={1}
@@ -543,7 +543,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                 onChange={(v) => set('inkNoise', v)}
               />
               <ScrubInput
-                label="Dropout"
+                label={t('imagelab.riso.dropout')}
                 value={store.inkDropout}
                 min={0}
                 max={0.15}
@@ -551,7 +551,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                 onChange={(v) => set('inkDropout', v)}
               />
               <ScrubInput
-                label="Bleed"
+                label={t('imagelab.riso.bleed')}
                 value={store.edgeBleed}
                 min={0}
                 max={4}
@@ -565,7 +565,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
       },
       {
         id: 'palettes',
-        label: 'Ink Palettes',
+        label: t('imagelab.riso.inkPalettes'),
         icon: <Palette size={16} />,
         content: (
           <ToolPanelGrid>
@@ -595,7 +595,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                       />
                     ))}
                   </div>
-                  <span className="truncate">{name}</span>
+                  <span className="truncate">{tOr(`imagelab.riso.palettes.${name}`, name)}</span>
                 </div>
               </ToolPanelChip>
             ))}
@@ -614,76 +614,37 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
 
         <PanelSectionTabs tabs={tabs} />
 
-        <ToolPanelActions>
-          <div className="relative w-full">
-            <div className="flex gap-2 w-full">
-              <Button
-                aria-label="Export"
-                onClick={onExport}
-                disabled={store.isExporting || !store.imageUrl}
-                className="flex-1 bg-foreground hover:bg-foreground/90 text-background font-medium h-9 text-xs gap-2"
-              >
-                <Download size={14} />
-                {store.isExporting ? 'Exporting...' : 'Export'}
-              </Button>
-              <Button
-                aria-label="More options"
-                onClick={() => setExportOpen(!exportOpen)}
-                disabled={!store.imageUrl}
-                variant="outline"
-                className="h-9 w-9 p-0 border-border text-muted-foreground hover:text-foreground"
-              >
-                <ChevronDown
-                  size={14}
-                  className={cn('transition-transform', exportOpen && 'rotate-180')}
-                />
-              </Button>
-              {onCopyAsPng && (
-                <Button
-                  onClick={onCopyAsPng}
-                  disabled={!store.imageUrl}
-                  variant="outline"
-                  aria-label="Copy as PNG"
-                  title="Copy as PNG"
-                  className="h-9 w-9 p-0 border-border text-muted-foreground hover:text-foreground"
+        <ToolPanelExportActions
+          onExport={onExport}
+          isExporting={store.isExporting}
+          disabled={!store.imageUrl}
+          onCopyAsPng={onCopyAsPng}
+          sendTo={
+            <>
+              {onExportSvg && (
+                <button
+                  onClick={onExportSvg}
+                  className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-2xs text-muted-foreground hover:bg-accent transition-colors"
                 >
-                  <Copy size={14} />
-                </Button>
+                  <FileType size={14} className="text-muted-foreground" />
+                  {t('imagelab.riso.exportSvg')}
+                </button>
               )}
-            </div>
-
-            {exportOpen && (
-              <div className="absolute bottom-full left-0 right-0 mb-1 bg-popover border border-border rounded-xl p-1 shadow-xl z-20 animate-fade-in">
-                {onExportSvg && (
-                  <button
-                    onClick={() => {
-                      onExportSvg();
-                      setExportOpen(false);
-                    }}
-                    className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-2xs text-muted-foreground hover:bg-accent transition-colors"
-                  >
-                    <FileType size={14} className="text-muted-foreground" />
-                    Export SVG (Vector)
-                  </button>
-                )}
-                {onExportHiRes && (
-                  <button
-                    onClick={() => {
-                      onExportHiRes();
-                      setExportOpen(false);
-                    }}
-                    className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-2xs text-muted-foreground hover:bg-accent transition-colors"
-                  >
-                    <FileImage size={14} className="text-muted-foreground" />
-                    Export Hi-Res PNG (2x)
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+              {onExportHiRes && (
+                <button
+                  onClick={onExportHiRes}
+                  className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-2xs text-muted-foreground hover:bg-accent transition-colors"
+                >
+                  <FileImage size={14} className="text-muted-foreground" />
+                  {t('imagelab.riso.exportHiRes')}
+                </button>
+              )}
+            </>
+          }
+        >
           {onAiEnhance && (
             <Button
-              aria-label="AI Enhance"
+              aria-label={t('imagelab.riso.aiEnhance')}
               onClick={onAiEnhance}
               disabled={isAiProcessing || !store.imageUrl}
               variant="ghost"
@@ -691,16 +652,16 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
             >
               {isAiProcessing ? (
                 <>
-                  <Loader2 size={14} className="animate-spin" /> Processing...
+                  <Loader2 size={14} className="animate-spin" /> {t('common.processing')}
                 </>
               ) : (
                 <>
-                  <Zap size={14} /> AI Enhance
+                  <Zap size={14} /> {t('imagelab.riso.aiEnhance')}
                 </>
               )}
             </Button>
           )}
-        </ToolPanelActions>
+        </ToolPanelExportActions>
       </ToolPanel>
     );
   }
