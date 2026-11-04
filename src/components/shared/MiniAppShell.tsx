@@ -207,6 +207,7 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
       {hasPanel && !isMobile && (
         <AppShellPanel side="right" visible={panelVisible} width={panelWidth}>
           <div
+            data-tool-panel
             className={cn(
               'h-full overflow-y-auto scrollbar-none rounded-xl p-5',
               glassSurface.panel
@@ -225,7 +226,9 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
           onHeightChange={setMobileSheetHeight}
           label={panelLabel || title}
         >
-          <div className="p-5">{panel}</div>
+          <div data-tool-panel className="p-5">
+            {panel}
+          </div>
         </AppShellMobileSheet>
       )}
 
