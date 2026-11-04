@@ -39,7 +39,7 @@ export const InkBleedTransport: React.FC<InkBleedTransportProps> = ({ viewport, 
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 shrink-0 rounded-full"
+          className="h-8 w-8 shrink-0 rounded-full [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
           aria-label={t(isPlaying ? 'inkBleed.transport.pause' : 'inkBleed.transport.play')}
           onClick={onTogglePlay}
         >
@@ -58,7 +58,7 @@ export const InkBleedTransport: React.FC<InkBleedTransportProps> = ({ viewport, 
           setPlaying(false);
           setProgress(parseFloat(e.target.value));
         }}
-        className="flex-1 min-w-0 h-1 bg-muted rounded-full appearance-none cursor-pointer accent-foreground"
+        className="flex-1 min-w-0 h-1 bg-muted bg-clip-content rounded-full appearance-none cursor-pointer accent-foreground [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:py-5"
       />
 
       <span className="shrink-0 text-2xs font-mono tabular-nums text-muted-foreground">
@@ -76,7 +76,7 @@ export const InkBleedTransport: React.FC<InkBleedTransportProps> = ({ viewport, 
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 rounded-full text-muted-foreground"
+                className="h-7 w-7 rounded-full text-muted-foreground [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
                 aria-label={t('inkBleed.transport.zoomOut')}
                 onClick={() => viewport.setZoom(viewport.zoom / 1.2)}
               >
@@ -90,7 +90,7 @@ export const InkBleedTransport: React.FC<InkBleedTransportProps> = ({ viewport, 
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 rounded-full text-muted-foreground"
+                className="h-7 w-7 rounded-full text-muted-foreground [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
                 aria-label={t('inkBleed.transport.zoomIn')}
                 onClick={() => viewport.setZoom(viewport.zoom * 1.2)}
               >
@@ -101,7 +101,7 @@ export const InkBleedTransport: React.FC<InkBleedTransportProps> = ({ viewport, 
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 rounded-full text-muted-foreground"
+                className="h-7 w-7 rounded-full text-muted-foreground [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
                 aria-label={t('inkBleed.transport.fit')}
                 onClick={viewport.fit}
               >

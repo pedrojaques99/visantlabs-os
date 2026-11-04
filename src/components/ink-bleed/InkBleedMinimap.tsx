@@ -1,5 +1,6 @@
 // ui-scale-ignore-file: raio-sortido — arquivo novo dentro do orçamento de raios; a soma da catraca não distingue isso.
 import React, { useEffect, useMemo, useRef } from 'react';
+import { useIsMobile } from '@/hooks/use-media-query';
 import { useTranslation } from '@/hooks/useTranslation';
 import { buildArtworkSvg, inkBlendMode } from '@/lib/ink-bleed/engine';
 import { drawPaper, drawVeil } from '@/lib/ink-bleed/paper';
@@ -8,6 +9,7 @@ import { useInkBleedStore } from '@/stores/inkBleedStore';
 import type { ArtworkViewport } from './InkBleedCanvas';
 
 const MINIMAP_SIZE = 168;
+const MINIMAP_SIZE_PHONE = 96;
 
 interface InkBleedMinimapProps {
   viewport: ArtworkViewport;
@@ -26,7 +28,8 @@ export const InkBleedMinimap: React.FC<InkBleedMinimapProps> = ({ viewport, widt
   const paperRef = useRef<HTMLCanvasElement>(null);
   const veilRef = useRef<HTMLCanvasElement>(null);
 
-  const scale = MINIMAP_SIZE / Math.max(width, height);
+  const isMobile = useIsMobile();
+  const scale = (isMobile ? MINIMAP_SIZE_PHONE : MINIMAP_SIZE) / Math.max(width, height);
   const w = Math.round(width * scale);
   const h = Math.round(height * scale);
 
@@ -64,7 +67,9 @@ export const InkBleedMinimap: React.FC<InkBleedMinimapProps> = ({ viewport, widt
       data-canvas-ui
       data-testid="ink-bleed-minimap"
       className={cn(
-        'absolute right-3 top-3 z-10 hidden space-y-1.5 rounded-xl p-1.5 cursor-default md:block',
+        'absolute right-3 z-10 space-y-1.5 rounded-xl p-1.5 cursor-default',
+        // Below the row of tools, which takes the whole width of a phone.
+        isMobile ? 'top-[72px]' : 'top-3',
         'border border-border bg-card shadow-lg'
       )}
       onClick={(e) => e.stopPropagation()}
@@ -100,7 +105,10 @@ export const InkBleedMinimap: React.FC<InkBleedMinimapProps> = ({ viewport, widt
           }}
         />
       </div>
-      <p className="px-0.5 text-2xs text-muted-foreground" style={{ maxWidth: w }}>
+      <p
+        className="px-0.5 text-2xs text-muted-foreground [@media(pointer:coarse)]:hidden"
+        style={{ maxWidth: w }}
+      >
         {t('inkBleed.minimapHint')}
       </p>
     </div>
