@@ -465,6 +465,33 @@ $($_.ScriptStackTrace)
     [Console]::CursorVisible = $false
 }
 
+# Tela inicial: so o dia a dia. O resto mora em "Ferramentas avancadas" (menu por grupos).
+$script:TopLabels = @(
+    'Figma -> Deck iOS/celular*',
+    'Comprimir PDF p/ CELULAR*',
+    'Comprimir PDFs (GS+qpdf)',
+    'Unificar PDFs (Merge)',
+    'Decompor Paginas PDF',
+    'Extrair Paginas (Range Picker)',
+    'PDF para PNG*',
+    'Converter PNG p/ JPG*',
+    'Converter p/ WebP*',
+    'Empacotar Entrega (.ZIP)',
+    'ORGANIZAR TUDO'
+)
+
+function Get-TopItems {
+    param($items)
+    $top = New-Object System.Collections.Generic.List[hashtable]
+    foreach ($pat in $script:TopLabels) {
+        $hit = $items | Where-Object { $_.Label -like $pat } | Select-Object -First 1
+        if ($hit) { $top.Add($hit) }
+    }
+    $top.Add(@{ Label = "Ferramentas avancadas..."; Group = "PRINCIPAIS"; NoPause = $true; Advanced = $true; Action = {} })
+    $top.Add(@{ Label = "Sair"; Group = "PRINCIPAIS"; NoPause = $true; Action = { exit } })
+    return $top
+}
+
 function Get-GroupNames {
     param($items)
     $groups = [ordered]@{}
@@ -498,7 +525,7 @@ function Show-GroupMenu {
 
         Write-Host ""
         Write-Host "    -------------------------------------------" -ForegroundColor DarkGray
-        Write-Host "    Up/Down: Navegar  |  Enter: Abrir  |  Esc: Sair" -ForegroundColor DarkGray
+        Write-Host "    Up/Down: Navegar  |  Enter: Abrir  |  Esc: Voltar" -ForegroundColor DarkGray
 
         $key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 
@@ -507,7 +534,7 @@ function Show-GroupMenu {
             40 { $groupIndex.Value = ($groupIndex.Value + 1) % $names.Count }
             36 { $groupIndex.Value = 0 }
             35 { $groupIndex.Value = $names.Count - 1 }
-            27 { [Console]::CursorVisible = $true; exit }
+            27 { return "back" }
             13 { return "open" }
         }
     }
@@ -534,9 +561,10 @@ function Show-ItemMenu {
 
         Write-Host ""
         Write-Host "    -------------------------------------------" -ForegroundColor DarkGray
-        Write-Host "    Up/Down: Navegar  |  Enter: Executar  |  Esc: Voltar" -ForegroundColor DarkGray
+        Write-Host "    Up/Down: Navegar  |  Enter: Executar  |  Esc: $(if ($groupName -eq 'PRINCIPAIS') { 'Sair' } else { 'Voltar' })" -ForegroundColor DarkGray
 
         $key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        $pick = $null
 
         switch ($key.VirtualKeyCode) {
             38 { $sel = ($sel - 1 + $groupItems.Count) % $groupItems.Count }
@@ -546,18 +574,18 @@ function Show-ItemMenu {
             36 { $sel = 0 }
             35 { $sel = $groupItems.Count - 1 }
             27 { return }
-            13 {
-                Invoke-MenuItem $groupItems[$sel]
-                return "reopen"
-            }
+            13 { $pick = $sel }
         }
 
-        if ($key.Character -match '[1-9]') {
+        if ($null -eq $pick -and $key.Character -match '[1-9]') {
             $idx = [int][string]$key.Character - 1
-            if ($idx -lt $groupItems.Count) {
-                Invoke-MenuItem $groupItems[$idx]
-                return "reopen"
-            }
+            if ($idx -lt $groupItems.Count) { $pick = $idx }
+        }
+
+        if ($null -ne $pick) {
+            if ($groupItems[$pick].Advanced) { return "advanced" }
+            Invoke-MenuItem $groupItems[$pick]
+            return "reopen"
         }
     }
 }
@@ -571,21 +599,29 @@ try {
     $groupIdx = 0
 
     while ($true) {
-        $result = Show-GroupMenu -groups $groups -groupIndex ([ref]$groupIdx)
+        # Tela inicial curta; "Ferramentas avancadas" abre o menu por grupos.
+        $topResult = Show-ItemMenu -groupName "PRINCIPAIS" -groupItems (Get-TopItems $allItems)
+        if ($topResult -eq "reopen") { $allItems = Get-MenuItems; $groups = Get-GroupNames $allItems; continue }
+        if ($topResult -ne "advanced") { break }
 
-        if ($result -eq "open") {
-            $gName = @($groups.Keys)[$groupIdx]
-            $gItems = $groups[$gName]
+        while ($true) {
+            $result = Show-GroupMenu -groups $groups -groupIndex ([ref]$groupIdx)
+            if ($result -eq "back") { break }
 
-            while ($true) {
-                $subResult = Show-ItemMenu -groupName $gName -groupItems $gItems
-                if ($subResult -eq "reopen") {
-                    $allItems = Get-MenuItems
-                    $groups = Get-GroupNames $allItems
-                    $gItems = $groups[$gName]
-                    continue
+            if ($result -eq "open") {
+                $gName = @($groups.Keys)[$groupIdx]
+                $gItems = $groups[$gName]
+
+                while ($true) {
+                    $subResult = Show-ItemMenu -groupName $gName -groupItems $gItems
+                    if ($subResult -eq "reopen") {
+                        $allItems = Get-MenuItems
+                        $groups = Get-GroupNames $allItems
+                        $gItems = $groups[$gName]
+                        continue
+                    }
+                    break
                 }
-                break
             }
         }
     }
