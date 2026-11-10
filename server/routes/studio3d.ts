@@ -323,77 +323,83 @@ const renderLimiter = rateLimit({
 });
 let renderBusy = false; // one Chromium render per process at a time
 
-router.post('/render', authenticate, renderLimiter, async (req: AuthRequest, res) => {
-  if (!req.userId) return res.status(401).json({ error: 'Unauthenticated' });
-  if (renderBusy)
-    return res.status(429).json({ error: 'A render is already running, retry shortly' });
-  const { sceneId, svgData, image, ...spec } = req.body ?? {};
-  if (!['mp4', 'webm', 'png', undefined].includes(spec.format))
-    return res.status(400).json({ error: 'API formats: mp4, webm, png (mov/png-seq via CLI)' });
+router.post(
+  '/render',
+  apiRateLimiter,
+  authenticate,
+  renderLimiter,
+  async (req: AuthRequest, res) => {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthenticated' });
+    if (renderBusy)
+      return res.status(429).json({ error: 'A render is already running, retry shortly' });
+    const { sceneId, svgData, image, ...spec } = req.body ?? {};
+    if (!['mp4', 'webm', 'png', undefined].includes(spec.format))
+      return res.status(400).json({ error: 'API formats: mp4, webm, png (mov/png-seq via CLI)' });
 
-  renderBusy = true;
-  const { mkdtemp, readFile, rm } = await import('node:fs/promises');
-  const { tmpdir } = await import('node:os');
-  const { join } = await import('node:path');
-  const dir = await mkdtemp(join(tmpdir(), 's3d-'));
-  try {
-    // A saved scene supplies the look + input; explicit body fields win.
-    if (sceneId) {
-      const scene = await prisma.studio3DScene.findUnique({ where: { id: sceneId } });
-      if (!scene || (!scene.isPublic && scene.userId !== req.userId))
-        return res.status(404).json({ error: 'Scene not found' });
-      spec.config = { ...((scene.config as object) ?? {}), ...(spec.config ?? {}) };
-      if (!spec.text && !svgData && !image) {
-        if (scene.inputMode === 'text' && scene.text) spec.text = scene.text;
-        else if (scene.svgData) spec.svg = scene.svgData;
+    renderBusy = true;
+    const { mkdtemp, readFile, rm } = await import('node:fs/promises');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const dir = await mkdtemp(join(tmpdir(), 's3d-'));
+    try {
+      // A saved scene supplies the look + input; explicit body fields win.
+      if (sceneId) {
+        const scene = await prisma.studio3DScene.findUnique({ where: { id: sceneId } });
+        if (!scene || (!scene.isPublic && scene.userId !== req.userId))
+          return res.status(404).json({ error: 'Scene not found' });
+        spec.config = { ...((scene.config as object) ?? {}), ...(spec.config ?? {}) };
+        if (!spec.text && !svgData && !image) {
+          if (scene.inputMode === 'text' && scene.text) spec.text = scene.text;
+          else if (scene.svgData) spec.svg = scene.svgData;
+        }
+        spec.font ??= scene.font ?? undefined;
       }
-      spec.font ??= scene.font ?? undefined;
-    }
-    if (svgData || image) spec.svg = await resolveInputSvg({ svgData, image });
-    if (spec.svg) {
-      const svgErr = validateSvgString(spec.svg);
-      if (svgErr) return res.status(422).json({ error: svgErr });
-    }
-    if (spec.config) {
-      const cfgErr = validateConfig(spec.config);
-      if (cfgErr) return res.status(400).json({ error: cfgErr });
-    }
+      if (svgData || image) spec.svg = await resolveInputSvg({ svgData, image });
+      if (spec.svg) {
+        const svgErr = validateSvgString(spec.svg);
+        if (svgErr) return res.status(422).json({ error: svgErr });
+      }
+      if (spec.config) {
+        const cfgErr = validateConfig(spec.config);
+        if (cfgErr) return res.status(400).json({ error: cfgErr });
+      }
 
-    const { renderStudio3D } = await import('../services/studio3dRender/renderer.js');
-    const format = (spec.format ?? 'mp4') as 'mp4' | 'webm' | 'png';
-    const out = join(dir, `render.${format}`);
-    const result = await withTimeout(renderStudio3D(spec, out), 5 * 60_000, 'render');
-    const buffer = await readFile(out);
+      const { renderStudio3D } = await import('../services/studio3dRender/renderer.js');
+      const format = (spec.format ?? 'mp4') as 'mp4' | 'webm' | 'png';
+      const out = join(dir, `render.${format}`);
+      const result = await withTimeout(renderStudio3D(spec, out), 5 * 60_000, 'render');
+      const buffer = await readFile(out);
 
-    const r2 = await import('../services/r2Service.js');
-    const url =
-      format === 'png'
-        ? await r2.uploadImage(
-            buffer.toString('base64'),
-            req.userId,
-            'studio3d',
-            undefined,
-            undefined,
-            'image/png'
-          )
-        : await r2.uploadSequenceVideo(buffer, req.userId, format);
+      const r2 = await import('../services/r2Service.js');
+      const url =
+        format === 'png'
+          ? await r2.uploadImage(
+              buffer.toString('base64'),
+              req.userId,
+              'studio3d',
+              undefined,
+              undefined,
+              'image/png'
+            )
+          : await r2.uploadSequenceVideo(buffer, req.userId, format);
 
-    recordToolUsage({
-      userId: req.userId,
-      action: 'studio3d.render',
-      resourceId: sceneId,
-      meta: { format, frames: result.frames, bytes: buffer.length, ms: result.ms },
-    });
-    return res.json({ url, ...result, path: undefined, bytes: buffer.length });
-  } catch (err: any) {
-    console.error('[studio3d] render error:', err.message);
-    const status = err?.name === 'ZodError' || /Unknown|Provide/.test(err.message) ? 400 : 500;
-    return res.status(status).json({ error: err.message || 'Render failed' });
-  } finally {
-    renderBusy = false;
-    await rm(dir, { recursive: true, force: true }).catch(() => {});
+      recordToolUsage({
+        userId: req.userId,
+        action: 'studio3d.render',
+        resourceId: sceneId,
+        meta: { format, frames: result.frames, bytes: buffer.length, ms: result.ms },
+      });
+      return res.json({ url, ...result, path: undefined, bytes: buffer.length });
+    } catch (err: any) {
+      console.error('[studio3d] render error:', err.message);
+      const status = err?.name === 'ZodError' || /Unknown|Provide/.test(err.message) ? 400 : 500;
+      return res.status(status).json({ error: err.message || 'Render failed' });
+    } finally {
+      renderBusy = false;
+      await rm(dir, { recursive: true, force: true }).catch(() => {});
+    }
   }
-});
+);
 
 router.get('/render/presets', apiRateLimiter, async (_req, res) => {
   try {
