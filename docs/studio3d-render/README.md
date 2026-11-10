@@ -4,11 +4,11 @@ Renders a logo (SVG) or a word (text + font) from the 3D Studio as **mp4 / mov (
 
 It reuses what the app already has:
 
-| Piece | Source |
-| --- | --- |
-| Geometry (SVG → extruded mesh), materials | `@visant/extrude3d`, the code the engine uses |
+| Piece                                                         | Source                                                                                                                                                                                            |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Geometry (SVG → extruded mesh), materials                     | `@visant/extrude3d`, the code the engine uses                                                                                                                                                     |
 | Look: defaults, scene presets, lighting presets, HDRIs, fonts | `useStudio3DStore` / `SCENE_PRESETS` / `LIGHTING_PRESETS` / `ENVIRONMENT_PRESETS` / `FONTS`. The renderer calls `applyScenePreset`, `setMaterial` and `applyConfig`, the same calls the app makes |
-| Browser + encode | `puppeteer-core` + Chromium (launched the same way as `presetRenderer.ts`) + `ffmpeg` |
+| Browser + encode                                              | `puppeteer-core` + Chromium (launched the same way as `presetRenderer.ts`) + `ffmpeg`                                                                                                             |
 
 The only new part is the camera move, duration, size and format.
 
@@ -37,32 +37,47 @@ Chromium is found in this order: `PUPPETEER_EXECUTABLE_PATH`, then local Chrome,
 
 ```jsonc
 {
-  "svg": "<svg …>",               // or "svgFile" (CLI only) — or:
-  "text": "VISANT", "font": "Archivo Black",   // a 3D Studio font name, a .ttf/.otf URL or a file path
-  "preset": "Liquid Metal",       // app scene preset (optional)
-  "lighting": "Rim Light",        // app lighting preset (optional)
-  "config": {                     // same keys as studio3d-create-scene / the store; wins over presets
-    "material": "chrome", "color": "#ffffff", "depth": 2.2, "smoothness": 0.6,
-    "bevelEnabled": true, "environment": "city", "envMapIntensity": 1.4,
-    "toneMapping": "ACES", "toneMappingExposure": 1.2, "hdriRotation": 0
+  "svg": "<svg …>", // or "svgFile" (CLI only) — or:
+  "text": "VISANT",
+  "font": "Archivo Black", // a 3D Studio font name, a .ttf/.otf URL or a file path
+  "preset": "Liquid Metal", // app scene preset (optional)
+  "lighting": "Rim Light", // app lighting preset (optional)
+  "config": {
+    // same keys as studio3d-create-scene / the store; wins over presets
+    "material": "chrome",
+    "color": "#ffffff",
+    "depth": 2.2,
+    "smoothness": 0.6,
+    "bevelEnabled": true,
+    "environment": "city",
+    "envMapIntensity": 1.4,
+    "toneMapping": "ACES",
+    "toneMappingExposure": 1.2,
+    "hdriRotation": 0,
   },
-  "background": "#000000",        // or "transparent" (use mov / webm / png / png-seq to keep alpha)
+  "background": "#000000", // or "transparent" (use mov / webm / png / png-seq to keep alpha)
   "camera": {
-    "move": "turntable",          // turntable | orbit | push | pull | sweep | static
-    "distance": 7,                // the logo fits a 4-unit box
-    "elevation": 8, "azimuth": 0, // degrees
-    "angle": 360,                 // degrees travelled (defaults: turntable/orbit 360, sweep 50, push/pull 16 of drift)
-    "from": 12, "to": 6,          // push/pull distances
-    "elevationTo": 20,            // sweep: elevation travelled
-    "spin": 0,                    // extra object rotation (deg) across the clip
-    "easing": "easeInOut",        // linear | easeIn | easeOut | easeInOut (loops default to linear)
-    "fov": 50, "targetY": 0
+    "move": "turntable", // turntable | orbit | push | pull | sweep | static
+    "distance": 7, // the logo fits a 4-unit box
+    "elevation": 8,
+    "azimuth": 0, // degrees
+    "angle": 360, // degrees travelled (defaults: turntable/orbit 360, sweep 50, push/pull 16 of drift)
+    "from": 12,
+    "to": 6, // push/pull distances
+    "elevationTo": 20, // sweep: elevation travelled
+    "spin": 0, // extra object rotation (deg) across the clip
+    "easing": "easeInOut", // linear | easeIn | easeOut | easeInOut (loops default to linear)
+    "fov": 50,
+    "targetY": 0,
   },
-  "width": 1920, "height": 1080, "fps": 30, "duration": 4,
-  "format": "mp4",                // mp4 (h264) | mov (ProRes 4444 + alpha) | webm (VP9 + alpha) | png | png-seq
-  "supersample": 2,               // render at 2× and downscale with lanczos (cleaner chrome edges)
-  "stillAt": 0,                   // png: clip position 0–1
-  "crf": 16
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "duration": 4,
+  "format": "mp4", // mp4 (h264) | mov (ProRes 4444 + alpha) | webm (VP9 + alpha) | png | png-seq
+  "supersample": 2, // render at 2× and downscale with lanczos (cleaner chrome edges)
+  "stillAt": 0, // png: clip position 0–1
+  "crf": 16,
 }
 ```
 

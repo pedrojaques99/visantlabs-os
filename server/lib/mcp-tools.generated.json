@@ -4717,6 +4717,137 @@
       "auth": true
     },
     {
+      "name": "studio3d-render",
+      "description": "Render a 3D logo or wordmark to a video (mp4/webm) or still (png) — deterministic, frame by frame, in headless Chromium using the 3D Studio engine. Input: svgData (logo), text+font (type), or sceneId (saved scene). Look: preset (app scene preset, e.g. \"Liquid Metal\"), lighting preset, and config (same keys as studio3d-create-scene). Motion: camera.move turntable|orbit|push|pull|sweep|static. Returns a public URL. Free (no credits); slow (~0.1–0.5 s/frame). Use studio3d-list-presets for names.",
+      "required": [],
+      "properties": {
+        "sceneId": {
+          "description": "Render a saved scene (its config/svg/text are the base).",
+          "type": "string"
+        },
+        "svgData": {
+          "description": "SVG markup of the logo.",
+          "type": "string"
+        },
+        "text": {
+          "description": "Text to set in type and extrude.",
+          "type": "string",
+          "maxLength": 200
+        },
+        "font": {
+          "description": "3D Studio font name (e.g. \"Archivo Black\", \"Space Grotesk\") or a .ttf/.otf URL.",
+          "type": "string"
+        },
+        "preset": {
+          "description": "App scene preset name, e.g. \"Hero Banner\", \"Liquid Metal\".",
+          "type": "string"
+        },
+        "lighting": {
+          "description": "Lighting preset: \"3-Point Studio\", \"Rim Light\", \"Dramatic\", \"Flat\", \"Cinematic\".",
+          "type": "string"
+        },
+        "config": {
+          "description": "Partial 3D Studio config: material, color, depth, smoothness, bevel*, environment, envMapIntensity, toneMapping, ...",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        },
+        "background": {
+          "description": "\"#hex\" or \"transparent\" (webm/png keep alpha).",
+          "type": "string"
+        },
+        "camera": {
+          "type": "object",
+          "properties": {
+            "move": {
+              "type": "string",
+              "enum": ["turntable", "orbit", "push", "pull", "sweep", "static"]
+            },
+            "distance": {
+              "description": "Camera distance (logo fits a 4-unit box; default 7).",
+              "type": "number"
+            },
+            "elevation": {
+              "description": "Degrees above the horizon (default 8).",
+              "type": "number"
+            },
+            "azimuth": {
+              "description": "Start azimuth in degrees (0 = front).",
+              "type": "number"
+            },
+            "angle": {
+              "description": "Degrees travelled (turntable/orbit default 360).",
+              "type": "number"
+            },
+            "from": {
+              "description": "push/pull: far distance.",
+              "type": "number"
+            },
+            "to": {
+              "description": "push/pull: near distance.",
+              "type": "number"
+            },
+            "spin": {
+              "description": "Extra object rotation in degrees across the clip.",
+              "type": "number"
+            },
+            "easing": {
+              "type": "string",
+              "enum": ["linear", "easeIn", "easeOut", "easeInOut"]
+            },
+            "fov": {
+              "type": "number"
+            }
+          }
+        },
+        "width": {
+          "description": "Default 1920.",
+          "type": "integer",
+          "minimum": 64,
+          "maximum": 3840
+        },
+        "height": {
+          "description": "Default 1080.",
+          "type": "integer",
+          "minimum": 64,
+          "maximum": 3840
+        },
+        "fps": {
+          "description": "Default 30.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "duration": {
+          "description": "Seconds (default 4).",
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 30
+        },
+        "format": {
+          "description": "Default mp4.",
+          "type": "string",
+          "enum": ["mp4", "webm", "png"]
+        },
+        "stillAt": {
+          "description": "png: clip position 0–1 of the still.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "supersample": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
       "name": "update-studio3d-scene",
       "description": "Update an existing 3D Studio scene. Partial updates supported — only pass fields to change.",
       "required": ["sceneId"],

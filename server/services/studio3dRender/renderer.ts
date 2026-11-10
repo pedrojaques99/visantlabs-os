@@ -98,11 +98,13 @@ export async function resolveScene(spec: ParsedRenderSpec) {
   }
   const cfg = spec.config as Record<string, any>;
   // Picking a material in the app also loads its metalness/roughness/opacity.
-  if (typeof cfg.material === 'string') useStudio3DStore.getState().setMaterial(cfg.material as any);
+  if (typeof cfg.material === 'string')
+    useStudio3DStore.getState().setMaterial(cfg.material as any);
   useStudio3DStore.getState().applyConfig(cfg as any);
 
   const s = useStudio3DStore.getState() as any;
-  const background = spec.background && spec.background !== 'transparent' ? spec.background : s.background;
+  const background =
+    spec.background && spec.background !== 'transparent' ? spec.background : s.background;
   const scene: ResolvedScene = {
     material: s.material,
     color: s.color,
@@ -206,8 +208,15 @@ function findChromium(): string {
     ? join(process.env.LOCALAPPDATA, 'ms-playwright')
     : join(process.env.HOME || '', '.cache/ms-playwright');
   if (existsSync(pw)) {
-    for (const d of readdirSync(pw).filter((n) => /^chromium-\d+$/.test(n)).sort().reverse()) {
-      for (const sub of ['chrome-win64/chrome.exe', 'chrome-win/chrome.exe', 'chrome-linux/chrome']) {
+    for (const d of readdirSync(pw)
+      .filter((n) => /^chromium-\d+$/.test(n))
+      .sort()
+      .reverse()) {
+      for (const sub of [
+        'chrome-win64/chrome.exe',
+        'chrome-win/chrome.exe',
+        'chrome-linux/chrome',
+      ]) {
         const p = join(pw, d, sub);
         if (existsSync(p)) return p;
       }
@@ -219,17 +228,66 @@ function findChromium(): string {
 function ffmpegArgs(spec: ParsedRenderSpec, out: string): string[] {
   const scale =
     spec.supersample > 1 ? ['-vf', `scale=${spec.width}:${spec.height}:flags=lanczos`] : [];
-  const input = ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(spec.fps), '-c:v', 'png', '-i', '-'];
+  const input = [
+    '-y',
+    '-loglevel',
+    'error',
+    '-f',
+    'image2pipe',
+    '-framerate',
+    String(spec.fps),
+    '-c:v',
+    'png',
+    '-i',
+    '-',
+  ];
   switch (spec.format) {
     case 'mp4':
-      return [...input, ...scale, '-c:v', 'libx264', '-preset', 'slow', '-crf', String(spec.crf),
-        '-pix_fmt', 'yuv420p', '-movflags', '+faststart', out];
+      return [
+        ...input,
+        ...scale,
+        '-c:v',
+        'libx264',
+        '-preset',
+        'slow',
+        '-crf',
+        String(spec.crf),
+        '-pix_fmt',
+        'yuv420p',
+        '-movflags',
+        '+faststart',
+        out,
+      ];
     case 'mov': // ProRes 4444 keeps alpha
-      return [...input, ...scale, '-c:v', 'prores_ks', '-profile:v', '4444',
-        '-pix_fmt', 'yuva444p10le', '-vendor', 'apl0', out];
+      return [
+        ...input,
+        ...scale,
+        '-c:v',
+        'prores_ks',
+        '-profile:v',
+        '4444',
+        '-pix_fmt',
+        'yuva444p10le',
+        '-vendor',
+        'apl0',
+        out,
+      ];
     case 'webm': // VP9 with alpha
-      return [...input, ...scale, '-c:v', 'libvpx-vp9', '-pix_fmt', 'yuva420p',
-        '-b:v', '0', '-crf', '18', '-row-mt', '1', out];
+      return [
+        ...input,
+        ...scale,
+        '-c:v',
+        'libvpx-vp9',
+        '-pix_fmt',
+        'yuva420p',
+        '-b:v',
+        '0',
+        '-crf',
+        '18',
+        '-row-mt',
+        '1',
+        out,
+      ];
     case 'png':
       return [...input, ...scale, '-frames:v', '1', out];
     case 'png-seq':
@@ -295,14 +353,18 @@ export async function renderStudio3D(
   ff.stderr.on('data', (d) => (ffErr += d));
   const ffDone = new Promise<void>((res, rej) => {
     ff.on('error', rej);
-    ff.on('close', (code) => (code === 0 ? res() : rej(new Error(`ffmpeg exited ${code}: ${ffErr}`))));
+    ff.on('close', (code) =>
+      code === 0 ? res() : rej(new Error(`ffmpeg exited ${code}: ${ffErr}`))
+    );
   });
 
   try {
     const page = await browser.newPage();
     const pageErrors: string[] = [];
     page.on('pageerror', (e) => pageErrors.push(String(e)));
-    await page.setContent('<!doctype html><html><body style="margin:0;background:transparent"></body></html>');
+    await page.setContent(
+      '<!doctype html><html><body style="margin:0;background:transparent"></body></html>'
+    );
     await page.addScriptTag({ content: await pageBundle() });
     await page.evaluate((j) => (window as any).__s3d.setup(j), job as any);
     for (let i = 0; i < frames; i++) {

@@ -325,7 +325,8 @@ let renderBusy = false; // one Chromium render per process at a time
 
 router.post('/render', authenticate, renderLimiter, async (req: AuthRequest, res) => {
   if (!req.userId) return res.status(401).json({ error: 'Unauthenticated' });
-  if (renderBusy) return res.status(429).json({ error: 'A render is already running, retry shortly' });
+  if (renderBusy)
+    return res.status(429).json({ error: 'A render is already running, retry shortly' });
   const { sceneId, svgData, image, ...spec } = req.body ?? {};
   if (!['mp4', 'webm', 'png', undefined].includes(spec.format))
     return res.status(400).json({ error: 'API formats: mp4, webm, png (mov/png-seq via CLI)' });
@@ -367,7 +368,14 @@ router.post('/render', authenticate, renderLimiter, async (req: AuthRequest, res
     const r2 = await import('../services/r2Service.js');
     const url =
       format === 'png'
-        ? await r2.uploadImage(buffer.toString('base64'), req.userId, 'studio3d', undefined, undefined, 'image/png')
+        ? await r2.uploadImage(
+            buffer.toString('base64'),
+            req.userId,
+            'studio3d',
+            undefined,
+            undefined,
+            'image/png'
+          )
         : await r2.uploadSequenceVideo(buffer, req.userId, format);
 
     recordToolUsage({

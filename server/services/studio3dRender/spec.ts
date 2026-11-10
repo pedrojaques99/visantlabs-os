@@ -41,7 +41,10 @@ export const CameraSchema = z
 
 export const RenderSpecSchema = z.object({
   /** SVG markup (logo). One of svg | text is required. */
-  svg: z.string().max(5 * 1024 * 1024).optional(),
+  svg: z
+    .string()
+    .max(5 * 1024 * 1024)
+    .optional(),
   /** Text to set in type and extrude (uses `font`). */
   text: z.string().max(200).optional(),
   /** Studio3D font name (see FONTS in engine/useFont.ts), or a .ttf/.otf/.woff URL or local path. */
@@ -106,7 +109,9 @@ export interface ResolvedScene {
 export interface PageJob {
   svg: string;
   scene: ResolvedScene;
-  camera: Required<Omit<z.output<typeof CameraSchema>, 'easing' | 'fov' | 'angle' | 'from' | 'to'>> & {
+  camera: Required<
+    Omit<z.output<typeof CameraSchema>, 'easing' | 'fov' | 'angle' | 'from' | 'to'>
+  > & {
     easing: string;
     fov: number;
     angle: number;

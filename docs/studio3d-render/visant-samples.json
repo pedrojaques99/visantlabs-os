@@ -2,20 +2,36 @@
   {
     "out": "Z:/Cursor/jaques-sh/studio-hf/visant-360/assets/studio3d/symbol-chrome-turntable.mp4",
     "svgFile": "visant-symbol.svg",
-    "config": { "material": "chrome", "color": "#ffffff", "depth": 2.2, "smoothness": 0.6, "environment": "city", "envMapIntensity": 1.4 },
+    "config": {
+      "material": "chrome",
+      "color": "#ffffff",
+      "depth": 2.2,
+      "smoothness": 0.6,
+      "environment": "city",
+      "envMapIntensity": 1.4
+    },
     "lighting": "Rim Light",
     "background": "#000000",
     "camera": { "move": "turntable", "distance": 6.5, "elevation": 14 },
-    "duration": 4, "supersample": 2
+    "duration": 4,
+    "supersample": 2
   },
   {
     "out": "Z:/Cursor/jaques-sh/studio-hf/visant-360/assets/studio3d/symbol-glass-push.mp4",
     "svgFile": "visant-symbol.svg",
-    "config": { "material": "glass", "color": "#e8f0ff", "depth": 2.6, "smoothness": 0.7, "environment": "studio", "envMapIntensity": 1.6 },
+    "config": {
+      "material": "glass",
+      "color": "#e8f0ff",
+      "depth": 2.6,
+      "smoothness": 0.7,
+      "environment": "studio",
+      "envMapIntensity": 1.6
+    },
     "lighting": "Cinematic",
     "background": "#0a0a0a",
     "camera": { "move": "push", "from": 13, "to": 6, "elevation": 10, "angle": 24, "spin": 30 },
-    "duration": 4, "supersample": 2
+    "duration": 4,
+    "supersample": 2
   },
   {
     "out": "Z:/Cursor/jaques-sh/studio-hf/visant-360/assets/studio3d/type-visant-orbit.mp4",
@@ -23,14 +39,29 @@
     "font": "Archivo Black",
     "preset": "Liquid Metal",
     "config": { "depth": 1.4, "smoothness": 0.5 },
-    "camera": { "move": "orbit", "angle": 70, "azimuth": -35, "elevation": 6, "distance": 6.2, "easing": "easeInOut" },
-    "duration": 4, "supersample": 2
+    "camera": {
+      "move": "orbit",
+      "angle": 70,
+      "azimuth": -35,
+      "elevation": 6,
+      "distance": 6.2,
+      "easing": "easeInOut"
+    },
+    "duration": 4,
+    "supersample": 2
   },
   {
     "out": "Z:/Cursor/jaques-sh/studio-hf/visant-360/assets/studio3d/symbol-chrome-alpha.mov",
     "svgFile": "visant-symbol.svg",
     "format": "mov",
-    "config": { "material": "chrome", "color": "#ffffff", "depth": 2.2, "smoothness": 0.6, "environment": "city", "envMapIntensity": 1.4 },
+    "config": {
+      "material": "chrome",
+      "color": "#ffffff",
+      "depth": 2.2,
+      "smoothness": 0.6,
+      "environment": "city",
+      "envMapIntensity": 1.4
+    },
     "background": "transparent",
     "camera": { "move": "turntable", "distance": 6.5, "elevation": 14 },
     "duration": 4
