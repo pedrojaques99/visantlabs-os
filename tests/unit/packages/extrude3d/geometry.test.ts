@@ -36,6 +36,14 @@ describe('@visant/extrude3d — parseShapesFromSVG', () => {
     // Only the inner square survives (the viewBox-sized rect is filtered out).
     expect(shapes.length).toBe(1);
   });
+
+  it('keeps a 4-point mark that spans the viewBox but is not a rect', () => {
+    // Diamond touching all four viewBox edges (like the Visant symbol).
+    const diamond =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50">' +
+      '<path d="M50 0 L100 25 L50 50 L0 25 Z" fill="#000000"/></svg>';
+    expect(parseShapesFromSVG(diamond).length).toBe(1);
+  });
 });
 
 describe('@visant/extrude3d — buildExtrudeSettings', () => {

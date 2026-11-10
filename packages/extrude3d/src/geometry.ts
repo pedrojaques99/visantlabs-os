@@ -144,7 +144,18 @@ export function isViewBoxRect(shape: THREE.Shape, vbW: number, vbH: number): boo
   const size = new THREE.Vector2();
   bb.getSize(size);
   const tolerance = 0.01;
-  return Math.abs(size.x - vbW) / vbW < tolerance && Math.abs(size.y - vbH) / vbH < tolerance;
+  if (Math.abs(size.x - vbW) / vbW >= tolerance || Math.abs(size.y - vbH) / vbH >= tolerance)
+    return false;
+  // Must be an axis-aligned rect: every point sits on a bbox corner. Without
+  // this, a 4-point logo that spans the viewBox (a diamond/rhombus mark) was
+  // taken for the background and silently dropped.
+  const ex = vbW * tolerance;
+  const ey = vbH * tolerance;
+  return pts.every(
+    (p) =>
+      (Math.abs(p.x - bb.min.x) < ex || Math.abs(p.x - bb.max.x) < ex) &&
+      (Math.abs(p.y - bb.min.y) < ey || Math.abs(p.y - bb.max.y) < ey)
+  );
 }
 
 /**

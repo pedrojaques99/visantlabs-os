@@ -656,6 +656,7 @@ When unsure what prompt to write, query these first — they contain battle-test
 2. studio3d-create-scene — configure and save a 3D scene, get a deep-link URL
 3. studio3d-list-scenes / studio3d-get-scene — manage saved scenes
 4. update-studio3d-scene / delete-studio3d-scene — edit or remove scenes
+5. studio3d-render — render a logo (svgData), type (text+font) or saved scene (sceneId) to mp4/webm/png with a camera move (turntable/orbit/push/pull/sweep); returns a URL
 The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then add their SVG/logo, export to PNG/MP4/GLB.
 
 ### Smart analysis (auto-detect + auto-prompt)
@@ -6517,6 +6518,82 @@ PREFER imageUrl. Passing base64 costs tokens proportional to the file and trunca
         const res = await fetch(`${INTERNAL_API_BASE}/api/studio3d/${sceneId}`, {
           method: 'DELETE',
           headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'studio3d-render',
+    'Render a 3D logo or wordmark to a video (mp4/webm) or still (png) — deterministic, frame by frame, in headless Chromium using the 3D Studio engine. Input: svgData (logo), text+font (type), or sceneId (saved scene). Look: preset (app scene preset, e.g. "Liquid Metal"), lighting preset, and config (same keys as studio3d-create-scene). Motion: camera.move turntable|orbit|push|pull|sweep|static. Returns a public URL. Free (no credits); slow (~0.1–0.5 s/frame). Use studio3d-list-presets for names.',
+    {
+      sceneId: z
+        .string()
+        .optional()
+        .describe('Render a saved scene (its config/svg/text are the base).'),
+      svgData: z.string().optional().describe('SVG markup of the logo.'),
+      text: z.string().max(200).optional().describe('Text to set in type and extrude.'),
+      font: z
+        .string()
+        .optional()
+        .describe(
+          '3D Studio font name (e.g. "Archivo Black", "Space Grotesk") or a .ttf/.otf URL.'
+        ),
+      preset: z
+        .string()
+        .optional()
+        .describe('App scene preset name, e.g. "Hero Banner", "Liquid Metal".'),
+      lighting: z
+        .string()
+        .optional()
+        .describe(
+          'Lighting preset: "3-Point Studio", "Rim Light", "Dramatic", "Flat", "Cinematic".'
+        ),
+      config: z
+        .record(z.string(), z.unknown())
+        .optional()
+        .describe(
+          'Partial 3D Studio config: material, color, depth, smoothness, bevel*, environment, envMapIntensity, toneMapping, ...'
+        ),
+      background: z.string().optional().describe('"#hex" or "transparent" (webm/png keep alpha).'),
+      camera: z
+        .object({
+          move: z.enum(['turntable', 'orbit', 'push', 'pull', 'sweep', 'static']).optional(),
+          distance: z
+            .number()
+            .optional()
+            .describe('Camera distance (logo fits a 4-unit box; default 7).'),
+          elevation: z.number().optional().describe('Degrees above the horizon (default 8).'),
+          azimuth: z.number().optional().describe('Start azimuth in degrees (0 = front).'),
+          angle: z.number().optional().describe('Degrees travelled (turntable/orbit default 360).'),
+          from: z.number().optional().describe('push/pull: far distance.'),
+          to: z.number().optional().describe('push/pull: near distance.'),
+          spin: z.number().optional().describe('Extra object rotation in degrees across the clip.'),
+          easing: z.enum(['linear', 'easeIn', 'easeOut', 'easeInOut']).optional(),
+          fov: z.number().optional(),
+        })
+        .optional(),
+      width: z.number().int().min(64).max(3840).optional().describe('Default 1920.'),
+      height: z.number().int().min(64).max(3840).optional().describe('Default 1080.'),
+      fps: z.number().int().min(1).max(60).optional().describe('Default 30.'),
+      duration: z.number().min(0.1).max(30).optional().describe('Seconds (default 4).'),
+      format: z.enum(['mp4', 'webm', 'png']).optional().describe('Default mp4.'),
+      stillAt: z.number().min(0).max(1).optional().describe('png: clip position 0–1 of the still.'),
+      supersample: z.number().int().min(1).max(3).optional(),
+    },
+    { title: 'Render 3D Logo / Type', destructiveHint: false },
+    async (args) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/studio3d/render`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify(args),
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());

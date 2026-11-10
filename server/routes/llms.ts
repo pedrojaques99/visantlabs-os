@@ -372,6 +372,7 @@ token only changes quality.
 - \`studio3d-get-scene\` (R) — Get scene by ID
 - \`update-studio3d-scene\` (W) — Update scene
 - \`delete-studio3d-scene\` (D) — Delete scene
+- \`studio3d-render\` (R) — Render a logo (SVG) or text in 3D to mp4/webm/png: material preset, camera move, transparent background
 
 ### Playground (Mini-Apps)
 

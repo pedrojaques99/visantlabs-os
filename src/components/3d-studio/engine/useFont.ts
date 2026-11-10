@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 // structurally satisfies the package's OpenTypeFontLike.
 export { textToSvg } from '@visant/extrude3d/fonts';
 
-const FONTS = [
+export const FONTS = [
   // Original 10
   {
     name: 'DM Sans',
