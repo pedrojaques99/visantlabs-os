@@ -27,6 +27,29 @@ import {
 
 const router = express.Router();
 
+/**
+ * O CSP global (helmet, server/app.ts) tem `form-action` com uma lista fixa de destinos. No Chrome o
+ * `form-action` também vale pro redirecionamento que vem depois do POST de consentimento, então um
+ * cliente cujo redirect_uri não está na lista (ex.: agentes.visant.co) via o "Permitir" bloqueado.
+ * Aqui a página de consentimento libera, só nesta resposta, a origem do redirect_uri JÁ validado
+ * contra o cadastro do cliente. Esquemas próprios (cursor://, vscode://) entram como scheme-source.
+ */
+export function cspComFormAction(csp: string, redirectUri: string): string {
+  let fonte: string;
+  try {
+    const u = new URL(redirectUri);
+    fonte = u.protocol === 'http:' || u.protocol === 'https:' ? u.origin : u.protocol;
+  } catch {
+    return csp;
+  }
+  const partes = csp.split(';').map((d) => d.trim()).filter(Boolean);
+  const i = partes.findIndex((d) => d.toLowerCase().startsWith('form-action'));
+  if (i === -1) return csp; // sem form-action, o navegador não restringe: nada a liberar
+  if (partes[i].split(/\s+/).includes(fonte)) return csp;
+  partes[i] = `${partes[i]} ${fonte}`;
+  return partes.join(';');
+}
+
 const BASE_URL = API_BASE_URL;
 const MCP_RESOURCE = MCP_ENDPOINT;
 const REFRESH_TOKEN_TTL_DAYS = 30;
@@ -370,6 +393,11 @@ router.get('/oauth/authorize', async (req, res) => {
 
     // User is logged in — show consent page
     const accountEmail = await emailOf(userId);
+
+    if (!isOob) {
+      const csp = res.getHeader('Content-Security-Policy');
+      if (typeof csp === 'string') res.setHeader('Content-Security-Policy', cspComFormAction(csp, redirect_uri));
+    }
 
     return res.send(
       buildConsentPage({

@@ -185,6 +185,46 @@ describe('OAuth 2.1 MCP Flow', () => {
       expect(res.text).toContain('Deny');
     });
 
+    it('consent page allows form-action to the validated redirect_uri origin', async () => {
+      const clientId = 'agentes-client';
+      mockPrisma.oAuthClient.findUnique.mockResolvedValue({
+        clientId,
+        clientName: 'agentes.chat',
+        redirectUris: ['https://agentes.visant.co/api/app/connectors/oauth/callback'],
+      });
+      const { default: router } = await import('../oauth.js');
+      const express = (await import('express')).default;
+      const supertest = (await import('supertest')).default;
+      const app = express();
+      app.use((_req, res, next) => {
+        res.setHeader('Content-Security-Policy', "default-src 'self'; form-action 'self' https://claude.ai; object-src 'none'");
+        next();
+      });
+      app.use('/', router);
+      const res = await supertest(app).get('/oauth/authorize').query({
+        client_id: clientId,
+        redirect_uri: 'https://agentes.visant.co/api/app/connectors/oauth/callback',
+        code_challenge: makeCodeChallenge('v'.repeat(43)),
+        code_challenge_method: 'S256',
+        state: 's',
+        response_type: 'code',
+        token: makeUserJwt('user-123'),
+      });
+      expect(res.status).toBe(200);
+      const csp = res.headers['content-security-policy'];
+      expect(csp).toContain("form-action 'self' https://claude.ai https://agentes.visant.co");
+      expect(csp).toContain("object-src 'none'");
+    });
+
+    it('cspComFormAction keeps other directives, dedupes and handles custom schemes', async () => {
+      const { cspComFormAction } = await import('../oauth.js');
+      const base = "default-src 'self'; form-action 'self' https://claude.ai";
+      expect(cspComFormAction(base, 'https://claude.ai/cb')).toBe(base);
+      expect(cspComFormAction(base, 'cursor://anysphere.cursor-retrieval/oauth')).toContain("form-action 'self' https://claude.ai cursor:");
+      expect(cspComFormAction("default-src 'self'", 'https://x.com/cb')).toBe("default-src 'self'");
+      expect(cspComFormAction(base, 'not a url')).toBe(base);
+    });
+
     it('rejects unknown client_id', async () => {
       mockPrisma.oAuthClient.findUnique.mockResolvedValue(null);
 
