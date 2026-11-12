@@ -54,9 +54,14 @@ COPY packages ./packages/
 # `--include=dev` tambem no segundo install: sem ele o npm 11 (node 24) poda as
 # devDependencies por causa do NODE_ENV=production do Coolify, e o `prepare` do
 # workspace @visant/extrude3d morre com `tsc: not found` (deploy de 26/10).
+#
+# `npm cache clean --force` no MESMO RUN: o cache do npm (~2 GB) ficava preso na
+# camada e ia junto em toda imagem (9,9 GB no total, 12/11). Limpo aqui ele nao
+# entra na camada; a imagem cai ~2 GB sem mudar nada do que roda.
 RUN npm ci --include=dev && \
     npm install @printmadehq/mockup-generator@1.0.5 --include=dev --legacy-peer-deps --no-save --no-package-lock && \
-    npx prisma generate
+    npx prisma generate && \
+    npm cache clean --force && rm -rf /root/.cache /tmp/*
 
 COPY . .
 
