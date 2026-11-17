@@ -47,12 +47,16 @@ export function renderPopupSuccessPage(source?: string): string {
 }
 
 /** Página de erro do popup — o poll recebe o erro em paralelo. */
+// Sem origem conhecida não dá pra dizer "pelo <produto>": a pessoa pode ter
+// vindo do Club e ler "pelo Visant". Aí o texto não nomeia produto nenhum.
 export function renderPopupErrorPage(source?: string): string {
-  const { product } = copyFor(source);
+  const lead = isPopupOAuthSource(source)
+    ? `Feche esta aba e tente de novo pelo ${POPUP_OAUTH_SOURCES[source].product}.`
+    : 'Feche esta aba e tente entrar de novo.';
   return buildPopupResultPage({
     ok: false,
     title: 'Não deu pra entrar',
-    lead: `Feche esta aba e tente de novo pelo ${product}.`,
+    lead,
     hint: `Se insistir, fale com ${SUPPORT_EMAIL}.`,
   });
 }

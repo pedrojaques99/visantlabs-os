@@ -201,6 +201,42 @@ describe('popup OAuth flow (source + poll)', () => {
     const res = await agent.get('/api/auth/google/poll/does-not-exist');
     expect(res.body.status).toBe('expired');
   });
+
+  it('keeps the session in Mongo, not in process memory', async () => {
+    const { sessionId } = await startPopup('club');
+    const { connectToMongoDB, getDb } = await import('../../../server/db/mongodb.js');
+    await connectToMongoDB();
+    const doc = await getDb()
+      .collection('oauth_popup_sessions')
+      .findOne({ _id: sessionId as any });
+    expect(doc?.source).toBe('club');
+  });
+
+  it('carries the source in the state, so the error page knows it without the session', async () => {
+    const agent = await request();
+    const res = await agent.get('/api/auth/google').query({ source: 'club' });
+    const state = new URL(res.body.authUrl).searchParams.get('state')!;
+    expect(state).toBe(`plugin:${res.body.sessionId}:club`);
+
+    // Sessão sumiu (venceu, ou nunca existiu nesta instância): não pode dizer
+    // "Login concluído", porque o poll nunca vai receber o token.
+    const cb = await agent
+      .get('/api/auth/google/callback')
+      .query({ code: 'mock-code', state: 'plugin:gone:club' });
+    expect(cb.text).toContain('Não deu pra entrar');
+    expect(cb.text).toContain('Visant Club');
+    expect(cb.text).not.toContain('Login concluído');
+  });
+
+  it('without any hint of origin, does not name a product', async () => {
+    const agent = await request();
+    const cb = await agent
+      .get('/api/auth/google/callback')
+      .query({ code: 'mock-code', state: 'plugin:gone' });
+    expect(cb.text).toContain('Não deu pra entrar');
+    expect(cb.text).toContain('tente entrar de novo');
+    expect(cb.text).not.toContain('pelo Visant');
+  });
 });
 
 // Login com Google a partir das telas de OAuth: redirect de volta, sem popup.

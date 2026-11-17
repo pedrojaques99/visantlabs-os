@@ -54,16 +54,29 @@ import {
   renderPopupSuccessPage,
   renderPopupErrorPage,
 } from '../lib/oauthPopupPage.js';
+import {
+  criarSessao,
+  atualizarSessao,
+  apagarSessao,
+  entregarSessao,
+} from '../lib/oauthPopupSessions.js';
 
 const router = express.Router();
 const getFrontendUrl = () => FRONTEND_BASE_URL.replace(/\/+$/, '');
 
-// In-memory store for popup OAuth sessions (sessionId → { token, source, createdAt })
-// `source` é o que a página de retorno usa pra saber pra onde mandar o usuário voltar.
-const pluginOAuthSessions = new Map<
-  string,
-  { token?: string; error?: string; source?: string; returnTo?: string; createdAt: number }
->();
+// Sessões do popup moram no Mongo (server/lib/oauthPopupSessions.ts): memória
+// por processo sumia no deploy e não era vista pelas outras instâncias.
+
+/**
+ * `state` do popup: `plugin:<sessionId>` ou `plugin:<sessionId>:<source>`.
+ * O `source` viaja no state pra página de erro saber quem abriu o popup mesmo
+ * quando a sessão não existe mais. É só texto de página: nunca autoriza nada,
+ * e só vale se for uma origem registrada.
+ */
+function parsePopupState(state: string): { sessionId: string; source?: string } {
+  const [sessionId, source] = state.substring(7).split(':');
+  return { sessionId, source: isPopupOAuthSource(source) ? source : undefined };
+}
 
 /**
  * Login com Google a partir das telas de OAuth (/oauth/authorize, /oauth/device).
@@ -90,14 +103,6 @@ function oauthReturnUrl(path: string, extra: Record<string, string>): string {
   const u = new URL(path, API_BASE_URL);
   for (const [k, v] of Object.entries(extra)) u.searchParams.set(k, v);
   return u.toString();
-}
-const PLUGIN_SESSION_TTL = 5 * 60 * 1000; // 5 minutes
-
-function cleanExpiredSessions() {
-  const now = Date.now();
-  for (const [id, session] of pluginOAuthSessions) {
-    if (now - session.createdAt > PLUGIN_SESSION_TTL) pluginOAuthSessions.delete(id);
-  }
 }
 
 const getEmailFromBody = (req: express.Request) =>
@@ -364,7 +369,7 @@ const uploadImageRateLimiter = rateLimit({
 });
 
 // Get Google OAuth URL
-router.get('/google', oauthRateLimiter, (req, res) => {
+router.get('/google', oauthRateLimiter, async (req, res) => {
   try {
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
       console.error('Missing Google OAuth credentials');
@@ -399,16 +404,14 @@ router.get('/google', oauthRateLimiter, (req, res) => {
     // O prefixo do state segue `plugin:` por compatibilidade com builds antigos.
     if (returnTo) {
       // Volta pra tela de OAuth que pediu o login (ver oauthReturnPath).
-      cleanExpiredSessions();
       sessionId = crypto.randomBytes(16).toString('hex');
-      pluginOAuthSessions.set(sessionId, { createdAt: Date.now(), returnTo });
+      await criarSessao(sessionId, { returnTo });
       state = `return:${sessionId}`;
       sessionId = undefined;
     } else if (isPopupOAuthSource(source)) {
-      cleanExpiredSessions();
       sessionId = crypto.randomBytes(16).toString('hex');
-      pluginOAuthSessions.set(sessionId, { createdAt: Date.now(), source });
-      state = `plugin:${sessionId}`;
+      await criarSessao(sessionId, { source });
+      state = `plugin:${sessionId}:${source}`;
     } else if (referralCode) {
       state = `ref:${referralCode}`;
     }
@@ -552,17 +555,19 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
 
     // Plugin OAuth: store token for polling and show success page
     if (typeof state === 'string' && (state as string).startsWith('plugin:')) {
-      const sessionId = (state as string).substring(7);
-      const session = pluginOAuthSessions.get(sessionId);
-      if (session) {
-        session.token = token;
+      const { sessionId, source } = parsePopupState(state as string);
+      const session = await atualizarSessao(sessionId, { token });
+      // Sem sessão o poll nunca recebe o token: dizer "Login concluído" seria
+      // mentir. Mostra o erro, com a origem que o state trouxe.
+      if (!session) {
+        console.warn('[OAUTH-POPUP] callback sem sessão (vencida ou inexistente)');
+        return res.send(renderPopupErrorPage(source));
       }
-      return res.send(renderPopupSuccessPage(session?.source));
+      return res.send(renderPopupSuccessPage(session.source ?? source));
     }
 
     if (typeof state === 'string' && state.startsWith('return:')) {
-      const session = pluginOAuthSessions.get(state.substring(7));
-      pluginOAuthSessions.delete(state.substring(7));
+      const session = await apagarSessao(state.substring(7));
       if (session?.returnTo) return res.redirect(oauthReturnUrl(session.returnTo, { token }));
     }
 
@@ -575,16 +580,14 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
       typeof (req.query.state as string) === 'string' &&
       (req.query.state as string).startsWith('plugin:')
     ) {
-      const sessionId = (req.query.state as string).substring(7);
-      const session = pluginOAuthSessions.get(sessionId);
-      if (session) session.error = 'oauth_failed';
-      return res.send(renderPopupErrorPage(session?.source));
+      const { sessionId, source } = parsePopupState(req.query.state as string);
+      const session = await atualizarSessao(sessionId, { error: 'oauth_failed' }).catch(() => null);
+      return res.send(renderPopupErrorPage(session?.source ?? source));
     }
 
     const failedState = req.query.state;
     if (typeof failedState === 'string' && failedState.startsWith('return:')) {
-      const session = pluginOAuthSessions.get(failedState.substring(7));
-      pluginOAuthSessions.delete(failedState.substring(7));
+      const session = await apagarSessao(failedState.substring(7)).catch(() => null);
       if (session?.returnTo) {
         return res.redirect(oauthReturnUrl(session.returnTo, { login_error: 'google' }));
       }
@@ -595,19 +598,14 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
 });
 
 // Poll for plugin OAuth result
-router.get('/google/poll/:sessionId', oauthRateLimiter, (req, res) => {
-  const session = pluginOAuthSessions.get(req.params.sessionId);
-  if (!session) return res.json({ status: 'expired' });
-  if (session.error) {
-    pluginOAuthSessions.delete(req.params.sessionId);
-    return res.json({ status: 'error', error: session.error });
+router.get('/google/poll/:sessionId', oauthRateLimiter, async (req, res) => {
+  try {
+    res.json(await entregarSessao(req.params.sessionId));
+  } catch (error: any) {
+    // Falha de banco não é "expirou": o cliente segue pollando.
+    console.error('[OAUTH-POPUP] poll falhou:', error?.message);
+    res.status(503).json({ status: 'pending' });
   }
-  if (session.token) {
-    const token = session.token;
-    pluginOAuthSessions.delete(req.params.sessionId);
-    return res.json({ status: 'complete', token });
-  }
-  res.json({ status: 'pending' });
 });
 
 // Google OAuth callback for linking account

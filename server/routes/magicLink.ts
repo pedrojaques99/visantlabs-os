@@ -47,14 +47,16 @@ router.post('/', pedidoRateLimiter, async (req, res) => {
     if (!parsed.success) {
       return res.status(400).json({ error: formatZodError(parsed.error) });
     }
-    const { email } = parsed.data;
+    const { email, next } = parsed.data;
 
     // Só conta que já existe. Link mágico é porta de entrada, não cadastro:
     // quem não tem conta entra pelo Google, que cria.
     const user = await prisma.user.findUnique({ where: { email } });
     if (user) {
       const token = await criarLinkMagico(user.id, user.email);
-      const loginUrl = `${CLUB_BASE_URL}/entrar/link?token=${token}`;
+      const loginUrl =
+        `${CLUB_BASE_URL}/entrar/link?token=${token}` +
+        (next ? `&next=${encodeURIComponent(next)}` : '');
       try {
         const { sendMagicLinkEmail, isEmailConfigured } =
           await import('../services/emailService.js');
