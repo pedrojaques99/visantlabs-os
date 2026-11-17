@@ -466,36 +466,52 @@ export const sendMagicLinkEmail = async (params: SendMagicLinkEmailParams): Prom
   }
 };
 
-// Compra que chega por fora (Hubla): o link já leva logado pra dentro do curso.
+// Compra que chega por fora (Hubla): o link já leva logado pra dentro do que
+// foi comprado (curso, e-book ou o Club). `onde` e `botao` mudam por produto;
+// o padrão é o do curso, que foi o primeiro a usar.
+export interface PurchaseAccessCopy {
+  abertura?: string; // "Tua compra entrou."
+  onde?: string; // "na primeira aula"
+  botao?: string; // "Abrir o curso"
+}
+
 const purchaseAccessMail = (
   userName: string,
   loginUrl: string,
   titulo: string,
-  horas: number
-): MailBody => ({
-  html: baseHtml(
-    `${titulo}: teu acesso`,
-    `<p style="${P}">Oi, <strong style="${STRONG}">${escapeHtml(userName)}</strong>. Tua compra entrou.</p>
-<p style="${P}">Clica no botão e você cai direto na primeira aula, já logado. O botão vale por ${horas} horas e funciona uma vez.</p>
-${button(loginUrl, 'Abrir o curso')}
+  horas: number,
+  copy: PurchaseAccessCopy = {}
+): MailBody => {
+  const abertura = copy.abertura || 'Tua compra entrou.';
+  const onde = copy.onde || 'na primeira aula';
+  const botao = copy.botao || 'Abrir o curso';
+  return {
+    html: baseHtml(
+      `${titulo}: teu acesso`,
+      `<p style="${P}">Oi, <strong style="${STRONG}">${escapeHtml(userName)}</strong>. ${escapeHtml(abertura)}</p>
+<p style="${P}">Clica no botão e você cai direto ${escapeHtml(onde)}, já logado. O botão vale por ${horas} horas e funciona uma vez.</p>
+${button(loginUrl, botao)}
 <p style="${SMALL}">Depois disso, entra em app.visant.club/entrar com este mesmo e-mail.</p>`,
-    `Teu acesso ao ${titulo} está pronto.`
-  ),
-  text: `Oi, ${userName}. Tua compra entrou.
+      `Teu acesso ao ${titulo} está pronto.`
+    ),
+    text: `Oi, ${userName}. ${abertura}
 
-Abra o link abaixo e você cai direto no curso, já logado. Ele vale por ${horas} horas e funciona uma vez.
+Abra o link abaixo e você cai direto ${onde}, já logado. Ele vale por ${horas} horas e funciona uma vez.
 ${loginUrl}
 
 Depois disso, entre em app.visant.club/entrar com este mesmo e-mail.`,
-});
+  };
+};
 
-export const sendPurchaseAccessEmail = async (params: {
-  email: string;
-  name?: string;
-  loginUrl: string;
-  titulo: string;
-  horas: number;
-}): Promise<void> => {
+export const sendPurchaseAccessEmail = async (
+  params: {
+    email: string;
+    name?: string;
+    loginUrl: string;
+    titulo: string;
+    horas: number;
+  } & PurchaseAccessCopy
+): Promise<void> => {
   const emailService = getEmailService();
   if (!emailService) throw new Error('Email service is not configured.');
   const userName = params.name || params.email.split('@')[0];
@@ -503,7 +519,7 @@ export const sendPurchaseAccessEmail = async (params: {
     from: RESEND_FROM_EMAIL,
     to: params.email,
     subject: `${params.titulo}: teu acesso`,
-    ...purchaseAccessMail(userName, params.loginUrl, params.titulo, params.horas),
+    ...purchaseAccessMail(userName, params.loginUrl, params.titulo, params.horas, params),
   });
 };
 

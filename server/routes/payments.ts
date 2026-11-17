@@ -1021,8 +1021,13 @@ router.post(
           // No active subscription found
           console.log('ℹ️ No active subscription found for customer:', customerId);
 
-          // Check if user has subscription status that should be updated
-          if (user.subscriptionStatus === 'active' || user.subscriptionStatus === 'trialing') {
+          // Check if user has subscription status that should be updated.
+          // Assinatura do Club pela Hubla não mora no Stripe: "sem assinatura
+          // no Stripe" não diz nada sobre ela (quem desliga é o member_removed).
+          if (
+            user.clubSource !== 'hubla' &&
+            (user.subscriptionStatus === 'active' || user.subscriptionStatus === 'trialing')
+          ) {
             // Update to canceled if no active subscription exists
             await db.collection('users').updateOne(
               { _id: new ObjectId(userId) },
@@ -1646,32 +1651,47 @@ router.get(
   }
 );
 
-// Hubla webhook (caixa do curso) → grantProduct/revokeProductGrant.
-// Lógica e contrato em services/hublaWebhook.ts.
+// Hubla webhook (caixa do curso, e-books e assinatura do Club) →
+// grantProduct/revokeProductGrant e tier do Club.
+// Lógica e contrato em services/hublaWebhook.ts e services/hublaClubService.ts.
 router.post('/hubla', webhookRateLimiter, async (req, res) => {
   const { handleHublaWebhook } = await import('../services/hublaWebhook.js');
   const { grantProduct, revokeProductGrant, ProductGrantRevokedError } =
     await import('../services/productGrantService.js');
+  const club = await import('../services/hublaClubService.js');
+  const clubDeps = async () => {
+    await connectToMongoDB();
+    return {
+      db: getDb(),
+      findOrCreateUser: (input: { email: string; name?: string }) => findOrCreateSubscriber(input),
+    };
+  };
   const result = await handleHublaWebhook(
     { headers: req.headers, body: req.body },
     {
       grantProduct,
       revokeProductGrant,
       isRevokedError: (err) => err instanceof ProductGrantRevokedError,
-      sendAccessLink: async ({ userId, email, name, sku }) => {
+      activateClub: async (input) => club.activateHublaClub(await clubDeps(), input),
+      deactivateClub: async (input) => club.deactivateHublaClub(await clubDeps(), input),
+      renewClubCredits: async (input) => club.renewHublaClubCredits(await clubDeps(), input),
+      sendAccessLink: async ({ userId, email, name, acesso }) => {
         const { criarLinkMagico } = await import('../services/magicLinkService.js');
         const { sendPurchaseAccessEmail, isEmailConfigured } =
           await import('../services/emailService.js');
         if (!isEmailConfigured()) throw new Error('email não configurado');
         const horas = 72;
         const token = await criarLinkMagico(userId, email, horas * 60);
-        const next = encodeURIComponent(`/curso/${sku}`);
+        const next = encodeURIComponent(acesso.caminho);
         await sendPurchaseAccessEmail({
           email,
           name,
           loginUrl: `${CLUB_BASE_URL}/entrar/link?token=${token}&next=${next}`,
-          titulo: 'IA para Designers',
+          titulo: acesso.titulo,
           horas,
+          abertura: acesso.abertura,
+          onde: acesso.onde,
+          botao: acesso.botao,
         });
       },
       log: (level, msg, data) => console[level](msg, data ?? {}),
