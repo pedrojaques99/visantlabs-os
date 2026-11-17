@@ -42,7 +42,10 @@ export function cspComFormAction(csp: string, redirectUri: string): string {
   } catch {
     return csp;
   }
-  const partes = csp.split(';').map((d) => d.trim()).filter(Boolean);
+  const partes = csp
+    .split(';')
+    .map((d) => d.trim())
+    .filter(Boolean);
   const i = partes.findIndex((d) => d.toLowerCase().startsWith('form-action'));
   if (i === -1) return csp; // sem form-action, o navegador não restringe: nada a liberar
   if (partes[i].split(/\s+/).includes(fonte)) return csp;
@@ -396,7 +399,8 @@ router.get('/oauth/authorize', async (req, res) => {
 
     if (!isOob) {
       const csp = res.getHeader('Content-Security-Policy');
-      if (typeof csp === 'string') res.setHeader('Content-Security-Policy', cspComFormAction(csp, redirect_uri));
+      if (typeof csp === 'string')
+        res.setHeader('Content-Security-Policy', cspComFormAction(csp, redirect_uri));
     }
 
     return res.send(

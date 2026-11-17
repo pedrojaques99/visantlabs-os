@@ -143,6 +143,40 @@ describe('handleHublaWebhook', () => {
     expect(r.status).toBe(500);
   });
 
+  it('na 1ª liberação manda o link direto pro curso', async () => {
+    const sendAccessLink = vi.fn(async () => {});
+    const d = deps({ sendAccessLink });
+    const r = await handleHublaWebhook(req(evento('customer.member_added')), d, TOKEN);
+    expect(r.body.emailed).toBe(true);
+    expect(sendAccessLink).toHaveBeenCalledWith({
+      userId: 'u1',
+      email: 'Aluno@Exemplo.com',
+      name: 'Ana Lima',
+      sku: 'ia-aplicada',
+    });
+  });
+
+  it('reenvio do mesmo evento (já liberado) não manda e-mail de novo', async () => {
+    const sendAccessLink = vi.fn(async () => {});
+    const d = deps({
+      sendAccessLink,
+      grantProduct: vi.fn(async () => ({ userId: 'u1', granted: false, created: false })),
+    });
+    await handleHublaWebhook(req(evento('customer.member_added')), d, TOKEN);
+    expect(sendAccessLink).not.toHaveBeenCalled();
+  });
+
+  it('e-mail falhando não derruba a liberação (200)', async () => {
+    const d = deps({
+      sendAccessLink: vi.fn(async () => {
+        throw new Error('resend fora');
+      }),
+    });
+    const r = await handleHublaWebhook(req(evento('customer.member_added')), d, TOKEN);
+    expect(r.status).toBe(200);
+    expect(r.body.emailed).toBe(false);
+  });
+
   it('não loga o e-mail do comprador', async () => {
     const d = deps();
     await handleHublaWebhook(req(evento('customer.member_added')), d, TOKEN);

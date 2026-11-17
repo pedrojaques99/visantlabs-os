@@ -33,6 +33,13 @@ export interface HublaDeps {
     sessionId: string;
   }) => Promise<{ revoked: boolean; already: boolean }>;
   isRevokedError: (err: unknown) => boolean;
+  /** E-mail com link de uso único que entra logado direto no curso. */
+  sendAccessLink?: (input: {
+    userId: string;
+    email: string;
+    name?: string;
+    sku: string;
+  }) => Promise<void>;
   log: (level: 'info' | 'warn' | 'error', msg: string, data?: Record<string, unknown>) => void;
 }
 
@@ -57,7 +64,10 @@ export function tokenMatches(received: string, configured: string | undefined): 
   const digest = (s: string) => createHash('sha256').update(s).digest();
   const got = digest(received);
   let ok = false;
-  for (const t of configured.split(',').map((s) => s.trim()).filter(Boolean)) {
+  for (const t of configured
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)) {
     if (timingSafeEqual(got, digest(t))) ok = true;
   }
   return ok;
@@ -129,7 +139,22 @@ export async function handleHublaWebhook(
       granted: r.granted,
       accountCreated: r.created,
     });
-    return { status: 200, body: { granted: r.granted, created: r.created } };
+    // Sem pedágio: na 1ª liberação manda o e-mail com o link que já entra
+    // logado no curso. Falha no e-mail não desfaz a compra (o /entrar cobre).
+    let emailed = false;
+    if (r.granted && deps.sendAccessLink) {
+      try {
+        await deps.sendAccessLink({ userId: r.userId, email, name, sku });
+        emailed = true;
+      } catch (e) {
+        deps.log('error', '[hubla] e-mail de acesso falhou', {
+          ...ctx,
+          sku,
+          error: e instanceof Error ? e.message : String(e),
+        });
+      }
+    }
+    return { status: 200, body: { granted: r.granted, created: r.created, emailed } };
   } catch (err) {
     if (deps.isRevokedError(err)) {
       // Compra já reembolsada (o "removido" chegou antes): não libera, e está certo.
