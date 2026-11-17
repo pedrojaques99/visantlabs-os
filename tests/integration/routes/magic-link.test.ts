@@ -1,5 +1,21 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { request } from '../../helpers/app.js';
+
+// Os casos de next disparam vários pedidos; o teto real (5) derrubaria a suíte.
+process.env.RATE_LIMIT_MAX_MAGIC_LINK = '1000';
+
+// Captura o link que iria no e-mail (o Resend não existe nos testes).
+const enviados = vi.hoisted(() => [] as Array<{ loginUrl: string }>);
+vi.mock('../../../server/services/emailService.js', async (original) => ({
+  ...(await original<object>()),
+  isEmailConfigured: () => true,
+  sendMagicLinkEmail: async (args: { loginUrl: string }) => {
+    enviados.push(args);
+  },
+}));
+beforeEach(() => {
+  enviados.length = 0;
+});
 
 /**
  * Link mágico: entrar pelo e-mail, sem senha.
@@ -44,6 +60,37 @@ describe('POST /api/auth/magic-link', () => {
     expect(doc?.tokenHash).toMatch(/^[a-f0-9]{64}$/);
     expect(doc?.usedAt).toBeNull();
   });
+});
+
+describe('POST /api/auth/magic-link com next', () => {
+  it('sem next, o link é o de sempre', async () => {
+    await contaSemSenha('sem-next@example.com');
+    await (await request())
+      .post('/api/auth/magic-link')
+      .send({ email: 'sem-next@example.com', app: 'club' });
+    expect(enviados).toHaveLength(1);
+    expect(enviados[0].loginUrl).toMatch(/\/entrar\/link\?token=[A-Za-z0-9_-]+$/);
+  });
+
+  it('com next relativo, o link leva o destino codificado', async () => {
+    await contaSemSenha('com-next@example.com');
+    const res = await (await request())
+      .post('/api/auth/magic-link')
+      .send({ email: 'com-next@example.com', app: 'club', next: '/curso/ia?aula=2&x=1' });
+    expect(res.status).toBe(200);
+    expect(enviados[0].loginUrl).toContain(`&next=${encodeURIComponent('/curso/ia?aula=2&x=1')}`);
+  });
+
+  it.each(['//evil.com', 'https://evil.com', '/\\evil.com', 'curso', '/' + 'a'.repeat(200)])(
+    'recusa next fora de caminho relativo: %s',
+    async (next) => {
+      const res = await (await request())
+        .post('/api/auth/magic-link')
+        .send({ email: 'x@example.com', app: 'club', next });
+      expect(res.status).toBe(400);
+      expect(enviados).toHaveLength(0);
+    }
+  );
 });
 
 describe('POST /api/auth/magic-link/verify', () => {

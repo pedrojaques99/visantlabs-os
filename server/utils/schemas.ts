@@ -85,6 +85,16 @@ export const forgotPasswordSchema = z.object({
 export const magicLinkRequestSchema = z.object({
   email: emailSchema,
   app: z.enum(['club']).optional(),
+  // Pra onde o Club leva depois de entrar. Só caminho relativo do próprio site:
+  // começa com `/`, não com `//` (host de outro), sem `\` (o navegador trata
+  // como `/`). O Club revalida do lado dele (`destinoSeguro`).
+  next: z
+    .string()
+    .max(200)
+    .refine((v) => v.startsWith('/') && !v.startsWith('//') && !v.includes('\\'), {
+      message: 'next must be a relative path',
+    })
+    .optional(),
 });
 
 /** Troca do link mágico por sessão. O token é base64url de 32 bytes (43 chars). */
