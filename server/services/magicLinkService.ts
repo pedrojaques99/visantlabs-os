@@ -40,7 +40,13 @@ async function colecao() {
 }
 
 /** Cria um link de uso único pra esta conta e devolve o token em claro. */
-export async function criarLinkMagico(userId: string, email: string): Promise<string> {
+// `ttlMin` maior só pro e-mail de compra (Hubla): boleto compensa em dias e a
+// pessoa abre o e-mail quando abre. Continua uso único.
+export async function criarLinkMagico(
+  userId: string,
+  email: string,
+  ttlMin: number = MAGIC_LINK_TTL_MIN
+): Promise<string> {
   const token = crypto.randomBytes(32).toString('base64url');
   const c = await colecao();
   const agora = Date.now();
@@ -49,7 +55,7 @@ export async function criarLinkMagico(userId: string, email: string): Promise<st
     userId,
     email,
     createdAt: new Date(agora),
-    expiresAt: new Date(agora + MAGIC_LINK_TTL_MIN * 60 * 1000),
+    expiresAt: new Date(agora + ttlMin * 60 * 1000),
     usedAt: null,
   });
   return token;

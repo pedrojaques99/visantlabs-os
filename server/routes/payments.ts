@@ -13,7 +13,7 @@ import { abacatepayService } from '../services/abacatepayService.js';
 import { prisma } from '../db/prisma.js';
 import { rateLimit } from 'express-rate-limit';
 import { validateSafeId } from '../utils/securityValidation.js';
-import { FRONTEND_BASE_URL } from '../lib/mcp-constants.js';
+import { FRONTEND_BASE_URL, CLUB_BASE_URL } from '../lib/mcp-constants.js';
 import { FREE_GENERATIONS_LIMIT, FREE_MONTHLY_CREDITS } from '../lib/credits.js';
 import { claimPaymentEvent, releasePaymentEvent } from '../lib/paymentIdempotency.js';
 import {
@@ -1645,6 +1645,41 @@ router.get(
     }
   }
 );
+
+// Hubla webhook (caixa do curso) → grantProduct/revokeProductGrant.
+// Lógica e contrato em services/hublaWebhook.ts.
+router.post('/hubla', webhookRateLimiter, async (req, res) => {
+  const { handleHublaWebhook } = await import('../services/hublaWebhook.js');
+  const { grantProduct, revokeProductGrant, ProductGrantRevokedError } =
+    await import('../services/productGrantService.js');
+  const result = await handleHublaWebhook(
+    { headers: req.headers, body: req.body },
+    {
+      grantProduct,
+      revokeProductGrant,
+      isRevokedError: (err) => err instanceof ProductGrantRevokedError,
+      sendAccessLink: async ({ userId, email, name, sku }) => {
+        const { criarLinkMagico } = await import('../services/magicLinkService.js');
+        const { sendPurchaseAccessEmail, isEmailConfigured } =
+          await import('../services/emailService.js');
+        if (!isEmailConfigured()) throw new Error('email não configurado');
+        const horas = 72;
+        const token = await criarLinkMagico(userId, email, horas * 60);
+        const next = encodeURIComponent(`/curso/${sku}`);
+        await sendPurchaseAccessEmail({
+          email,
+          name,
+          loginUrl: `${CLUB_BASE_URL}/entrar/link?token=${token}&next=${next}`,
+          titulo: 'IA para Designers',
+          horas,
+        });
+      },
+      log: (level, msg, data) => console[level](msg, data ?? {}),
+    }
+  );
+  res.status(result.status).json(result.body);
+});
+router.get('/hubla', (_req, res) => res.status(200).json({ ok: true }));
 
 // Stripe webhook handler
 router.post('/webhook', webhookRateLimiter, async (req, res) => {
