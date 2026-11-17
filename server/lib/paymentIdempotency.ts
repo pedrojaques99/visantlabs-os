@@ -11,6 +11,9 @@
 import type { Db } from 'mongodb';
 import { Sentry } from './sentry.js';
 
+/** `hubla` entra pela assinatura do Club (créditos por fatura). */
+export type PaymentProvider = 'abacatepay' | 'stripe' | 'hubla';
+
 const COLLECTION = 'processed_payment_events';
 
 let indexEnsured = false;
@@ -33,7 +36,7 @@ async function ensureIndex(db: Db): Promise<void> {
  */
 export async function claimPaymentEvent(
   db: Db,
-  provider: 'abacatepay' | 'stripe',
+  provider: PaymentProvider,
   eventId: string
 ): Promise<boolean> {
   await ensureIndex(db);
@@ -55,7 +58,7 @@ export async function claimPaymentEvent(
  */
 export async function releasePaymentEvent(
   db: Db,
-  provider: 'abacatepay' | 'stripe',
+  provider: PaymentProvider,
   eventId: string
 ): Promise<void> {
   try {
@@ -77,7 +80,7 @@ export async function releasePaymentEvent(
 /** Read-only: was this event already claimed? (used as a durable marker) */
 export async function isPaymentEventClaimed(
   db: Db,
-  provider: 'abacatepay' | 'stripe',
+  provider: PaymentProvider,
   eventId: string
 ): Promise<boolean> {
   const hit = await db
