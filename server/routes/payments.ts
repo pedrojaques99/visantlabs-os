@@ -1646,6 +1646,26 @@ router.get(
   }
 );
 
+// Hubla webhook (caixa do curso) → grantProduct/revokeProductGrant.
+// Lógica e contrato em services/hublaWebhook.ts.
+router.post('/hubla', webhookRateLimiter, async (req, res) => {
+  const { handleHublaWebhook } = await import('../services/hublaWebhook.js');
+  const { grantProduct, revokeProductGrant, ProductGrantRevokedError } = await import(
+    '../services/productGrantService.js'
+  );
+  const result = await handleHublaWebhook(
+    { headers: req.headers, body: req.body },
+    {
+      grantProduct,
+      revokeProductGrant,
+      isRevokedError: (err) => err instanceof ProductGrantRevokedError,
+      log: (level, msg, data) => console[level](msg, data ?? {}),
+    }
+  );
+  res.status(result.status).json(result.body);
+});
+router.get('/hubla', (_req, res) => res.status(200).json({ ok: true }));
+
 // Stripe webhook handler
 router.post('/webhook', webhookRateLimiter, async (req, res) => {
   const isDev = process.env.NODE_ENV !== 'production';
