@@ -179,6 +179,11 @@ const esc = (s: string) =>
 const icon = (C: typeof Eye, size = 16) =>
   renderToStaticMarkup(createElement(C, { size, 'aria-hidden': true, focusable: 'false' }));
 
+/* O logotipo da Visant (isótipo + wordmark), o mesmo da landing
+   (visantismo/assets/brand/logotipo.svg), em `currentColor`. Era o texto
+   "Visant Labs" solto no topo; o dono pediu o logo sempre (18/11/2026). */
+const LOGOTIPO = `<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2028 177" fill="currentColor">\n<g transform="translate(0 -6.3518) scale(0.14115)">\n<path d="M1709.48 45L0 670.702L936.065 1296.75L2649.67 670.702L1709.48 45ZM311.736 670.702L1324.83 283.648L2337.93 670.702L1323.8 1057.24L311.736 670.702Z"/>\n<path d="M1322.78 1057.61L1085.67 670.727L1322.78 283.674L1564 670.727L1322.78 1057.61Z"/>\n</g>\n<g transform="translate(464 28) scale(0.939904)">\n<path d="M0 3.12897H40.1172L127.661 98.9193L216.798 3.12897H256.915L143.213 125.049H112.163L0 3.12897ZM276.039 99.6329H391.994L391.829 28.545H276.039V3.12897H537.625V28.545H421.67V99.6329H537.625V125.049H276.039V99.6329ZM817.511 88.9835C817.181 105.177 814.708 128.178 760.852 128.178H616.65C568.675 128.178 556.804 113.741 556.804 83.9332H587.854C587.854 99.4134 593.075 103.64 625.333 103.64H752.115C780.691 103.64 786.626 101.005 786.626 90.5754C786.626 78.2242 769.041 76.4676 679.904 75.4246C597.746 74.3816 559.937 73.668 559.937 39.3591C559.937 13.3942 571.093 0 616.815 0H762.281C800.805 0 817.236 17.2368 817.016 44.2447H785.802C785.967 30.8505 779.152 24.7572 753.543 24.7572H625.553C596.262 24.7572 591.041 27.7215 591.041 37.328C591.041 49.1852 615.826 50.7222 693.752 51.6005C795.419 52.6435 818.445 52.4789 817.566 89.0384M892.909 104.519L873.18 125.049H836.745L952.206 3.12897H983.97L1100.64 125.049H1064.37L1044.15 104.519H892.909ZM961.054 26.6237L909.781 79.9259H1013.04L961.054 26.6237ZM1381.35 125.049H1352.06L1149.38 32.5523V125.049H1119.71V3.12897H1148.83L1351.67 96.0099V3.12897H1381.29V125.049H1381.35ZM1400.53 27.6667V3.12897H1662.11L1663.1 27.6667H1541.82V125.049H1512.2V27.6667H1400.53Z"/>\n</g>\n</svg>`;
+
 const ICON = {
   read: icon(Eye),
   write: icon(PencilSimple),
@@ -245,7 +250,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 .shell { width: 100%; max-width: 26rem; display: grid; gap: 1rem; }
-.mark { font-size: 0.875rem; font-weight: 500; color: var(--muted-foreground); padding-inline: 0.25rem; }
+.mark { color: var(--foreground); padding-inline: 0.25rem; line-height: 0; }
+.mark svg { height: 18px; width: auto; display: block; }
 .card {
   background: var(--card); border: 1px solid var(--border);
   border-radius: var(--r-surface); box-shadow: var(--e-modal);
@@ -349,7 +355,7 @@ function page(p: { lang: OAuthLang; title: string; body: string; script?: string
 </head>
 <body>
   <main class="shell">
-    <div class="mark">Visant Labs</div>
+    <div class="mark" role="img" aria-label="Visant">${LOGOTIPO}</div>
 ${p.body}
   </main>${p.script ? `\n  <script>${p.script}</script>` : ''}
 </body>
