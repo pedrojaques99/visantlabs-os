@@ -631,6 +631,10 @@ router.get(
          * está autenticado e só enxerga o próprio registro.
          */
         stripeCustomerId: user.stripeCustomerId ?? null,
+        /* De onde vem a cobrança do Club (18/11/2026). Quem assinou pela Hubla
+         * não tem customer no Stripe, e o Club mandava essa pessoa pro portal
+         * do Stripe, que não conhece o e-mail dela. `null` = Stripe ou manual. */
+        clubSource: (user as { clubSource?: string }).clubSource ?? null,
       });
     } catch (error) {
       next(error);
