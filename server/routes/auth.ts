@@ -604,7 +604,8 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
     ) {
       const { sessionId, source } = parsePopupState(req.query.state as string);
       const session = await atualizarSessao(sessionId, { error: 'oauth_failed' }).catch(() => null);
-      if ((session?.source ?? source) === 'club') return res.redirect(clubVolta({ erro: 'google' }));
+      if ((session?.source ?? source) === 'club')
+        return res.redirect(clubVolta({ erro: 'google' }));
       return res.send(renderPopupErrorPage(session?.source ?? source));
     }
 
