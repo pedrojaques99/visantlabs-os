@@ -68,6 +68,18 @@ const getFrontendUrl = () => FRONTEND_BASE_URL.replace(/\/+$/, '');
 // por processo sumia no deploy e não era vista pelas outras instâncias.
 
 /**
+ * A rota de volta do Club (`app/api/oauth/google/volta` no visant-club). Host
+ * fixo (CLUB_BASE_URL), nunca vindo da requisição: não tem como virar open
+ * redirect. Leva o sessionId (ou o erro), nunca o token.
+ */
+function clubVolta(q: { sessionId?: string; erro?: string }): string {
+  const u = new URL('/api/oauth/google/volta', CLUB_BASE_URL);
+  if (q.sessionId) u.searchParams.set('sessionId', q.sessionId);
+  if (q.erro) u.searchParams.set('erro', q.erro);
+  return u.toString();
+}
+
+/**
  * `state` do popup: `plugin:<sessionId>` ou `plugin:<sessionId>:<source>`.
  * O `source` viaja no state pra página de erro saber quem abriu o popup mesmo
  * quando a sessão não existe mais. É só texto de página: nunca autoriza nada,
@@ -563,6 +575,16 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
         console.warn('[OAUTH-POPUP] callback sem sessão (vencida ou inexistente)');
         return res.send(renderPopupErrorPage(source));
       }
+      /* O CLUB VOLTA SOZINHO (18/11/2026). No celular, a "janela" do login
+         era uma aba nova; a aba do Club ia pro fundo, o iOS congelava o poll
+         dela e a pessoa ficava presa aqui, lendo "volte para o Visant Club".
+         Agora o Club abre o Google na MESMA aba, e este callback devolve a aba
+         pra rota de volta do Club. O token NÃO viaja na URL: vai só o
+         sessionId, e o Club busca o token pelo poll de sempre, amarrado ao
+         cookie do navegador que começou o login (anti-takeover lá). */
+      if ((session.source ?? source) === 'club') {
+        return res.redirect(clubVolta({ sessionId }));
+      }
       return res.send(renderPopupSuccessPage(session.source ?? source));
     }
 
@@ -582,6 +604,8 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
     ) {
       const { sessionId, source } = parsePopupState(req.query.state as string);
       const session = await atualizarSessao(sessionId, { error: 'oauth_failed' }).catch(() => null);
+      if ((session?.source ?? source) === 'club')
+        return res.redirect(clubVolta({ erro: 'google' }));
       return res.send(renderPopupErrorPage(session?.source ?? source));
     }
 
