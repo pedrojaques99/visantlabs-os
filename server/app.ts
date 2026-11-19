@@ -20,6 +20,7 @@ import paymentRoutes from './routes/payments.js';
 import adminRoutes from './routes/admin.js';
 import adminAnalyticsRoutes from './routes/adminAnalytics.js';
 import adminClubRoutes from './routes/adminClub.js';
+import adminSuporteRoutes from './routes/adminSuporte.js';
 import brandingRoutes from './routes/branding.js';
 import feedbackRoutes from './routes/feedback.js';
 import canvasRoutes from './routes/canvas.js';
@@ -354,6 +355,7 @@ export function createApp() {
     ['/admin', adminRoutes],
     ['/admin', adminAnalyticsRoutes],
     ['/admin/club', adminClubRoutes],
+    ['/admin/suporte', adminSuporteRoutes],
     ['/branding', brandingRoutes],
     ['/feedback', feedbackRoutes],
     ['/canvas', canvasRoutes],

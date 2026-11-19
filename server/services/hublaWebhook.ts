@@ -20,6 +20,7 @@
 //   vez por id de fatura. member_added NÃO dispara na renovação (só quando a
 //   assinatura fica ativa ou é reativada), por isso a fatura.
 import { createHash, timingSafeEqual } from 'node:crypto';
+import { extrairComprador, type CompraHubla } from './hublaCompras.js';
 
 /** Produto da Hubla → SKU do Labs. Só produto listado aqui libera acesso. */
 export const HUBLA_PRODUCT_SKUS: Record<string, string> = {
@@ -116,6 +117,8 @@ export interface HublaDeps {
     name?: string;
     acesso: Acesso;
   }) => Promise<void>;
+  /** Guarda a compra inteira (hubla_compras): o suporte acha a pessoa por e-mail, nome, telefone ou id. Opcional; falha não desfaz nada. */
+  recordPurchase?: (c: Omit<CompraHubla, 'createdAt' | 'updatedAt'>) => Promise<void>;
   log: (level: 'info' | 'warn' | 'error', msg: string, data?: Record<string, unknown>) => void;
 }
 
@@ -220,10 +223,33 @@ export async function handleHublaWebhook(
     }
   };
 
+  const comprador = extrairComprador(event);
+  const registrar = async (status: 'ativa' | 'removida', userId?: string) => {
+    if (!deps.recordPurchase) return;
+    try {
+      await deps.recordPurchase({
+        ...comprador,
+        email: comprador.email || email.toLowerCase().trim(),
+        subscriptionId,
+        productId,
+        alvo,
+        status,
+        userId,
+        invoiceId: event.invoice?.id || event.subscription?.lastInvoice?.id || undefined,
+      });
+    } catch (e) {
+      deps.log('error', '[hubla] registro da compra falhou', {
+        ...ctx,
+        error: e instanceof Error ? e.message : String(e),
+      });
+    }
+  };
+
   const handleProduct = async (productSku: string): Promise<HublaResponse> => {
     const sessionId = `hubla:${subscriptionId}`;
     if (type === 'customer.member_removed') {
       const r = await deps.revokeProductGrant({ sessionId });
+      await registrar('removida');
       deps.log('info', '[hubla] acesso removido', { ...ctx, sku: productSku, ...r });
       return { status: 200, body: { revoked: r.revoked, already: r.already } };
     }
@@ -239,6 +265,7 @@ export async function handleHublaWebhook(
       granted: r.granted,
       accountCreated: r.created,
     });
+    await registrar('ativa', r.userId);
     const acesso = HUBLA_ACESSO[productSku];
     const emailed = r.granted && acesso ? await avisar(r.userId, acesso) : false;
     return { status: 200, body: { granted: r.granted, created: r.created, emailed } };
@@ -247,6 +274,7 @@ export async function handleHublaWebhook(
   const handleClub = async (): Promise<HublaResponse> => {
     if (type === 'customer.member_removed') {
       const r = await deps.deactivateClub({ subscriptionId });
+      await registrar('removida', r.userId);
       deps.log('info', '[hubla] club desativado', { ...ctx, ...r });
       return { status: 200, body: { deactivated: r.deactivated } };
     }
@@ -281,6 +309,7 @@ export async function handleHublaWebhook(
       subscriptionId,
       invoiceId: event.subscription?.lastInvoice?.id || undefined,
     });
+    await registrar('ativa', r.userId);
     if (r.skipped) {
       // Já paga por outro caminho: não mexe; quem lê o log decide (reembolso).
       deps.log('warn', '[hubla] club NÃO ativado: conta já tem assinatura', { ...ctx, ...r });
