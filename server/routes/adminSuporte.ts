@@ -22,7 +22,12 @@ import { AuthRequest } from '../middleware/auth.js';
 import { isSafeId, ensureString } from '../utils/validation.js';
 import { CLUB_BASE_URL } from '../lib/mcp-constants.js';
 import { toEntitlements } from '../lib/entitlements.js';
-import { buscarCompras, transferirCompra, auditar, TransferenciaError } from '../services/hublaCompras.js';
+import {
+  buscarCompras,
+  transferirCompra,
+  auditar,
+  TransferenciaError,
+} from '../services/hublaCompras.js';
 import { HUBLA_ACESSO } from '../services/hublaWebhook.js';
 
 const router = express.Router();
@@ -59,7 +64,12 @@ function contaPublica(u: any) {
     status: u.subscriptionStatus,
     clubSource: ext.clubSource ?? null,
     hublaSubscriptionId: ext.hublaSubscriptionId ?? null,
-    entitlements: toEntitlements(ext.entitlements).map((e) => ({ sku: e.sku, source: e.source, sessionId: e.sessionId, grantedAt: e.grantedAt })),
+    entitlements: toEntitlements(ext.entitlements).map((e) => ({
+      sku: e.sku,
+      source: e.source,
+      sessionId: e.sessionId,
+      grantedAt: e.grantedAt,
+    })),
     createdAt: u.createdAt,
   };
 }
@@ -81,7 +91,9 @@ router.get('/busca', async (req: AuthRequest, res: Response) => {
     const db = getDb();
     const compras = await buscarCompras(db, q);
     // As contas que batem com o termo E as contas onde as compras achadas estão.
-    const idsDasCompras = compras.map((c) => c.userId).filter((id): id is string => !!id && isSafeId(id));
+    const idsDasCompras = compras
+      .map((c) => c.userId)
+      .filter((id): id is string => !!id && isSafeId(id));
     const emailsDasCompras = compras.map((c) => c.email).filter(Boolean);
     const contas = await prisma.user.findMany({
       where: {
@@ -120,17 +132,32 @@ router.post('/transferir', async (req: AuthRequest, res: Response) => {
   const subscriptionId = texto(req.body?.subscriptionId, 100);
   const para = texto(req.body?.para, 200);
   const motivo = texto(req.body?.motivo, 500);
-  if (!subscriptionId || !para || !motivo) return res.status(400).json({ error: 'Compra, destino e motivo são obrigatórios' });
+  if (!subscriptionId || !para || !motivo)
+    return res.status(400).json({ error: 'Compra, destino e motivo são obrigatórios' });
   try {
     const destino = await acharConta(para);
-    if (!destino) return res.status(404).json({ error: 'Não achei a conta de destino. A pessoa precisa entrar no Club uma vez com esse e-mail.' });
+    if (!destino)
+      return res
+        .status(404)
+        .json({
+          error:
+            'Não achei a conta de destino. A pessoa precisa entrar no Club uma vez com esse e-mail.',
+        });
     await connectToMongoDB();
     const db = getDb();
     const t = await transferirCompra(db, subscriptionId, destino.id);
-    await auditar(db, { acao: 'transferir', actorId: req.userId ?? null, actorEmail: req.userEmail ?? null, ...t, paraEmail: destino.email, motivo });
+    await auditar(db, {
+      acao: 'transferir',
+      actorId: req.userId ?? null,
+      actorEmail: req.userEmail ?? null,
+      ...t,
+      paraEmail: destino.email,
+      motivo,
+    });
     return res.json({ ok: true, ...t, paraEmail: destino.email });
   } catch (e) {
-    if (e instanceof TransferenciaError) return res.status(409).json({ error: e.message, code: e.code });
+    if (e instanceof TransferenciaError)
+      return res.status(409).json({ error: e.message, code: e.code });
     console.error('suporte/transferir falhou:', e);
     return res.status(500).json({ error: 'Falha ao transferir' });
   }
@@ -141,12 +168,27 @@ router.post('/liberar', async (req: AuthRequest, res: Response) => {
   const email = texto(req.body?.email, 200).toLowerCase();
   const sku = texto(req.body?.sku, 80);
   const motivo = texto(req.body?.motivo, 500);
-  if (!EMAIL_RE.test(email) || !sku || !motivo) return res.status(400).json({ error: 'E-mail, produto e motivo são obrigatórios' });
+  if (!EMAIL_RE.test(email) || !sku || !motivo)
+    return res.status(400).json({ error: 'E-mail, produto e motivo são obrigatórios' });
   try {
     const { grantProduct } = await import('../services/productGrantService.js');
-    const r = await grantProduct({ email, sku, sessionId: `manual:${randomUUID()}`, source: 'manual' });
+    const r = await grantProduct({
+      email,
+      sku,
+      sessionId: `manual:${randomUUID()}`,
+      source: 'manual',
+    });
     await connectToMongoDB();
-    await auditar(getDb(), { acao: 'liberar', actorId: req.userId ?? null, actorEmail: req.userEmail ?? null, email, sku, userId: r.userId, criouConta: r.created, motivo });
+    await auditar(getDb(), {
+      acao: 'liberar',
+      actorId: req.userId ?? null,
+      actorEmail: req.userEmail ?? null,
+      email,
+      sku,
+      userId: r.userId,
+      criouConta: r.created,
+      motivo,
+    });
     return res.json({ ok: true, userId: r.userId, granted: r.granted, created: r.created });
   } catch (e) {
     console.error('suporte/liberar falhou:', e);
@@ -163,9 +205,17 @@ router.post('/reenviar-acesso', async (req: AuthRequest, res: Response) => {
     const u = await prisma.user.findUnique({ where: { id: userId } });
     if (!u) return res.status(404).json({ error: 'Conta não existe' });
     const { criarLinkMagico } = await import('../services/magicLinkService.js');
-    const { sendPurchaseAccessEmail, isEmailConfigured } = await import('../services/emailService.js');
-    if (!isEmailConfigured()) return res.status(503).json({ error: 'E-mail da Labs não configurado' });
-    const acesso = HUBLA_ACESSO[sku] ?? { titulo: 'Visant Club', caminho: '/dashboard', abertura: 'Teu acesso está aqui.', onde: 'no Club', botao: 'Entrar no Club' };
+    const { sendPurchaseAccessEmail, isEmailConfigured } =
+      await import('../services/emailService.js');
+    if (!isEmailConfigured())
+      return res.status(503).json({ error: 'E-mail da Labs não configurado' });
+    const acesso = HUBLA_ACESSO[sku] ?? {
+      titulo: 'Visant Club',
+      caminho: '/dashboard',
+      abertura: 'Teu acesso está aqui.',
+      onde: 'no Club',
+      botao: 'Entrar no Club',
+    };
     const horas = 72;
     const token = await criarLinkMagico(u.id, u.email, horas * 60);
     await sendPurchaseAccessEmail({
@@ -179,7 +229,14 @@ router.post('/reenviar-acesso', async (req: AuthRequest, res: Response) => {
       botao: acesso.botao,
     });
     await connectToMongoDB();
-    await auditar(getDb(), { acao: 'reenviar-acesso', actorId: req.userId ?? null, actorEmail: req.userEmail ?? null, userId, email: u.email, sku: sku || null });
+    await auditar(getDb(), {
+      acao: 'reenviar-acesso',
+      actorId: req.userId ?? null,
+      actorEmail: req.userEmail ?? null,
+      userId,
+      email: u.email,
+      sku: sku || null,
+    });
     return res.json({ ok: true, email: u.email });
   } catch (e) {
     console.error('suporte/reenviar-acesso falhou:', e);
@@ -192,18 +249,37 @@ router.put('/email', async (req: AuthRequest, res: Response) => {
   const userId = texto(req.body?.userId, 64);
   const novoEmail = texto(req.body?.novoEmail, 200).toLowerCase();
   const motivo = texto(req.body?.motivo, 500);
-  if (!isSafeId(userId) || !EMAIL_RE.test(novoEmail) || !motivo) return res.status(400).json({ error: 'Conta, e-mail novo e motivo são obrigatórios' });
+  if (!isSafeId(userId) || !EMAIL_RE.test(novoEmail) || !motivo)
+    return res.status(400).json({ error: 'Conta, e-mail novo e motivo são obrigatórios' });
   try {
     const u = await prisma.user.findUnique({ where: { id: userId } });
     if (!u) return res.status(404).json({ error: 'Conta não existe' });
     const ocupado = await prisma.user.findUnique({ where: { email: novoEmail } });
     if (ocupado && ocupado.id !== userId) {
-      return res.status(409).json({ error: 'Já existe outra conta com esse e-mail. Transfira a compra pra ela em vez de trocar.', code: 'email-ocupado', contaId: ocupado.id });
+      return res
+        .status(409)
+        .json({
+          error:
+            'Já existe outra conta com esse e-mail. Transfira a compra pra ela em vez de trocar.',
+          code: 'email-ocupado',
+          contaId: ocupado.id,
+        });
     }
     // Sem e-mail verificado: o próximo link mágico prova a posse do endereço novo.
-    await prisma.user.update({ where: { id: userId }, data: { email: novoEmail, emailVerified: false } as any });
+    await prisma.user.update({
+      where: { id: userId },
+      data: { email: novoEmail, emailVerified: false } as any,
+    });
     await connectToMongoDB();
-    await auditar(getDb(), { acao: 'trocar-email', actorId: req.userId ?? null, actorEmail: req.userEmail ?? null, userId, de: u.email, para: novoEmail, motivo });
+    await auditar(getDb(), {
+      acao: 'trocar-email',
+      actorId: req.userId ?? null,
+      actorEmail: req.userEmail ?? null,
+      userId,
+      de: u.email,
+      para: novoEmail,
+      motivo,
+    });
     return res.json({ ok: true, de: u.email, para: novoEmail });
   } catch (e) {
     console.error('suporte/email falhou:', e);

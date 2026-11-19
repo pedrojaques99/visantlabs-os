@@ -39,16 +39,29 @@ export interface CompraHubla extends Comprador {
   updatedAt: Date;
 }
 
-const soDigitos = (s: unknown) => (typeof s === 'string' || typeof s === 'number' ? String(s) : '').replace(/\D/g, '');
+const soDigitos = (s: unknown) =>
+  (typeof s === 'string' || typeof s === 'number' ? String(s) : '').replace(/\D/g, '');
 
 /** O que dá pra tirar do payload da Hubla sobre quem comprou. Campos defensivos: o payload varia por evento. */
 export function extrairComprador(event: any): Comprador {
   const u = event?.user || {};
   const payer = event?.subscription?.payer || event?.invoice?.payer || {};
-  const email = String(u.email || payer.email || '').toLowerCase().trim();
-  const nome = [u.firstName || payer.firstName, u.lastName || payer.lastName].filter(Boolean).join(' ').trim() || u.name || payer.name || undefined;
-  const telefone = soDigitos(u.phone || u.phoneNumber || payer.phone || payer.phoneNumber) || undefined;
-  const doc = soDigitos(u.document || u.cpf || u.documentNumber || payer.document || payer.cpf || payer.documentNumber);
+  const email = String(u.email || payer.email || '')
+    .toLowerCase()
+    .trim();
+  const nome =
+    [u.firstName || payer.firstName, u.lastName || payer.lastName]
+      .filter(Boolean)
+      .join(' ')
+      .trim() ||
+    u.name ||
+    payer.name ||
+    undefined;
+  const telefone =
+    soDigitos(u.phone || u.phoneNumber || payer.phone || payer.phoneNumber) || undefined;
+  const doc = soDigitos(
+    u.document || u.cpf || u.documentNumber || payer.document || payer.cpf || payer.documentNumber
+  );
   return { email, nome, telefone, cpf4: doc.length >= 4 ? doc.slice(-4) : undefined };
 }
 
@@ -63,7 +76,11 @@ export async function registrarCompra(
   for (const [k, v] of Object.entries(resto)) if (v !== undefined && v !== '') set[k] = v;
   await db
     .collection(COLECAO_COMPRAS)
-    .updateOne({ subscriptionId }, { $set: set, $setOnInsert: { createdAt: now } }, { upsert: true });
+    .updateOne(
+      { subscriptionId },
+      { $set: set, $setOnInsert: { createdAt: now } },
+      { upsert: true }
+    );
 }
 
 const escapar = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -74,7 +91,12 @@ export async function buscarCompras(db: Db, q: string, limite = 30): Promise<Com
   if (termo.length < 3) return [];
   const re = new RegExp(escapar(termo), 'i');
   const digitos = soDigitos(termo);
-  const ou: Record<string, unknown>[] = [{ email: re }, { nome: re }, { subscriptionId: termo }, { invoiceId: termo }];
+  const ou: Record<string, unknown>[] = [
+    { email: re },
+    { nome: re },
+    { subscriptionId: termo },
+    { invoiceId: termo },
+  ];
   if (digitos.length >= 8) ou.push({ telefone: new RegExp(escapar(digitos.slice(-8)) + '$') });
   if (digitos.length === 4) ou.push({ cpf4: digitos });
   return (await db
@@ -90,7 +112,14 @@ function filtroUsuario(id: string) {
 }
 
 export class TransferenciaError extends Error {
-  constructor(public readonly code: 'sem-compra' | 'mesma-conta' | 'destino-inexistente' | 'destino-com-assinatura', msg: string) {
+  constructor(
+    public readonly code:
+      | 'sem-compra'
+      | 'mesma-conta'
+      | 'destino-inexistente'
+      | 'destino-com-assinatura',
+    msg: string
+  ) {
     super(msg);
     this.name = 'TransferenciaError';
   }
@@ -109,7 +138,11 @@ export interface Transferencia {
  * - Club: leva tier/status/créditos/`hublaSubscriptionId` pro destino e zera a origem.
  * Recusa destino que já assina por outro caminho (mesma regra do activateHublaClub).
  */
-export async function transferirCompra(db: Db, subscriptionId: string, paraUserId: string): Promise<Transferencia> {
+export async function transferirCompra(
+  db: Db,
+  subscriptionId: string,
+  paraUserId: string
+): Promise<Transferencia> {
   const users = db.collection('users');
   const destino: any = await users.findOne(filtroUsuario(paraUserId));
   if (!destino) throw new TransferenciaError('destino-inexistente', 'Conta de destino não existe');
@@ -118,42 +151,90 @@ export async function transferirCompra(db: Db, subscriptionId: string, paraUserI
   const origemProduto: any = await users.findOne({ 'entitlements.sessionId': sessionId });
   if (origemProduto) {
     const deUserId = String(origemProduto._id);
-    if (deUserId === String(destino._id)) throw new TransferenciaError('mesma-conta', 'A compra já está nessa conta');
+    if (deUserId === String(destino._id))
+      throw new TransferenciaError('mesma-conta', 'A compra já está nessa conta');
     const ent = (origemProduto.entitlements as any[]).find((e) => e?.sessionId === sessionId);
     // Destino primeiro: se cair no meio, a pessoa fica com acesso nas duas, nunca em nenhuma.
-    await users.updateOne({ _id: destino._id }, { $push: { entitlements: { ...ent, transferidoDe: deUserId, transferidoEm: new Date() } } as any });
-    await users.updateOne({ _id: origemProduto._id }, { $pull: { entitlements: { sessionId } } as any });
-    await db.collection(COLECAO_COMPRAS).updateOne({ subscriptionId }, { $set: { userId: String(destino._id), updatedAt: new Date() } });
+    await users.updateOne(
+      { _id: destino._id },
+      {
+        $push: {
+          entitlements: { ...ent, transferidoDe: deUserId, transferidoEm: new Date() },
+        } as any,
+      }
+    );
+    await users.updateOne(
+      { _id: origemProduto._id },
+      { $pull: { entitlements: { sessionId } } as any }
+    );
+    await db
+      .collection(COLECAO_COMPRAS)
+      .updateOne(
+        { subscriptionId },
+        { $set: { userId: String(destino._id), updatedAt: new Date() } }
+      );
     return { subscriptionId, alvo: ent?.sku ?? '?', deUserId, paraUserId: String(destino._id) };
   }
 
-  const origemClub: any = await users.findOne({ hublaSubscriptionId: subscriptionId, clubSource: 'hubla' });
-  if (!origemClub) throw new TransferenciaError('sem-compra', 'Não achei essa compra em nenhuma conta');
+  const origemClub: any = await users.findOne({
+    hublaSubscriptionId: subscriptionId,
+    clubSource: 'hubla',
+  });
+  if (!origemClub)
+    throw new TransferenciaError('sem-compra', 'Não achei essa compra em nenhuma conta');
   const deUserId = String(origemClub._id);
-  if (deUserId === String(destino._id)) throw new TransferenciaError('mesma-conta', 'A compra já está nessa conta');
+  if (deUserId === String(destino._id))
+    throw new TransferenciaError('mesma-conta', 'A compra já está nessa conta');
   const ativo = String(destino.subscriptionStatus || '').toLowerCase() === 'active';
   const tierDestino = String(destino.subscriptionTier || 'free').toLowerCase();
   if (ativo && tierDestino !== 'free') {
-    throw new TransferenciaError('destino-com-assinatura', 'A conta de destino já tem uma assinatura ativa');
+    throw new TransferenciaError(
+      'destino-com-assinatura',
+      'A conta de destino já tem uma assinatura ativa'
+    );
   }
-  const campos = ['subscriptionTier', 'subscriptionStatus', 'clubSource', 'hublaSubscriptionId', 'monthlyCredits', 'creditsUsed', 'creditsResetDate'];
+  const campos = [
+    'subscriptionTier',
+    'subscriptionStatus',
+    'clubSource',
+    'hublaSubscriptionId',
+    'monthlyCredits',
+    'creditsUsed',
+    'creditsResetDate',
+  ];
   const set: Record<string, unknown> = {};
   for (const k of campos) if (origemClub[k] !== undefined) set[k] = origemClub[k];
   await users.updateOne({ _id: destino._id }, { $set: set });
   await users.updateOne(
     { _id: origemClub._id },
-    { $set: { subscriptionTier: 'free', subscriptionStatus: 'free' }, $unset: { clubSource: '', hublaSubscriptionId: '' } }
+    {
+      $set: { subscriptionTier: 'free', subscriptionStatus: 'free' },
+      $unset: { clubSource: '', hublaSubscriptionId: '' },
+    }
   );
-  await db.collection(COLECAO_COMPRAS).updateOne({ subscriptionId }, { $set: { userId: String(destino._id), updatedAt: new Date() } });
+  await db
+    .collection(COLECAO_COMPRAS)
+    .updateOne(
+      { subscriptionId },
+      { $set: { userId: String(destino._id), updatedAt: new Date() } }
+    );
   return { subscriptionId, alvo: 'club', deUserId, paraUserId: String(destino._id) };
 }
 
 /** Toda compra da Hubla que hoje está na conta `userId` (pelo entitlement ou pela assinatura). */
 export async function comprasDaConta(db: Db, userId: string): Promise<string[]> {
-  const u: any = await db.collection('users').findOne(filtroUsuario(userId), { projection: { entitlements: 1, hublaSubscriptionId: 1, clubSource: 1 } });
+  const u: any = await db
+    .collection('users')
+    .findOne(filtroUsuario(userId), {
+      projection: { entitlements: 1, hublaSubscriptionId: 1, clubSource: 1 },
+    });
   if (!u) return [];
   const ids = (Array.isArray(u.entitlements) ? u.entitlements : [])
-    .map((e: any) => (typeof e?.sessionId === 'string' && e.sessionId.startsWith('hubla:') ? e.sessionId.slice(6) : null))
+    .map((e: any) =>
+      typeof e?.sessionId === 'string' && e.sessionId.startsWith('hubla:')
+        ? e.sessionId.slice(6)
+        : null
+    )
     .filter(Boolean) as string[];
   if (u.clubSource === 'hubla' && u.hublaSubscriptionId) ids.push(u.hublaSubscriptionId);
   return ids;
