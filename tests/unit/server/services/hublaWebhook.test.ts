@@ -559,3 +559,21 @@ describe('hublaClubService', () => {
     expect(cols.users[0]).toEqual(stripe);
   });
 });
+
+describe('registro da compra (hubla_compras)', () => {
+  it('grava a compra com o comprador e a conta, no concedido e no removido', async () => {
+    const recordPurchase = vi.fn(async () => {});
+    const d = deps({ recordPurchase });
+    await handleHublaWebhook(req(evento('customer.member_added', { user: { email: 'Ana@X.com', firstName: 'Ana', phone: '11 98888-7777', document: '12345678909' } })), d, TOKEN);
+    expect(recordPurchase).toHaveBeenCalledWith(expect.objectContaining({ subscriptionId: 'sub-123', alvo: 'ia-aplicada', status: 'ativa', userId: 'u1', email: 'ana@x.com', telefone: '11988887777', cpf4: '8909' }));
+    await handleHublaWebhook(req(evento('customer.member_removed')), d, TOKEN);
+    expect(recordPurchase).toHaveBeenLastCalledWith(expect.objectContaining({ subscriptionId: 'sub-123', status: 'removida' }));
+  });
+
+  it('falha no registro não desfaz a liberação', async () => {
+    const d = deps({ recordPurchase: vi.fn(async () => { throw new Error('mongo fora'); }) });
+    const r = await handleHublaWebhook(req(evento('customer.member_added')), d, TOKEN);
+    expect(r.status).toBe(200);
+    expect(r.body.granted).toBe(true);
+  });
+});

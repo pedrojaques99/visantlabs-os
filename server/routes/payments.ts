@@ -1698,6 +1698,11 @@ router.post('/hubla', webhookRateLimiter, async (req, res) => {
           botao: acesso.botao,
         });
       },
+      recordPurchase: async (c) => {
+        const { registrarCompra } = await import('../services/hublaCompras.js');
+        await connectToMongoDB();
+        await registrarCompra(getDb(), c);
+      },
       log: (level, msg, data) => console[level](msg, data ?? {}),
     }
   );
