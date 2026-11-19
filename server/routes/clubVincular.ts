@@ -29,6 +29,15 @@ const limitePedido = rateLimit({
   message: { error: 'Muitos pedidos. Tenta de novo em alguns minutos.', code: 'limite' },
 });
 
+// Antes do authenticate (que vai ao banco): freio por IP, o mesmo padrão do CodeQL.
+const limiteIp = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Muitas tentativas. Tenta de novo em alguns minutos.', code: 'limite' },
+});
+
 const limiteConfirmar = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 30,
@@ -44,29 +53,35 @@ function responderErro(res: Response, e: unknown, onde: string) {
   return res.status(500).json({ error: 'Algo falhou do nosso lado. Tenta de novo.' });
 }
 
-router.post('/pedir', authenticate, limitePedido, async (req: AuthRequest, res: Response) => {
-  try {
-    const { isEmailConfigured, sendPurchaseLinkConfirmEmail } =
-      await import('../services/emailService.js');
-    // Antes de olhar o banco: 503 depois da busca contaria quem tem compra.
-    if (!isEmailConfigured())
-      return res.status(503).json({ error: 'E-mail da Labs não configurado', code: 'sem-email' });
-    await connectToMongoDB();
-    await pedirVinculo(getDb(), req.userId!, req.body?.email, {
-      enviarEmail: ({ email, name, paraEmail, token }) =>
-        sendPurchaseLinkConfirmEmail({
-          email,
-          name,
-          paraEmail,
-          confirmUrl: `${CLUB_BASE_URL}/vincular?token=${encodeURIComponent(token)}`,
-          horas: VALIDADE_HORAS,
-        }),
-    });
-    return res.json({ ok: true });
-  } catch (e) {
-    return responderErro(res, e, 'pedir');
+router.post(
+  '/pedir',
+  limiteIp,
+  authenticate,
+  limitePedido,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { isEmailConfigured, sendPurchaseLinkConfirmEmail } =
+        await import('../services/emailService.js');
+      // Antes de olhar o banco: 503 depois da busca contaria quem tem compra.
+      if (!isEmailConfigured())
+        return res.status(503).json({ error: 'E-mail da Labs não configurado', code: 'sem-email' });
+      await connectToMongoDB();
+      await pedirVinculo(getDb(), req.userId!, req.body?.email, {
+        enviarEmail: ({ email, name, paraEmail, token }) =>
+          sendPurchaseLinkConfirmEmail({
+            email,
+            name,
+            paraEmail,
+            confirmUrl: `${CLUB_BASE_URL}/vincular?token=${encodeURIComponent(token)}`,
+            horas: VALIDADE_HORAS,
+          }),
+      });
+      return res.json({ ok: true });
+    } catch (e) {
+      return responderErro(res, e, 'pedir');
+    }
   }
-});
+);
 
 router.post('/confirmar', limiteConfirmar, async (req: AuthRequest, res: Response) => {
   try {
