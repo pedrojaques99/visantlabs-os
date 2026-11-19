@@ -137,12 +137,10 @@ router.post('/transferir', async (req: AuthRequest, res: Response) => {
   try {
     const destino = await acharConta(para);
     if (!destino)
-      return res
-        .status(404)
-        .json({
-          error:
-            'Não achei a conta de destino. A pessoa precisa entrar no Club uma vez com esse e-mail.',
-        });
+      return res.status(404).json({
+        error:
+          'Não achei a conta de destino. A pessoa precisa entrar no Club uma vez com esse e-mail.',
+      });
     await connectToMongoDB();
     const db = getDb();
     const t = await transferirCompra(db, subscriptionId, destino.id);
@@ -256,14 +254,12 @@ router.put('/email', async (req: AuthRequest, res: Response) => {
     if (!u) return res.status(404).json({ error: 'Conta não existe' });
     const ocupado = await prisma.user.findUnique({ where: { email: novoEmail } });
     if (ocupado && ocupado.id !== userId) {
-      return res
-        .status(409)
-        .json({
-          error:
-            'Já existe outra conta com esse e-mail. Transfira a compra pra ela em vez de trocar.',
-          code: 'email-ocupado',
-          contaId: ocupado.id,
-        });
+      return res.status(409).json({
+        error:
+          'Já existe outra conta com esse e-mail. Transfira a compra pra ela em vez de trocar.',
+        code: 'email-ocupado',
+        contaId: ocupado.id,
+      });
     }
     // Sem e-mail verificado: o próximo link mágico prova a posse do endereço novo.
     await prisma.user.update({

@@ -223,11 +223,9 @@ export async function transferirCompra(
 
 /** Toda compra da Hubla que hoje está na conta `userId` (pelo entitlement ou pela assinatura). */
 export async function comprasDaConta(db: Db, userId: string): Promise<string[]> {
-  const u: any = await db
-    .collection('users')
-    .findOne(filtroUsuario(userId), {
-      projection: { entitlements: 1, hublaSubscriptionId: 1, clubSource: 1 },
-    });
+  const u: any = await db.collection('users').findOne(filtroUsuario(userId), {
+    projection: { entitlements: 1, hublaSubscriptionId: 1, clubSource: 1 },
+  });
   if (!u) return [];
   const ids = (Array.isArray(u.entitlements) ? u.entitlements : [])
     .map((e: any) =>
