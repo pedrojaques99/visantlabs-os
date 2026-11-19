@@ -523,6 +523,54 @@ export const sendPurchaseAccessEmail = async (
   });
 };
 
+// Autoatendimento do Club (routes/clubVincular.ts): a pessoa pagou com este
+// e-mail e entrou no Club com outro. O link prova que quem pediu manda nesta
+// caixa de entrada; sem o clique, nada muda.
+const purchaseLinkConfirmMail = (
+  userName: string,
+  paraEmail: string,
+  confirmUrl: string,
+  horas: number
+): MailBody => ({
+  html: baseHtml(
+    'Passar tua compra pra outra conta?',
+    `<p style="${P}">Oi, <strong style="${STRONG}">${escapeHtml(userName)}</strong>.</p>
+<p style="${P}">A conta <strong style="${STRONG}">${escapeHtml(paraEmail)}</strong> pediu pra receber as compras que tu fez com este e-mail.</p>
+<p style="${P}">Se foi tu, clica no botão e a compra passa pra lá. O link vale por ${horas} horas e funciona uma vez.</p>
+${button(confirmUrl, 'Passar a compra')}
+<p style="${SMALL}">Se não foi tu, ignora este e-mail. Nada muda e a compra continua nesta conta.</p>`,
+    `A conta ${paraEmail} pediu pra receber tuas compras.`
+  ),
+  text: `Oi, ${userName}.
+
+A conta ${paraEmail} pediu pra receber as compras que tu fez com este e-mail.
+
+Se foi tu, abre o link abaixo e a compra passa pra lá. Ele vale por ${horas} horas e funciona uma vez.
+${confirmUrl}
+
+Se não foi tu, ignora este e-mail. Nada muda e a compra continua nesta conta.
+
+Visant Labs`,
+});
+
+export const sendPurchaseLinkConfirmEmail = async (params: {
+  email: string;
+  name?: string;
+  paraEmail: string;
+  confirmUrl: string;
+  horas: number;
+}): Promise<void> => {
+  const emailService = getEmailService();
+  if (!emailService) throw new Error('Email service is not configured.');
+  const userName = params.name || params.email.split('@')[0];
+  await emailService.emails.send({
+    from: RESEND_FROM_EMAIL,
+    to: params.email,
+    subject: 'Confirma: passar tua compra pra outra conta?',
+    ...purchaseLinkConfirmMail(userName, params.paraEmail, params.confirmUrl, params.horas),
+  });
+};
+
 export interface SendWelcomeEmailParams {
   email: string;
   name?: string;
