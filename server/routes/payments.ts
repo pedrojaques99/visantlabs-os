@@ -1681,21 +1681,17 @@ router.post('/hubla', webhookRateLimiter, async (req, res) => {
       renewClubCredits: async (input) => club.renewHublaClubCredits(await clubDeps(), input),
       sendAccessLink: async ({ userId, email, name, acesso }) => {
         const { criarLinkMagico } = await import('../services/magicLinkService.js');
-        const { sendPurchaseAccessEmail, isEmailConfigured } =
-          await import('../services/emailService.js');
-        if (!isEmailConfigured()) throw new Error('email não configurado');
+        const { enviarEmailDeCompra, podeAvisarCompra } = await import('../services/clubMail.js');
+        if (!podeAvisarCompra()) throw new Error('email não configurado');
         const horas = 72;
         const token = await criarLinkMagico(userId, email, horas * 60);
         const next = encodeURIComponent(acesso.caminho);
-        await sendPurchaseAccessEmail({
+        await enviarEmailDeCompra({
           email,
-          name,
+          nome: name,
           loginUrl: `${CLUB_BASE_URL}/entrar/link?token=${token}&next=${next}`,
-          titulo: acesso.titulo,
           horas,
-          abertura: acesso.abertura,
-          onde: acesso.onde,
-          botao: acesso.botao,
+          acesso,
         });
       },
       recordPurchase: async (c) => {

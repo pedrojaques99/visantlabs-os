@@ -167,7 +167,7 @@ describe('handleHublaWebhook', () => {
       email: 'Aluno@Exemplo.com',
       name: 'Ana Lima',
       acesso: expect.objectContaining({
-        titulo: 'IA para Designers',
+        titulo: 'IA Labs',
         caminho: '/curso/ia-aplicada',
       }),
     });
