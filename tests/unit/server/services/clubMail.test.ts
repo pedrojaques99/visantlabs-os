@@ -9,7 +9,9 @@ describe('emailDeCompra', () => {
     const m = emailDeCompra({ nome: 'Ana Lima', loginUrl, acesso: HUBLA_ACESSO['ia-aplicada'] });
     expect(m.assunto).toBe('Bem-vindo ao IA Labs');
     expect(m.texto).toContain('Oi, Ana. Aqui é o Pedro, da Visant.');
-    expect(m.texto).toContain('Entrar no grupo da turma: https://app.visant.club/curso/ia-aplicada');
+    expect(m.texto).toContain(
+      'Entrar no grupo da turma: https://app.visant.club/curso/ia-aplicada'
+    );
     expect(m.texto).toContain('Um abraço,\nPedro');
     expect(m.html).toContain('marca/banner-email.png');
     expect(m.html).toContain('marca/selo-email.png');

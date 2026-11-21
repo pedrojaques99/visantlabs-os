@@ -40,7 +40,12 @@ const APAGADO = '#666';
 const BANNER = 'https://app.visant.club/marca/banner-email.png';
 const SELO = 'https://app.visant.club/marca/selo-email.png';
 
-type Corpo = { assunto: string; paragrafos: string[]; botao: string; convite?: { rotulo: string; url: string; resto: string } };
+type Corpo = {
+  assunto: string;
+  paragrafos: string[];
+  botao: string;
+  convite?: { rotulo: string; url: string; resto: string };
+};
 
 /** O texto por tipo de compra. `titulo` vem do Acesso (IA Labs, Visant Club, nome do e-book). */
 function corpo(acesso: Acesso): Corpo {
@@ -116,12 +121,41 @@ export function emailDeCompra(p: { nome?: string | null; loginUrl: string; acess
 
   const P = ['margin:0 0 16px', 'font-size:16px', 'line-height:1.5', `color:${TINTA}`].join(';');
   const par = (t: string) => `<p style="${P}">${esc(t)}</p>`;
-  const BTN = ['display:inline-block', `background:${TINTA}`, `color:${FUNDO}`, 'text-decoration:none', 'padding:12px 20px', 'border-radius:8px', 'font-size:16px'].join(';');
-  const PEQ = ['margin:24px 0 0', 'font-size:13px', 'line-height:1.5', `color:${APAGADO}`].join(';');
-  const IMG_BANNER = ['display:block', 'width:100%', 'max-width:520px', 'height:auto', 'border:0', 'border-radius:8px', 'margin:0 0 28px'].join(';');
+  const BTN = [
+    'display:inline-block',
+    `background:${TINTA}`,
+    `color:${FUNDO}`,
+    'text-decoration:none',
+    'padding:12px 20px',
+    'border-radius:8px',
+    'font-size:16px',
+  ].join(';');
+  const PEQ = ['margin:24px 0 0', 'font-size:13px', 'line-height:1.5', `color:${APAGADO}`].join(
+    ';'
+  );
+  const IMG_BANNER = [
+    'display:block',
+    'width:100%',
+    'max-width:520px',
+    'height:auto',
+    'border:0',
+    'border-radius:8px',
+    'margin:0 0 28px',
+  ].join(';');
   const CSS_V = ['width:40px', 'height:40px', `background:${TINTA}`, 'border-radius:6px'].join(';');
-  const IMG_V = ['display:block', 'width:40px', 'height:40px', 'border:0', 'border-radius:6px'].join(';');
-  const CSS_T = ['padding:0 0 0 12px', 'font-size:13px', 'line-height:1.45', `color:${APAGADO}`].join(';');
+  const IMG_V = [
+    'display:block',
+    'width:40px',
+    'height:40px',
+    'border:0',
+    'border-radius:6px',
+  ].join(';');
+  const CSS_T = [
+    'padding:0 0 0 12px',
+    'font-size:13px',
+    'line-height:1.45',
+    `color:${APAGADO}`,
+  ].join(';');
 
   const convite = c.convite
     ? `<p style="${P}"><a href="${esc(c.convite.url)}" style="color:${TINTA};font-weight:600">${esc(c.convite.rotulo)}</a>: ${esc(c.convite.resto)}</p>`
@@ -159,12 +193,27 @@ ${fim.slice(1).map(par).join('\n')}
   return { assunto: c.assunto, html, texto };
 }
 
-async function enviarPeloClub(p: { email: string; nome?: string | null; loginUrl: string; acesso: Acesso }) {
+async function enviarPeloClub(p: {
+  email: string;
+  nome?: string | null;
+  loginUrl: string;
+  acesso: Acesso;
+}) {
   const m = emailDeCompra(p);
   const r = await fetch(`${API}/emails`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${process.env.CLUB_EMAIL_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: FROM, to: [p.email], reply_to: REPLY_TO, subject: m.assunto, html: m.html, text: m.texto }),
+    headers: {
+      Authorization: `Bearer ${process.env.CLUB_EMAIL_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: FROM,
+      to: [p.email],
+      reply_to: REPLY_TO,
+      subject: m.assunto,
+      html: m.html,
+      text: m.texto,
+    }),
   });
   if (!r.ok) {
     // O corpo do erro do provedor não leva o e-mail de quem comprou.
@@ -190,7 +239,10 @@ export async function enviarEmailDeCompra(p: {
       return;
     } catch (e) {
       if (!isEmailConfigured()) throw e;
-      console.error('[clubMail] MillionSend falhou, usando o e-mail do Labs:', (e as Error).message);
+      console.error(
+        '[clubMail] MillionSend falhou, usando o e-mail do Labs:',
+        (e as Error).message
+      );
     }
   }
   await sendPurchaseAccessEmail({
