@@ -28,7 +28,7 @@ import {
   auditar,
   TransferenciaError,
 } from '../services/hublaCompras.js';
-import { HUBLA_ACESSO } from '../services/hublaWebhook.js';
+import { HUBLA_ACESSO, type Acesso } from '../services/hublaWebhook.js';
 
 const router = express.Router();
 const texto = (v: unknown, max: number) => (ensureString(v, max) ?? '').trim();
@@ -203,11 +203,11 @@ router.post('/reenviar-acesso', async (req: AuthRequest, res: Response) => {
     const u = await prisma.user.findUnique({ where: { id: userId } });
     if (!u) return res.status(404).json({ error: 'Conta não existe' });
     const { criarLinkMagico } = await import('../services/magicLinkService.js');
-    const { sendPurchaseAccessEmail, isEmailConfigured } =
-      await import('../services/emailService.js');
-    if (!isEmailConfigured())
+    const { enviarEmailDeCompra, podeAvisarCompra } = await import('../services/clubMail.js');
+    if (!podeAvisarCompra())
       return res.status(503).json({ error: 'E-mail da Labs não configurado' });
-    const acesso = HUBLA_ACESSO[sku] ?? {
+    const acesso: Acesso = HUBLA_ACESSO[sku] ?? {
+      tipo: 'club',
       titulo: 'Visant Club',
       caminho: '/dashboard',
       abertura: 'Teu acesso está aqui.',
@@ -216,15 +216,12 @@ router.post('/reenviar-acesso', async (req: AuthRequest, res: Response) => {
     };
     const horas = 72;
     const token = await criarLinkMagico(u.id, u.email, horas * 60);
-    await sendPurchaseAccessEmail({
+    await enviarEmailDeCompra({
       email: u.email,
-      name: u.name ?? undefined,
+      nome: u.name,
       loginUrl: `${CLUB_BASE_URL}/entrar/link?token=${token}&next=${encodeURIComponent(acesso.caminho)}`,
-      titulo: acesso.titulo,
       horas,
-      abertura: acesso.abertura,
-      onde: acesso.onde,
-      botao: acesso.botao,
+      acesso,
     });
     await connectToMongoDB();
     await auditar(getDb(), {

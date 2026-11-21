@@ -35,6 +35,8 @@ export const HUBLA_CLUB_PRODUCT_ID = 'iUVlULNrtLYpKbVvBbzW';
 
 /** O que o e-mail de acesso diz e pra onde o link leva. */
 export interface Acesso {
+  /** Muda o texto do e-mail de compra (services/clubMail.ts). */
+  tipo: 'curso' | 'club' | 'ebook';
   titulo: string;
   /** Rota no Club, depois do login pelo link mágico. */
   caminho: string;
@@ -44,6 +46,7 @@ export interface Acesso {
 }
 
 const ebook = (sku: string, titulo: string): Acesso => ({
+  tipo: 'ebook',
   titulo,
   caminho: `/p/${sku}`,
   abertura: 'Tua compra entrou.',
@@ -54,11 +57,13 @@ const ebook = (sku: string, titulo: string): Acesso => ({
 /** SKU → acesso. Títulos espelham lib/catalogo.mjs do visant-club. */
 export const HUBLA_ACESSO: Record<string, Acesso> = {
   'ia-aplicada': {
-    titulo: 'IA para Designers',
+    tipo: 'curso',
+    // O curso virou IA Labs em 20/11/2026 (decisão do dono); o sku não muda.
+    titulo: 'IA Labs',
     caminho: '/curso/ia-aplicada',
     abertura: 'Tua compra entrou.',
     onde: 'na primeira aula',
-    botao: 'Abrir o curso',
+    botao: 'Começar pela primeira aula',
   },
   'ebook-metodologia': ebook('ebook-metodologia', 'Metodologia Visant'),
   'imersao-marca': ebook('imersao-marca', 'A Imersão de Marca'),
@@ -66,6 +71,7 @@ export const HUBLA_ACESSO: Record<string, Acesso> = {
 };
 
 export const CLUB_ACESSO: Acesso = {
+  tipo: 'club',
   titulo: 'Visant Club',
   caminho: '/dashboard',
   abertura: 'Tua assinatura entrou.',
