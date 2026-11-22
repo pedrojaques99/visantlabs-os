@@ -330,6 +330,9 @@ async function enviarPeloClub(p: {
       html: m.html,
       text: m.texto,
     }),
+    // Teto de 10 s (21/11/2026): MillionSend pendurado segurava a resposta do
+    // webhook. Estourou, cai no e-mail do Labs logo abaixo.
+    signal: AbortSignal.timeout(10_000),
   });
   if (!r.ok) {
     // O corpo do erro do provedor não leva o e-mail de quem comprou.

@@ -51,6 +51,8 @@ export interface GrantProductResult {
   userId: string;
   email: string;
   granted: boolean; // true = escreveu agora; false = já tinha
+  /** Por que `granted` é false: 'sessao' = esta mesma compra já gravou (reenvio); 'sku' = a conta já tinha o produto por OUTRA compra. */
+  ja?: 'sessao' | 'sku';
   created: boolean; // true = conta criada agora (passwordless)
   entitlements: Entitlement[];
 }
@@ -92,15 +94,14 @@ export async function grantProduct(input: GrantProductInput): Promise<GrantProdu
   const raw = (user as any).entitlements;
 
   // Idempotência: já gravado por esta sessão OU já possui o sku.
-  if (
-    (input.sessionId && hasEntitlementForSession(raw, input.sessionId)) ||
-    hasEntitlement(raw, sku)
-  ) {
+  const mesmaSessao = !!input.sessionId && hasEntitlementForSession(raw, input.sessionId);
+  if (mesmaSessao || hasEntitlement(raw, sku)) {
     const { toEntitlements } = await import('../lib/entitlements.js');
     return {
       userId: user.id,
       email: user.email,
       granted: false,
+      ja: mesmaSessao ? 'sessao' : 'sku',
       created,
       entitlements: toEntitlements(raw),
     };
