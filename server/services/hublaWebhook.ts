@@ -28,6 +28,10 @@ export const HUBLA_PRODUCT_SKUS: Record<string, string> = {
   ABPdfoZXp66KtdDXSmpq: 'ebook-metodologia', // e-book, pagamento único
   n7U4EGH0THfVY5wMvQ5B: 'imersao-marca', // e-book, pagamento único
   '2cdlR0D3TekTpWhqhd6W': 'guia-de-call', // e-book, pagamento único
+  // Mentoria (Mesa) turma 1, 22/11/2026: R$ 3.000, 01/12/2026 a 28/02/2027.
+  // O Club lê o entitlement `mesa-t1` e libera o Club até o fim da turma
+  // (visant-club lib/mesa.mjs).
+  m6KJqUOT0G2hhLeL6TYN: 'mesa-t1',
 };
 
 /** Assinatura do Visant Club (mensal R$ 49,90 / anual R$ 499). Não é SKU: é tier. */
@@ -36,7 +40,7 @@ export const HUBLA_CLUB_PRODUCT_ID = 'iUVlULNrtLYpKbVvBbzW';
 /** O que o e-mail de acesso diz e pra onde o link leva. */
 export interface Acesso {
   /** Muda o texto do e-mail de compra (services/clubMail.ts). */
-  tipo: 'curso' | 'club' | 'ebook';
+  tipo: 'curso' | 'club' | 'ebook' | 'mentoria';
   titulo: string;
   /** Rota no Club, depois do login pelo link mágico. */
   caminho: string;
@@ -68,6 +72,14 @@ export const HUBLA_ACESSO: Record<string, Acesso> = {
   'ebook-metodologia': ebook('ebook-metodologia', 'Metodologia Visant'),
   'imersao-marca': ebook('imersao-marca', 'A Imersão de Marca'),
   'guia-de-call': ebook('guia-de-call', 'Guia de call da Imersão'),
+  'mesa-t1': {
+    tipo: 'mentoria',
+    titulo: 'Mentoria Visant · Turma 1',
+    caminho: '/dashboard',
+    abertura: 'Tua vaga na mentoria entrou.',
+    onde: 'no Club',
+    botao: 'Entrar no Club',
+  },
 };
 
 export const CLUB_ACESSO: Acesso = {
