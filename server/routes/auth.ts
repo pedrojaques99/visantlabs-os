@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../db/prisma.js';
 import bcrypt from 'bcryptjs';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { assinarSessao, renovarSessao } from '../services/sessaoJwt.js';
 import { getClientIp } from '../utils/auth.js';
 import { recordSession } from './sessions.js';
 import { rateLimit } from 'express-rate-limit';
@@ -563,7 +564,7 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
 
     // Generate JWT token
     const userId = user.id;
-    const token = jwt.sign({ userId, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+    const token = assinarSessao({ id: userId, email: user.email }, JWT_SECRET);
 
     // Plugin OAuth: store token for polling and show success page
     if (typeof state === 'string' && (state as string).startsWith('plugin:')) {
@@ -712,6 +713,25 @@ router.get(
 );
 
 // Verify token
+// POST /api/auth/renovar — troca a sessão válida por uma de 30 dias a partir de
+// agora (21/11/2026). Quem chama é o Club, no máximo uma vez por dia por pessoa
+// (o proxy dele olha o `iat`). Ver services/sessaoJwt.ts.
+router.post('/renovar', verifyRateLimiter, async (req, res) => {
+  try {
+    const r = await renovarSessao(req.headers.authorization?.replace('Bearer ', ''), {
+      secret: JWT_SECRET,
+      acharUsuario: (id) =>
+        prisma.user.findUnique({ where: { id }, select: { id: true, email: true } }),
+    });
+    if ('motivo' in r)
+      return res.status(r.status).json({ error: 'Invalid session', code: r.motivo });
+    return res.json({ token: r.token });
+  } catch (error: any) {
+    console.error('[auth/renovar] erro', error?.message);
+    return res.status(500).json({ error: 'Failed to renew session' });
+  }
+});
+
 router.get('/verify', verifyRateLimiter, async (req, res) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
@@ -1216,7 +1236,7 @@ router.post('/signup', signupRateLimiter, signupBackoff, async (req, res) => {
 
     // Generate JWT token
     const userId = user.id;
-    const token = jwt.sign({ userId, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+    const token = assinarSessao({ id: userId, email: user.email }, JWT_SECRET);
 
     // Record session
     recordSession(userId, req).catch(() => {});
@@ -1309,7 +1329,7 @@ router.post('/signin', signinRateLimiter, signinBackoff, async (req, res) => {
 
     // Generate JWT token
     const userId = user.id;
-    const token = jwt.sign({ userId, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+    const token = assinarSessao({ id: userId, email: user.email }, JWT_SECRET);
 
     // Record session
     recordSession(userId, req).catch(() => {});
@@ -1376,7 +1396,7 @@ router.post('/dev-login', async (req, res) => {
         .json({ error: 'No user found. Pass { "email": "..." } or set DEV_LOGIN_EMAIL.' });
     }
 
-    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+    const token = assinarSessao({ id: user.id, email: user.email }, JWT_SECRET);
     console.warn(`⚠️  [dev-login] issued token for ${user.email} — DEV ONLY`);
 
     res.json({
