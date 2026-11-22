@@ -23,10 +23,19 @@ import { assinarSessao } from '../services/sessaoJwt.js';
 
 const router = express.Router();
 
-// Cada pedido é um e-mail de verdade: teto por IP, igual ao do forgot-password.
+// Cada pedido é um e-mail de verdade: teto POR E-MAIL, não por IP (22/11/2026).
+// Quem chama é o servidor do Club (Vercel): todo membro chega com o mesmo IP, e
+// o teto de 5/h por IP travava o login por e-mail de TODO MUNDO depois do 5º
+// pedido da hora (lançamento, aulão ao vivo). O Club já limita por IP real e
+// por e-mail antes de chamar (app/api/link-magico).
 const pedidoRateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: parseInt(process.env.RATE_LIMIT_MAX_MAGIC_LINK || '5', 10),
+  keyGenerator: (req) => {
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    return email ? `email:${email}` : `ip:${req.ip || 'anon'}`;
+  },
+  validate: { keyGeneratorIpFallback: false },
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many attempts, please try again later' },
