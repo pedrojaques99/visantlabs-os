@@ -158,7 +158,11 @@ describe('compra do IA Labs pela Hubla, de ponta a ponta', () => {
         email: 'ana@exemplo.com',
       })
     );
-    expect(m.criarLinkMagico).toHaveBeenCalledWith('u-1', 'ana@exemplo.com', HORAS_DO_LINK_DE_COMPRA * 60);
+    expect(m.criarLinkMagico).toHaveBeenCalledWith(
+      'u-1',
+      'ana@exemplo.com',
+      HORAS_DO_LINK_DE_COMPRA * 60
+    );
 
     // O texto do e-mail vem do Club (com o segredo) e cai no padrão quando ele não tem override.
     const modelo = m.chamadas.find((c) => c.url.includes('/api/emails/modelo/compra-curso'));
@@ -170,7 +174,8 @@ describe('compra do IA Labs pela Hubla, de ponta a ponta', () => {
     const b = corpoDo(envio);
     expect(b.to).toEqual(['ana@exemplo.com']);
     expect(b.subject).toBe('Bem-vindo ao IA Labs');
-    const link = 'https://app.visant.club/entrar/link?token=tok-u-1-4320&amp;next=%2Fcurso%2Fia-aplicada';
+    const link =
+      'https://app.visant.club/entrar/link?token=tok-u-1-4320&amp;next=%2Fcurso%2Fia-aplicada';
     expect(b.html).toContain(link);
     expect(b.html).toContain('Começar pela primeira aula');
     expect(b.text).toContain(
@@ -213,7 +218,8 @@ describe('compra do IA Labs pela Hubla, de ponta a ponta', () => {
         email: 'ana@exemplo.com',
         titulo: 'IA Labs',
         horas: 72,
-        loginUrl: 'https://app.visant.club/entrar/link?token=tok-u-1-4320&next=%2Fcurso%2Fia-aplicada',
+        loginUrl:
+          'https://app.visant.club/entrar/link?token=tok-u-1-4320&next=%2Fcurso%2Fia-aplicada',
       })
     );
   });
