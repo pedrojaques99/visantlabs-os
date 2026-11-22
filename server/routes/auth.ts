@@ -723,7 +723,8 @@ router.post('/renovar', verifyRateLimiter, async (req, res) => {
       acharUsuario: (id) =>
         prisma.user.findUnique({ where: { id }, select: { id: true, email: true } }),
     });
-    if (!r.ok) return res.status(r.status).json({ error: 'Invalid session', code: r.motivo });
+    if ('motivo' in r)
+      return res.status(r.status).json({ error: 'Invalid session', code: r.motivo });
     return res.json({ token: r.token });
   } catch (error: any) {
     console.error('[auth/renovar] erro', error?.message);
