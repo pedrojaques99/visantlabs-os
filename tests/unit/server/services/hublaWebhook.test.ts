@@ -92,7 +92,7 @@ describe('handleHublaWebhook', () => {
     const r = await handleHublaWebhook(req(evento('customer.member_added')), d, TOKEN);
     expect(r.status).toBe(200);
     expect(d.grantProduct).toHaveBeenCalledWith({
-      email: 'Aluno@Exemplo.com',
+      email: 'aluno@exemplo.com',
       sku: 'ia-aplicada',
       sessionId: 'hubla:sub-123',
       source: 'hubla',
@@ -164,7 +164,8 @@ describe('handleHublaWebhook', () => {
     expect(r.body.emailed).toBe(true);
     expect(sendAccessLink).toHaveBeenCalledWith({
       userId: 'u1',
-      email: 'Aluno@Exemplo.com',
+      // Normalizado desde 21/11/2026: o link e o envio recebiam o valor cru.
+      email: 'aluno@exemplo.com',
       name: 'Ana Lima',
       acesso: expect.objectContaining({
         titulo: 'IA Labs',
@@ -279,7 +280,7 @@ describe('handleHublaWebhook — assinatura do Club', () => {
     const r = await handleHublaWebhook(req(clubEvento('customer.member_added')), d, TOKEN);
     expect(r.status).toBe(200);
     expect(d.activateClub).toHaveBeenCalledWith({
-      email: 'Aluno@Exemplo.com',
+      email: 'aluno@exemplo.com',
       name: 'Ana Lima',
       subscriptionId: 'sub-club',
       invoiceId: 'inv-1',

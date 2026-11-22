@@ -89,7 +89,7 @@ export interface HublaDeps {
     sessionId: string;
     source: string;
     name?: string;
-  }) => Promise<{ userId: string; granted: boolean; created: boolean }>;
+  }) => Promise<{ userId: string; granted: boolean; created: boolean; ja?: 'sessao' | 'sku' }>;
   revokeProductGrant: (input: {
     sessionId: string;
   }) => Promise<{ revoked: boolean; already: boolean }>;
@@ -123,6 +123,15 @@ export interface HublaDeps {
     name?: string;
     acesso: Acesso;
   }) => Promise<void>;
+  /**
+   * Trava de "e-mail desta compra já saiu", por subscription.id (21/11/2026).
+   * Com ela, quem JÁ tinha o produto por outra compra (Stripe, liberação
+   * manual) também recebe o e-mail desta, e o reenvio da Hubla não duplica.
+   * `true` = pegou a trava agora. Sem ela, só a 1ª liberação avisa (comportamento antigo).
+   */
+  claimAviso?: (subscriptionId: string) => Promise<boolean>;
+  /** Solta a trava quando o e-mail falhou, pra um reenvio tentar de novo. */
+  releaseAviso?: (subscriptionId: string) => Promise<void>;
   /** Guarda a compra inteira (hubla_compras): o suporte acha a pessoa por e-mail, nome, telefone ou id. Opcional; falha não desfaz nada. */
   recordPurchase?: (c: Omit<CompraHubla, 'createdAt' | 'updatedAt'>) => Promise<void>;
   log: (level: 'info' | 'warn' | 'error', msg: string, data?: Record<string, unknown>) => void;
@@ -207,8 +216,13 @@ export async function handleHublaWebhook(
     return { status: 422, body: { error: 'missing subscription.id' } };
   }
 
-  const email: string =
-    event.user?.email || event.subscription?.payer?.email || event.invoice?.payer?.email || '';
+  // Normalizado aqui (21/11/2026): o grant já normalizava, mas o link mágico e o
+  // e-mail de compra recebiam o valor cru (" Ana@X.com ").
+  const email: string = String(
+    event.user?.email || event.subscription?.payer?.email || event.invoice?.payer?.email || ''
+  )
+    .toLowerCase()
+    .trim();
   const name =
     [event.user?.firstName, event.user?.lastName].filter(Boolean).join(' ').trim() || undefined;
 
@@ -273,7 +287,26 @@ export async function handleHublaWebhook(
     });
     await registrar('ativa', r.userId);
     const acesso = HUBLA_ACESSO[productSku];
-    const emailed = r.granted && acesso ? await avisar(r.userId, acesso) : false;
+    let emailed = false;
+    if (acesso && deps.claimAviso && (r.granted || r.ja === 'sku')) {
+      // Avisa quem liberou agora E quem já tinha o produto por outra compra
+      // (pagou de novo e merece o link); a trava por compra barra o reenvio.
+      // Trava fora do ar não pode custar o e-mail de quem acabou de liberar:
+      // nesse caso vale a regra antiga (avisa a 1ª liberação).
+      const pegou = await deps.claimAviso(subscriptionId).catch((e) => {
+        deps.log('error', '[hubla] trava do e-mail falhou', {
+          ...ctx,
+          error: e instanceof Error ? e.message : String(e),
+        });
+        return r.granted;
+      });
+      if (pegou) {
+        emailed = await avisar(r.userId, acesso);
+        if (!emailed && deps.releaseAviso) await deps.releaseAviso(subscriptionId).catch(() => {});
+      }
+    } else if (acesso && !deps.claimAviso && r.granted) {
+      emailed = await avisar(r.userId, acesso);
+    }
     return { status: 200, body: { granted: r.granted, created: r.created, emailed } };
   };
 

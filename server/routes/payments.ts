@@ -1679,20 +1679,27 @@ router.post('/hubla', webhookRateLimiter, async (req, res) => {
       activateClub: async (input) => club.activateHublaClub(await clubDeps(), input),
       deactivateClub: async (input) => club.deactivateHublaClub(await clubDeps(), input),
       renewClubCredits: async (input) => club.renewHublaClubCredits(await clubDeps(), input),
-      sendAccessLink: async ({ userId, email, name, acesso }) => {
+      sendAccessLink: async (input) => {
+        const { criarAvisoDeCompra } = await import('../services/hublaAviso.js');
         const { criarLinkMagico } = await import('../services/magicLinkService.js');
         const { enviarEmailDeCompra, podeAvisarCompra } = await import('../services/clubMail.js');
-        if (!podeAvisarCompra()) throw new Error('email não configurado');
-        const horas = 72;
-        const token = await criarLinkMagico(userId, email, horas * 60);
-        const next = encodeURIComponent(acesso.caminho);
-        await enviarEmailDeCompra({
-          email,
-          nome: name,
-          loginUrl: `${CLUB_BASE_URL}/entrar/link?token=${token}&next=${next}`,
-          horas,
-          acesso,
-        });
+        await criarAvisoDeCompra({
+          criarLinkMagico,
+          enviarEmailDeCompra,
+          podeAvisarCompra,
+          base: CLUB_BASE_URL,
+        })(input);
+      },
+      // Uma vez por compra (subscription.id): o reenvio da Hubla não duplica o e-mail.
+      claimAviso: async (subscriptionId) => {
+        const { claimPaymentEvent } = await import('../lib/paymentIdempotency.js');
+        await connectToMongoDB();
+        return claimPaymentEvent(getDb(), 'hubla', `aviso-compra:${subscriptionId}`);
+      },
+      releaseAviso: async (subscriptionId) => {
+        const { releasePaymentEvent } = await import('../lib/paymentIdempotency.js');
+        await connectToMongoDB();
+        await releasePaymentEvent(getDb(), 'hubla', `aviso-compra:${subscriptionId}`);
       },
       recordPurchase: async (c) => {
         const { registrarCompra } = await import('../services/hublaCompras.js');
