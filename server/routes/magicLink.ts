@@ -8,7 +8,6 @@
 // então o link aponta pro Club sempre. O `app` do schema existe pra, no dia em
 // que o Labs tiver a própria página, a escolha ficar explícita.
 import express from 'express';
-import jwt from 'jsonwebtoken';
 import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../db/prisma.js';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
@@ -20,6 +19,7 @@ import {
   MAGIC_LINK_TTL_MIN,
 } from '../services/magicLinkService.js';
 import { recordSession } from './sessions.js';
+import { assinarSessao } from '../services/sessaoJwt.js';
 
 const router = express.Router();
 
@@ -106,9 +106,7 @@ router.post('/verify', trocaRateLimiter, async (req, res) => {
     }
 
     // A mesma sessão de quem entra com senha no /signin.
-    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
-      expiresIn: '7d',
-    });
+    const token = assinarSessao({ id: user.id, email: user.email }, JWT_SECRET);
     recordSession(user.id, req).catch(() => {});
 
     return res.json({
