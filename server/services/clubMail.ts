@@ -154,6 +154,16 @@ function corpo(acesso: Acesso): Corpo {
       },
     };
   }
+  if (acesso.tipo === 'mentoria') {
+    return {
+      assunto: `Tua vaga na ${acesso.titulo}`,
+      paragrafos: [
+        `Que alegria ter você na ${acesso.titulo}. A turma começa em 1º de dezembro e vai até o fim de fevereiro.`,
+        'Enquanto a turma durar, o Visant Club é seu: aulas, ferramentas e a comunidade. Os encontros e o grupo da turma chegam por aqui antes do começo.',
+      ],
+      botao: acesso.botao,
+    };
+  }
   if (acesso.tipo === 'ebook') {
     return {
       assunto: `Seu e-book chegou: ${acesso.titulo}`,
@@ -184,6 +194,11 @@ function depois(acesso: Acesso): string[] {
     return [
       'Lá dentro tem o acervo de aulas e as ferramentas que a gente usa no estúdio. Mas o melhor é a gente.',
       'E se quiser falar comigo direto, responde este e-mail.',
+    ];
+  if (acesso.tipo === 'mentoria')
+    return [
+      'Vai pensando no projeto que você quer levar pra mesa: é em cima dele que a gente trabalha.',
+      'Qualquer dúvida até lá, responde este e-mail.',
     ];
   if (acesso.tipo === 'ebook')
     return [
