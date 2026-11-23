@@ -79,6 +79,7 @@ type MemberRow = {
   subscriptionTier: string;
   subscriptionStatus: string;
   stripeSubscriptionId: string | null;
+  entitlements?: unknown;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -91,6 +92,20 @@ function roleOf(tier: string, status: string): ClubRole | 'labs' | 'none' {
   // Tier de Club com assinatura inativa não dá acesso — não mentir na listagem.
   if ((status || '').toLowerCase() !== 'active') return 'none';
   return t as ClubRole;
+}
+
+/** Só o que o painel precisa de cada produto comprado: sku, origem e quando. */
+export function produtosDe(
+  raw: unknown
+): Array<{ sku: string; source: string | null; grantedAt: string | null }> {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((e) => e && typeof e === 'object' && typeof (e as any).sku === 'string')
+    .map((e: any) => ({
+      sku: String(e.sku),
+      source: typeof e.source === 'string' ? e.source : null,
+      grantedAt: typeof e.grantedAt === 'string' ? e.grantedAt : null,
+    }));
 }
 
 /**
@@ -108,54 +123,109 @@ function toPublic(u: MemberRow) {
     tier: u.subscriptionTier,
     status: u.subscriptionStatus,
     stripeManaged: !!u.stripeSubscriptionId,
+    produtos: produtosDe(u.entitlements),
     createdAt: u.createdAt,
     updatedAt: u.updatedAt,
   };
 }
 
-// GET /members — lista paginada. Por padrão só quem tem tier de Club;
-// ?scope=all abre a busca pro resto (pra achar quem ainda vai virar membro).
+/*
+ * Quem aparece (23/11/2026, pedido do dono: "todos os compradores e assinantes"):
+ *   pagantes    (padrão) assinante ativo do Club OU dono de algum produto
+ *   club        só assinante ativo
+ *   compradores só quem tem produto (curso, e-book, mentoria)
+ *   all         a base inteira do SaaS, só com busca (>= 3 letras)
+ * `produto=<sku>` restringe a quem tem aquele sku; `ordem` escolhe a ordenação.
+ * Driver nativo: o Prisma no MongoDB não filtra dentro de campo Json, e
+ * `entitlements` é Json.
+ */
+const ESCOPOS = ['pagantes', 'club', 'compradores', 'all'] as const;
+type Escopo = (typeof ESCOPOS)[number];
+const ORDENS = {
+  recentes: { createdAt: -1 },
+  antigos: { createdAt: 1 },
+  nome: { name: 1, email: 1 },
+  email: { email: 1 },
+  atualizados: { updatedAt: -1 },
+} as const;
+type Ordem = keyof typeof ORDENS;
+const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const ASSINANTE = { subscriptionTier: { $in: [...CLUB_TIERS] }, subscriptionStatus: 'active' };
+const COMPRADOR = { 'entitlements.0': { $exists: true } };
+
+/** O filtro do Mongo pra cada pedido. Exportado pro teste. */
+export function filtroMembros(scope: Escopo, q: string, produto: string): Record<string, unknown> {
+  const e: Record<string, unknown>[] = [];
+  if (scope === 'club') e.push(ASSINANTE);
+  if (scope === 'compradores') e.push(COMPRADOR);
+  if (scope === 'pagantes') e.push({ $or: [ASSINANTE, COMPRADOR] });
+  if (produto) e.push({ 'entitlements.sku': { $regex: `^${escapeRegex(produto)}$`, $options: 'i' } });
+  if (q) {
+    const rx = { $regex: escapeRegex(q), $options: 'i' };
+    e.push({ $or: [{ email: rx }, { name: rx }] });
+  }
+  return e.length ? { $and: e } : {};
+}
+
 router.get('/members', validateAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const q = asText(req.query.q, 200);
-    const scope = req.query.scope === 'all' ? 'all' : 'club';
+    const escopoPedido = asText(req.query.scope, 20) as Escopo;
+    const scope: Escopo = ESCOPOS.includes(escopoPedido) ? escopoPedido : 'pagantes';
+    const ordemPedida = asText(req.query.ordem, 20);
+    const ordem: Ordem = Object.hasOwn(ORDENS, ordemPedida) ? (ordemPedida as Ordem) : 'recentes';
+    const produto = asText(req.query.produto, 60).toLowerCase();
     const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 100);
     const page = Math.max(Number(req.query.page) || 1, 1);
 
     // scope=all sem busca listaria a base inteira do SaaS dentro do painel do
-    // Club. Exigir o termo mantém o padrão "Club por padrão, resto sob demanda".
+    // Club. Exigir o termo mantém o padrão "pagantes por padrão, resto sob demanda".
     if (scope === 'all' && q.length < 3) {
       return res
         .status(400)
         .json({ error: 'Busque por ao menos 3 caracteres para procurar fora do Club' });
     }
 
-    const where: Record<string, unknown> = {};
-    if (scope === 'club') where.subscriptionTier = { in: [...CLUB_TIERS] };
-    if (q) {
-      where.OR = [
-        { email: { contains: q, mode: 'insensitive' } },
-        { name: { contains: q, mode: 'insensitive' } },
-      ];
-    }
-
-    const [rows, total] = await Promise.all([
-      prisma.user.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: limit,
-        select: MEMBER_FIELDS,
-      }),
-      prisma.user.count({ where }),
+    const filtro = filtroMembros(scope, q, produto);
+    await connectToMongoDB();
+    const users = getDb().collection('users');
+    const projection = {
+      email: 1,
+      name: 1,
+      picture: 1,
+      subscriptionTier: 1,
+      subscriptionStatus: 1,
+      stripeSubscriptionId: 1,
+      entitlements: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    };
+    const [docs, total] = await Promise.all([
+      users
+        .find(filtro, { projection })
+        .sort(ORDENS[ordem] as any)
+        .collation({ locale: 'pt', strength: 1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .toArray(),
+      users.countDocuments(filtro),
     ]);
 
-    return res.json({
-      members: (rows as MemberRow[]).map(toPublic),
-      total,
-      page,
-      limit,
-    });
+    const rows: MemberRow[] = docs.map((d: any) => ({
+      id: String(d._id),
+      email: d.email,
+      name: d.name ?? null,
+      picture: d.picture ?? null,
+      subscriptionTier: d.subscriptionTier ?? 'free',
+      subscriptionStatus: d.subscriptionStatus ?? 'free',
+      stripeSubscriptionId: d.stripeSubscriptionId ?? null,
+      entitlements: d.entitlements,
+      createdAt: d.createdAt,
+      updatedAt: d.updatedAt,
+    }));
+
+    return res.json({ members: rows.map(toPublic), total, page, limit, scope, ordem });
   } catch (error) {
     console.error('Failed to list club members:', error);
     return res.status(500).json({ error: 'Failed to list club members' });
